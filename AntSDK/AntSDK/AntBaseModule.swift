@@ -1,0 +1,899 @@
+//
+//  AntBaseModule.swift
+//  AntSDK
+//
+//  Created by 猜猜我是谁 on 2021/4/16.
+//
+
+import UIKit
+import CoreBluetooth
+import zlib
+
+@objc public class AntBaseModule: NSObject {
+    
+    /// 已配对设备的UUID数组，用来获取被手机系统配对的设备。默认不获取已被手机配对的设备
+    @objc public var matchingUUIDArray:[CBUUID]? = nil
+    
+    /// 过滤设备的UUID数组。默认扫描所有设备
+    @objc public var serviceUUIDArray:[CBUUID]? = nil
+    
+    /// 扫描时间
+    @objc dynamic public var scanInterval:Int
+
+    @objc dynamic public internal(set) var peripheral:CBPeripheral? {
+        willSet {
+            //printLog("旧值 ->",self.peripheral as Any)
+            if self.peripheral != nil {
+                self.peripheral!.removeObserver(self, forKeyPath: "state")
+            }
+        }
+        didSet {
+            //printLog("新值 ->",self.peripheral as Any)
+            if self.peripheral != nil {
+                self.peripheral!.addObserver(self, forKeyPath: "state", options: [.new,.old], context: nil)
+            }
+        }
+    }
+    
+    @objc dynamic public internal(set) var blePowerState:CBCentralManagerState = .unknown
+    
+    var writeCharacteristic:CBCharacteristic?//6E400002-B5A3-F393-E0A9-E50E24DCCA9E
+    var receiveCharacteristic:CBCharacteristic?//6E400003-B5A3-F393-E0A9-E50E24DCCA9E
+    
+    var ant_ReconnectTimer:Timer?
+    
+    var connectCompleteBlock:((Bool)->())?
+    var reconnectComplete:(()->())?
+    var isSyncOtaData = false
+    var syncOtaReconnectComplete:(()->())?
+    var peripheralStateChange:((CBPeripheralState)->())?
+        
+    override init() {
+        self.scanInterval = 30
+        super.init()
+        let antManager = AntBleManager.shareInstance
+        self.blePowerState = antManager.getBlePowerState()
+        self.ant_ReconnectTimer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(reconnectMethod), userInfo: nil, repeats: true)
+        RunLoop.current.add(self.ant_ReconnectTimer!, forMode: RunLoop.Mode.default)
+        
+        antManager.DeviceNeedReconnectMothed {
+            let userDefault = UserDefaults.standard
+            let isNeedReconnect = userDefault.bool(forKey: "Ant_ReconnectKey")
+            
+            if isNeedReconnect {
+                self.ant_ReconnectTimer?.fireDate = .distantPast
+                AntCommandModule.shareInstance.resetCommandSemaphore()
+            }
+        }
+    }
+    
+    @objc public func peripheralStateChange(state:@escaping((CBPeripheralState)->())) {
+        self.peripheralStateChange = state
+    }
+    
+    public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+//        printLog("keyPath = \(String(describing: keyPath)),object = \(String(describing: object)),change.new = \(change?[NSKeyValueChangeKey(rawValue: "new")]),change.old = \(change?[NSKeyValueChangeKey(rawValue: "old")]),context = \(String(describing: context))")//
+        if keyPath == "state" {
+            let state:CBPeripheralState = CBPeripheralState.init(rawValue: change?[NSKeyValueChangeKey(rawValue: "new")] as! Int) ?? .disconnected
+
+            if let block = self.peripheralStateChange {
+                block(state)
+            }
+            
+        }
+    }
+    @objc public func bluetoothPowerStateChange(state:@escaping((CBCentralManagerState)->())) {
+        AntBleManager.shareInstance.getBlePowerDidUpdateState { bleState in
+            state(bleState)
+            if bleState == .poweredOn {
+                self.ant_ReconnectTimer?.fireDate = .distantPast
+            }else if bleState == .poweredOff {
+                //命令信号量重置
+                AntCommandModule.shareInstance.resetCommandSemaphore()
+                //同步健康数据相关方法重置
+                if AntCommandModule.shareInstance.isStepDetailData || AntCommandModule.shareInstance.isSleepDetailData || AntCommandModule.shareInstance.isHrDetailData {
+                    //取消定时器
+                    AntCommandModule.shareInstance.healthDataDetectionTimerInvalid()
+                    //此次健康数据接收结束
+                    AntCommandModule.shareInstance.currentReceiveCommandEndOver = true
+                    //取消延时的方法直接调用
+                    NSObject.cancelPreviousPerformRequests(withTarget: AntCommandModule.shareInstance, selector: #selector(AntCommandModule.shareInstance.receiveHealthDataTimeOut), object: nil)
+                    AntCommandModule.shareInstance.receiveHealthDataTimeOut()
+                }
+            }
+        }
+    }
+    
+    @objc func reconnectMethod() {
+        printLog("定时器方法")
+        let userDefault = UserDefaults.standard
+        let isNeedReconnect = userDefault.bool(forKey: "Ant_ReconnectKey")
+        let reconeectString = userDefault.string(forKey: "Ant_ReconnectIdentifierKey") ?? ""
+        printLog("isNeedReconnect = ",isNeedReconnect,"reconeectString =",reconeectString,"state =",AntBleManager.shareInstance.getBlePowerState().rawValue)
+        if AntBleManager.shareInstance.getBlePowerState() == .poweredOn && isNeedReconnect && reconeectString.count > 0 {
+            if self.peripheral?.state == .connected {
+                printLog("已连接、重连定时器关闭")
+                self.ant_ReconnectTimer?.fireDate = .distantFuture
+            }else{
+                self.connectDevice(peripheral: reconeectString) { result in
+                    if result {
+                        if !self.isSyncOtaData {
+                            if let block = self.reconnectComplete {
+                                block()
+                            }
+                        }else {
+                            //在AntCommandModule类调用服务器升级接口之后会通过此回调重连继续升级
+                            if let block = self.syncOtaReconnectComplete {
+                                block()
+                            }
+                        }
+                    }
+                }
+            }
+        }else{
+            printLog("重连标识相关状态不对、重连定时器关闭")
+            self.ant_ReconnectTimer?.fireDate = .distantFuture
+        }
+    }
+    
+    @objc public func setIsNeedReconnect(state:Bool) {
+        printLog("setIsNeedReconnect =",state)
+        let userDefault = UserDefaults.standard
+        userDefault.setValue(state, forKey: "Ant_ReconnectKey")
+        userDefault.synchronize()
+    }
+    
+    @objc public func reconnectDevice(complete:@escaping(()->())) {
+        self.reconnectComplete = complete
+    }
+    
+    func syncOtaReconnectDevice(complete:@escaping(()->())) {
+        self.syncOtaReconnectComplete = complete
+    }
+    
+    func setReconnectIdentifier(identifier:String) {
+        let userDefault = UserDefaults.standard
+        userDefault.setValue(identifier, forKey: "Ant_ReconnectIdentifierKey")
+        userDefault.synchronize()
+    }
+    
+    @objc public func getReconnectIdentifier() -> String {
+        let userDefault = UserDefaults.standard
+        let idString:String = userDefault.string(forKey: "Ant_ReconnectIdentifierKey") ?? ""
+        
+        return idString
+    }
+    
+    @objc open func getSystemListPeripheral(modelArray:@escaping(([AntScanModel])->(Void))) {
+        var peripheralArray = [AntScanModel].init()
+        
+        let connectedArray = AntBleManager.shareInstance.getListConnectPeripheras(serviceArray: self.matchingUUIDArray ?? [])
+        if connectedArray.count > 0 {
+            for item in connectedArray {
+                let model:AntScanModel = AntScanModel.init()
+                model.name = item.name
+                model.rssi = 0
+                model.peripheral = item
+                model.uuidString = item.identifier.uuidString
+                peripheralArray.append(model)
+            }
+            modelArray(peripheralArray)
+        }
+    }
+    
+    /// 扫描设备，每新增一个设备都会有回调
+    /// - Parameters:
+    ///   - scanModel: 扫描到的设备
+    ///   - modelArray: 所有扫描到的设备数组，包括系统蓝牙列表已连接的
+    /// - Returns:
+    @objc open func scanDevice(scanModel:@escaping((AntScanModel)->(Void)),modelArray:@escaping(([AntScanModel])->(Void))) {
+        var peripheralArray = [AntScanModel].init()
+        
+        self.stopScan()
+        
+        let connectedArray = AntBleManager.shareInstance.getListConnectPeripheras(serviceArray: self.matchingUUIDArray ?? [])
+        if connectedArray.count > 0 {
+            for item in connectedArray {
+                let model:AntScanModel = AntScanModel.init()
+                model.name = item.name
+                model.rssi = 0
+                model.peripheral = item
+                model.uuidString = peripheral?.identifier.uuidString
+                peripheralArray.append(model)
+            }
+            modelArray(peripheralArray)
+        }
+        
+        AntBleManager.shareInstance.scanPeripheralWithServices()
+        AntBleManager.shareInstance.CentralDiscoverPeripheral { (manager, peripheral, advertisementData, rssi) in
+            let model:AntScanModel = AntScanModel.init()
+            model.name = peripheral.name
+            model.rssi = Int(truncating: rssi)
+            model.peripheral = peripheral
+            model.uuidString = peripheral.identifier.uuidString
+            peripheralArray.append(model)
+            peripheralArray.sort { (scanModel1, scanModel2) -> Bool in
+                return scanModel1.rssi > scanModel2.rssi
+            }
+            scanModel(model)
+            modelArray(peripheralArray)
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now()+DispatchTimeInterval.seconds(scanInterval)) {
+            self.stopScan()
+        }
+        
+    }
+    
+    /// 停止扫描
+    @objc public func stopScan() {
+        AntBleManager.shareInstance.stopScanPeripheral()
+    }
+    
+    /// 连接设备
+    /// - Parameters:
+    ///   - peripheral: 支持String跟CBPeripheral两种
+    ///   - connectState: 连接状态
+    /// - Returns:
+    @objc public func connectDevice(peripheral:Any,connectState:@escaping((Bool)->())) {
+        if self.peripheral != nil && self.peripheral?.state != .disconnected{
+            let userDefault = UserDefaults.standard
+            let isNeedReconnect = userDefault.bool(forKey: "Ant_ReconnectKey")
+            if !isNeedReconnect {
+                printLog("当前有正在连接或正在断开的设备。同时操作多个设备会有异常，此处开发者需要自行处理，保证在连接过程中只有唯一连接")
+            }
+        }
+        self.stopScan()
+        if peripheral is String {
+            let p = AntBleManager.shareInstance.getPeripheral(string: peripheral as! String)
+            if p != nil {
+                if self.peripheral != p! {
+                    self.peripheral = p!
+                }
+                AntBleManager.shareInstance.connect(peripheral: p!, options: nil)
+            }else{
+                connectState(false)
+            }
+        }else if peripheral is CBPeripheral {
+            if self.peripheral != peripheral as? CBPeripheral {
+                self.peripheral = peripheral as? CBPeripheral
+            }
+            AntBleManager.shareInstance.connect(peripheral: peripheral as! CBPeripheral, options: nil)
+        }else if peripheral is AntScanModel {
+            if self.peripheral != (peripheral as! AntScanModel).peripheral {
+                self.peripheral = (peripheral as! AntScanModel).peripheral
+            }
+            AntBleManager.shareInstance.connect(peripheral: (peripheral as! AntScanModel).peripheral!, options: nil)
+            
+        }else{
+            connectState(false)
+        }
+        
+        AntBleManager.shareInstance.CentralConnectPeripheralState { (result, central, peripheral, error) in
+            if result {
+                printLog("CentralConnectPeripheralState")
+                AntSDKLog.clear()
+                self.discoverServices(peripheral: peripheral)
+                self.connectCompleteBlock = connectState
+                
+            }else{
+                
+                connectState(false)
+            
+            }
+        }
+    }
+    
+    /// 断开连接
+    @objc public func disconnect() {
+        
+        //此方法只能让外部调用，此方法会删除重连标识，如果SDK内部调用会影响重连，重连只调用一次就自动取消。内部调用断开连接用if的判断
+        if self.peripheral != nil && self.peripheral?.state != .disconnected{
+            AntBleManager.shareInstance.disconnect(peripheral: self.peripheral!)
+        }
+        
+        AntBleManager.shareInstance.CentralDisonnectPeripheral { (central, peripheral, error) in
+            printLog("----------设备已断开----------")
+            if error == nil {
+                printLog("----------设备已主动断开----------")
+                AntSDKLog.writeStringToSDKLog(string: "----------设备已主动断开----------")
+            }
+            self.peripheral = nil
+            //命令信号量重置
+            AntCommandModule.shareInstance.resetCommandSemaphore()
+            //同步健康数据相关方法重置
+            if AntCommandModule.shareInstance.isStepDetailData || AntCommandModule.shareInstance.isSleepDetailData || AntCommandModule.shareInstance.isHrDetailData {
+                //取消定时器
+                AntCommandModule.shareInstance.healthDataDetectionTimerInvalid()
+                //此次健康数据接收结束
+                AntCommandModule.shareInstance.currentReceiveCommandEndOver = true
+                //取消延时的方法直接调用
+                NSObject.cancelPreviousPerformRequests(withTarget: AntCommandModule.shareInstance, selector: #selector(AntCommandModule.shareInstance.receiveHealthDataTimeOut), object: nil)
+                AntCommandModule.shareInstance.receiveHealthDataTimeOut()
+            }
+        }
+
+        let userDefault = UserDefaults.standard
+        userDefault.removeObject(forKey: "Ant_ReconnectIdentifierKey")
+    }
+    
+    /// 发现服务
+    /// - Parameter peripheral: peripheral
+    func discoverServices(peripheral:CBPeripheral) {
+        printLog("发现服务")
+        peripheral.delegate = AntBleManager.shareInstance
+        peripheral.discoverServices(nil)
+        
+        AntBleManager.shareInstance.PeripheralDiscoverService { (peripheral, error) in
+            if error == nil {
+                for service in peripheral.services ?? [] {
+//                    printLog("Service found with UUID:",service.uuid)
+                }
+                self.discoverCharcristic(peripheral: peripheral)
+            }
+        }
+    }
+    
+    func discoverCharcristic(peripheral:CBPeripheral) {
+        printLog("发现特征")
+        let serviceCount = peripheral.services?.count
+        for service in peripheral.services ?? [] {
+            peripheral.discoverCharacteristics(nil, for: service)
+            
+        }
+        
+        var currentIndex = 0
+        
+        AntBleManager.shareInstance.PeripheralDiscoverCharacteristic { (peripheral, service, error) in
+            currentIndex += 1
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "service:%@",service.uuid))
+            for characteristic in service.characteristics ?? [] {
+                AntSDKLog.writeStringToSDKLog(string: String.init(format: "characteristic:%@",characteristic.uuid))
+                printLog("characteristic:",characteristic)
+                if String.init(format: "%@", characteristic.uuid) == "6E400002-B5A3-F393-E0A9-E50E24DCCA9E" || String.init(format: "%@", characteristic.uuid) == "FF02" {
+                    peripheral.setNotifyValue(true, for: characteristic)
+                    
+                    self.writeCharacteristic = characteristic
+                }
+                if String.init(format: "%@", characteristic.uuid) == "6E400003-B5A3-F393-E0A9-E50E24DCCA9E" || String.init(format: "%@", characteristic.uuid) == "FF03" {
+                    peripheral.setNotifyValue(true, for: characteristic)
+                    
+                    self.receiveCharacteristic = characteristic
+                }
+            }
+            
+            if currentIndex == serviceCount {
+                
+                AntSDKLog.writeStringToSDKLog(string: "----------连接成功:\(peripheral.name ?? "")----------")
+
+                self.deviceReceivedData()
+                
+                let userDefault = UserDefaults.standard
+                userDefault.setValue(peripheral.identifier.uuidString, forKey: "Ant_ReconnectIdentifierKey")
+                
+                if let block = self.connectCompleteBlock {
+                    AntCommandModule.shareInstance.SetPhoneMode(type: 0) { _ in
+                    }
+                    //这里是升级过程中异常断开还保存未发完的ota数据，那么检测升级，拿到回调之后会继续升级
+                    if AntCommandModule.shareInstance.otaData != nil {
+                        AntCommandModule.shareInstance.checkUpgradeState { _, _ in
+                            
+                        }
+                    }
+//                    DispatchQueue.main.asyncAfter(deadline: .now()+0.5) {
+//
+//                    }
+                    printLog("连接成功")
+                    block(true)
+                }
+                
+                
+            }
+        }
+    
+    }
+    
+    func deviceReceivedData() {
+        AntBleManager.shareInstance.PeripheralUpdateValue { (peripheral, characteristic, error) in
+//            printLog(("characteristic.value =",String.init(format: "%@", characteristic.value! as CVarArg)))
+        }
+    }
+    
+    func convertDataToHexStr(data:Data) ->String {
+        
+        if data.count <= 0 {
+            return ""
+        }
+
+        var dataString = ""
+        let str = data.withUnsafeBytes { (bytes) -> String in
+            for i in stride(from: 0, to: bytes.count, by: 1) {
+                let count = UInt8(bytes[i])
+                
+                if i % 4 == 0 && dataString.count > 0 {
+                    dataString = dataString + " "
+                }
+                dataString = dataString + String.init(format: "%02x", count)
+                
+            }
+            return dataString
+        }
+        return str
+    }
+    
+    func convertHexStringToData(string:String) -> Data? {
+        var data = Data.init(capacity: 4)
+
+        let regex = try! NSRegularExpression(pattern: "[0-9a-f]{1,2}", options: .caseInsensitive)
+        regex.enumerateMatches(in: string, range: NSMakeRange(0, string.utf16.count)) { match, flags, stop in
+            let byteString = (string as NSString).substring(with: match!.range)
+            var num = UInt8(byteString, radix: 16)!
+            data.append(&num, count: 1)
+        }
+
+        guard data.count > 0 else { return nil }
+
+        return data
+    }
+    
+    func convertDataToSpaceHexStr(data:Data,isSend:Bool) ->String {
+        
+        if data.count <= 0 {
+            return ""
+        }
+
+        var dataString = ""
+        let str = data.withUnsafeBytes { (bytes) -> String in
+            for i in stride(from: 0, to: bytes.count, by: 1) {
+                let count = UInt8(bytes[i])
+                
+                if dataString.count > 0 {
+                    
+                    dataString = dataString + " "
+
+                }
+                dataString = dataString + String.init(format: "%02x", count)
+                
+                if i == 4 && !isSend {
+                    //dataString = dataString + " :"
+                }
+                
+                if i == 3 && isSend {//((i == 3) || (data.count <= 3 && i == data.count-1))
+                    //dataString = dataString + " :"
+                }
+                
+            }
+            return String.init(format: "{length = %d , bytes = 0x%@}", data.count,dataString)
+        }
+        return str
+    }
+    
+    // MARK: - 十六进制字符串转十进制数字
+    func hexStringToInt(from: String ) -> Int  {
+         let  str = from.uppercased()
+         var  sum = 0
+         for  i in  str.utf8 {
+             sum = sum * 16 + Int (i) - 48 // 0-9 从48开始
+             if  i >= 65 {                 // A-Z 从65开始，但有初始值10，所以应该是减去55
+                 sum -= 7
+             }
+         }
+         return  sum
+    }
+    
+    public func CRC16(data:Data) -> UInt16 {
+        
+        let val = data.withUnsafeBytes { (byte) -> [UInt8] in
+            let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+            return [UInt8](UnsafeBufferPointer.init(start: b, count: data.count))
+        }
+        
+        return CRC16(val: val)
+    }
+    
+    //CRC16校验
+    public func CRC16(val: [UInt8])-> UInt16 {
+        var crc:UInt16 = 0xFFFF
+        
+        for i in 0 ..< val.count {
+            crc  = UInt16((UInt8)(crc >> 8)) | (crc << 8)
+            crc ^= UInt16(val[i])
+            crc ^= UInt16((UInt8)(crc & 0xFF) >> 4)
+            crc ^= (crc << 8) << 4
+            crc ^= ((crc & 0xFF) << 4) << 1
+        }
+        
+        return crc
+    }
+    
+    public func CRC32(val:[UInt8]) -> uLong {
+        
+        let valData = val.withUnsafeBufferPointer { (bytes) -> Data in
+            return Data.init(buffer: bytes)
+        }
+        
+        return CRC32(data: valData)
+    }
+    
+    public func CRC32(data:Data) -> uLong {
+        
+        let crc = crc32(0, data.withUnsafeBytes({ (bytes) -> UnsafePointer<Bytef> in
+            let b = bytes.baseAddress!.bindMemory(to: UInt8.self, capacity: 4)
+            return b
+        }), uInt(data.count))
+        
+        return crc
+    }
+//    //CRC16校验
+//    func validate(crcL:UInt16,crcH:UInt16,crc:UInt16)->Bool {
+//        if ((crc & 0xff) == crcL && ((crc >> 8) & 0xff) == crcH)
+//        {
+//            return true
+//        }
+//        return false
+//    }
+    
+    func colorRgb565(color:UIColor) -> [UInt8] {
+        
+        let uint8Max = CGFloat(UInt8.max)
+        var r:CGFloat = 0
+        var g:CGFloat = 0
+        var b:CGFloat = 0
+        var alpha:CGFloat = 0
+        color.getRed(&r, green: &g, blue: &b, alpha: &alpha)
+        
+        printLog("color.ciColor.red =",r,"g =",g,"b =",b)
+        
+        let intR = Int(r * uint8Max)
+        let intG = Int(g * uint8Max)
+        let intB = Int(b * uint8Max)
+        
+        let a = ((intB >> 3) & 0x1f)
+        let newColor = UInt16((intR & 0xf8) << 8 | (intG & 0xfc) << 3 | a)
+        
+        return [UInt8((newColor >> 8) & 0xff),UInt8(newColor & 0xff)]
+    }
+    
+    func colorRgb565(red:Int,green:Int,blue:Int) -> [UInt8] {
+        let a = ((blue >> 3) & 0x1f)
+        let newColor = UInt16((red & 0xf8) << 8 | (green & 0xfc) << 3 | a)
+        
+        return [UInt8((newColor >> 8) & 0xff),UInt8(newColor & 0xff)]
+    }
+    
+    @objc public func getNotificationTypeArrayWithIntString(countString:String) -> [AntNotificationType.RawValue] {
+        var array = [Int].init()
+        let count = Int(countString) ?? 0
+        printLog("count =",count)
+        for i in stride(from: 0, to: 16, by: 1) {
+            if (((count >> i) & 0x01) != 0) {
+                switch i {
+                case 0:
+
+                    break
+                case 1:
+                    array.append(AntNotificationType.Call.rawValue)
+                    break
+                case 2:
+                    array.append(AntNotificationType.SMS.rawValue)
+                    break
+                case 3:
+                    array.append(AntNotificationType.Instagram.rawValue)
+                    break
+                case 4:
+                    array.append(AntNotificationType.Wechat.rawValue)
+                    break
+                case 5:array.append(AntNotificationType.QQ.rawValue)
+                    break
+                case 6:array.append(AntNotificationType.Line.rawValue)
+                    break
+                case 7:array.append(AntNotificationType.LinkedIn.rawValue)
+                    break
+                case 8:array.append(AntNotificationType.WhatsApp.rawValue)
+                    break
+                case 9:array.append(AntNotificationType.Twitter.rawValue)
+                    break
+                case 10:array.append(AntNotificationType.Facebook.rawValue)
+                    break
+                case 11:array.append(AntNotificationType.Messenger.rawValue)
+                    break
+                case 12:array.append(AntNotificationType.Skype.rawValue)
+                    break
+                case 13:array.append(AntNotificationType.Snapchat.rawValue)
+                    break
+
+                case 15:
+                    array.append(AntNotificationType.Other.rawValue)
+                    break
+
+                    break
+                default:
+                    break
+                }
+            }
+        }
+        return array
+    }
+}
+
+extension Date {
+    // MARK: - 返回dayCount天日期，+为之后，-为之前
+    func afterDay(dayCount:Int) -> Date {
+        return self.addingTimeInterval(TimeInterval(dayCount * 86400))
+    }
+    
+    func conversionDateToString(DateFormat dateFormatter:String) -> String {
+        let formatter = DateFormatter.init()
+        //formatter.dateStyle = .medium
+        formatter.dateFormat = dateFormatter
+        return formatter.string(from:self)
+    }
+}
+
+extension UIImage{
+    
+    /**
+    获取图片中的像素颜色值
+    
+    - parameter pos: 图片中的位置
+    
+    - returns: 颜色值
+    */
+    func getPixelColor(pos:CGPoint)->(alpha: UInt8, red: UInt8, green: UInt8,blue:UInt8){
+        
+        if let cgImage = self.cgImage {
+            let pixelData=cgImage.dataProvider?.data//CGImageGetDataProvider(cgImage).data
+            let data:UnsafePointer<UInt8> = CFDataGetBytePtr(pixelData)
+            let pixelInfo: Int = ((Int(cgImage.width) * Int(pos.x)) + Int(pos.y)) * 4
+            
+            let r = UInt8(data[pixelInfo])
+            let g = UInt8(data[pixelInfo+1])
+            let b = UInt8(data[pixelInfo+2])
+            let a = UInt8(data[pixelInfo+3])
+
+            return (a,r,g,b)
+        }
+        
+        return (0,0,0,0)
+    }
+    
+    /**
+     Converts the image into an array of RGBA bytes.
+     */
+    @nonobjc func toByteArray() -> [UInt8] {
+        let width = Int(size.width)
+        let height = Int(size.height)
+        var bytes = [UInt8](repeating: 0, count: width * height * 4)
+        
+        bytes.withUnsafeMutableBytes { ptr in
+            if let context = CGContext(
+                data: ptr.baseAddress,
+                width: width,
+                height: height,
+                bitsPerComponent: 8,
+                bytesPerRow: width * 4,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue) {
+                
+                if let image = self.cgImage {
+                    let rect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
+                    context.draw(image, in: rect)
+                }
+            }
+        }
+        return bytes
+    }
+    
+    /**
+     Creates a new UIImage from an array of RGBA bytes.
+     */
+    @nonobjc class func fromByteArray(_ bytes: UnsafeMutableRawPointer,
+                                             width: Int,
+                                             height: Int) -> UIImage {
+        
+        if let context = CGContext(data: bytes, width: width, height: height,
+                                   bitsPerComponent: 8, bytesPerRow: width * 4,
+                                   space: CGColorSpaceCreateDeviceRGB(),
+                                   bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue),
+           let cgImage = context.makeImage() {
+            return UIImage(cgImage: cgImage, scale: 0, orientation: .up)
+        } else {
+            return UIImage()
+        }
+    }
+    
+    func changeSize(size:CGSize) -> UIImage {
+        
+        UIGraphicsBeginImageContextWithOptions(size, false, 1.0)
+        self.draw(in: .init(x: 0, y: 0, width: size.width, height: size.height))
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return newImage ?? UIImage.init()
+        
+    }
+}
+
+extension FileManager {
+    
+    // 文件管理器
+    static var fileManager: FileManager {
+        return FileManager.default
+    }
+    
+    // MARK: 2.1、创建文件夹(蓝色的，文件夹和文件是不一样的)
+    /// 创建文件夹(蓝色的，文件夹和文件是不一样的)
+    /// - Parameter folderName: 文件夹的名字
+    /// - Returns: 返回创建的 创建文件夹路径
+    @discardableResult
+    static func createFolder(folderPath: String) -> (isSuccess: Bool, error: String) {
+        if !judgeFileOrFolderExists(filePath: folderPath) {
+            // 不存在的路径才会创建
+            do {
+                // withIntermediateDirectories为ture表示路径中间如果有不存在的文件夹都会创建
+                try fileManager.createDirectory(atPath: folderPath, withIntermediateDirectories: true, attributes: nil)
+                printLog("创建文件夹成功")
+                return (true, "")
+            } catch _ {
+                return (false, "创建失败")
+            }
+        }
+        return (true, "")
+    }
+    
+    // MARK: 2.2、删除文件夹
+    /// 删除文件夹
+    /// - Parameter folderPath: 文件的路径
+    @discardableResult
+    static func removefolder(folderPath: String) -> (isSuccess: Bool, error: String) {
+        let filePath = "\(folderPath)"
+        guard judgeFileOrFolderExists(filePath: filePath) else {
+            // 不存在就不做什么操作了
+            printLog("removefolder 文件路径为空")
+            return (true, "")
+        }
+        // 文件存在进行删除
+        do {
+            try fileManager.removeItem(atPath: filePath)
+            printLog("删除文件夹成功")
+            return (true, "")
+            
+        } catch _ {
+            return (false, "删除失败")
+        }
+    }
+    
+    // MARK: 2.3、创建文件
+    /// 创建文件
+    /// - Parameter filePath: 文件路径
+    /// - Returns: 返回创建的结果 和 路径
+    @discardableResult
+    static func createFile(filePath: String) -> (isSuccess: Bool, error: String) {
+        guard judgeFileOrFolderExists(filePath: filePath) else {
+            // 不存在的文件路径才会创建
+            // withIntermediateDirectories 为 ture 表示路径中间如果有不存在的文件夹都会创建
+            let createSuccess = fileManager.createFile(atPath: filePath, contents: nil, attributes: nil)
+            
+            return (createSuccess, "")
+        }
+        return (true, "")
+    }
+    
+    // MARK: 2.4、删除文件
+    /// 删除文件
+    /// - Parameter filePath: 文件路径
+    @discardableResult
+    static func removefile(filePath: String) -> (isSuccess: Bool, error: String) {
+        guard judgeFileOrFolderExists(filePath: filePath) else {
+            // 不存在的文件路径就不需要要移除
+            return (true, "")
+        }
+        // 移除文件
+        do {
+            try fileManager.removeItem(atPath: filePath)
+            printLog("删除文件成功")
+            return (true, "")
+        } catch _ {
+            return (false, "移除文件失败")
+        }
+    }
+    
+    // MARK: 文件写入
+    @discardableResult
+    static func writeDicToFile(content: [String:Any], writePath: String) -> (isSuccess: Bool, error: String) {
+        guard judgeFileOrFolderExists(filePath: writePath) else {
+            // 不存在的文件路径
+            printLog("writeDicToFile 文件路径为空")
+            return (false, "不存在的文件路径")
+        }
+        
+        let result = (content as NSDictionary).write(toFile: writePath, atomically: true)
+        if result {
+            printLog("文件写入成功")
+            return (true, "")
+        } else {
+            return (false, "写入失败")
+        }
+    }
+    
+    //文件读取
+    @discardableResult
+    static func readDicFromFile(readPath: String) -> (isSuccess: Bool, content: Any?, error: String) {
+        guard judgeFileOrFolderExists(filePath: readPath),  let readHandler =  FileHandle(forReadingAtPath: readPath) else {
+            // 不存在的文件路径
+            printLog("readDicFromFile 文件路径为空")
+            return (false, nil, "不存在的文件路径")
+        }
+
+        let dic = NSDictionary.init(contentsOfFile: readPath)
+        
+        return (true, dic, "")
+    }
+    
+    // MARK: 图片写入
+    @discardableResult
+    static func writeImageToFile(content: UIImage, writePath: String) -> (isSuccess: Bool, error: String) {
+        guard judgeFileOrFolderExists(filePath: writePath) else {
+            // 不存在的文件路径
+            printLog("writeImageToFile 文件路径为空")
+            return (false, "不存在的文件路径")
+        }
+
+        let imageData:Data = content.pngData() ?? Data.init()
+        let result: ()? = try? imageData.write(to: URL.init(fileURLWithPath: writePath))
+        
+        if (result != nil) {
+            printLog("文件写入成功")
+            return (true, "")
+        }else{
+            return (false, "写入失败")
+        }
+        
+    }
+    
+    //图片读取
+    @discardableResult
+    static func readImageFromFile(readPath: String) -> (isSuccess: Bool, content: Any?, error: String) {
+        guard judgeFileOrFolderExists(filePath: readPath) else {
+            // 不存在的文件路径
+            printLog("readImageFromFile 文件路径为空")
+            return (false, nil, "不存在的文件路径")
+        }
+
+        let image = UIImage.init(contentsOfFile: readPath)
+        return (true, image, "")
+
+    }
+    
+    //获取文件夹下文件列表
+    @discardableResult
+    static func getFileListInFolderWithPath(path:String) -> (isSuccess: Bool, content: [Any]?, error: String) {
+        guard judgeFileOrFolderExists(filePath: path) else {
+            // 不存在的文件路径
+            printLog("getFileListInFolderWithPath 文件路径为空")
+            return (false , nil , "不存在的文件路径")
+        }
+        
+        do {
+            // withIntermediateDirectories为ture表示路径中间如果有不存在的文件夹都会创建
+            let fileList = try self.fileManager.contentsOfDirectory(atPath: path)
+//            printLog("获取文件夹下文件列表成功")
+            return (true , fileList , "获取成功")
+        } catch _ {
+            return (false , nil , "获取失败")
+        }
+
+        
+    }
+
+    
+    // MARK: 2.10、判断 (文件夹/文件) 是否存在
+     /** 判断文件或文件夹是否存在*/
+     static func judgeFileOrFolderExists(filePath: String) -> Bool {
+         let exist = fileManager.fileExists(atPath: filePath)
+         // 查看文件夹是否存在，如果存在就直接读取，不存在就直接反空
+         guard exist else {
+             return false
+         }
+         return true
+     }
+}
