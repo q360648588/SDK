@@ -9,8 +9,8 @@
 /* Begin PBXBuildFile section */
 		1608DBC518BBF474AF4E3BBC /* Pods_FactoryDemo_FactoryDemoUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FA55C14B50A8EF27338E0CF /* Pods_FactoryDemo_FactoryDemoUITests.framework */; };
 		55F1B511C7C4832FD41710BD /* Pods_FactoryDemoTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EAF744B2C14D049BD284F7C9 /* Pods_FactoryDemoTests.framework */; };
-		677CCB17281AA52C00640FDB /* AntSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 677CCB16281AA52C00640FDB /* AntSDK.framework */; };
 		67A752A327896E1900B7D6B2 /* ConfigurationVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67A752A227896E1900B7D6B2 /* ConfigurationVC.swift */; };
+		67DCB0BA282CC397003BA6F8 /* AntSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67DCB0B8282CA3C8003BA6F8 /* AntSDK.framework */; };
 		67FBBDB3278924650023B45B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67FBBDB2278924640023B45B /* AppDelegate.swift */; };
 		67FBBDB7278924650023B45B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67FBBDB6278924650023B45B /* ViewController.swift */; };
 		67FBBDBA278924650023B45B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 67FBBDB8278924650023B45B /* Main.storyboard */; };
@@ -60,8 +60,8 @@
 		1FA55C14B50A8EF27338E0CF /* Pods_FactoryDemo_FactoryDemoUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FactoryDemo_FactoryDemoUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		48948EF26304B79416EA79CE /* Pods-FactoryDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FactoryDemo.release.xcconfig"; path = "Target Support Files/Pods-FactoryDemo/Pods-FactoryDemo.release.xcconfig"; sourceTree = "<group>"; };
 		64C2D0301A475C5B85AD8A07 /* Pods-FactoryDemo-FactoryDemoUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FactoryDemo-FactoryDemoUITests.release.xcconfig"; path = "Target Support Files/Pods-FactoryDemo-FactoryDemoUITests/Pods-FactoryDemo-FactoryDemoUITests.release.xcconfig"; sourceTree = "<group>"; };
-		677CCB16281AA52C00640FDB /* AntSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AntSDK.framework; sourceTree = "<group>"; };
 		67A752A227896E1900B7D6B2 /* ConfigurationVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationVC.swift; sourceTree = "<group>"; };
+		67DCB0B8282CA3C8003BA6F8 /* AntSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = AntSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		67FBBDAF278924640023B45B /* FactoryDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FactoryDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		67FBBDB2278924640023B45B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		67FBBDB6278924650023B45B /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -87,8 +87,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				67DCB0BA282CC397003BA6F8 /* AntSDK.framework in Frameworks */,
 				8D2F655404EB3A6C2F6AD94B /* Pods_FactoryDemo.framework in Frameworks */,
-				677CCB17281AA52C00640FDB /* AntSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -136,7 +136,6 @@
 		67FBBDB1278924640023B45B /* FactoryDemo */ = {
 			isa = PBXGroup;
 			children = (
-				677CCB16281AA52C00640FDB /* AntSDK.framework */,
 				67FBBDB2278924640023B45B /* AppDelegate.swift */,
 				67FBBDB6278924650023B45B /* ViewController.swift */,
 				67A752A227896E1900B7D6B2 /* ConfigurationVC.swift */,
@@ -170,6 +169,7 @@
 		67FBBDE22789257E0023B45B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				67DCB0B8282CA3C8003BA6F8 /* AntSDK.framework */,
 				ABADC5F70DD751BE1AADA6CC /* Pods_FactoryDemo.framework */,
 				1FA55C14B50A8EF27338E0CF /* Pods_FactoryDemo_FactoryDemoUITests.framework */,
 				EAF744B2C14D049BD284F7C9 /* Pods_FactoryDemoTests.framework */,

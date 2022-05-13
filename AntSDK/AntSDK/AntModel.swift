@@ -599,7 +599,7 @@ import UIKit
     @objc public var deep = 0
     @objc public var light = 0
     @objc public var awake = 0
-    @objc public var detailArray:[String:String] = [:]
+    @objc public var detailArray:[[String:String]] = []
     
     public override init() {
         super.init()
@@ -613,7 +613,7 @@ import UIKit
         self.awake = Int(dic["awake"] as! String) ?? 0
         
         if dic.keys.contains("detailArray") {
-            self.detailArray = dic["detailArray"] as? [String:String] ?? [:]
+            self.detailArray = dic["detailArray"] as? [[String:String]] ?? []
         }
     }
 }

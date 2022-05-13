@@ -25,14 +25,21 @@ class ViewController: UIViewController {
     var isStart = false
     var failNameArray:[String] = Array.init()
     let logView = ShowLogView.init(frame: .init(x: 0, y: StatusBarHeight+44, width: screenWidth, height: screenHeight-StatusBarHeight-44))
+    var connectModel:AntScanModel?
     var recordIndex:Int? = nil
     var isNeedCheckOtaMethod = false   //升级过程中异常断开需要在重连之后检测升级状态，  升级结束之后设备自动断开的那种重连不需要检测
     var scanNameLabel:UILabel!
+    var currentConnetName:UILabel!
+    var currentDeviceString = "" {
+        didSet {
+            self.currentConnetName.text = "当前设备名及状态:\(self.currentDeviceString)"
+        }
+    }
     
     var connectCountLabel:UILabel!
     var failConnectCount = 0 {
         didSet {
-            self.connectCountLabel.text = "3次连接失败次数:\(self.failConnectCount)"
+            self.connectCountLabel.text = "连接失败次数:\(self.failConnectCount)"
         }
     }
     var failConnectString = ""
@@ -60,6 +67,16 @@ class ViewController: UIViewController {
         }
     }
     
+    var totalCountLabel:UILabel!
+    var totalCount = 0 {
+        didSet {
+            self.totalCountLabel.text = "总次数:\(self.totalCount)"
+        }
+    }
+    
+    var reconnectTimer:Timer?
+    var reconnectTimerCount = 0
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -77,13 +94,74 @@ class ViewController: UIViewController {
             let model = AntScanModel.init()
             model.name = AntCommandModule.shareInstance.peripheral?.name
             model.peripheral = AntCommandModule.shareInstance.peripheral
-            //升级过程中异常断开需要在重连之后检测升级状态，  升级结束之后设备自动断开的那种重连不需要检测
+            //升级过程中异常断开sdk内部会在连接之后监测升级，有升级data则自动接上一次升级进度。  升级完成之后自动断开的则需要在此检测下一个升级文件
             if self.isNeedCheckOtaMethod {
                 print("重连完成监测升级")
                 self.checkOtaMethod(model: model)
             }
         }
+        
+        AntCommandModule.shareInstance.bluetoothPowerStateChange { state in
+            if state == .poweredOn {
+                self.stateString = "蓝牙开关开启"
+            }
+            if state == .poweredOff {
+                self.stateString = "蓝牙开关关闭"
+            }
+        }
+        
+        AntCommandModule.shareInstance.peripheralStateChange { state in
+            if state == .disconnected {
+                self.currentDeviceString = "\(AntCommandModule.shareInstance.peripheral?.name ?? "") 已断开"
+                
+                if AntCommandModule.shareInstance.getReconnectIdentifier().count > 0 {
+                    if self.reconnectTimer == nil {
+                        self.reconnectTimer = Timer.scheduledTimer(timeInterval: 20, target: self, selector: #selector(self.reconnectFailTimerMethod), userInfo: nil, repeats: true)
+                    }
+                }
+                
+            }else if state == .connecting {
+                self.currentDeviceString = "\(AntCommandModule.shareInstance.peripheral?.name ?? "") 正在连接"
+            }else if state == .connected {
+                self.currentDeviceString = "\(AntCommandModule.shareInstance.peripheral?.name ?? "") 已连接"
+                let model = AntScanModel.init()
+                model.peripheral = AntCommandModule.shareInstance.peripheral
+                model.name = AntCommandModule.shareInstance.peripheral?.name
+                self.connectModel = model
+                self.reconnectFailTimerInvalidate()
+            }else if state == .disconnecting {
+                self.currentDeviceString = "\(AntCommandModule.shareInstance.peripheral?.name ?? "") 正在断开"
+            }
+        }
+    }
 
+    @objc func reconnectFailTimerMethod() {
+        
+        if self.singleConnectCount < 3 {
+            self.singleConnectCount += 1
+            self.stateString = "第\(self.singleConnectCount)次回连失败\(self.connectModel?.name ?? "nil")"
+            
+        }else{
+            
+            if let name = self.connectModel?.name {
+                self.failNameArray.append(name)
+            }
+            
+            self.failConnectCount += 1
+            self.failConnectString = self.failConnectString + "\n\(self.connectModel?.name ?? "")\n\(self.connectModel?.peripheral?.identifier.uuidString ?? "")\n"
+            print("self.failConnectString =",self.failConnectString)
+            self.singleConnectCount = 0
+            self.singleProcessEndMethod()
+            self.reconnectFailTimerInvalidate()
+        }
+    }
+    
+    func reconnectFailTimerInvalidate() {
+        if self.reconnectTimer != nil {
+            self.reconnectTimer?.invalidate()
+            self.reconnectTimer = nil
+        }
+        self.singleConnectCount = 0
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -106,7 +184,7 @@ class ViewController: UIViewController {
                 }
             }
         }
-        self.scanNameLabel.text = "自动连接的设备名:\(scanNameString)"
+        self.scanNameLabel.text = "自动扫描的设备名:\(scanNameString)"
         
         self.stateString = "未开启"
         
@@ -157,7 +235,7 @@ class ViewController: UIViewController {
         let scanNameLabel = UILabel.init(frame: .init(x: 0, y: 40+StatusBarHeight+10, width: screenWidth, height: 44))
         scanNameLabel.backgroundColor = .clear
         scanNameLabel.textColor = .black
-        scanNameLabel.text = "自动连接的设备名"
+        scanNameLabel.text = "自动扫描的设备名"
         scanNameLabel.numberOfLines = 0
         scanNameLabel.textAlignment = .left
         self.view.addSubview(scanNameLabel)
@@ -180,7 +258,16 @@ class ViewController: UIViewController {
         self.view.addSubview(currentStateLabel)
         self.currentStateLabel = currentStateLabel
         
-        let successCountLabel = UILabel.init(frame: .init(x: 0, y: currentStateLabel.frame.maxY+10, width: screenWidth, height: 44))
+        let currentConnetName = UILabel.init(frame: .init(x: 0, y: currentStateLabel.frame.maxY+10, width: screenWidth, height: 44))
+        currentConnetName.backgroundColor = .clear
+        currentConnetName.textColor = .black
+        currentConnetName.text = "当前设备名及状态:"
+        currentConnetName.numberOfLines = 0
+        currentConnetName.textAlignment = .left
+        self.view.addSubview(currentConnetName)
+        self.currentConnetName = currentConnetName
+        
+        let successCountLabel = UILabel.init(frame: .init(x: 0, y: currentConnetName.frame.maxY+10, width: screenWidth, height: 44))
         successCountLabel.backgroundColor = .clear
         successCountLabel.textColor = .black
         successCountLabel.text = "流程完成次数:0"
@@ -208,7 +295,7 @@ class ViewController: UIViewController {
         let connectCountLabel = UILabel.init(frame: .init(x: 0, y: failCountLabel.frame.maxY+10, width: screenWidth/2.0, height: 44))
         connectCountLabel.backgroundColor = .clear
         connectCountLabel.textColor = .black
-        connectCountLabel.text = "3次连接失败次数:0"
+        connectCountLabel.text = "连接失败次数:0"
         connectCountLabel.numberOfLines = 0
         connectCountLabel.textAlignment = .left
         self.view.addSubview(connectCountLabel)
@@ -221,14 +308,30 @@ class ViewController: UIViewController {
         failConnectButton.addTarget(self, action: #selector(failConnectButtonClick(sender:)), for: .touchUpInside)
         self.view.addSubview(failConnectButton)
         
-        let startButton = UIButton.init(frame: .init(x: 0, y: 450, width: screenWidth/2.0, height: 44))
+        let totalCountLabel = UILabel.init(frame: .init(x: 0, y: connectCountLabel.frame.maxY+10, width: screenWidth/2.0, height: 44))
+        totalCountLabel.backgroundColor = .clear
+        totalCountLabel.textColor = .black
+        totalCountLabel.text = "总次数:0"
+        totalCountLabel.numberOfLines = 0
+        totalCountLabel.textAlignment = .left
+        self.view.addSubview(totalCountLabel)
+        self.totalCountLabel = totalCountLabel
+        
+        let clearCountButton = UIButton.init(frame: .init(x: screenWidth/2.0, y: totalCountLabel.frame.minY, width: screenWidth/2.0, height: 44))
+        clearCountButton.setTitleColor(.black, for: .normal)
+        clearCountButton.backgroundColor = .clear
+        clearCountButton.setTitle("总次数清零", for: .normal)
+        clearCountButton.addTarget(self, action: #selector(clearCountButtonClick(sender:)), for: .touchUpInside)
+        self.view.addSubview(clearCountButton)
+        
+        let startButton = UIButton.init(frame: .init(x: 0, y: 600, width: screenWidth/2.0, height: 44))
         startButton.setTitleColor(.black, for: .normal)
         startButton.backgroundColor = .clear
         startButton.setTitle("开始", for: .normal)
         startButton.addTarget(self, action: #selector(startButtonClick(sender:)), for: .touchUpInside)
         self.view.addSubview(startButton)
 
-        let stopButton = UIButton.init(frame: .init(x: screenWidth/2.0, y: 450, width: screenWidth/2.0, height: 44))
+        let stopButton = UIButton.init(frame: .init(x: screenWidth/2.0, y: 600, width: screenWidth/2.0, height: 44))
         stopButton.setTitleColor(.black, for: .normal)
         stopButton.backgroundColor = .clear
         stopButton.setTitle("结束", for: .normal)
@@ -244,6 +347,8 @@ class ViewController: UIViewController {
             self.presentSystemAlertVC(title: "警告", message: "修改配置会结束当前自动操作,是否确认结束并进入配置界面") {
                 
             } okAction: {
+                AntCommandModule.shareInstance.disconnect()
+                AntCommandModule.shareInstance.setIsNeedReconnect(state: false)
                 self.isStart = false
                 self.pushNextVC()
             }
@@ -259,6 +364,10 @@ class ViewController: UIViewController {
     @objc func failProcessButtonClick(sender:UIButton) {
         self.logView.clearString()
         self.logView.writeString(string: self.failProcessString)
+    }
+    
+    @objc func clearCountButtonClick(sender:UIButton) {
+        self.totalCount = 0
     }
     
     @objc func failConnectButtonClick(sender:UIButton) {
@@ -324,6 +433,7 @@ class ViewController: UIViewController {
             
             if let filterArray = scanArray {
                 if filterArray.contains(where: { filterString in
+                    print("---------------->>>> model.name.lowercased() =",(model.name ?? "").lowercased(),"filterString =",filterString)
                     let filterString = filterString as! String
                     return (model.name ?? "").lowercased().contains(filterString.lowercased())
                 }) {
@@ -352,13 +462,13 @@ class ViewController: UIViewController {
     var singleConnectCount = 0
     func connectDevice(model:AntScanModel) {
 
-        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(connectTimeout(model:)), object: nil)
-        self.perform(#selector(connectTimeout(model:)), with: nil, afterDelay: 60)
+        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(connectTimeout(model:)), object: model)
+        self.perform(#selector(connectTimeout(model:)), with: model, afterDelay: 20)
         
         self.stateString = "正在连接\(model.name ?? "nil")"
         AntCommandModule.shareInstance.connectDevice(peripheral: model) { result in
             
-            NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(self.connectTimeout(model:)), object: nil)
+            NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(self.connectTimeout(model:)), object: model)
             
             if result {
                 self.stateString = "连接成功\(model.name ?? "nil")"
@@ -368,7 +478,9 @@ class ViewController: UIViewController {
                     if error == .none {
                         self.stateString = "恢复出厂设置成功"
                         print("恢复出厂设置成功")
+                        self.sendNextOtaType()
                         self.isNeedCheckOtaMethod = true
+                        
                     }else{
                         self.stateString = "恢复出厂设置失败"
                         print("恢复出厂设置失败")
@@ -398,6 +510,33 @@ class ViewController: UIViewController {
         }
     }
     
+    // MARK: - 发送下一个升级类型
+    func sendNextOtaType() {
+        print("下一个升级类型")
+        
+        let userDefault = UserDefaults.standard
+        let sortArray = userDefault.array(forKey: OtaSortKey)
+        let model = AntScanModel.init()
+        model.name = AntCommandModule.shareInstance.peripheral?.name
+        model.peripheral = AntCommandModule.shareInstance.peripheral
+        
+        if let recordIndex = self.recordIndex {
+            
+            if let sortArray:[Int] = sortArray as? [Int] {
+                
+                if recordIndex < sortArray.count - 1 {
+                    self.setOtaMethod(type: sortArray[recordIndex+1],model: model)
+                }else{
+                    self.powerOffMethod()
+                }
+            }
+            
+        }else{
+            self.setOtaMethod(type: nil,model: model)
+        }
+        
+    }
+    
     // MARK: - 检查升级
     func checkOtaMethod(model:AntScanModel) {
         let userDefault = UserDefaults.standard
@@ -408,6 +547,7 @@ class ViewController: UIViewController {
 
             if error == .none {
                 print("success.keys.count =",success.keys.count)
+                //检测到正在升级且没有继续升级的data
                 if success.keys.count > 0 {
                     
                     let type = success["type"] as! String
@@ -447,11 +587,12 @@ class ViewController: UIViewController {
                         }
 
                     }else{
+                        print("检测到升级未完成,继续升级  此方法大概率是不会调用的")
                         self.stateString = "检测到升级未完成,继续升级"
                         let homePath = NSHomeDirectory()
                         fileString = homePath + fileString!
-                        AntCommandModule.shareInstance.setStartUpgrade(type: Int(type) ?? 0, localFile: fileString!, maxCount: 20, isContinue: true) { progress in
-
+                        AntCommandModule.shareInstance.setOtaStartUpgrade(type: Int(type) ?? 0, localFile: fileString!, isContinue: true) { progress in
+                            
                             print("progress =",progress)
                             self.stateString = "\(self.getOtaTypeString(type: Int(type) ?? 0))\(progress)"
 
@@ -487,18 +628,14 @@ class ViewController: UIViewController {
                     if let recordIndex = self.recordIndex {
                         
                         if let sortArray:[Int] = sortArray as? [Int] {
-                            
-                            if recordIndex < sortArray.count - 1 {
-                                self.setOtaMethod(type: sortArray[recordIndex+1],model: model)
-                            }else{
-                                self.powerOffMethod()
-                            }
+
+                            self.setOtaMethod(type: sortArray[recordIndex],model: model)
+
                         }
                         
                     }else{
                         self.setOtaMethod(type: nil,model: model)
                     }
-                    
                 }
             }
         }
@@ -519,7 +656,6 @@ class ViewController: UIViewController {
                 currentIndex = sortArray.firstIndex(of: type) ?? -1
             }
         }
-        self.recordIndex = currentIndex
         
         print("type =",type)
         print("currentIndex =",currentIndex)
@@ -542,8 +678,9 @@ class ViewController: UIViewController {
                 
                 let homePath = NSHomeDirectory()
                 fileString = homePath + fileString!
-                self.isNeedCheckOtaMethod = true
                 
+                print("开始升级 type = \(type) , localFile = \(fileString)")
+                self.isNeedCheckOtaMethod = false
                 AntCommandModule.shareInstance.setOtaStartUpgrade(type: type , localFile: fileString as Any, isContinue: false) { progress in
 
                     print("progress ->",progress)
@@ -553,16 +690,15 @@ class ViewController: UIViewController {
 
                     print("setOtaStartUpgrade -> error =",error.rawValue)
                     if error == .none {
-                        self.isNeedCheckOtaMethod = false
+                        
                         self.stateString = "\(self.getOtaTypeString(type: Int(type) ?? 0))完成"
                         
                         if let sortArray:[Int] = sortArray as? [Int] {
                             
                             if currentIndex < sortArray.count - 1 {
-                                //此处升级完成之后有些是设备会类似重启再次断开，重连过快发下一个类型的时候设备自动断开了。延时等设备重连成功之后再发下一个类型
-                                DispatchQueue.main.asyncAfter(deadline: .now()+10) {
-                                    self.setOtaMethod(type: sortArray[currentIndex+1],model: model)
-                                }
+                                self.recordIndex = currentIndex+1
+                                self.setOtaMethod(type: sortArray[currentIndex+1],model: model)
+                                self.isNeedCheckOtaMethod = true
                             }else{
                                 self.powerOffMethod()
                             }
@@ -610,6 +746,7 @@ class ViewController: UIViewController {
             
             self.stateString = "关机成功"
             self.successCount += 1
+            self.totalCount += 1
             self.singleProcessEndMethod()
         }
     }
