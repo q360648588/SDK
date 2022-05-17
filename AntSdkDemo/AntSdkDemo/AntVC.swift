@@ -123,8 +123,7 @@ class AntVC: UIViewController {
         
         //e4 bd a0 e5 a5 bd e6 98 8e e5 a4 a9
         let valArray:[UInt8] = [0x00, 0x8a,0x00, 0x00 ,0x01, 0xAA ,0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xAA , 0xAA , 0xAA]
-        
-        
+
 //        let val = data.withUnsafeBytes { (byte) -> [UInt8] in
 //            let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
 //            return [UInt8](UnsafeBufferPointer.init(start: b, count: data.count))
@@ -670,6 +669,9 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.writeString(string: "获取产品、固件、资源等版本信息")
             
             AntCommandModule.shareInstance.GetDeviceOtaVersionInfo { success, error in
+                
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
                 if error == .none {
                     print("GetDeviceOtaVersionInfo ->",success)
                     

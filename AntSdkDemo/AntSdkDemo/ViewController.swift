@@ -68,7 +68,7 @@ class ViewController: UIViewController {
             }
             
             let vc = UIViewController.getAnyVC(vc: AntVC())
-            //vc?.test()
+            vc?.test()
             //vc?.test()
         }
         

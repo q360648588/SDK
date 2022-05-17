@@ -80,6 +80,10 @@ import zlib
                 block(state)
             }
             
+            if state == .disconnected {
+                //断开不能调用此方法  会导致升级异常error以及其他bug的出现
+                //AntCommandModule.shareInstance.deviceDisconnectedFail()
+            }
         }
     }
     @objc public func bluetoothPowerStateChange(state:@escaping((CBCentralManagerState)->())) {

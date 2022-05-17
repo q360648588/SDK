@@ -599,7 +599,8 @@ import UIKit
     @objc public var deep = 0
     @objc public var light = 0
     @objc public var awake = 0
-    @objc public var detailArray:[[String:String]] = []
+    @objc public var detailArray:[[String:String]] = []             //详情数据，无效状态转换成清醒状态
+    @objc public var detailArray_filter:[[String:String]] = []      //过滤了无效数据的详情数据
     
     public override init() {
         super.init()
@@ -614,6 +615,10 @@ import UIKit
         
         if dic.keys.contains("detailArray") {
             self.detailArray = dic["detailArray"] as? [[String:String]] ?? []
+        }
+        
+        if dic.keys.contains("detailArray_filter") {
+            self.detailArray_filter = dic["detailArray_filter"] as? [[String:String]] ?? []
         }
     }
 }

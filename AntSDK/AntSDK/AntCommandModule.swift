@@ -2469,7 +2469,7 @@ import Alamofire
 
                 DispatchQueue.global().async {
 
-                    //printLog("send dataString -> wait 之前 self.semaphoreCount =",self.semaphoreCount)
+                    printLog("send dataString -> wait 之前 self.semaphoreCount =",self.semaphoreCount,self.convertDataToSpaceHexStr(data: data,isSend: true))
                     self.semaphoreCount -= 1
                     self.commandSemaphore.wait()
 
@@ -2479,7 +2479,7 @@ import Alamofire
                     DispatchQueue.main.async {
 
                         printLog("send",dataString)
-                        //printLog("发送命令 -> self.semaphoreCount =",self.semaphoreCount)
+                        printLog("发送命令 -> self.semaphoreCount =",self.semaphoreCount)
                         self.peripheral?.writeValue(data, for: self.writeCharacteristic!, type: ((self.writeCharacteristic!.properties.rawValue & CBCharacteristicProperties.writeWithoutResponse.rawValue) != 0) ? .withoutResponse : .withResponse)
                         //定时器计数重置
                         self.commandDetectionCount = 0
@@ -2497,6 +2497,378 @@ import Alamofire
                 
                 return .invalidCharacteristic
             }
+        }
+    }
+    
+    func deviceDisconnectedFail() {
+        
+        if let block = self.receiveGetDeviceNameBlock {
+            block(nil,.disconnected)
+            self.receiveGetDeviceNameBlock = nil
+        }
+        
+        if let block = self.receiveGetFirmwareVersionBlock {
+            block(nil,.disconnected)
+            self.receiveGetFirmwareVersionBlock = nil
+        }
+        
+        if let block = self.receiveGetMacBlock {
+            block(nil,.disconnected)
+            self.receiveGetMacBlock = nil
+        }
+        
+        if let block = self.receiveGetBatteryBlock {
+            block(nil,.disconnected)
+            self.receiveGetBatteryBlock = nil
+        }
+        
+        if let block = self.receiveSetTimeBlock {
+            block(.disconnected)
+            self.receiveSetTimeBlock = nil
+        }
+        
+        if let block = self.receiveGetDeviceSupportListBlock {
+            block(nil,.disconnected)
+            self.receiveGetDeviceSupportListBlock = nil
+        }
+
+        if let block = self.receiveGetDeviceSupportFunctionDetailBlock {
+            block([:],.disconnected)
+            self.receiveGetDeviceSupportFunctionDetailBlock = nil
+        }
+        
+        if let block = self.receiveGetDeviceOtaVersionInfo {
+            block([:],.disconnected)
+            self.receiveGetDeviceOtaVersionInfo = nil
+        }
+        
+        if let block = self.receiveGetSerialNumberBlock {
+            block(nil,.disconnected)
+            self.receiveGetSerialNumberBlock = nil
+        }
+        
+        if let block = self.receiveGetPersonalInformationBlock {
+            block(nil,.disconnected)
+            self.receiveGetPersonalInformationBlock = nil
+        }
+        
+        if let block = self.receiveSetPersonalInformationBlock {
+            block(.disconnected)
+            self.receiveSetPersonalInformationBlock = nil
+        }
+        
+        if let block = self.receiveGetTimeFormatBlock {
+            block(-1,.disconnected)
+            self.receiveGetTimeFormatBlock = nil
+        }
+        
+        if let block = self.receiveSetTimeFormatBlock {
+            block(.disconnected)
+            self.receiveSetTimeFormatBlock = nil
+        }
+        
+        if let block = self.receiveGetMetricSystemBlock {
+            block(-1,.disconnected)
+            self.receiveGetMetricSystemBlock = nil
+        }
+        
+        if let block = self.receiveSetMetricSystemBlock {
+            block(.disconnected)
+            self.receiveSetMetricSystemBlock = nil
+        }
+        
+        if let block = self.receiveSetWeatherBlock {
+            block(.disconnected)
+            self.receiveSetWeatherBlock = nil
+        }
+        
+        if let block = self.receiveSetInterCameraBlock {
+            block(.disconnected)
+            self.receiveSetInterCameraBlock = nil
+        }
+        
+        if let block = self.receiveSetFindDeviceBlock {
+            block(.disconnected)
+            self.receiveSetFindDeviceBlock = nil
+        }
+        
+        if let block = self.receiveGetLightScreenBlock {
+            block(-1,.disconnected)
+            self.receiveGetLightScreenBlock = nil
+        }
+        
+        if let block = self.receiveSetLightScreenBlock {
+            block(.disconnected)
+            self.receiveSetLightScreenBlock = nil
+        }
+        
+        if let block = self.receiveGetScreenLevelBlock {
+            block(-1,.disconnected)
+            self.receiveGetScreenLevelBlock = nil
+        }
+        
+        if let block = self.receiveSetScreenLevelBlock {
+            block(.disconnected)
+            self.receiveSetScreenLevelBlock = nil
+        }
+        
+        if let block = self.receiveGetScreenTimeLongBlock {
+            block(-1,.disconnected)
+            self.receiveGetScreenTimeLongBlock = nil
+        }
+        
+        if let block = self.receiveSetScreenTimeLongBlock {
+            block(.disconnected)
+            self.receiveSetScreenTimeLongBlock = nil
+        }
+        
+        if let block = self.receiveGetLocalDialBlock {
+            block(-1,.disconnected)
+            self.receiveGetLocalDialBlock = nil
+        }
+        
+        if let block = self.receiveSetLocalDialBlock {
+            block(.disconnected)
+            self.receiveSetLocalDialBlock = nil
+        }
+        
+        if let block = self.receiveGetAlarmBlock {
+            block(nil,.disconnected)
+        }
+        
+        if let block = self.receiveSetAlarmBlock {
+            block(.disconnected)
+            self.receiveSetAlarmBlock = nil
+        }
+        
+        if let block = self.receiveGetDeviceLanguageBlock {
+            block(-1,.disconnected)
+            self.receiveGetDeviceLanguageBlock = nil
+        }
+        
+        if let block = self.receiveSetDeviceLanguageBlock {
+            block(.disconnected)
+            self.receiveSetDeviceLanguageBlock = nil
+        }
+        
+        if let block = self.receiveGetStepGoalBlock {
+            block(-1,.disconnected)
+            self.receiveGetStepGoalBlock = nil
+        }
+        
+        if let block = self.receiveSetStepGoalBlock {
+            block(.disconnected)
+            self.receiveSetStepGoalBlock = nil
+        }
+        
+        if let block = self.receiveGetDispalyModeBlock {
+            block(-1,.disconnected)
+            self.receiveGetDispalyModeBlock = nil
+        }
+        
+        if let block = self.receiveSetDispalyModeBlock {
+            block(.disconnected)
+            self.receiveSetDispalyModeBlock = nil
+        }
+        
+        if let block = self.receiveGetWearingWayBlock {
+            block(-1,.disconnected)
+            self.receiveGetWearingWayBlock = nil
+        }
+        
+        if let block = self.receiveSetWearingWayBlock {
+            block(.disconnected)
+            self.receiveSetWearingWayBlock = nil
+        }
+        
+        if let block = self.receiveSetSingleMeasurementBlock {
+            block(.disconnected)
+            self.receiveSetSingleMeasurementBlock = nil
+        }
+        
+        if let block = self.receiveSetExerciseModeBlock {
+            block(.disconnected)
+            self.receiveSetExerciseModeBlock = nil
+        }
+        
+        if let block = self.receiveGetExerciseModeBlock {
+            block(-1,.disconnected)
+            self.receiveGetExerciseModeBlock = nil
+        }
+        
+        if let block = self.receiveSetDeviceModeBlock {
+            block(.disconnected)
+            self.receiveSetDeviceModeBlock = nil
+        }
+        
+        if let block = self.receiveSetPhoneModeBlock {
+            block(.disconnected)
+            self.receiveSetPhoneModeBlock = nil
+        }
+        
+        if let block = self.receiveGetWeatherUnitBlock {
+            block(-1,.disconnected)
+            self.receiveGetWeatherUnitBlock = nil
+        }
+        
+        if let block = self.receiveSetWeatherUnitBlock {
+            block(.disconnected)
+            self.receiveSetWeatherUnitBlock = nil
+        }
+        
+        if let block = self.receiveSetReportRealtimeDataBlock {
+            block(.disconnected)
+            self.receiveSetReportRealtimeDataBlock = nil
+        }
+        
+        if let block = self.receiveGetCustomDialEditBlock {
+            block(nil,.disconnected)
+            self.receiveGetCustomDialEditBlock = nil
+        }
+        
+        if let block = self.receiveSetCustomDialEditBlock {
+            block(.disconnected)
+            self.receiveSetCustomDialEditBlock = nil
+        }
+        
+        if let block = self.receiveSetPhoneStateBlock {
+            block(.disconnected)
+            self.receiveSetPhoneStateBlock = nil
+        }
+        
+        if let block = self.receiveGetCustonDialFrameSizeBlock {
+            block(nil,.disconnected)
+            self.receiveGetCustonDialFrameSizeBlock = nil
+        }
+        
+        if let block = self.receiveGet24HrMonitorBlock {
+            block(-1,.disconnected)
+            self.receiveGet24HrMonitorBlock = nil
+        }
+        
+        if let block = self.receiveSet24HrMonitorBlock {
+            block(.disconnected)
+            self.receiveSet24HrMonitorBlock = nil
+        }
+        
+        if let block = self.receiveGetNotificationRemindBlock {
+            block([],.disconnected)
+            self.receiveGetNotificationRemindBlock = nil
+        }
+        
+        if let block = self.receiveSetNotificationRemindBlock {
+            block(.disconnected)
+            self.receiveSetNotificationRemindBlock = nil
+        }
+        
+        if let block = self.receiveGetSedentaryBlock {
+            block(nil,.disconnected)
+            self.receiveGetSedentaryBlock = nil
+        }
+        
+        if let block = self.receiveSetSedentaryBlock {
+            block(.disconnected)
+            self.receiveSetSedentaryBlock = nil
+        }
+        
+        if let block = self.receiveGetLostBlock {
+            block(-1,.disconnected)
+            self.receiveGetLostBlock = nil
+        }
+        
+        if let block = self.receiveSetLostBlock {
+            block(.disconnected)
+            self.receiveSetLostBlock = nil
+        }
+        
+        if let block = self.receiveGetDoNotDisturbBlock {
+            block(nil,.disconnected)
+            self.receiveGetDoNotDisturbBlock = nil
+        }
+        
+        if let block = self.receiveSetDoNotDisturbBlock {
+            block(.disconnected)
+            self.receiveSetDoNotDisturbBlock = nil
+        }
+        
+        if let block = self.receiveGetHrWaringBlock {
+            block(nil,.disconnected)
+            self.receiveGetHrWaringBlock = nil
+        }
+        
+        if let block = self.receiveSetHrWaringBlock {
+            block(.disconnected)
+            self.receiveSetHrWaringBlock = nil
+        }
+        
+        if let block = self.receiveGetMenstrualCycleBlock {
+            block([:],.disconnected)
+            self.receiveGetMenstrualCycleBlock = nil
+        }
+        
+        if let block = self.receiveSetMenstrualCycleBlock {
+            block(.disconnected)
+            self.receiveSetMenstrualCycleBlock = nil
+        }
+        
+        if let block = self.receiveGetWashHandBlock {
+            block([:],.disconnected)
+            self.receiveGetWashHandBlock = nil
+        }
+        
+        if let block = self.receiveSetWashHandBlock {
+            block(.disconnected)
+            self.receiveSetWashHandBlock = nil
+        }
+        
+        if let block = self.receiveGetDrinkWaterBlock {
+            block([:],.disconnected)
+            self.receiveGetDrinkWaterBlock = nil
+        }
+        
+        if let block = self.receiveSetDrinkWaterBlock {
+            block(.disconnected)
+            self.receiveSetDrinkWaterBlock = nil
+        }
+        
+        if let block = self.receiveSetSyncStepDataBlock {
+            block.success(nil,.disconnected)
+            self.receiveSetSyncStepDataBlock = nil
+        }
+        
+        if let block = self.receiveSetSyncSleepDataBlock {
+            block.success(nil,.disconnected)
+            self.receiveSetSyncSleepDataBlock = nil
+        }
+        
+        if let block = self.receiveSetSyncHeartrateDataBlock {
+            block.success(nil,.disconnected)
+            self.receiveSetSyncHeartrateDataBlock = nil
+        }
+        
+        if let block = self.receiveSetSyncExerciseDataBlock {
+            block(nil,.disconnected)
+            self.receiveSetSyncExerciseDataBlock = nil
+        }
+        
+        if let block = self.receiveSetPowerTurnOffBlock {
+            block(.disconnected)
+            self.receiveSetPowerTurnOffBlock = nil
+        }
+        
+        if let block = self.receiveSetFactoryDataResetBlock {
+            block(.disconnected)
+            self.receiveSetFactoryDataResetBlock = nil
+        }
+        
+        if let block = self.receiveSetMotorVibrationBlock {
+            block(.disconnected)
+            self.receiveSetMotorVibrationBlock = nil
+        }
+        
+        if let block = self.receiveSetRestartBlock {
+            block(.disconnected)
+            self.receiveSetRestartBlock = nil
         }
     }
     
@@ -2562,18 +2934,21 @@ import Alamofire
                 self.signalCommandSemaphore()
                 //printLog("健康数据5s未接收到 ->receiveSetSyncStepDataBlock")
                 block.success(nil,.invalidLength)
+                self.receiveSetSyncStepDataBlock = nil
             }
             if let block = self.receiveSetSyncSleepDataBlock {
                 self.isSleepDetailData = false
                 self.signalCommandSemaphore()
                 //printLog("健康数据5s未接收到 ->receiveSetSyncSleepDataBlock")
                 block.success(nil,.invalidLength)
+                self.receiveSetSyncSleepDataBlock = nil
             }
             if let block = self.receiveSetSyncHeartrateDataBlock {
                 self.isHrDetailData = false
                 self.signalCommandSemaphore()
                 //printLog("健康数据5s未接收到 ->receiveSetSyncHeartrateDataBlock")
                 block.success(nil,.invalidLength)
+                self.receiveSetSyncHeartrateDataBlock = nil
             }
         }
         
@@ -2604,9 +2979,6 @@ import Alamofire
         
         var val:[UInt8] = [0x00,0x00,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetDeviceNameBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -2642,9 +3014,6 @@ import Alamofire
         var val:[UInt8] = [0x00,0x02,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveGetFirmwareVersionBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveGetFirmwareVersionBlock = success
@@ -2679,10 +3048,7 @@ import Alamofire
         
         var val:[UInt8] = [0x00,0x04,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetSerialNumberBlock = success
-        
+
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveGetSerialNumberBlock = success
@@ -2718,9 +3084,6 @@ import Alamofire
         var val:[UInt8] = [0x00,0x06,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveGetMacBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveGetMacBlock = success
@@ -2753,9 +3116,6 @@ import Alamofire
         
         var val:[UInt8] = [0x00,0x08,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetBatteryBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -2822,9 +3182,6 @@ import Alamofire
         
         var val:[UInt8] = [0x00,0x09,0x0b,0x00,UInt8(year/100),UInt8(year%100),UInt8(month),UInt8(day),UInt8(hour),UInt8(minute),UInt8(second)]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveSetTimeBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -2985,9 +3342,7 @@ import Alamofire
         
         var val:[UInt8] = [0x00,0x0E,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        //self.receiveGetDeviceOtaVersionInfo = success
-        
+                
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveGetDeviceOtaVersionInfo = success
@@ -3026,9 +3381,6 @@ import Alamofire
         
         var val:[UInt8] = [0x01,0x00,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetPersonalInformationBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -3079,9 +3431,6 @@ import Alamofire
         var val:[UInt8] = [0x01,0x01,0x0a,0x00,UInt8(model.age),UInt8(gender),UInt8((heightFloat ) & 0xff), UInt8((heightFloat >> 8) & 0xff),UInt8((weightFloat ) & 0xff), UInt8((weightFloat >> 8) & 0xff)]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetPersonalInformationBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetPersonalInformationBlock = success
@@ -3111,9 +3460,6 @@ import Alamofire
         
         var val:[UInt8] = [0x01,0x02,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetTimeFormatBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -3146,9 +3492,7 @@ import Alamofire
         
         var val:[UInt8] = [0x01,0x03,0x05,0x00,UInt8(format)]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        //self.receiveSetTimeFormatBlock = success
-        
+                
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetTimeFormatBlock = success
@@ -3179,9 +3523,6 @@ import Alamofire
         
         var val:[UInt8] = [0x01,0x04,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetMetricSystemBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -3214,9 +3555,7 @@ import Alamofire
         
         var val:[UInt8] = [0x01,0x05,0x05,0x00,UInt8(metric)]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        //self.receiveSetMetricSystemBlock = success
-        
+                
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetMetricSystemBlock = success
@@ -3261,9 +3600,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetWeatherBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetWeatherBlock = success
@@ -3298,9 +3634,6 @@ import Alamofire
             0x00,
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveSetInterCameraBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -3337,9 +3670,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetFindDeviceBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetFindDeviceBlock = success
@@ -3369,9 +3699,6 @@ import Alamofire
         
         var val:[UInt8] = [0x01,0x0c,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetLightScreenBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -3411,9 +3738,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetLightScreenBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetLightScreenBlock = success
@@ -3443,9 +3767,6 @@ import Alamofire
         
         var val:[UInt8] = [0x01,0x0e,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetScreenLevelBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -3485,9 +3806,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetScreenLevelBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetScreenLevelBlock = success
@@ -3517,9 +3835,6 @@ import Alamofire
         
         var val:[UInt8] = [0x01,0x32,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetScreenTimeLongBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -3559,9 +3874,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetScreenLevelBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetScreenTimeLongBlock = success
@@ -3591,9 +3903,6 @@ import Alamofire
         
         var val:[UInt8] = [0x01,0x10,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetLocalDialBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -3632,9 +3941,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetLocalDialBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetLocalDialBlock = success
@@ -3662,9 +3968,6 @@ import Alamofire
         
         var val:[UInt8] = [0x01,0x12,0x05,0x00,UInt8(index)]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetAlarmBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -3713,9 +4016,6 @@ import Alamofire
             (UInt8(minute) ?? 0)
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveSetAlarmBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -3791,10 +4091,7 @@ import Alamofire
             0x00,
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetDeviceLanguageBlock = success
-        
+                
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveGetDeviceLanguageBlock = success
@@ -3833,9 +4130,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetDeviceLanguageBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetDeviceLanguageBlock = success
@@ -3870,9 +4164,6 @@ import Alamofire
             0x00,
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetStepGoalBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -3916,9 +4207,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetStepGoalBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetStepGoalBlock = success
@@ -3952,9 +4240,6 @@ import Alamofire
             0x00,
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetDispalyModeBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -3994,9 +4279,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetDispalyModeBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetDispalyModeBlock = success
@@ -4030,9 +4312,6 @@ import Alamofire
             0x00,
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetWearingWayBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -4072,9 +4351,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetWearingWayBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetWearingWayBlock = success
@@ -4110,9 +4386,6 @@ import Alamofire
             UInt8(isOpen)
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveSetSingleMeasurementBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -4187,9 +4460,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetExerciseModeBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetExerciseModeBlock = success
@@ -4227,9 +4497,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetDeviceModeBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetDeviceModeBlock = success
@@ -4265,7 +4532,6 @@ import Alamofire
             UInt8(type),
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
         
         //self.receiveSetPhoneModeBlock = success
         
@@ -4342,9 +4608,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetPhoneModeBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetWeatherUnitBlock = success
@@ -4379,9 +4642,7 @@ import Alamofire
             UInt8(isOpen),
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        //self.receiveSetPhoneModeBlock = success
-        
+                
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetReportRealtimeDataBlock = success
@@ -4781,7 +5042,6 @@ import Alamofire
             (UInt8(state) ?? 0)
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
                 
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -4896,9 +5156,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetNotificationRemindBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSet24HrMonitorBlock = success
@@ -4933,9 +5190,6 @@ import Alamofire
             0x00,
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetNotificationRemindBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -4978,9 +5232,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetNotificationRemindBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetNotificationRemindBlock = success
@@ -5021,9 +5272,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetNotificationRemindBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetNotificationRemindBlock = success
@@ -5042,9 +5290,6 @@ import Alamofire
             0x00,
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetSedentaryBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -5117,8 +5362,6 @@ import Alamofire
         
         let data = Data.init(bytes: val, count: val.count)
         
-        //self.receiveSetSedentaryBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetSedentaryBlock = success
@@ -5156,9 +5399,7 @@ import Alamofire
         let val:[UInt8] = headVal + timeVal
         
         let data = Data.init(bytes: val, count: val.count)
-        
-        //self.receiveSetSedentaryBlock = success
-        
+                
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetSedentaryBlock = success
@@ -5184,9 +5425,7 @@ import Alamofire
         ]
         
         let data = Data.init(bytes: val, count: val.count)
-        
-        //self.receiveSetSedentaryBlock = success
-        
+                
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetSedentaryBlock = success
@@ -5221,9 +5460,6 @@ import Alamofire
             0x00,
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetLostBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -5262,9 +5498,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetLostBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetLostBlock = success
@@ -5298,9 +5531,6 @@ import Alamofire
             0x00,
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetDoNotDisturbBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -5351,9 +5581,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetDoNotDisturbBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetDoNotDisturbBlock = success
@@ -5377,8 +5604,6 @@ import Alamofire
             UInt8(model.timeModel.endMinute)
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        //self.receiveSetDoNotDisturbBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -5413,9 +5638,6 @@ import Alamofire
             0x00,
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetHrWaringBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -5460,9 +5682,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetHrWaringBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetHrWaringBlock = success
@@ -5485,9 +5704,6 @@ import Alamofire
             UInt8(model.minValue)
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveSetHrWaringBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -5523,9 +5739,6 @@ import Alamofire
             0x00,
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetMenstrualCycleBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -5576,9 +5789,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetMenstrualCycleBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetMenstrualCycleBlock = success
@@ -5613,9 +5823,6 @@ import Alamofire
             0x00,
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetWashHandBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -5662,9 +5869,6 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        
-        //self.receiveSetWashHandBlock = success
-        
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
             self.receiveSetWashHandBlock = success
@@ -5698,9 +5902,6 @@ import Alamofire
             0x00,
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveGetDrinkWaterBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -5750,9 +5951,6 @@ import Alamofire
             (UInt8(remindInterval) ?? 0)
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveSetDrinkWaterBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -5913,6 +6111,7 @@ import Alamofire
             
             //{"end":"20:45","start":"20:09","total":"36","type":"1"}
             var modelArray = [[String:String]].init()
+            var modelArray_filter = [[String:String]].init()
             var startIndex = 0
             var isAwakeSameState = false
             var islightSameState = false
@@ -5955,6 +6154,7 @@ import Alamofire
                         let type = String.init(format: "%d", state)
                         
                         modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                        modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
                     }
                     totalAwake += 1
                 }else if state == 1 {//浅睡
@@ -5981,6 +6181,7 @@ import Alamofire
                         let type = String.init(format: "%d", state)
                         
                         modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                        modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
                     }
                     totalLight += 1
                     
@@ -6008,6 +6209,7 @@ import Alamofire
                         let type = String.init(format: "%d", state)
                         
                         modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                        modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
                     }
                     totalDeep += 1
                 }else{//无效数据
@@ -6033,7 +6235,10 @@ import Alamofire
                         let total = String.init(format: "%d", i - startIndex + 1)
                         let type = String.init(format: "%d", state)
                         
-                        //modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                        if !modelArray.isEmpty {
+                            modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                        }
+                        //modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
                     }
                     totalInvalid += 1
                 }
@@ -6058,6 +6263,7 @@ import Alamofire
                         let type = String.init(format: "%d", state)
                         if type != "3" {
                             modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                            modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
                         }
                     }else{
                         //不一致的，最后一个状态为单独一组
@@ -6067,6 +6273,7 @@ import Alamofire
                         let type = String.init(format: "%d", nextState)
                         if type != "3" {
                             modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                            modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
                         }
                     }
                     if nextState == 0 {
@@ -6079,9 +6286,51 @@ import Alamofire
                         totalInvalid += 1
                     }
                 }
-                
             }
             
+            var newArray:[[String:String]] = []
+            var changeDic:[String:String] = [:]
+            for i in 0..<modelArray.count-1 {
+                
+                let currentDic:[String:String] = modelArray[i]
+                let nextDic:[String:String] = modelArray[i+1]
+                if changeDic.isEmpty {
+                    changeDic = currentDic
+                    if changeDic["type"] == "3" {
+                        changeDic["type"] = "0"
+                        totalAwake += Int(changeDic["total"] ?? "0") ?? 0
+                    }
+                }
+                
+                let currentType = currentDic["type"]
+                let nextType = nextDic["type"]
+                
+                
+                
+                if (currentType == "0" || currentType == "3") && (nextType == "0" || nextType == "3") {
+                    
+                    changeDic["end"] = nextDic["end"]
+                    changeDic["type"] = "0"
+                    let currentTotal = Int(changeDic["total"] ?? "0") ?? 0
+                    let nextTotal = Int(nextDic["total"] ?? "0") ?? 0
+                    changeDic["total"] = "\(currentTotal + nextTotal)"
+                    
+                }else{
+                    newArray.append(changeDic)
+                    changeDic = [:]
+                }
+                
+                if i == modelArray.count-2 {
+                    if changeDic.isEmpty {
+                        newArray.append(nextDic)
+                    }else{
+                        newArray.append(changeDic)
+                    }
+                }
+            }
+            printLog("-------modelArray =",modelArray)
+            modelArray = newArray
+
             //AntSDKLog.writeStringToSDKLog(string: "原始数据")
             //AntSDKLog.writeStringToSDKLog(string: "\(originalArray)")
             //AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@\n\n\n", originalArray))
@@ -6095,8 +6344,9 @@ import Alamofire
             printLog("originalArray =",originalArray)
             printLog("sleepArray =",sleepArray,sleepArray.count)
             printLog("modelArray =",modelArray)
+            printLog("modelArray_filter =",modelArray_filter)
             
-            let model = AntSleepModel.init(dic: ["dayCount":day.count == 0 ? "0":day,"type":type,"deep":"\(totalDeep)","light":"\(totalLight)","awake":"\(totalAwake)","originalArray":sleepArray,"detailArray":modelArray])
+            let model = AntSleepModel.init(dic: ["dayCount":day.count == 0 ? "0":day,"type":type,"deep":"\(totalDeep)","light":"\(totalLight)","awake":"\(totalAwake)","originalArray":sleepArray,"detailArray":modelArray,"detailArray_filter":modelArray_filter])
             success(model,.none)
         }
         //printLog("第\(#line)行" , "\(#function)")
@@ -6115,9 +6365,6 @@ import Alamofire
             (UInt8(numberCount) ?? 0)
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        
-        //self.receiveSetSyncExerciseDataBlock = success
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
@@ -6168,15 +6415,12 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        self.writeData(data: data)
-        self.receiveSetPowerTurnOffBlock = success
-        
-        //        let state = self.writeDataAndBackError(data: data)
-        //        if state == .none {
-        //            self.receiveSetPowerTurnOffBlock = success
-        //        }else{
-        //            success(state)
-        //        }
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetPowerTurnOffBlock = success
+        }else{
+            success(state)
+        }
     }
     
     private func parseSetPowerTurnOff(val:[UInt8],success:@escaping((AntError) -> Void)) {
@@ -6208,15 +6452,12 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        self.writeData(data: data)
-        self.receiveSetFactoryDataResetBlock = success
-        
-        //        let state = self.writeDataAndBackError(data: data)
-        //        if state == .none {
-        //            self.receiveSetFactoryDataResetBlock = success
-        //        }else{
-        //            success(state)
-        //        }
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetFactoryDataResetBlock = success
+        }else{
+            success(state)
+        }
     }
     
     private func parseSetFactoryDataReset(val:[UInt8],success:@escaping((AntError) -> Void)) {
@@ -6246,15 +6487,12 @@ import Alamofire
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
-        self.writeData(data: data)
-        self.receiveSetMotorVibrationBlock = success
-        
-        //        let state = self.writeDataAndBackError(data: data)
-        //        if state == .none {
-        //            self.receiveSetMotorVibrationBlock = success
-        //        }else{
-        //            success(state)
-        //        }
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetMotorVibrationBlock = success
+        }else{
+            success(state)
+        }
         
     }
     
@@ -6288,16 +6526,13 @@ import Alamofire
             0x00
         ]
         let data = Data.init(bytes: &val, count: val.count)
-        
-        self.writeData(data: data)
-        self.receiveSetRestartBlock = success
-        
-        //        let state = self.writeDataAndBackError(data: data)
-        //        if state == .none {
-        //            self.receiveSetRestartBlock = success
-        //        }else{
-        //            success(state)
-        //        }
+
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetRestartBlock = success
+        }else{
+            success(state)
+        }
     }
     
     private func parseSetRestart(val:[UInt8],success:@escaping((AntError) -> Void)) {
@@ -6964,8 +7199,57 @@ import Alamofire
     
     // MARK: - 服务器相关的接口
     // MARK: - 获取OTA版本信息
+    var isRequesting = false
     @objc public func getServerOtaDeviceInfo(success:@escaping(([String:Any],AntError) -> Void)) {
         
+        if self.isRequesting {
+            printLog("正在获取,请勿重复点击")
+            return
+        }
+        
+        printLog("getServerOtaDeviceInfo 调用成功")
+        
+        self.isRequesting = true
+        
+        self.GetDeviceOtaVersionInfo { versionSuccess, error in
+            if error == .none {
+                printLog("GetDeviceOtaVersionInfo ->",versionSuccess)
+                
+                let product = versionSuccess["product"] as! String
+                let project = versionSuccess["project"] as! String
+                let firmware = versionSuccess["firmware"] as! String
+                let library = versionSuccess["library"] as! String
+                let font = versionSuccess["font"] as! String
+
+                self.GetMac { macSuccess, error in
+                    if error == .none {
+                        if let string = macSuccess {
+                            let url = AntNetworkManager.shareInstance.basicUrl+"/api/ota/getNewVersionByAddress?"+String.init(format: "productId=%@&projectId=%@&firmwareId=%@&imageId=%@&fontId=%@&address=%@",product,project,firmware,library,font,string)
+                            AntNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
+                                self.isRequesting = false
+                                printLog("info =",info)
+                                success(info,.none)
+                            } fail: { error in
+                                self.isRequesting = false
+                                printLog("error =",error)
+                                success([:],.fail)
+                            }
+                        }
+                    }else{
+                        self.isRequesting = false
+                        success([:],.fail)
+                    }
+                }
+            }else{
+                self.isRequesting = false
+                success([:],.fail)
+            }
+        }
+        
+        
+        
+        
+        /*
         var product = ""
         var project = ""
         var firmware = ""
@@ -7015,14 +7299,16 @@ import Alamofire
             //http://www.antjuyi.com/api/ota/getNewVersionByAddress?productId=0&projectId=0&firmwareId=0.0&imageId=0.0&fontId=0.0&address=xx:xx:xx:xx:xx:xx
             let url = AntNetworkManager.shareInstance.basicUrl+"/api/ota/getNewVersionByAddress?"+String.init(format: "productId=%@&projectId=%@&firmwareId=%@&imageId=%@&fontId=%@&address=%@",product,project,firmware,library,font,mac)
             AntNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
+                self.isRequesting = false
                 printLog("info =",info)
                 success(info,.none)
             } fail: { error in
+                self.isRequesting = false
                 printLog("error =",error)
                 success([:],.fail)
             }
         }
-
+         */
     }
     
     // MARK: - 自动获取OTA版本信息及下载升级
