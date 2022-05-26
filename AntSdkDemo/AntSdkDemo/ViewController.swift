@@ -66,14 +66,7 @@ class ViewController: UIViewController {
                 let vc = AntVC()
                 self.navigationController?.pushViewController(vc, animated: true)
             }
-            
-            let vc = UIViewController.getAnyVC(vc: AntVC())
-            vc?.test()
-            //vc?.test()
         }
-        
-        //self.semaphore_demo()
-        
     }
     
     func convertDataToHexStr(data:Data) ->String {
@@ -98,61 +91,7 @@ class ViewController: UIViewController {
         }
         return str
     }
-    
-    func semaphore_demo() {
-        let queue = DispatchQueue.global()
-        //创建信号量  值为1  意思是最大并发数为1，任务只能一个接一个执行
-        var count = 1
-        let semaphore = DispatchSemaphore.init(value: count)
         
-        //此时信号量为1，无需等待，向下执行 信号量 1->0
-        semaphore.wait()
-        queue.asyncAfter(deadline: .now() + 5) {
-            print("1111")
-            //延迟4秒后输出1111，释放信号量，信号量 从0->1
-            count = semaphore.signal()
-            print("count1111 =",count)
-        }
-        print("1111count =",count)
-        
-        //延迟4秒输出1111后，此时信号量为1，继续向下执行  同上操作。。。
-        semaphore.wait()
-        queue.asyncAfter(deadline: .now() + 4) {
-            print("2222")
-            count = semaphore.signal()
-            print("count2222 =",count)
-        }
-        print("2222 count =",count)
-        
-        semaphore.wait()
-        queue.asyncAfter(deadline: .now() + 3) {
-            print("3333")
-            count = semaphore.signal()
-            print("count3333 =",count)
-        }
-        print("3333count =",count)
-        
-        semaphore.wait()
-        queue.asyncAfter(deadline: .now() + 2) {
-            print("4444")
-            count = semaphore.signal()
-            print("count4444 =",count)
-        }
-        print("4444count =",count)
-        
-        semaphore.wait()
-        queue.asyncAfter(deadline: .now() + 1) {
-            print("5555")
-            semaphore.signal()
-        }
-        print("55555 count =",count)
-        semaphore.wait()
-        print("任务全部完成")
-        count = semaphore.signal()
-        print("count5555 =",count)
-         
-    }
-    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
@@ -237,7 +176,7 @@ class ViewController: UIViewController {
         
         let dateLabel = UILabel.init(frame: .init(x: 0, y: 600, width: screenWidth, height: 44))
         dateLabel.backgroundColor = .green
-        dateLabel.text = "更新日期:2022-05-10"
+        dateLabel.text = "更新日期:2022-05-18"
         dateLabel.textColor = .red
         dateLabel.numberOfLines = 0
         dateLabel.textAlignment = .center
@@ -446,48 +385,5 @@ extension UIViewController {
         }
         
         self.present(alertVC, animated: true, completion: nil)
-    }
-}
-
-extension UIViewController {
-    class func getAnyVC<T>(vc:T) -> T? {
-        
-        var anyVC:T? = nil
-        let HcWindow = UIApplication.shared.delegate as! AppDelegate
-        let nc = HcWindow.window?.rootViewController
-        //print("nc = \(nc)")
-        if nc is UITabBarController {
-            let nc:UITabBarController = nc as! UITabBarController
-            for vc in nc.viewControllers! {
-                if vc is UINavigationController {
-                    let vc:UINavigationController = vc as! UINavigationController
-                    for item in vc.viewControllers {
-                        if item is T {
-                            anyVC = item as? T
-                        }
-                        //print("item = \(item)")
-                    }
-                }
-            }
-        }else if nc is UINavigationController {
-            let nc:UINavigationController = nc as! UINavigationController
-            for vc in nc.viewControllers {
-                if vc is UINavigationController {
-                    let vc:UINavigationController = vc as! UINavigationController
-                    for item in vc.viewControllers {
-                        if item is T {
-                            anyVC = item as? T
-                        }
-                        //print("item = \(item)")
-                    }
-                }
-                if vc is UIViewController {
-                    if vc is T {
-                        anyVC = vc as? T
-                    }
-                }
-            }
-        }
-        return anyVC
     }
 }

@@ -9,9 +9,7 @@
 /* Begin PBXBuildFile section */
 		07BCA61C658C624E651C9D40 /* Pods_AntSdkDemo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EB83018861CB65B11FDF775 /* Pods_AntSdkDemo.framework */; };
 		0A76FC50810ED4BF30678E66 /* Pods_AntSdkDemo_AntSdkDemoUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 478719A83DFD58F5FBD697A0 /* Pods_AntSdkDemo_AntSdkDemoUITests.framework */; };
-		6703B8A127B7A94100EF295F /* pic(2).bin in Resources */ = {isa = PBXBuildFile; fileRef = 6703B8A027B7A94100EF295F /* pic(2).bin */; };
 		671F9CB026D778B700AB415A /* ScanVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671F9CAF26D778B700AB415A /* ScanVC.swift */; };
-		673F330127C4A2830071F9F7 /* test.bin in Resources */ = {isa = PBXBuildFile; fileRef = 673F330027C4A2830071F9F7 /* test.bin */; };
 		67661CF826292A8E0004B197 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661CF726292A8E0004B197 /* AppDelegate.swift */; };
 		67661CFC26292A8E0004B197 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661CFB26292A8E0004B197 /* ViewController.swift */; };
 		67661CFF26292A8E0004B197 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 67661CFD26292A8E0004B197 /* Main.storyboard */; };
@@ -19,24 +17,10 @@
 		67661D0426292A920004B197 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 67661D0226292A920004B197 /* LaunchScreen.storyboard */; };
 		67661D0F26292A920004B197 /* AntSdkDemoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661D0E26292A920004B197 /* AntSdkDemoTests.swift */; };
 		67661D1A26292A920004B197 /* AntSdkDemoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661D1926292A920004B197 /* AntSdkDemoUITests.swift */; };
-		67661D7F262A82670004B197 /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661D7E262A82660004B197 /* LogViewController.swift */; };
 		676705B2269014D300CB048B /* AntVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 676705B1269014D300CB048B /* AntVC.swift */; };
 		677BF30326DDD5B900D1C10C /* ShowLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 677BF30226DDD5B900D1C10C /* ShowLogView.swift */; };
 		67883F0B28237A8500ADDE99 /* AntSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67883F0A28237A8500ADDE99 /* AntSDK.framework */; };
-		678C6684279565DB00371BB5 /* pic_80_80.bin in Resources */ = {isa = PBXBuildFile; fileRef = 678C6682279565DA00371BB5 /* pic_80_80.bin */; };
-		678C6685279565DB00371BB5 /* pic_240_240.bin in Resources */ = {isa = PBXBuildFile; fileRef = 678C6683279565DA00371BB5 /* pic_240_240.bin */; };
-		678C6687279571F600371BB5 /* 1.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 678C6686279571F600371BB5 /* 1.bmp */; };
-		678C66932795982B00371BB5 /* pic.bin in Resources */ = {isa = PBXBuildFile; fileRef = 678C66912795982B00371BB5 /* pic.bin */; };
-		678C669F2795A3DE00371BB5 /* test@1x.png in Resources */ = {isa = PBXBuildFile; fileRef = 678C669C2795A3DD00371BB5 /* test@1x.png */; };
-		678C66A32796925A00371BB5 /* pic(1).bin in Resources */ = {isa = PBXBuildFile; fileRef = 678C66A22796925800371BB5 /* pic(1).bin */; };
-		678C66A527969F3700371BB5 /* IMG_4099.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 678C66A427969F3700371BB5 /* IMG_4099.jpg */; };
-		67A752AF278AE03400B7D6B2 /* 字库.bin in Resources */ = {isa = PBXBuildFile; fileRef = 67A752AC278AE03300B7D6B2 /* 字库.bin */; };
-		67A752B0278AE03400B7D6B2 /* 最新应用程序.bin in Resources */ = {isa = PBXBuildFile; fileRef = 67A752AD278AE03300B7D6B2 /* 最新应用程序.bin */; };
-		67A752B1278AE03400B7D6B2 /* bootLoader.bin in Resources */ = {isa = PBXBuildFile; fileRef = 67A752AE278AE03400B7D6B2 /* bootLoader.bin */; };
-		67A752B3278AE04900B7D6B2 /* 图库.bin in Resources */ = {isa = PBXBuildFile; fileRef = 67A752B2278AE04800B7D6B2 /* 图库.bin */; };
-		67B8A1C32768289C0007D3FC /* 数字表盘.bin in Resources */ = {isa = PBXBuildFile; fileRef = 67B8A1C22768289C0007D3FC /* 数字表盘.bin */; };
 		67CF37E826F589A90035C6B0 /* FileVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67CF37E726F589A90035C6B0 /* FileVC.swift */; };
-		67EB7E9E27995861000CAE03 /* testPic(1).bin in Resources */ = {isa = PBXBuildFile; fileRef = 67EB7E9D27995861000CAE03 /* testPic(1).bin */; };
 		D5B6E58968FDB933C6F1EB9E /* Pods_AntSdkDemoTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00A0834BF06076BE35E1F4A5 /* Pods_AntSdkDemoTests.framework */; };
 /* End PBXBuildFile section */
 
@@ -74,9 +58,7 @@
 		00A0834BF06076BE35E1F4A5 /* Pods_AntSdkDemoTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AntSdkDemoTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		44400836A600C1F19BA07967 /* Pods-AntSdkDemoTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AntSdkDemoTests.release.xcconfig"; path = "Target Support Files/Pods-AntSdkDemoTests/Pods-AntSdkDemoTests.release.xcconfig"; sourceTree = "<group>"; };
 		478719A83DFD58F5FBD697A0 /* Pods_AntSdkDemo_AntSdkDemoUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AntSdkDemo_AntSdkDemoUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		6703B8A027B7A94100EF295F /* pic(2).bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "pic(2).bin"; sourceTree = "<group>"; };
 		671F9CAF26D778B700AB415A /* ScanVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanVC.swift; sourceTree = "<group>"; };
-		673F330027C4A2830071F9F7 /* test.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = test.bin; sourceTree = "<group>"; };
 		676003FB2698404400822E72 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		67661CF426292A8E0004B197 /* AntSdkDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AntSdkDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		67661CF726292A8E0004B197 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -91,24 +73,10 @@
 		67661D1526292A920004B197 /* AntSdkDemoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AntSdkDemoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		67661D1926292A920004B197 /* AntSdkDemoUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntSdkDemoUITests.swift; sourceTree = "<group>"; };
 		67661D1B26292A920004B197 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		67661D7E262A82660004B197 /* LogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
 		676705B1269014D300CB048B /* AntVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntVC.swift; sourceTree = "<group>"; };
 		677BF30226DDD5B900D1C10C /* ShowLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowLogView.swift; sourceTree = "<group>"; };
 		67883F0A28237A8500ADDE99 /* AntSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = AntSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		678C6682279565DA00371BB5 /* pic_80_80.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = pic_80_80.bin; sourceTree = "<group>"; };
-		678C6683279565DA00371BB5 /* pic_240_240.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = pic_240_240.bin; sourceTree = "<group>"; };
-		678C6686279571F600371BB5 /* 1.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = 1.bmp; sourceTree = "<group>"; };
-		678C66912795982B00371BB5 /* pic.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = pic.bin; sourceTree = "<group>"; };
-		678C669C2795A3DD00371BB5 /* test@1x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "test@1x.png"; sourceTree = "<group>"; };
-		678C66A22796925800371BB5 /* pic(1).bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "pic(1).bin"; sourceTree = "<group>"; };
-		678C66A427969F3700371BB5 /* IMG_4099.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = IMG_4099.jpg; sourceTree = "<group>"; };
-		67A752AC278AE03300B7D6B2 /* 字库.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "字库.bin"; sourceTree = "<group>"; };
-		67A752AD278AE03300B7D6B2 /* 最新应用程序.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "最新应用程序.bin"; sourceTree = "<group>"; };
-		67A752AE278AE03400B7D6B2 /* bootLoader.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = bootLoader.bin; sourceTree = "<group>"; };
-		67A752B2278AE04800B7D6B2 /* 图库.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "图库.bin"; sourceTree = "<group>"; };
-		67B8A1C22768289C0007D3FC /* 数字表盘.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "数字表盘.bin"; sourceTree = "<group>"; };
 		67CF37E726F589A90035C6B0 /* FileVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileVC.swift; sourceTree = "<group>"; };
-		67EB7E9D27995861000CAE03 /* testPic(1).bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "testPic(1).bin"; sourceTree = "<group>"; };
 		709083BC5FF85A3A92F0F492 /* Pods-AntSdkDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AntSdkDemo.release.xcconfig"; path = "Target Support Files/Pods-AntSdkDemo/Pods-AntSdkDemo.release.xcconfig"; sourceTree = "<group>"; };
 		7E733D2CDCEA7FD78ED1AF43 /* Pods-AntSdkDemo-AntSdkDemoUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AntSdkDemo-AntSdkDemoUITests.release.xcconfig"; path = "Target Support Files/Pods-AntSdkDemo-AntSdkDemoUITests/Pods-AntSdkDemo-AntSdkDemoUITests.release.xcconfig"; sourceTree = "<group>"; };
 		7EB83018861CB65B11FDF775 /* Pods_AntSdkDemo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AntSdkDemo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -184,28 +152,12 @@
 		67661CF626292A8E0004B197 /* AntSdkDemo */ = {
 			isa = PBXGroup;
 			children = (
-				67A752AE278AE03400B7D6B2 /* bootLoader.bin */,
-				67A752AC278AE03300B7D6B2 /* 字库.bin */,
-				67A752AD278AE03300B7D6B2 /* 最新应用程序.bin */,
-				67B8A1C22768289C0007D3FC /* 数字表盘.bin */,
-				678C6682279565DA00371BB5 /* pic_80_80.bin */,
-				678C6683279565DA00371BB5 /* pic_240_240.bin */,
-				67A752B2278AE04800B7D6B2 /* 图库.bin */,
-				678C6686279571F600371BB5 /* 1.bmp */,
-				678C669C2795A3DD00371BB5 /* test@1x.png */,
-				678C66A427969F3700371BB5 /* IMG_4099.jpg */,
-				673F330027C4A2830071F9F7 /* test.bin */,
-				678C66912795982B00371BB5 /* pic.bin */,
-				678C66A22796925800371BB5 /* pic(1).bin */,
-				6703B8A027B7A94100EF295F /* pic(2).bin */,
-				67EB7E9D27995861000CAE03 /* testPic(1).bin */,
 				67661CF726292A8E0004B197 /* AppDelegate.swift */,
 				67661CFB26292A8E0004B197 /* ViewController.swift */,
 				671F9CAF26D778B700AB415A /* ScanVC.swift */,
 				676705B1269014D300CB048B /* AntVC.swift */,
 				67CF37E726F589A90035C6B0 /* FileVC.swift */,
 				677BF30226DDD5B900D1C10C /* ShowLogView.swift */,
-				67661D7E262A82660004B197 /* LogViewController.swift */,
 				67661CFD26292A8E0004B197 /* Main.storyboard */,
 				67661D0026292A920004B197 /* Assets.xcassets */,
 				67661D0226292A920004B197 /* LaunchScreen.storyboard */,
@@ -352,23 +304,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6703B8A127B7A94100EF295F /* pic(2).bin in Resources */,
-				67EB7E9E27995861000CAE03 /* testPic(1).bin in Resources */,
 				67661D0426292A920004B197 /* LaunchScreen.storyboard in Resources */,
-				678C6685279565DB00371BB5 /* pic_240_240.bin in Resources */,
-				678C66932795982B00371BB5 /* pic.bin in Resources */,
-				67B8A1C32768289C0007D3FC /* 数字表盘.bin in Resources */,
 				67661D0126292A920004B197 /* Assets.xcassets in Resources */,
-				673F330127C4A2830071F9F7 /* test.bin in Resources */,
-				678C66A32796925A00371BB5 /* pic(1).bin in Resources */,
-				67A752AF278AE03400B7D6B2 /* 字库.bin in Resources */,
-				678C6687279571F600371BB5 /* 1.bmp in Resources */,
-				67A752B3278AE04900B7D6B2 /* 图库.bin in Resources */,
-				67A752B1278AE03400B7D6B2 /* bootLoader.bin in Resources */,
-				678C6684279565DB00371BB5 /* pic_80_80.bin in Resources */,
-				67A752B0278AE03400B7D6B2 /* 最新应用程序.bin in Resources */,
-				678C669F2795A3DE00371BB5 /* test@1x.png in Resources */,
-				678C66A527969F3700371BB5 /* IMG_4099.jpg in Resources */,
 				67661CFF26292A8E0004B197 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -503,7 +440,6 @@
 				677BF30326DDD5B900D1C10C /* ShowLogView.swift in Sources */,
 				676705B2269014D300CB048B /* AntVC.swift in Sources */,
 				67661CF826292A8E0004B197 /* AppDelegate.swift in Sources */,
-				67661D7F262A82670004B197 /* LogViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -44,16 +44,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "3AF8D878-030D-402C-9180-131294A2B42B"
+            uuid = "45169CE7-86FA-474E-B210-C8980CE90954"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "AntSdkDemo/AntVC.swift"
+            filePath = "../AntSDK/AntSDK/AntModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "3724"
-            endingLineNumber = "3724"
-            landmarkName = "getErrorCodeString(error:)"
+            startingLineNumber = "157"
+            endingLineNumber = "157"
+            landmarkName = "dealDetailFunction(index:val:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

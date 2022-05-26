@@ -34,102 +34,9 @@ class AntVC: UIViewController {
     var titleArray = [String].init()
     var logView:ShowLogView!
     var dialArray = [AntOnlineDialModel].init()
-    var autoTimer:Timer?
-
-    func test() {
-        
-        AntCommandModule.shareInstance.checkUpgradeState { _, _ in
-            
-        }
-        
-        AntCommandModule.shareInstance.SetReportRealtimeData(isOpen: 1) { _ in
-            
-        }
-        
-        AntCommandModule.shareInstance.SetTime { _ in
-            
-        }
-        
-        AntCommandModule.shareInstance.GetCustonDialFrameSize { _, _ in
-            
-        }
-        
-        AntCommandModule.shareInstance.SetDeviceLanguage(index: 0) { _ in
-            
-        }
-        
-        AntCommandModule.shareInstance.SetWeatherUnit(type: 0) { _ in
-            
-        }
-        
-        AntCommandModule.shareInstance.GetMetricSystem { _, _ in
-            
-        }
-        
-        AntCommandModule.shareInstance.GetMac { _, _ in
-            
-        }
-        
-        AntCommandModule.shareInstance.GetNotificationRemind { _, _ in
-            
-        }
-        
-        for i in stride(from: 0, to: 3, by: 1) {
-
-            AntCommandModule.shareInstance.GetAlarm(index: i) { _, _ in
-                                    
-            }
-        }
-        
-        AntCommandModule.shareInstance.GetSedentary { _, _ in
-            
-        }
-        
-        AntCommandModule.shareInstance.GetDoNotDisturb { _, _ in
-            
-        }
-        
-        AntCommandModule.shareInstance.GetLightScreen { _, _ in
-            
-        }
-        
-        AntCommandModule.shareInstance.Get24HrMonitor { _, _ in
-            
-        }
-        
-        AntCommandModule.shareInstance.GetScreenTimeLong { _, _ in
-            
-        }
-        
-        AntCommandModule.shareInstance.GetTimeFormat { _, _ in
-            
-        }
-        
-        AntCommandModule.shareInstance.GetMetricSystem { _, _ in
-            
-        }
-        
-        AntCommandModule.shareInstance.GetDeviceLanguage { _, _ in
-            
-        }
-        
-        AntCommandModule.shareInstance.SetWeatherUnit(type: 0) { _ in
-            
-        }
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        //e4 bd a0 e5 a5 bd e6 98 8e e5 a4 a9
-        let valArray:[UInt8] = [0x00, 0x8a,0x00, 0x00 ,0x01, 0xAA ,0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xAA , 0xAA , 0xAA]
-
-//        let val = data.withUnsafeBytes { (byte) -> [UInt8] in
-//            let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
-//            return [UInt8](UnsafeBufferPointer.init(start: b, count: data.count))
-//        }
-//        let test:[UInt8] = Array.init(val[val.startIndex...20])
-//        print("test =",type(of: test),test)
         
         self.currentBleState = AntCommandModule.shareInstance.peripheral?.state ?? .disconnected
         
@@ -168,9 +75,6 @@ class AntVC: UIViewController {
             }
         }
         
-        let rightItem = UIBarButtonItem.init(title: "→", style: .done, target: self, action: #selector(pushNextVC))
-        self.navigationItem.rightBarButtonItem = rightItem
-        
         self.tableView = UITableView.init(frame: .init(x: 0, y: 0, width: screenWidth, height: screenHeight))
         self.tableView.delegate = self
         self.tableView.dataSource = self
@@ -181,124 +85,96 @@ class AntVC: UIViewController {
         self.logView.isHidden = true
         self.view.addSubview(self.logView)
         
-        self.titleArray = ["0x00 设备信息","0x01 设备设置","0x02 设备提醒","0x03 设备同步","0x04 测试命令","0x80 设备主动上报","测试多包","路径设置","测试升级","服务器相关命令,使用前确定网络正常","个性化定制"]
+        self.titleArray = ["设备信息","设备设置","设备提醒","设备同步","测试命令","设备主动上报","路径设置","测试升级","服务器相关命令,使用前确定网络正常"]
         self.dataSourceArray = [
             [
-                "0引导升级",
-                "1应用升级",
-                "2图库升级",
-                "3字库升级",
-                "4表盘升级",
-                "5自定义表盘升级",
-                "0x00 获取设备名称",
-                "0x02 获取固件版本",
-                "0x04 获取序列号",
-                //"0x05 设置序列号",
-                "0x06 获取mac地址",
-                "0x08 获取电量",
-                "0x09 设置时间",
-                "0x0a 获取设备支持的功能列表",
-                "获取支持的功能详情",
-                "10 获取产品、固件、资源等版本信息",
+                //"0引导升级",
+                //"1应用升级",
+                //"2图库升级",
+                //"3字库升级",
+                //"4表盘升级",
+                //"5自定义表盘升级",
+                "获取设备名称",
+                "获取固件版本",
+                "获取序列号",
+                "获取mac地址",
+                "获取电量",
+                "设置时间",
+                "获取设备支持的功能列表",
+                "获取产品、固件、资源等版本信息",
             ],
             [
-                "0x00 获取个人信息",
-                "0x01 设置个人信息",
-                "0x02 获取时间制式",
-                "0x03 设置时间制式",
-                "0x04 获取公英制",
-                "0x05 设置公英制",
-                "0x07 设置天气",
-                "0x09 设备进入拍照模式",
-                "0x0b 寻找手环",
-                "0x0c 获取抬腕亮屏",
-                "0x0d 设置抬腕亮屏",
-                "0x0e 获取屏幕亮度",
-                "0x0f 设置屏幕亮度",
-                "0x32 获取亮屏时长",
-                "0x33 设置亮屏时长",
-                "0x10 获取本地表盘",
-                "0x11 设置本地表盘",
-                "0x12 获取闹钟",
-                "0x13 设置闹钟",
-                "0x14 获取设备语言",
-                "0x15 设置设备语言",
-                "0x16 获取目标步数",
-                "0x17 设置目标步数",
-                //"0x18 获取显示方式",
-                //"0x19 设置显示方式",
-                //"0x1a 获取佩戴方式",
-                //"0x1b 设置佩戴方式",
-                //"0x1c",
-                "0x1d 设置单次测量",
-                "0x1e 获取锻炼模式",
-                "0x1f 设置锻炼模式",
-                //"0x21 设置设备模式",
-                "0x25 设置手机类型",
-                "0x28 获取天气单位",
-                "0x29 设置天气单位",
-                "0x2b 设置实时数据上报开关",
-                "0x2c 获取自定义表盘",
-                "0x2d 设置自定义表盘",
+                "获取个人信息",
+                "设置个人信息",
+                "获取时间制式",
+                "设置时间制式",
+                "获取公英制",
+                "设置公英制",
+                "设置天气",
+                "设备进入拍照模式",
+                "寻找手环",
+                "获取抬腕亮屏",
+                "设置抬腕亮屏",
+                "获取屏幕亮度",
+                "设置屏幕亮度",
+                "获取亮屏时长",
+                "设置亮屏时长",
+                "获取本地表盘",
+                "设置本地表盘",
+                "获取闹钟",
+                "设置闹钟",
+                "获取设备语言",
+                "设置设备语言",
+                "获取目标步数",
+                "设置目标步数",
+                "设置单次测量",
+                "获取锻炼模式",
+                "设置锻炼模式",
+                "获取天气单位",
+                "设置天气单位",
+                "设置实时数据上报开关",
+                "获取自定义表盘",
+                "设置自定义表盘",
                 "自定义背景选择",
                 "设置自定义背景",
-                "0x2e 设置电话状态",
-                "0x30 获取自定义表盘尺寸",
-                "0x34 获取24小时心率监测",
-                "0x35 设置24小时心率监测",
+                "设置电话状态",
+                "获取自定义表盘尺寸",
+                "获取24小时心率监测",
+                "设置24小时心率监测",
             ],
             [
-                "0x00 获取消息提醒",
-                "0x01 设置消息提醒",
-                "0x02 获取久坐提醒",
-                "0x03 设置久坐提醒(一组)",
-                "0x03 设置久坐提醒(多组)",
-                //"0x04 获取防丢提醒",
-                //"0x05 设置防丢提醒",
-                "0x06 获取勿扰提醒",
-                "0x07 设置勿扰提醒",
-                "0x08 获取心率预警",
-                "0x09 设置心率预警",
-                //"0x0a 获取生理周期",
-                //"0x0b 设置生理周期",
-                //"0x0c 获取洗手提醒",
-                //"0x0d 设置洗手提醒",
-                //"0x0e 获取喝水提醒",
-                //"0x0f 设置喝水提醒",
+                "获取消息提醒",
+                "设置消息提醒",
+                "获取久坐提醒",
+                "设置久坐提醒(一组)",
+                "设置久坐提醒(多组)",
+                "获取勿扰提醒",
+                "设置勿扰提醒",
+                "获取心率预警",
+                "设置心率预警",
             ],
             [
-                "0x00 同步计步数据",
-                "0x01",
-                "0x02 同步锻炼数据",
+                "同步计步数据",
+                "同步锻炼数据",
             ],
             [
-                "0x00 ",
-                "0x01 关机",
-                "0x02 ",
-                "0x03 恢复出厂设置",
-                "0x04",
-                "0x05 马达震动",
-                "0x07 重新启动",
+                "关机",
+                "恢复出厂设置",
+                "马达震动",
+                "重新启动",
             ],
             [
-                "0x80 实时步数",
-                "0x82 实时心率",
-                "0x84 单次测量结果",
-                "0x86 单次锻炼结束",
-                "0x88 找手机",
-                "0x89 结束找手机",
-                "0x8a 拍照",
-                "0x8c 音乐控制",
-                "0x8e 来电控制",
+                "实时步数",
+                "实时心率",
+                "单次测量结果",
+                "单次锻炼结束",
+                "找手机",
+                "结束找手机",
+                "拍照",
                 "上报屏幕亮度",
                 "上报亮屏时长",
                 "上报抬腕亮屏",
                 "上报设备振动",
-            ],
-            [
-                "多包测试命令",
-                "多包UTF8字符串测试命令",
-                "多包Unicode字符串测命令"
             ],
             [
                 "0引导文件",
@@ -310,102 +186,20 @@ class AntVC: UIViewController {
             ],
             [
                 "OTA升级",
-                "0x00 分包信息交互(APP)",
-                "0x02 启动升级",
-                "0x03 停止升级",
+                "停止升级",
             ],
             [
                 "获取服务器OTA信息",
                 "自动OTA升级服务器最新设备相关版本",
-                "获取在线表盘(旧接口，获取全部)",
-                "获取在线表盘(新接口，获取分页)",
+                "获取在线表盘",
                 "发送在线表盘",
             ],
-            [
-                "保存现有命令log",
-                "删除所有文件夹",
-            ]
         ]
 
         
     }
     
-    func colorRgb565(color:UIColor) {
-        
-        let uint8Max = CGFloat(UInt8.max)
-        var r:CGFloat = 0
-        var g:CGFloat = 0
-        var b:CGFloat = 0
-        var alpha:CGFloat = 0
-        color.getRed(&r, green: &g, blue: &b, alpha: &alpha)
-        
-        print("color.ciColor.red =",r,"g =",g,"b =",b)
-        
-        let intR = Int(r * uint8Max)
-        let intG = Int(g * uint8Max)
-        let intB = Int(b * uint8Max)
-        
-        let a = ((intB >> 3) & 0x1f)
-        let newColor = UInt16((intR & 0xf8) << 8 | (intG & 0xfc) << 3 | a)
-        
-        print("newColor =",newColor)
-    }
     
-    func colorRgb565(red:Int,green:Int,blue:Int) -> [UInt8] {
-        
-//        var color_value = ((red & 0xf8 | (green>>5)) << 8)
-//        color_value += ((green << 3 & 0xe0 | blue>>3) & 0xff)
-//
-//        return [UInt8((color_value >> 8) & 0xff),UInt8(color_value & 0xff)]
-        
-        
-        let a = ((blue >> 3) & 0x1f)
-        let newColor = UInt16((red & 0xf8) << 8 | (green & 0xfc) << 3 | a)
-
-        return [UInt8((newColor >> 8) & 0xff),UInt8(newColor & 0xff)]
-        //return [UInt8(newColor & 0xff),UInt8((newColor >> 8) & 0xff)]
-    }
-    
-    func colorRgb888(hex:UInt16) {
-        let a = ((hex & 0x001f) << 3)
-        let abc:Int = Int((hex & 0xf800) << 8 | (hex & 0x07e0) << 5 | a)
-        
-        print("abc =",abc)
-    }
-    
-    
-    func convertDataToHexStr(data:Data) ->String {
-        
-        if data.count <= 0 {
-            return ""
-        }
-        
-        var dataString = ""
-        let str = data.withUnsafeBytes { (bytes) -> String in
-            for i in stride(from: 0, to: bytes.count, by: 1) {
-                let count = UInt8(bytes[i])
-                
-                if dataString.count > 0 {
-                    
-                    dataString = dataString + " "
-
-                }
-                dataString = dataString + String.init(format: "%02x", count)
-            }
-            return String.init(format: "{length = %d , bytes = 0x%@}", data.count,dataString)
-        }
-        return str
-    }
-    
-    @objc func pushNextVC() {
-        let vc = LogViewController.init()
-        self.navigationController?.pushViewController(vc, animated: true)
-    }
-    
-    @objc func logButtonClick(sender:UIButton) {
-        let vc = LogViewController.init()
-        self.navigationController?.pushViewController(vc, animated: true)
-    }
 
     deinit {
         print("deinit AntVC")
@@ -471,12 +265,11 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let sectionArray = self.dataSourceArray[indexPath.section]
         let rowString = sectionArray[indexPath.row]
-        let vc = LogViewController.init()
         
         print("didSelectRowAt -> date =",Date.init())
         
         switch rowString {
-        case "0x00 获取设备名称":
+        case "获取设备名称":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取设备名称")
@@ -497,7 +290,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-        case "0x02 获取固件版本":
+        case "获取固件版本":
 
             self.logView.clearString()
             self.logView.writeString(string: "获取固件版本")
@@ -519,7 +312,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "0x04 获取序列号":
+        case "获取序列号":
 
             self.logView.clearString()
             self.logView.writeString(string: "获取序列号")
@@ -541,14 +334,8 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-            
-        case "0x05 设置序列号":
-
-            
-            
-            break
         
-        case "0x06 获取mac地址":
+        case "获取mac地址":
 
             self.logView.clearString()
             self.logView.writeString(string: "获取mac地址")
@@ -571,7 +358,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x08 获取电量":
+        case "获取电量":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取电量")
@@ -594,7 +381,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "0x09 设置时间":
+        case "设置时间":
             
             self.logView.clearString()
             self.logView.writeString(string: "设置时间")
@@ -614,7 +401,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "0x0a 获取设备支持的功能列表":
+        case "获取设备支持的功能列表":
             
             AntCommandModule.shareInstance.GetDeviceSupportList { success, error in
                 
@@ -632,38 +419,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "获取支持的功能详情":
-            
-            let array = [
-                "序号:[0,255]"
-            ]
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "获取支持的功能详情")
-            
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "获取支持的功能详情", holderStringArray: array, cancel: "取消", cancelAction: {
-                
-            }, ok: "确定") { (textArray) in
-                let index = textArray[0]
-
-                self.logView.writeString(string: "index:\(index.count > 0 ? index:"0")")
-
-                AntCommandModule.shareInstance.GetDeviceSupportFunctionDetail(index: Int(index) ?? 0) { success, error in
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    
-                    if error == .none {
-                        print("GetDeviceSupportFunctionDetail ->",success)
-                    }
-                }
-                
-            }
-            
-            
-            
-            
-            break
-            
-        case "10 获取产品、固件、资源等版本信息":
+        case "获取产品、固件、资源等版本信息":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取产品、固件、资源等版本信息")
@@ -698,7 +454,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-        case "0x00 获取个人信息":
+        case "获取个人信息":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取个人信息")
@@ -729,7 +485,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "0x01 设置个人信息":
+        case "设置个人信息":
             
             let array = [
                 "age:[0,255]",
@@ -774,7 +530,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x02 获取时间制式":
+        case "获取时间制式":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取时间制式")
@@ -797,7 +553,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "0x03 设置时间制式":
+        case "设置时间制式":
             
             let array = [
                 "format:0-24小时制,1-12小时制"
@@ -826,7 +582,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x04 获取公英制":
+        case "获取公英制":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取公英制")
@@ -846,7 +602,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x05 设置公英制":
+        case "设置公英制":
             
             let array = [
                 "0:公制，1:英制"
@@ -874,7 +630,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x07 设置天气":
+        case "设置天气":
             
             let array = [
                 "未来天数",
@@ -934,7 +690,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x09 设备进入拍照模式":
+        case "设备进入拍照模式":
             
             self.logView.clearString()
             self.logView.writeString(string: "设备进入拍照模式")
@@ -950,7 +706,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x0b 寻找手环":
+        case "寻找手环":
             
             self.logView.clearString()
             self.logView.writeString(string: "寻找手环")
@@ -966,7 +722,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "0x0c 获取抬腕亮屏":
+        case "获取抬腕亮屏":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取抬腕亮屏")
@@ -987,7 +743,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x0d 设置抬腕亮屏":
+        case "设置抬腕亮屏":
             
             let array = [
                 "0:关，1:开"
@@ -1015,7 +771,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "0x0e 获取屏幕亮度":
+        case "获取屏幕亮度":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取屏幕亮度")
@@ -1037,7 +793,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "0x0f 设置屏幕亮度":
+        case "设置屏幕亮度":
             let array = [
                 "亮度等级",
             ]
@@ -1065,7 +821,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x32 获取亮屏时长":
+        case "获取亮屏时长":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取亮屏时长")
@@ -1087,7 +843,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x33 设置亮屏时长":
+        case "设置亮屏时长":
             let array = [
                 "时长",
             ]
@@ -1114,7 +870,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "0x10 获取本地表盘":
+        case "获取本地表盘":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取本地表盘")
@@ -1135,7 +891,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x11 设置本地表盘":
+        case "设置本地表盘":
             let array = [
                 "表盘序号"
             ]
@@ -1162,7 +918,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x12 获取闹钟":
+        case "获取闹钟":
             let array = [
                 "闹钟序号"
             ]
@@ -1242,7 +998,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x13 设置闹钟":
+        case "设置闹钟":
             
             let array = [
                 "闹钟序号",
@@ -1302,7 +1058,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x14 获取设备语言":
+        case "获取设备语言":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取设备语言")
@@ -1322,7 +1078,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             //self.navigationController?.pushViewController(vc, animated: true)
             break
             
-        case "0x15 设置设备语言":
+        case "设置设备语言":
             
             let array = [
                 "语言序号"
@@ -1350,7 +1106,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x16 获取目标步数":
+        case "获取目标步数":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取目标步数")
@@ -1371,7 +1127,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                         
             break
             
-        case "0x17 设置目标步数":
+        case "设置目标步数":
             
             let array = [
                 "目标步数"
@@ -1395,67 +1151,6 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                     //self.navigationController?.pushViewController(vc, animated: true)
                 }
             }
-            
-            break
-            
-        case "0x18 获取显示方式":
-            
-            AntCommandModule.shareInstance.GetDispalyMode { success, error in
-                print("GetDispalyMode ->",success)
-            }
-
-            break
-            
-        case "0x19 设置显示方式":
-            
-            let array = [
-                "0:横屏，1:竖屏"
-            ]
-            
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置显示方式", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let isLandscape = textArray[0]
-                
-                AntCommandModule.shareInstance.SetDispalyMode(isVertical: Int(isLandscape) ?? 0) { success in
-                    print("SetDispalyMode ->",success)
-                    self.navigationController?.pushViewController(vc, animated: true)
-                }
-            }
-            
-            
-            break
-            
-        case "0x1a 获取佩戴方式":
-            
-            AntCommandModule.shareInstance.GetWearingWay { success, error in
-                print("GetWearingWay ->",success)
-            }
-                        
-            break
-            
-        case "0x1b 设置佩戴方式":
-            
-            let array = [
-                "0:左手,1:右手"
-            ]
-            
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置佩戴方式", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let isLeftHand = textArray[0]
-                
-                AntCommandModule.shareInstance.SetWearingWay(isLeftHand: Int(isLeftHand) ?? 0) { success in
-                    print("SetWearingWay ->",success)
-                    self.navigationController?.pushViewController(vc, animated: true)
-                }
-            }
-
-            break
-            
-        case "0x1c":
-            
-            
             
             break
             
@@ -1505,7 +1200,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x1e 获取锻炼模式":
+        case "获取锻炼模式":
 
             self.logView.clearString()
             self.logView.writeString(string: "获取锻炼模式")
@@ -1524,7 +1219,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x1f 设置锻炼模式":
+        case "设置锻炼模式":
             
             let array = [
                 "锻炼类型",
@@ -1554,58 +1249,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x21 设置设备模式":
-            
-            let array = [
-                "设备类型",
-                "0:退出,1:进入",
-            ]
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "设置设备模式")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置设备模式", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let type = textArray[0]
-                let isOpen = textArray[1]
-                
-                self.logView.writeString(string: "设备类型:\(type.count>0 ? type:"0")")
-                self.logView.writeString(string: (Int(isOpen) ?? 0) > 0 ? "进入":"退出")
-                AntCommandModule.shareInstance.SetDeviceMode(type: Int(type) ?? 0, isOpen: Int(isOpen) ?? 0) { error in
-                    
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    
-                    if error == .none {
-                        print("SetDeviceMode ->","success")
-                    }
-                }
-            }
-
-            break
-            
-        case "0x25 设置手机类型":
-            let array = [
-                "0:iOS,1:Android",
-            ]
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "设置手机类型")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置手机类型", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let type = textArray[0]
-                AntCommandModule.shareInstance.SetPhoneMode(type: Int(type) ?? 0) { error in
-                    
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    
-                    if error == .none {
-                        print("SetPhoneMode ->","success")
-                    }
-                }
-            }
-            break
-            
-        case "0x28 获取天气单位":
+        case "获取天气单位":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取天气单位")
@@ -1627,7 +1271,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x29 设置天气单位":
+        case "设置天气单位":
             let array = [
                 "0:摄氏度,1:华氏度",
             ]
@@ -1650,7 +1294,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "0x2b 设置实时数据上报开关":
+        case "设置实时数据上报开关":
             let array = [
                 "0:关闭,1:开启",
             ]
@@ -1674,7 +1318,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "0x2c 获取自定义表盘":
+        case "获取自定义表盘":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取自定义表盘")
@@ -1703,7 +1347,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x2d 设置自定义表盘":
+        case "设置自定义表盘":
             let array = [
                 "输入十六进制颜色值",
                 "显示位置,0左上1左中2左下3右上4右中5右下",
@@ -1745,7 +1389,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "0x2e 设置电话状态":
+        case "设置电话状态":
             
             let array = [
                 "0:已挂断,1:已接听",
@@ -1772,7 +1416,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x30 获取自定义表盘尺寸":
+        case "获取自定义表盘尺寸":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取消息提醒")
@@ -1796,7 +1440,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x34 获取24小时心率监测":
+        case "获取24小时心率监测":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取24小时心率监测")
@@ -1814,7 +1458,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x35 设置24小时心率监测":
+        case "设置24小时心率监测":
             
             let array = [
                 "0:关闭,1:开启",
@@ -1840,7 +1484,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x00 获取消息提醒":
+        case "获取消息提醒":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取消息提醒")
@@ -1862,7 +1506,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x01 设置消息提醒":
+        case "设置消息提醒":
             
             let array = [
                 "消息类型开关"
@@ -1903,7 +1547,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "0x02 获取久坐提醒":
+        case "获取久坐提醒":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取久坐提醒")
@@ -1930,7 +1574,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x03 设置久坐提醒(一组)":
+        case "设置久坐提醒(一组)":
             
             let array = [
                 "0:关，1:开",
@@ -1972,7 +1616,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "0x03 设置久坐提醒(多组)":
+        case "设置久坐提醒(多组)":
             
             let array = [
                 "0:关，1:开",
@@ -2050,37 +1694,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "0x04 获取防丢提醒":
-            
-            AntCommandModule.shareInstance.GetLost { success, error in
-                print("GetLost ->",success)
-                self.navigationController?.pushViewController(vc, animated: true)
-            }
-
-            break
-            
-        case "0x05 设置防丢提醒":
-            
-            let array = [
-                "0:关闭，1:开启"
-            ]
-            
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置防丢提醒", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let isOpen = textArray[0]
-                
-                AntCommandModule.shareInstance.SetLost(isOpen: isOpen) { success in
-                    print("SetLost ->",success)
-                    self.navigationController?.pushViewController(vc, animated: true)
-                }
-            }
-
-            
-            
-            break
-            
-        case "0x06 获取勿扰提醒":
+        case "获取勿扰提醒":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取勿扰提醒")
@@ -2109,7 +1723,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x07 设置勿扰提醒":
+        case "设置勿扰提醒":
             
             let array = [
                 "0:关闭，1:开启",
@@ -2147,7 +1761,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x08 获取心率预警":
+        case "获取心率预警":
             
             self.logView.clearString()
             self.logView.writeString(string: "获取心率预警")
@@ -2175,7 +1789,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x09 设置心率预警":
+        case "设置心率预警":
             
             let array = [
                 "0:关闭，1:开启",
@@ -2209,125 +1823,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x0a 获取生理周期":
-            
-            AntCommandModule.shareInstance.GetMenstrualCycle { success, error in
-                print("GetMenstrualCycle ->",success)
-                self.navigationController?.pushViewController(vc, animated: true)
-            }
-            
-            break
-            
-        case "0x0b 设置生理周期":
-            
-            let array = [
-                "0-月经开始,1-排卵开始,2-排卵高峰,3-排卵结束",
-                "周期天数",
-                "月经天数",
-                "上次经期的月份",
-                "上次经期的日",
-                "提醒小时",
-                "提醒分钟"
-            ]
-            
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置生理周期", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let type = textArray[0]
-                let cycleCount = textArray[1]
-                let menstrualCount = textArray[2]
-                let lastMonth = textArray[3]
-                let lastDay = textArray[4]
-                let remindHour = textArray[5]
-                let remindMinute = textArray[6]
-                
-                AntCommandModule.shareInstance.SetMenstrualCycle(type: type, cycleCount: cycleCount, menstrualCount: menstrualCount, lastMonth: lastMonth, lastDay: lastDay, remindHour: remindHour, remindMinute: remindMinute) { success in
-                    print("SetMenstrualCycle ->",success)
-                    self.navigationController?.pushViewController(vc, animated: true)
-                }
-            }
-            
-            
-            break
-            
-        case "0x0c 获取洗手提醒":
-            
-            AntCommandModule.shareInstance.GetWashHand { success, error in
-                print("GetWashHand ->",success)
-                self.navigationController?.pushViewController(vc, animated: true)
-            }
-            
-            break
-            
-        case "0x0d 设置洗手提醒":
-            
-            let array = [
-                "0:关，1:开",
-                "开始小时",
-                "开始分钟",
-                "目标次数",
-                "提醒间隔"
-            ]
-            
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置洗手提醒", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let isOpen = textArray[0]
-                let startHour = textArray[1]
-                let startMinute = textArray[2]
-                let targetCount = textArray[3]
-                let remindInterval = textArray[4]
-                
-                AntCommandModule.shareInstance.SetWashHand(isOpen: isOpen, startHour: startHour, startMinute: startMinute, targetCount: targetCount, remindInterval: remindInterval) { success in
-                    print("SetWashHand ->",success)
-                    self.navigationController?.pushViewController(vc, animated: true)
-                }
-            }
-            
-            break
-            
-        case "0x0e 获取喝水提醒":
-            
-            AntCommandModule.shareInstance.GetDrinkWater { success, error in
-                print("GetDrinkWater ->",success)
-                self.navigationController?.pushViewController(vc, animated: true)
-            }
-            
-            break
-            
-        case "0x0f 设置喝水提醒":
-            
-            let array = [
-                "0:关，1:开",
-                "开始小时",
-                "开始分钟",
-                "结束小时",
-                "结束分钟",
-                "提醒次数",
-                "提醒间隔"
-            ]
-            
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置喝水提醒", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let isOpen = textArray[0]
-                let startHour = textArray[1]
-                let startMinute = textArray[2]
-                let endHour = textArray[3]
-                let endMinute = textArray[4]
-                let remindCount = textArray[5]
-                let remindInterval = textArray[6]
-                
-                AntCommandModule.shareInstance.SetDrinkWater(isOpen: isOpen, startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute, remindCount: remindCount, remindInterval: remindInterval) { success in
-                    print("SetDrinkWater ->",success)
-                    self.navigationController?.pushViewController(vc, animated: true)
-                }
-                
-            }
-            
-            break
-            
-        case "0x00 同步计步数据":
+        case "同步计步数据":
             
             let array = [
                 "同步类型",
@@ -2410,11 +1906,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x01":
-            
-            break
-            
-        case "0x02 同步锻炼数据":
+        case "同步锻炼数据":
             
             let array = [
                 //"同步类型",
@@ -2461,12 +1953,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x00 ":
-            
-            
-            break
-            
-        case "0x01 关机":
+        case "关机":
             
             self.logView.clearString()
             self.logView.writeString(string: "关机")
@@ -2482,11 +1969,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x02 ":
-            
-            break
-            
-        case "0x03 恢复出厂设置":
+        case "恢复出厂设置":
             
             self.logView.clearString()
             self.logView.writeString(string: "恢复出厂设置")
@@ -2501,11 +1984,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x04":
-            
-            break
-            
-        case "0x05 马达震动":
+        case "马达震动":
             
             let array = [
                 "0:停止，1:单次震动，2:间歇震动三次，3:连续震动"
@@ -2541,7 +2020,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-        case "0x07 重新启动":
+        case "重新启动":
             self.logView.clearString()
             self.logView.writeString(string: "重新启动")
             
@@ -2553,7 +2032,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 }
             }
             break
-        case "0x80 实时步数":
+        case "实时步数":
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
             
@@ -2578,7 +2057,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "0x82 实时心率":
+        case "实时心率":
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
                         
@@ -2591,7 +2070,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 }
             }
             break
-        case "0x84 单次测量结果":
+        case "单次测量结果":
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
                         
@@ -2616,7 +2095,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 }
             }
             break
-        case "0x86 单次锻炼结束":
+        case "单次锻炼结束":
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
             
@@ -2627,7 +2106,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 }
             }
             break
-        case "0x88 找手机":
+        case "找手机":
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
             
@@ -2637,7 +2116,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 }
             }
             break
-        case "0x89 结束找手机":
+        case "结束找手机":
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
             
@@ -2647,7 +2126,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 }
             }
             break
-        case "0x8a 拍照":
+        case "拍照":
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
             
@@ -2656,48 +2135,6 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                     self.logView.writeString(string: "拍照")
                 }
             }
-            break
-        case "0x8c 音乐控制":
-            self.logView.clearString()
-            self.logView.writeString(string: "设备端点击显示")
-            
-            AntCommandModule.shareInstance.ReportMusicControl { success, error in
-                
-                if error == .none {
-                    let type = success
-                    var str = "未知类型"
-                    if type == 0 {
-                        str = "暂停"
-                    }else if type == 1 {
-                        str = "播放"
-                    }else if type == 2 {
-                        str = "上一曲"
-                    }else if type == 3 {
-                        str = "下一曲"
-                    }
-                    self.logView.writeString(string: "类型:\(str)")
-                }
-            }
-            break
-            
-        case "0x8e 来电控制":
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "设备端点击显示")
-            
-            AntCommandModule.shareInstance.ReportCallControl { success, error in
-                if error == .none {
-                    let type = success
-                    var str = "未知类型"
-                    if type == 0 {
-                        str = "挂断"
-                    }else if type == 1 {
-                        str = "接听"
-                    }
-                    self.logView.writeString(string: "类型:\(str)")
-                }
-            }
-            
             break
             
         case "上报屏幕亮度":
@@ -2748,74 +2185,6 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                     let isOpen = success
                     self.logView.writeString(string: "设备振动 开关:\(isOpen == 0 ? "关":"开")")
                 }
-            }
-            break
-            
-        case "多包测试命令":
-            
-            let array = [
-                "数据总长度 默认1000",
-                "分包发送长度 默认20",
-                "CMD_CLASS 默认0x80",
-                "CMD_ID 默认0"
-            ]
-            
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "多包测试命令", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let totalLength = textArray[0]
-                let subpackageLength = textArray[1]
-                let cmdClass = textArray[2]
-                let cmdId = textArray[3]
-                
-                AntCommandModule.shareInstance.testMultiplePackages(cmdClass: Int(cmdClass) ?? 0x80, cmdId: Int(cmdId) ?? 0, totalLength: Int(totalLength) ?? 1000, subpackageLength:  Int(subpackageLength) ?? 20)
-                
-            }
-            
-            
-            break
-            
-        case "多包UTF8字符串测试命令":
-            
-            let array = [
-                "输入字符串,默认'你好'",
-                "CMD_CLASS 默认0x02",
-                "CMD_ID 默认0x11",
-                "type 默认1"
-            ]
-            
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "多包UTF8字符串测试命令", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let sendString = textArray[0]
-                let cmdClass = textArray[1]
-                let cmdId = textArray[2]
-                let type = textArray[3]
-                
-                AntCommandModule.shareInstance.testUtf8StringData(cmdClass: Int(cmdClass) ?? 0x02, cmdId: Int(cmdId) ?? 0x11,type: type, sendString: sendString.count <= 0 ? "你好":sendString)
-                
-            }
-            
-            break
-            
-        case "多包Unicode字符串测命令":
-            let array = [
-                "输入字符串,默认'你好'",
-                "CMD_CLASS 默认0x02",
-                "CMD_ID 默认0x11",
-                "type 默认1"
-            ]
-            
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "多包Unicode字符串测命令", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let sendString = textArray[0]
-                let cmdClass = textArray[1]
-                let cmdId = textArray[2]
-                let type = textArray[3]
-                
-                AntCommandModule.shareInstance.testUnicodeStringData(cmdClass: Int(cmdClass) ?? 0x02, cmdId: Int(cmdId) ?? 0x11,type: type, sendString: sendString.count <= 0 ? "你好":sendString)
-                
             }
             break
             
@@ -3089,91 +2458,6 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x00 分包信息交互(APP)":
-            
-            let array = [
-                "最大发送长度:默认1024",
-                "最大接收长度:默认1024"
-            ]
-            
-            self.logView.clearString()
-            
-            self.presentTextFieldAlertVC(title: "提示(不输入或无效数据为默认1024)", message: "分包信息交互", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { textArray in
-                
-                let maxSend = textArray[0]
-                let maxReceive = textArray[1]
-                
-                self.logView.writeString(string: "APP -> maxSend:\(maxSend)")
-                self.logView.writeString(string: "APP -> maxReceive:\(maxReceive)")
-                
-                AntCommandModule.shareInstance.SetSubpackageInformationInteraction(maxSend: Int(maxSend) ?? 1024, maxReceive: Int(maxReceive) ?? 1024) { success,error in
-                    print("SetSubpackageInformationInteraction -> error =",error)
-                    
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    
-                    if error == .none {
-                        
-                        let maxSend = success["maxSend"] as! String
-                        let maxReceive = success["maxReceive"] as! String
-                        
-                        self.logView.writeString(string: "设备 -> maxSend:\(maxSend)")
-                        self.logView.writeString(string: "设备 -> maxReceive:\(maxReceive)")
-                        
-                        print("maxSend =",maxSend)
-                        print("maxReceive =",maxReceive)
-                        
-                    }
-                    
-                }
-                                
-            }
-            
-
-            
-            break
-            
-        case "0x02 启动升级":
-            
-            let array = [
-                "文件类型:默认0-引导文件",
-                "单包最大字节:默认20"
-            ]
-            
-            self.logView.clearString()
-            self.presentTextFieldAlertVC(title: "启动升级", message: "请确定文件路径选择正确，错误或无效数据可能导致闪退", holderStringArray: array, cancel: "取消", cancelAction: {
-                
-            }, ok: "确定") { textArray in
-                
-                let type = textArray[0]
-                let maxCount = textArray[1]
-                
-                let fileString = self.getFilePathWithType(type: type)
-                                
-                self.logView.writeString(string: "当前选择类型:\(type)")
-                self.logView.writeString(string: "文件路径:\(fileString)")
-                self.logView.writeString(string: "单包最大字节数:\(maxCount)")
-                
-                AntCommandModule.shareInstance.setStartUpgrade(type: Int(type) ?? 0, localFile: fileString, maxCount: Int(maxCount) ?? 20, isContinue: false) { progress in
-                    
-                    print("progress =",progress)
-                    self.logView.writeString(string: "进度:\(progress)")
-                    
-                } success: { error in
-                    
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    print("setStartUpgrade -> error =",error.rawValue)
-                    
-                }
-                
-                //Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(self.test123(timer:)), userInfo: nil, repeats: true)
-                
-                
-            }
-            
-            break
-            
         case "0x03 停止升级":
             
             AntCommandModule.shareInstance.setStopUpgrade { error in
@@ -3323,24 +2607,6 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             break
             
         case "设置自定义背景":
-            
-//            if let image = self.customBgImage {
-//
-//                let dialFile = self.otaFile()
-//
-//                AntCommandModule.shareInstance.setOtaStartUpgrade(type: 5, localFile: dialFile, isContinue: false) { progress in
-//
-//                    self.logView.writeString(string: "进度:\(progress)")
-//                    print("progress ->",progress)
-//
-//                } success: { error in
-//
-//                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-//                    print("setStartUpgrade -> error =",error.rawValue)
-//
-//                }
-//
-//            }
 
             if var image = self.customBgImage {
                 
@@ -3412,32 +2678,9 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 print("setAutoServerOtaDeviceInfo ->",error)
             }
-            
             break
-        case "获取在线表盘(旧接口，获取全部)":
-
-            self.logView.clearString()
-            self.logView.writeString(string: "获取在线表盘信息")
             
-            AntCommandModule.shareInstance.getOnlineDialList { dialArray, error in
-                self.logView.writeString(string: self.getErrorCodeString(error: error))
-                print("getOnlineDialList ->",dialArray.count)
-                
-                for item in dialArray {
-                    print("item.dialId =",item.dialId,"item.dialImageUrl =",item.dialImageUrl,"item.dialFileUrl =",item.dialFileUrl,"item.dialName =",item.dialName)
-                    self.logView.writeString(string: "id:\(item.dialId)")
-                    self.logView.writeString(string: "imageUrl:\(item.dialImageUrl!)")
-                    self.logView.writeString(string: "fileUrl:\(item.dialFileUrl!)")
-                    self.logView.writeString(string: "name:\(item.dialName!)\n\n")
-                }
-                
-                self.dialArray.removeAll()
-                self.dialArray = dialArray
-
-            }
-            
-            break
-        case "获取在线表盘(新接口，获取分页)":
+        case "获取在线表盘":
 
             self.logView.clearString()
             self.logView.writeString(string: "获取在线表盘信息")
@@ -3505,87 +2748,9 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "保存现有命令log":
-                        
-            let date:Date = Date()
-            let timeFormatter = DateFormatter()
-            timeFormatter.dateFormat = "YYYY/MM/dd hh:mm:ss SS"
-            let strNowTime = timeFormatter.string(from: date)
-            let onceUrl:String = String.init(format: "\n保存时间:%@\n\n\n\n\n%@",strNowTime,AntSDKLog.showLog())
-            let allUrl:String = String.init(format: "\n保存时间:%@\n\n\n\n\n%@",strNowTime,AntSDKLog.showAllLog())
-            
-            let savePath = NSHomeDirectory() + "/Documents/saveLog"
-            let fileManager = FileManager.default
-            let exit:Bool = fileManager.fileExists(atPath: savePath)
-            if exit == false {
-                do{
-                    //                创建指定位置上的文件夹
-                    try fileManager.createDirectory(atPath: savePath, withIntermediateDirectories: true, attributes: nil)
-                    print("Succes to create folder")
-                }
-                catch{
-                    print("Error to create folder")
-                }
-            }
-            
-            do{
-                try onceUrl.write(toFile: String.init(format: "%@/%@_onceLog.txt",savePath,Date.init().conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss")), atomically: true, encoding: .utf8)
-                try allUrl.write(toFile: String.init(format: "%@/%@_allLog.txt",savePath,Date.init().conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss")), atomically: true, encoding: .utf8)
-            }catch {
-                print("信息保存失败")
-            }
-            
-            if self.autoTimer == nil {
-                self.autoTimer = Timer.scheduledTimer(timeInterval: 10, target: self, selector: #selector(self.autoSaveLog), userInfo: nil, repeats: true)
-            }
-            
-            
-            break
-
-        case "删除所有文件夹":
-            let savePath = NSHomeDirectory() + "/Documents/saveLog"
-
-            self.presentSystemAlertVC(title: "警告", message: "删除所有已保存的log文件") {
-
-            } okAction: {
-                print("删除所有文件夹")
-                FileManager.removefile(filePath: savePath)
-            }
-
-            break
-            
         default:
             break
         }
-    }
-    
-    @objc func autoSaveLog() {
-        let date:Date = Date()
-        let timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "YYYY/MM/dd hh:mm:ss SS"
-        let strNowTime = timeFormatter.string(from: date)
-        let autoUrl:String = String.init(format: "\n保存时间:%@\n\n\n\n\n%@",strNowTime,AntSDKLog.showAllLog())
-        
-        let savePath = NSHomeDirectory() + "/Documents/saveLog"
-        let fileManager = FileManager.default
-        let exit:Bool = fileManager.fileExists(atPath: savePath)
-        if exit == false {
-            do{
-                //                创建指定位置上的文件夹
-                try fileManager.createDirectory(atPath: savePath, withIntermediateDirectories: true, attributes: nil)
-                print("Succes to create folder")
-            }
-            catch{
-                print("Error to create folder")
-            }
-        }
-        
-        do{
-            try autoUrl.write(toFile: String.init(format: "%@/automaticSaveLog.txt",savePath), atomically: true, encoding: .utf8)
-        }catch {
-            print("信息保存失败")
-        }
-        
     }
     
     func getFilePathWithType(type:String) ->String {
@@ -3690,23 +2855,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
         }
         return fileString
     }
-    
-    @objc func test123(timer:Timer) {
         
-        if self.testCount >= (861949/7250)+1 {
-            print("取消定时器")
-            timer.invalidate()
-        }else{
-            AntCommandModule.shareInstance.setOtaStartUpgrade(type: 0, localFile: "", isContinue: false) { progress in
-                
-            } success: { error in
-                
-            }
-        }
-        self.testCount += 1
-        
-    }
-    
     func getErrorCodeString(error:AntError) -> String {
         if error == .none {
             return "成功"
@@ -3720,162 +2869,15 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             return "无效状态"
         }else if error == .notSupport {
             return "不支持此功能"
+        }else if error == .noResponse {
+            return "设备无响应"
+        }else if error == .noMoreData {
+            return "没有更多数据"
         }
+        
         return "未知error"
     }
-
-    static var antStepIndex = 0
-    // MARK: - 同步ANT步数
-    private func antSyncHistoryStepModel(complete:(()->())?) {
-        
-        print("ANT同步历史步数")
-        
-        if AntVC.antStepIndex < 7 {
-            
-            self.antSyncStepDetailModel(dayCount: AntVC.antStepIndex) {
-                AntVC.antStepIndex += 1
-                
-                DispatchQueue.main.async {
-                    
-                    self.antSyncHistoryStepModel(complete: complete)
-                }
-                
-            }
-            
-        }else{
-            AntVC.antStepIndex = 0
-            
-            DispatchQueue.main.async {
-                
-                if let complete = complete {
-                    complete()
-                }
-            }
-            
-        }
-    }
     
-    private func antSyncStepDetailModel(dayCount:Int,success:(()->())?) {
-        
-        print("step dayCount ->",dayCount)
-        
-        AntCommandModule.shareInstance.SetSyncHealthData(type: "1", dayCount: "\(dayCount)") { stepSuccess, error in
-            
-            if error == .none {
-                if stepSuccess is AntStepModel {
-                    if let model:AntStepModel = stepSuccess as? AntStepModel {
-                        let detailArray = model.detailArray
-                        
-                        print("detailArray -> 1",detailArray,detailArray.count)
-                        
-                        var stepArray = Array<Int>.init()
-                        //SDK返回的是半个小时一个数据   整合到本地数据库每个小时一个数据
-                        for i in stride(from: 0, to: detailArray.count/2, by: 1) {
-                            let result = detailArray[i*2] + detailArray[i*2+1]
-                            stepArray.append(result)
-                        }
-                    }
-                }
-            }
-            
-            if let success = success {
-                print("ant同步第\(dayCount)天的步数数据完成")
-                success()
-            }
-        }
-    }
-    
-    static var antSleepIndex = 0
-    // MARK: - 同步ANT睡眠
-    private func antSyncHistorySleepModel(complete:(()->())?){
-        
-        if AntVC.antSleepIndex < 7 {
-            
-            self.antSyncSleepDetailModel(dayCount: AntVC.antSleepIndex) {
-                AntVC.antSleepIndex += 1
-                
-                self.antSyncHistorySleepModel(complete: complete)
-            }
-            
-        }else{
-            AntVC.antSleepIndex = 0
-            
-            if let complete = complete {
-                complete()
-            }
-        }
-
-    }
-    
-    private func antSyncSleepDetailModel(dayCount:Int,success:(()->())?) {
-        
-        AntCommandModule.shareInstance.SetSyncHealthData(type: "3", dayCount: "\(dayCount)") { sleepSuccess, error in
-            
-            if error == .none {
-                
-                if sleepSuccess is AntSleepModel {
-                    if let model:AntSleepModel = sleepSuccess as? AntSleepModel {
-                        let deep = model.deep
-                        let awake = model.awake
-                        let light = model.light
-                        let detailArray = model.detailArray
-                        print("deep ->",deep,"awake ->",awake,"light ->",light,"detailArray ->",detailArray)
-                    }
-                }
-            }
-            if let success = success {
-                print("ant同步第\(dayCount)天的睡眠数据完成")
-                success()
-            }
-        }
-    }
-    
-    static var antHeartrateIndex = 0
-    // MARK: - 同步ANT心率历史
-    func antSyncHistoryHeartrateModel(complete:(()->())?){
-        
-        if AntVC.antHeartrateIndex < 7 {
-            
-            self.antSyncHeartrateDetailModel(dayCount: AntVC.antHeartrateIndex) {
-                AntVC.antHeartrateIndex += 1
-                
-                
-                self.antSyncHistoryHeartrateModel(complete: complete)
-                
-            }
-            
-        }else{
-            AntVC.antHeartrateIndex = 0
-            
-            if let complete = complete {
-                complete()
-            }
-        }
-        
-    }
-    
-    func antSyncHeartrateDetailModel(dayCount:Int,success:(()->())?) {
-            
-        AntCommandModule.shareInstance.SetSyncHealthData(type: "2", dayCount: "\(dayCount)") { hrSuccess, error in
-            
-            print("error =",error.rawValue)
-            
-            if error == .none {
-                
-                if hrSuccess is AntHrModel {
-                    if let model:AntHrModel = hrSuccess as? AntHrModel {
-                        let detailArray = model.detailArray
-                        print("detailArray -> 2",detailArray)
-                    }
-                }
-
-            }
-            if let success = success {
-                print("ant同步第\(dayCount)天的心率数据完成")
-                success()
-            }
-        }
-    }
 }
 
 extension AntVC : UIImagePickerControllerDelegate,UINavigationControllerDelegate {
@@ -3973,9 +2975,9 @@ extension AntVC : UIImagePickerControllerDelegate,UINavigationControllerDelegate
                         
                     }else {
                        
-                        self.presentSystemAlertVC(title: NSLocalizedString("public_tip_title_photoAuthorization", comment: ""), message: "\(NSLocalizedString("public_settings", comment: ""))->\(NSLocalizedString("public_settings", comment: "public_privacy"))->\(NSLocalizedString("public_settings", comment: "public_photo"))", cancel: NSLocalizedString("public_tip_cancel", comment: ""), cancelAction: {
+                        self.presentSystemAlertVC(title: "没有权限", message: "", cancel: "取消", cancelAction: {
                             
-                        }, ok: NSLocalizedString("public_tip_ok", comment: "")) {
+                        }, ok: "确定") {
                             let url = URL(string: UIApplication.openSettingsURLString)
                             if (UIApplication.shared.canOpenURL(url!)){
                                 UIApplication.shared.openURL(url!)
@@ -4069,106 +3071,6 @@ extension UIColor {
 
 extension UIImage{
     
-    /**
-    获取图片中的像素颜色值
-    
-    - parameter pos: 图片中的位置
-    
-    - returns: 颜色值
-    */
-    func getPixelColor(pos:CGPoint)->(alpha: UInt8, red: UInt8, green: UInt8,blue:UInt8){
-//        pixelsWide
-        if let cgImage = self.cgImage {
-            let pixelData=cgImage.dataProvider?.data//CGImageGetDataProvider(cgImage).data
-            
-            let data:UnsafePointer<UInt8> = CFDataGetBytePtr(pixelData)
-            let pixelInfo: Int = ((Int(cgImage.width) * Int(pos.x)) + Int(pos.y)) * 4
-            
-            //("pixelData =",CFDataGetLength(pixelData))
-            //print("cgImage.bytesPerRow =",cgImage.bytesPerRow)
-            //print("cgImage.width =",cgImage.width)
-            //print("cgImage.height =",cgImage.height)
-            
-            var a:UInt8 = 0
-            var r:UInt8 = 0
-            var g:UInt8 = 0
-            var b:UInt8 = 0
-            
-            if cgImage.alphaInfo == .premultipliedFirst || cgImage.alphaInfo == .noneSkipFirst || cgImage.alphaInfo == .first {
-                //ARGB
-                a = UInt8(data[pixelInfo])
-                r = UInt8(data[pixelInfo+1])
-                g = UInt8(data[pixelInfo+2])
-                b = UInt8(data[pixelInfo+3])
-                
-            }else if cgImage.alphaInfo == .premultipliedLast || cgImage.alphaInfo == .noneSkipLast || cgImage.alphaInfo == .last {
-                //RGBA
-                r = UInt8(data[pixelInfo])
-                g = UInt8(data[pixelInfo+1])
-                b = UInt8(data[pixelInfo+2])
-                a = UInt8(data[pixelInfo+3])
-                
-            }
-            
-            return (a,r,g,b)
-        }
-        
-        return (0,0,0,0)
-    }
-    
-    public func pickColor(at position: CGPoint) -> (alpha: UInt8, red: UInt8, green: UInt8,blue:UInt8) {
-        
-        // 用来存放目标像素值
-//        var pixel = [UInt8](repeatElement(0, count: 4))
-//        // 颜色空间为 RGB，这决定了输出颜色的编码是 RGB 还是其他（比如 YUV）
-//        let colorSpace = CGColorSpace(name: CGColorSpace.sRGB)!//CGColorSpaceCreateDeviceRGB()
-//        // 设置位图颜色分布为 RGBA
-//        let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue
-//        guard let context = CGContext(data: &pixel, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4, space: colorSpace, bitmapInfo: bitmapInfo) else {
-//            return (0,0,0,0)
-//        }
-//        // 设置 context 原点偏移为目标位置所有坐标
-//        context.translateBy(x: -position.x, y: -position.y)
-//        // 将图像渲染到 context 中
-//        if let cgImage = self.cgImage {
-//            context.draw(cgImage, in: .init(origin: .init(x: 0, y: 0), size: self.size))
-//        }
-//        let r:UInt8 = UInt8(pixel[0])
-//        let g:UInt8 = UInt8(pixel[1])
-//        let b:UInt8 = UInt8(pixel[2])
-//        let a:UInt8 = UInt8(pixel[3])
-//
-//        return (a,r,g,b)
-//
-        
-
-            let pointX = trunc(position.x);
-            let pointY = trunc(position.y);
-
-            let width = self.size.width;
-            let height = self.size.height;
-            let colorSpace = CGColorSpaceCreateDeviceRGB();
-            var pixelData: [UInt8] = [0, 0, 0, 0]
-
-            pixelData.withUnsafeMutableBytes { pointer in
-                if let context = CGContext(data: pointer.baseAddress, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4, space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue), let cgImage = self.cgImage {
-                    context.setBlendMode(.copy)
-                    context.translateBy(x: -pointX, y: pointY - height)
-                    context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
-                }
-            }
-        
-        let r:UInt8 = UInt8(pixelData[0])
-        let g:UInt8 = UInt8(pixelData[1])
-        let b:UInt8 = UInt8(pixelData[2])
-        let a:UInt8 = UInt8(pixelData[3])
-
-        return (a,r,g,b)
-
-            
-
-    }
-    
     func img_changeSize(size:CGSize) -> UIImage {
 
 
@@ -4186,248 +3088,4 @@ extension UIImage{
 
     }
     
-    /**
-     Converts the image into an array of RGBA bytes.
-     */
-    @nonobjc public func toByteArray() -> [UInt8] {
-        let width = Int(size.width)
-        let height = Int(size.height)
-        var bytes = [UInt8](repeating: 0, count: width * height * 4)
-        
-        bytes.withUnsafeMutableBytes { ptr in
-            if let context = CGContext(
-                data: ptr.baseAddress,
-                width: width,
-                height: height,
-                bitsPerComponent: 8,
-                bytesPerRow: width * 4,
-                space: CGColorSpaceCreateDeviceRGB(),
-                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue) {
-                
-                if let image = self.cgImage {
-                    let rect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
-                    context.draw(image, in: rect)
-                }
-            }
-        }
-        return bytes
-    }
-    
-    /**
-     Creates a new UIImage from an array of RGBA bytes.
-     */
-    @nonobjc public class func fromByteArray(_ bytes: UnsafeMutableRawPointer,
-                                             width: Int,
-                                             height: Int) -> UIImage {
-        
-        if let context = CGContext(data: bytes, width: width, height: height,
-                                   bitsPerComponent: 8, bytesPerRow: width * 4,
-                                   space: CGColorSpaceCreateDeviceRGB(),
-                                   bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue),
-           let cgImage = context.makeImage() {
-            return UIImage(cgImage: cgImage, scale: 0, orientation: .up)
-        } else {
-            return UIImage()
-        }
-    }
-    
-}
-
-extension Date {
-    // MARK: - 返回dayCount天日期，+为之后，-为之前
-    func afterDay(dayCount:Int) -> Date {
-        return self.addingTimeInterval(TimeInterval(dayCount * 86400))
-    }
-    
-    func conversionDateToString(DateFormat dateFormatter:String) -> String {
-        let formatter = DateFormatter.init()
-        //formatter.dateStyle = .medium
-        formatter.dateFormat = dateFormatter
-        return formatter.string(from:self)
-    }
-}
-
-extension FileManager {
-    
-    // 文件管理器
-    static var fileManager: FileManager {
-        return FileManager.default
-    }
-    
-    // MARK: 2.1、创建文件夹(蓝色的，文件夹和文件是不一样的)
-    /// 创建文件夹(蓝色的，文件夹和文件是不一样的)
-    /// - Parameter folderName: 文件夹的名字
-    /// - Returns: 返回创建的 创建文件夹路径
-    @discardableResult
-    static func createFolder(folderPath: String) -> (isSuccess: Bool, error: String) {
-        if !judgeFileOrFolderExists(filePath: folderPath) {
-            // 不存在的路径才会创建
-            do {
-                // withIntermediateDirectories为ture表示路径中间如果有不存在的文件夹都会创建
-                try fileManager.createDirectory(atPath: folderPath, withIntermediateDirectories: true, attributes: nil)
-                print("创建文件夹成功")
-                return (true, "")
-            } catch _ {
-                return (false, "创建失败")
-            }
-        }
-        return (true, "")
-    }
-    
-    // MARK: 2.2、删除文件夹
-    /// 删除文件夹
-    /// - Parameter folderPath: 文件的路径
-    @discardableResult
-    static func removefolder(folderPath: String) -> (isSuccess: Bool, error: String) {
-        let filePath = "\(folderPath)"
-        guard judgeFileOrFolderExists(filePath: filePath) else {
-            // 不存在就不做什么操作了
-            print("removefolder 文件路径为空")
-            return (true, "")
-        }
-        // 文件存在进行删除
-        do {
-            try fileManager.removeItem(atPath: filePath)
-            print("删除文件夹成功")
-            return (true, "")
-            
-        } catch _ {
-            return (false, "删除失败")
-        }
-    }
-    
-    // MARK: 2.3、创建文件
-    /// 创建文件
-    /// - Parameter filePath: 文件路径
-    /// - Returns: 返回创建的结果 和 路径
-    @discardableResult
-    static func createFile(filePath: String) -> (isSuccess: Bool, error: String) {
-        guard judgeFileOrFolderExists(filePath: filePath) else {
-            // 不存在的文件路径才会创建
-            // withIntermediateDirectories 为 ture 表示路径中间如果有不存在的文件夹都会创建
-            let createSuccess = fileManager.createFile(atPath: filePath, contents: nil, attributes: nil)
-            
-            return (createSuccess, "")
-        }
-        return (true, "")
-    }
-    
-    // MARK: 2.4、删除文件
-    /// 删除文件
-    /// - Parameter filePath: 文件路径
-    @discardableResult
-    static func removefile(filePath: String) -> (isSuccess: Bool, error: String) {
-        guard judgeFileOrFolderExists(filePath: filePath) else {
-            // 不存在的文件路径就不需要要移除
-            return (true, "")
-        }
-        // 移除文件
-        do {
-            try fileManager.removeItem(atPath: filePath)
-            print("删除文件成功")
-            return (true, "")
-        } catch _ {
-            return (false, "移除文件失败")
-        }
-    }
-    
-    // MARK: 文件写入
-    @discardableResult
-    static func writeDicToFile(content: [String:Any], writePath: String) -> (isSuccess: Bool, error: String) {
-        guard judgeFileOrFolderExists(filePath: writePath) else {
-            // 不存在的文件路径
-            print("writeDicToFile 文件路径为空")
-            return (false, "不存在的文件路径")
-        }
-        
-        let result = (content as NSDictionary).write(toFile: writePath, atomically: true)
-        if result {
-            print("文件写入成功")
-            return (true, "")
-        } else {
-            return (false, "写入失败")
-        }
-    }
-    
-    //文件读取
-    @discardableResult
-    static func readDicFromFile(readPath: String) -> (isSuccess: Bool, content: Any?, error: String) {
-        guard judgeFileOrFolderExists(filePath: readPath),  let readHandler =  FileHandle(forReadingAtPath: readPath) else {
-            // 不存在的文件路径
-            print("readDicFromFile 文件路径为空")
-            return (false, nil, "不存在的文件路径")
-        }
-
-        let dic = NSDictionary.init(contentsOfFile: readPath)
-        
-        return (true, dic, "")
-    }
-    
-    // MARK: 图片写入
-    @discardableResult
-    static func writeImageToFile(content: UIImage, writePath: String) -> (isSuccess: Bool, error: String) {
-        guard judgeFileOrFolderExists(filePath: writePath) else {
-            // 不存在的文件路径
-            print("writeImageToFile 文件路径为空")
-            return (false, "不存在的文件路径")
-        }
-
-        let imageData:Data = content.pngData() ?? Data.init()
-        let result: ()? = try? imageData.write(to: URL.init(fileURLWithPath: writePath))
-        
-        if (result != nil) {
-            print("文件写入成功")
-            return (true, "")
-        }else{
-            return (false, "写入失败")
-        }
-        
-    }
-    
-    //图片读取
-    @discardableResult
-    static func readImageFromFile(readPath: String) -> (isSuccess: Bool, content: Any?, error: String) {
-        guard judgeFileOrFolderExists(filePath: readPath) else {
-            // 不存在的文件路径
-            print("readImageFromFile 文件路径为空")
-            return (false, nil, "不存在的文件路径")
-        }
-
-        let image = UIImage.init(contentsOfFile: readPath)
-        return (true, image, "")
-
-    }
-    
-    //获取文件夹下文件列表
-    @discardableResult
-    static func getFileListInFolderWithPath(path:String) -> (isSuccess: Bool, content: [Any]?, error: String) {
-        guard judgeFileOrFolderExists(filePath: path) else {
-            // 不存在的文件路径
-            print("getFileListInFolderWithPath 文件路径为空")
-            return (false , nil , "不存在的文件路径")
-        }
-        
-        do {
-            // withIntermediateDirectories为ture表示路径中间如果有不存在的文件夹都会创建
-            let fileList = try self.fileManager.contentsOfDirectory(atPath: path)
-//            print("获取文件夹下文件列表成功")
-            return (true , fileList , "获取成功")
-        } catch _ {
-            return (false , nil , "获取失败")
-        }
-
-        
-    }
-
-    
-    // MARK: 2.10、判断 (文件夹/文件) 是否存在
-     /** 判断文件或文件夹是否存在*/
-     static func judgeFileOrFolderExists(filePath: String) -> Bool {
-         let exist = fileManager.fileExists(atPath: filePath)
-         // 查看文件夹是否存在，如果存在就直接读取，不存在就直接反空
-         guard exist else {
-             return false
-         }
-         return true
-     }
 }
