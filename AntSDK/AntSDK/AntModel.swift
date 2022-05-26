@@ -105,7 +105,7 @@ import UIKit
     @objc public private(set) var functionDetail_alarm:AntFunctionModel_alarm?
     @objc public private(set) var functionDetail_screenControl:AntFunctionModel_screenControl?
     @objc public private(set) var functionDetail_localDial:AntFunctionModel_localDial?
-    @objc public private(set) var functionDetail_hrMonitor:AntFunctionModel_hrMonitor?
+    @objc public private(set) var functionDetail_hrWarning:AntFunctionModel_hrWarning?
     @objc public private(set) var functionDetail_goal:AntFunctionModel_goal?
     
     init(val:[UInt8]) {
@@ -217,7 +217,7 @@ import UIKit
                 self.functionDetail_localDial = AntFunctionModel_localDial.init(result: functionCount)
                 break
             case 21:
-                self.functionDetail_hrMonitor = AntFunctionModel_hrMonitor.init(val: functionVal)
+                self.functionDetail_hrWarning = AntFunctionModel_hrWarning.init(val: functionVal)
                 break
             case 22:
                 break
@@ -542,7 +542,7 @@ import UIKit
         }
         if self.functionList_hrWarning {
             log += "\n心率预警"
-            if let model = self.functionDetail_hrMonitor {
+            if let model = self.functionDetail_hrWarning {
                 log += "\n      心率预警最大值 \(model.maxValue)"
                 log += "\n      心率预警最小值 \(model.minValue)"
             }
@@ -757,7 +757,7 @@ import UIKit
     }
 }
 
-@objc public class AntFunctionModel_hrMonitor:NSObject {
+@objc public class AntFunctionModel_hrWarning:NSObject {
     @objc public private(set) var maxValue = 0         //最大值
     @objc public private(set) var minValue = 0         //最小值
     
