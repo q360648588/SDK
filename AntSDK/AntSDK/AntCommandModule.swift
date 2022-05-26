@@ -164,6 +164,12 @@ import Alamofire
     var exerciseDataLength = 0
     var exerciseCRC16 = 0
     
+    var deviceSupportMaxData:Data?
+    var isDeviceSupportData = false
+    var deviceSupportMaxIndex = 0
+    var deviceSupportDataLength = 0
+    var deviceSupportCRC16 = 0
+    
     var otaData:Data?
     var otaStartIndex = 0
     var otaMaxSingleCount = 0
@@ -371,46 +377,7 @@ import Alamofire
                         AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetTime长度校验出错"))
                     }
                 }
-                
-                //获取设备支持的功能列表
-                if val[0] == 0x00 && val[1] == 0x8a {
-                    if self.checkLength(val: [UInt8](val)) {
-                        
-                        if let block = self.receiveGetDeviceSupportListBlock {
-                            self.parseGetDeviceSupportList(val: val, success: block)
-                        }
-                        
-                    }else{
-                        if let block = self.receiveGetDeviceSupportListBlock {
-                            block(nil,.invalidLength)
-                        }
-                        //printLog("第\(#line)行" , "\(#function)")
-                        self.signalCommandSemaphore()
-                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetDeviceSupportList长度校验出错"))
-                    }
-                    
-                }
-                
-                //获取支持的功能详情
-                if val[0] == 0x00 && val[1] == 0x8c {
-                    if self.checkLength(val: [UInt8](val)) {
-                        
-                        if let block = self.receiveGetDeviceSupportFunctionDetailBlock {
-                            self.parseGetDeviceSupportFunctionDetail(val: val, success: block)
-                        }
-                        
-                    }else{
-                        if let block = self.receiveGetDeviceSupportFunctionDetailBlock {
-                            block([:],.invalidLength)
-                        }
-                        //printLog("第\(#line)行" , "\(#function)")
-                        self.signalCommandSemaphore()
-                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetDeviceSupportFunctionDetail长度校验出错"))
-                    }
-                    
-                }
-                
-                
+        
                 if val[0] == 0x00 && val[1] == 0x8E {
                     if self.checkLength(val: [UInt8](val)) {
                         
@@ -1931,6 +1898,95 @@ import Alamofire
                     }
                 }
                 
+                //获取设备支持的功能列表
+                if val[0] == 0x03 && val[1] == 0x84 {
+                    
+                    if self.checkLength(val: [UInt8](val)) {
+                        if val[4] == 0 {
+                            
+                            if let block = self.receiveGetDeviceSupportListBlock {
+                                block(nil,.noMoreData)
+                            }
+                            self.signalCommandSemaphore()
+                            AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetDeviceSupportList 数据状态错误"))
+                            return
+                        }
+                    }
+                    
+                    if val.count > 13 {
+                        
+                        //所有长度不定，不能以长度来判断
+                        if val[6] == 1 && val[7] == 6 {
+                            self.isDeviceSupportData = true
+                            let maxDataCount = (Int(val[2]) | Int(val[3]) << 8  | Int(val[4]) << 16  | Int(val[5]) << 24)
+                            let indexCount =  1 + (maxDataCount + 8) / 16 //应该能接收的所有包序号
+                            self.deviceSupportMaxIndex = indexCount
+                            self.deviceSupportDataLength = maxDataCount
+                            self.deviceSupportCRC16 = (Int(val[10]) | Int(val[11]) << 8)
+                            printLog("deviceSupportMaxIndex ->",self.deviceSupportMaxIndex)
+                            printLog("self.deviceSupportCRC16 ->",self.deviceSupportCRC16)
+                            printLog("self.deviceSupportCRC16 ->%04x",String.init(format: "%04x", self.deviceSupportCRC16))
+                            self.exerciseMaxData = nil
+                            
+                            self.deviceSupportMaxData = val.withUnsafeBufferPointer({ (bytes) -> Data in
+                                let byte = bytes.baseAddress! + 13
+                                return Data.init(bytes: byte, count: val.count-13)
+                            })
+                            return
+                        }
+                    }
+                    
+                    if self.isDeviceSupportData {
+                        
+                        let newData = val.withUnsafeBufferPointer({ (bytes) -> Data in
+                            let byte = bytes.baseAddress! + 4
+                            return Data.init(bytes: byte, count: val.count-4)
+                        })
+                        
+                        self.deviceSupportMaxData?.append(newData)
+                        printLog("(Int(val[2]) | Int(val[3]) << 8 ) =\((Int(val[2]) | Int(val[3]) << 8 )),self.deviceSupportMaxIndex-1 =\(self.deviceSupportMaxIndex-1)")
+                        if (Int(val[2]) | Int(val[3]) << 8 ) >= self.deviceSupportMaxIndex-1 {
+                            
+                            self.isDeviceSupportData = false
+                            printLog("isDeviceSupportData接收完成")
+                            
+                            printLog("length =",self.deviceSupportMaxData!.count,"deviceSupportMaxData ->",self.convertDataToHexStr(data: self.deviceSupportMaxData!))
+                            
+                            let crc16:UInt16 = self.CRC16(data: self.deviceSupportMaxData!)
+                            
+                            printLog("crc16 ->",crc16)
+                            
+                            printLog("crc16 ->02x",String.init(format: "%02x", crc16))
+                            
+                            if self.deviceSupportDataLength == self.deviceSupportMaxData!.count && self.deviceSupportCRC16 == crc16 {
+                                
+                                let dsVal = self.deviceSupportMaxData!.withUnsafeBytes({ (bytes) -> [UInt8] in
+                                    let b = (bytes.baseAddress?.bindMemory(to: UInt8.self, capacity: 4))!
+                                    return [UInt8](UnsafeBufferPointer.init(start: b, count: (self.deviceSupportMaxData?.count ?? 0)))
+                                })
+                                
+                                if let block = self.receiveGetDeviceSupportListBlock {
+                                    self.parseGetDeviceSupportList(val: dsVal, success: block)
+                                }
+                                
+                            }else{
+                                
+                                if self.deviceSupportDataLength != self.deviceSupportMaxData!.count {
+                                    //printLog("第\(#line)行" , "\(#function)")
+                                    self.signalCommandSemaphore()
+                                    AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetDeviceSupportList长度校验出错"))
+                                }
+                                
+                                if self.deviceSupportCRC16 != crc16 {
+                                    //printLog("第\(#line)行" , "\(#function)")
+                                    self.signalCommandSemaphore()
+                                    AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@ 第一包给的0x%04x,所有接收校验的0x%04x", "获取功能列表 CRC16校验出错",self.deviceSupportCRC16,crc16))
+                                }
+                            }
+                        }
+                    }
+                }
+                
                 //关机
                 if val[0] == 0x04 && val[1] == 0x81 {
                     if self.checkLength(val: [UInt8](val)) {
@@ -3201,137 +3257,6 @@ import Alamofire
             
         }else{
             success(.invalidState)
-        }
-        //printLog("第\(#line)行" , "\(#function)")
-        self.signalCommandSemaphore()
-    }
-    
-    // MARK: - 获取设备支持的功能列表 0x0a
-    @objc public func GetDeviceSupportList(_ success:@escaping((AntFunctionListModel?,AntError)->Void)) {
-        
-        
-        var val:[UInt8] = [0x00,0x0a,0x04,0x00]
-        let data = Data.init(bytes: &val, count: val.count)
-        
-        let state = self.writeDataAndBackError(data: data)
-        if state == .none {
-            self.receiveGetDeviceSupportListBlock = success
-        }else{
-            success(nil,state)
-        }
-    }
-    
-    private func parseGetDeviceSupportList(val:[UInt8],success:@escaping((AntFunctionListModel?,AntError)->Void)) {
-        /*
-         bit0 锻炼功能
-         bit1 计步功能（24 小时详情）
-         bit2 睡眠（24 小时详情）
-         bit3 心率检测（24 小时详情）
-         bit4 血压检测（24 小时详情）
-         bit5 血氧检测（24 小时详情）
-         Bit6 消息推送
-         Bit7 来电提醒
-         Bit8 闹钟提醒
-         Bit9 久坐提醒
-         Bit10 目标提醒
-         Bit11 振动提醒
-         Bit12 勿扰模式
-         Bit13 电池电量百分比
-         Bit14 天气
-         Bit15 多国语言
-         Bit16 背光时长
-         Bit17 背光亮度
-         Bit18 在线表盘
-         Bit19 自定义表盘
-         Bit20 指针表盘
-         Bit21 ota 升级
-         Bit22 生理周期
-         Bit23 摇一摇拍照
-         Bit24 抬腕亮屏
-         Bit25 全天心率
-         Bit26 拍照控制
-         Bit27 音乐控制
-         Bit28 查找手环
-         Bit29 关机控制
-         Bit30 重启控制
-         Bit31 恢复出厂控制
-         */
-        let state = String.init(format: "%02x", val[4])
-        var string = ""
-        var funcList_1 = 0
-        var funcList_2 = 0
-        
-        if val[4] == 1 {
-            
-            let listFunctionCount = val.count - 5
-            for i in 0...listFunctionCount/8 {
-                var listValue = 0
-                for j in 0..<8 {
-                    //在数组范围内
-                    if 5+i*8+j < val.count {
-                        listValue |= (Int(val[5+i*8+j]) << (j*8))
-                    }
-                }
-                if i == 0 {
-                    funcList_1 = listValue
-                }else if i == 1 {
-                    funcList_2 = listValue
-                }
-            }
-            string = self.dealFuncListLog(result: funcList_1,index: 0)
-            if funcList_2 > 0 {
-                string += self.dealFuncListLog(result: funcList_2,index: 1)
-            }
-            
-            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
-            
-            let model = AntFunctionListModel.init(result: funcList_1)
-            success(model,.none)
-            
-        }else{
-            success(nil,.invalidState)
-        }
-        //printLog("第\(#line)行" , "\(#function)")
-        self.signalCommandSemaphore()
-    }
-    
-    func dealFuncListLog(result:Int,index:Int) -> String{
-        var string = ""
-        for i in 0..<64 {
-            let state = (result >> i) & 0x01
-            string += "\nbit\(i+index*64) = \(state)"
-        }
-        return string
-    }
-    
-    // MARK: - 获取支持的功能详情 0x0c
-    @objc public func GetDeviceSupportFunctionDetail(index:Int,success:@escaping(([String:Any],AntError)->Void)) {
-        
-        
-        var val:[UInt8] = [0x00,0x0c,0x05,0x00,UInt8(index)]
-        let data = Data.init(bytes: &val, count: val.count)
-        
-        let state = self.writeDataAndBackError(data: data)
-        if state == .none {
-            self.receiveGetDeviceSupportFunctionDetailBlock = success
-        }else{
-            success([:],state)
-        }
-        
-        self.receiveGetDeviceSupportFunctionDetailBlock = success
-    }
-    
-    private func parseGetDeviceSupportFunctionDetail(val:[UInt8],success:@escaping(([String:Any],AntError) -> Void)) {
-        let state = String.init(format: "%02x", val[4])
-        
-        if val[4] == 1 {
-            
-            let string = String.init(format: "获取支持的功能详情内容待定")
-            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
-            success(["xxxx":"获取支持的功能详情内容待定"],.none)
-            
-        }else{
-            success([:],.invalidState)
         }
         //printLog("第\(#line)行" , "\(#function)")
         self.signalCommandSemaphore()
@@ -6403,6 +6328,82 @@ import Alamofire
         self.signalCommandSemaphore()
     }
     
+    // MARK: - 获取设备支持的功能列表 0x04
+    @objc public func GetDeviceSupportList(_ success:@escaping((AntFunctionListModel?,AntError)->Void)) {
+        
+        
+        var val:[UInt8] = [0x03,0x04,0x05,0x00,0x06]
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveGetDeviceSupportListBlock = success
+        }else{
+            success(nil,state)
+        }
+    }
+    
+    private func parseGetDeviceSupportList(val:[UInt8],success:@escaping((AntFunctionListModel?,AntError)->Void)) {
+        /*
+         bit0 锻炼功能
+         bit1 计步功能（24 小时详情）
+         bit2 睡眠（24 小时详情）
+         bit3 心率检测（24 小时详情）
+         bit4 血压检测（24 小时详情）
+         bit5 血氧检测（24 小时详情）
+         Bit6 消息推送
+         Bit7 公英制
+         Bit8 闹钟提醒
+         Bit9 久坐提醒
+         Bit10 目标提醒
+         Bit11 振动提醒
+         Bit12 勿扰模式
+         Bit13 防丢提醒
+         Bit14 天气
+         Bit15 多国语言
+         Bit16 背光控制
+         Bit17 通讯录
+         Bit18 在线表盘
+         Bit19 自定义表盘
+         Bit20 本地表盘
+         Bit21 心率预警
+         Bit22 生理周期
+         Bit23 喝水提醒
+         Bit24 抬腕亮屏
+         Bit25 全天心率
+         Bit26 拍照控制
+         Bit27 音乐控制
+         Bit28 查找手环
+         Bit29 关机控制
+         Bit30 重启控制
+         Bit31 恢复出厂控制
+         Bit32 挂断电话
+         Bit33 接听电话
+         Bit34 时间格式
+         */
+        
+        let valData = val.withUnsafeBufferPointer { (v) -> Data in
+            return Data.init(buffer: v)
+        }
+
+        AntSDKLog.writeStringToSDKLog(string: String.init(format: "parseGetDeviceSupportList待解析数据:\nlength = %d, bytes = %@",valData.count, self.convertDataToHexStr(data: valData)))
+        
+        let model = AntFunctionListModel.init(val: val)
+
+        success(model,.none)
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    func dealFuncListLog(result:Int,index:Int) -> String{
+        var string = ""
+        for i in 0..<64 {
+            let state = (result >> i) & 0x01
+            string += "\nbit\(i+index*64) = \(state)"
+        }
+        return string
+    }
+    
     // MARK: - 测试命令 0x04
     // MARK: - 关机 0x01
     @objc public func SetPowerTurnOff(success:@escaping((AntError) -> Void)) {
@@ -7875,7 +7876,7 @@ import Alamofire
         }
     }
     
-    @objc public func testMultiplePackages(cmdClass:Int,cmdId:Int,totalLength:Int,subpackageLength:Int) {
+    @objc /*public*/ func testMultiplePackages(cmdClass:Int,cmdId:Int,totalLength:Int,subpackageLength:Int) {
         
         var valArray:[UInt8] = []
         let count = totalLength
@@ -7960,7 +7961,7 @@ import Alamofire
         
     }
     
-    @objc public func testUtf8StringData(cmdClass: Int, cmdId: Int,type:String, sendString:String) {
+    @objc /*public*/ func testUtf8StringData(cmdClass: Int, cmdId: Int,type:String, sendString:String) {
         
         for scalar in sendString.unicodeScalars {
             printLog(String.init(scalar.value, radix: 16, uppercase: false))
@@ -8031,7 +8032,7 @@ import Alamofire
     }
     
     
-    @objc public func testUnicodeStringData(cmdClass: Int, cmdId: Int, type:String, sendString:String) {
+    @objc /*public*/ func testUnicodeStringData(cmdClass: Int, cmdId: Int, type:String, sendString:String) {
         var value:[UInt8] = Array.init()
         for scalar in sendString.unicodeScalars {
             let str = String.init(scalar.value, radix: 16, uppercase: false)
