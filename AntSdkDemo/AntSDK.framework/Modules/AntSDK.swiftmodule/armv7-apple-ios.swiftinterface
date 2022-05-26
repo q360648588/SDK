@@ -1,0 +1,747 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.6.1 (swiftlang-5.6.0.323.66 clang-1316.0.20.12)
+// swift-module-flags: -target armv7-apple-ios9.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name AntSDK
+import Alamofire
+@_exported import AntSDK
+import CoreBluetooth
+import Foundation
+import MachO
+import Swift
+import UIKit
+import _Concurrency
+import zlib
+@_inheritsConvenienceInitializers @objc public class AntScanModel : ObjectiveC.NSObject {
+  @objc public var name: Swift.String?
+  @objc public var rssi: Swift.Int
+  @objc public var peripheral: CoreBluetooth.CBPeripheral?
+  @objc public var uuidString: Swift.String?
+  @objc override dynamic public init()
+  @objc deinit
+}
+@objc public enum AntFunctionListType : Swift.Int {
+  case exercise = 0
+  case step = 1
+  case sleep = 2
+  case heartrate = 3
+  case bloodPressure = 4
+  case bloodOxygen = 5
+  case notification = 6
+  case metricSystem = 7
+  case alarm = 8
+  case sedentary = 9
+  case goal = 10
+  case vibration = 11
+  case noDisturb = 12
+  case lost = 13
+  case weather = 14
+  case language = 15
+  case screenConreol = 16
+  case addressBook = 17
+  case onlineDial = 18
+  case customDial = 19
+  case localDial = 20
+  case hrWarning = 21
+  case menstrualCycle = 22
+  case drinkWater = 23
+  case lightScreen = 24
+  case hrMonitor = 25
+  case camera = 26
+  case musicControl = 27
+  case findDevice = 28
+  case powerOff = 29
+  case restart = 30
+  case restoreFactory = 31
+  case ringOff = 32
+  case answerCalls = 33
+  case timeFormat = 34
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc public class AntFunctionListModel : ObjectiveC.NSObject {
+  @objc public var functionList_exercise: Swift.Bool {
+    get
+  }
+  @objc public var functionList_step: Swift.Bool {
+    get
+  }
+  @objc public var functionList_sleep: Swift.Bool {
+    get
+  }
+  @objc public var functionList_heartrate: Swift.Bool {
+    get
+  }
+  @objc public var functionList_bloodPressure: Swift.Bool {
+    get
+  }
+  @objc public var functionList_bloodOxygen: Swift.Bool {
+    get
+  }
+  @objc public var functionList_notification: Swift.Bool {
+    get
+  }
+  @objc public var functionList_metricSystem: Swift.Bool {
+    get
+  }
+  @objc public var functionList_alarm: Swift.Bool {
+    get
+  }
+  @objc public var functionList_sedentary: Swift.Bool {
+    get
+  }
+  @objc public var functionList_goal: Swift.Bool {
+    get
+  }
+  @objc public var functionList_vibration: Swift.Bool {
+    get
+  }
+  @objc public var functionList_noDisturb: Swift.Bool {
+    get
+  }
+  @objc public var functionList_lost: Swift.Bool {
+    get
+  }
+  @objc public var functionList_weather: Swift.Bool {
+    get
+  }
+  @objc public var functionList_language: Swift.Bool {
+    get
+  }
+  @objc public var functionList_screenConreol: Swift.Bool {
+    get
+  }
+  @objc public var functionList_addressBook: Swift.Bool {
+    get
+  }
+  @objc public var functionList_onlineDial: Swift.Bool {
+    get
+  }
+  @objc public var functionList_customDial: Swift.Bool {
+    get
+  }
+  @objc public var functionList_localDial: Swift.Bool {
+    get
+  }
+  @objc public var functionList_hrWarning: Swift.Bool {
+    get
+  }
+  @objc public var functionList_menstrualCycle: Swift.Bool {
+    get
+  }
+  @objc public var functionList_drinkWater: Swift.Bool {
+    get
+  }
+  @objc public var functionList_lightScreen: Swift.Bool {
+    get
+  }
+  @objc public var functionList_hrMonitor: Swift.Bool {
+    get
+  }
+  @objc public var functionList_camera: Swift.Bool {
+    get
+  }
+  @objc public var functionList_musicControl: Swift.Bool {
+    get
+  }
+  @objc public var functionList_findDevice: Swift.Bool {
+    get
+  }
+  @objc public var functionList_powerOff: Swift.Bool {
+    get
+  }
+  @objc public var functionList_restart: Swift.Bool {
+    get
+  }
+  @objc public var functionList_restoreFactory: Swift.Bool {
+    get
+  }
+  @objc public var functionList_ringOff: Swift.Bool {
+    get
+  }
+  @objc public var functionList_answerCalls: Swift.Bool {
+    get
+  }
+  @objc public var functionList_timeFormat: Swift.Bool {
+    get
+  }
+  @objc public var functionDetail_notification: AntSDK.AntFunctionModel_notification? {
+    get
+  }
+  @objc public var functionDetail_language: AntSDK.AntFunctionModel_language? {
+    get
+  }
+  @objc public var functionDetail_alarm: AntSDK.AntFunctionModel_alarm? {
+    get
+  }
+  @objc public var functionDetail_screenControl: AntSDK.AntFunctionModel_screenControl? {
+    get
+  }
+  @objc public var functionDetail_localDial: AntSDK.AntFunctionModel_localDial? {
+    get
+  }
+  @objc public var functionDetail_hrWarning: AntSDK.AntFunctionModel_hrWarning? {
+    get
+  }
+  @objc public var functionDetail_goal: AntSDK.AntFunctionModel_goal? {
+    get
+  }
+  @objc public func showAllSupportFunctionLog() -> Swift.String
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class AntFunctionModel_notification : ObjectiveC.NSObject {
+  @objc public var isSupportCall: Swift.Bool {
+    get
+  }
+  @objc public var isSupportSMS: Swift.Bool {
+    get
+  }
+  @objc public var isSupportInstagram: Swift.Bool {
+    get
+  }
+  @objc public var isSupportWechat: Swift.Bool {
+    get
+  }
+  @objc public var isSupportQQ: Swift.Bool {
+    get
+  }
+  @objc public var isSupportLine: Swift.Bool {
+    get
+  }
+  @objc public var isSupportLinkedIn: Swift.Bool {
+    get
+  }
+  @objc public var isSupportWhatsApp: Swift.Bool {
+    get
+  }
+  @objc public var isSupportTwitter: Swift.Bool {
+    get
+  }
+  @objc public var isSupportFacebook: Swift.Bool {
+    get
+  }
+  @objc public var isSupportMessenger: Swift.Bool {
+    get
+  }
+  @objc public var isSupportSkype: Swift.Bool {
+    get
+  }
+  @objc public var isSupportSnapchat: Swift.Bool {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class AntFunctionModel_language : ObjectiveC.NSObject {
+  @objc public var isSupportEnglish: Swift.Bool {
+    get
+  }
+  @objc public var isSupportSimplifiedChinese: Swift.Bool {
+    get
+  }
+  @objc public var isSupportJapan: Swift.Bool {
+    get
+  }
+  @objc public var isSupportKorean: Swift.Bool {
+    get
+  }
+  @objc public var isSupportGerman: Swift.Bool {
+    get
+  }
+  @objc public var isSupportFrench: Swift.Bool {
+    get
+  }
+  @objc public var isSupportSpanish: Swift.Bool {
+    get
+  }
+  @objc public var isSupportArabic: Swift.Bool {
+    get
+  }
+  @objc public var isSupportRussian: Swift.Bool {
+    get
+  }
+  @objc public var isSupportTraditionalChinese: Swift.Bool {
+    get
+  }
+  @objc public var isSupportItalian: Swift.Bool {
+    get
+  }
+  @objc public var isSupportPortuguese: Swift.Bool {
+    get
+  }
+  @objc public var isSupportUkrainian: Swift.Bool {
+    get
+  }
+  @objc public var isSupportHindi: Swift.Bool {
+    get
+  }
+  @objc public var isSupportPolish: Swift.Bool {
+    get
+  }
+  @objc public var isSupportGreek: Swift.Bool {
+    get
+  }
+  @objc public var isSupportVietnamese: Swift.Bool {
+    get
+  }
+  @objc public var isSupportIndonesian: Swift.Bool {
+    get
+  }
+  @objc public var isSupportThai: Swift.Bool {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class AntFunctionModel_alarm : ObjectiveC.NSObject {
+  @objc public var maxAlarmCount: Swift.Int {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class AntFunctionModel_screenControl : ObjectiveC.NSObject {
+  @objc public var screenLevelCount: Swift.Int {
+    get
+  }
+  @objc public var screenTimeLong_max: Swift.Int {
+    get
+  }
+  @objc public var screenTimeLong_min: Swift.Int {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class AntFunctionModel_localDial : ObjectiveC.NSObject {
+  @objc public var maxDialCount: Swift.Int {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class AntFunctionModel_hrWarning : ObjectiveC.NSObject {
+  @objc public var maxValue: Swift.Int {
+    get
+  }
+  @objc public var minValue: Swift.Int {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class AntFunctionModel_goal : ObjectiveC.NSObject {
+  @objc public var isSupportStep: Swift.Bool {
+    get
+  }
+  @objc public var isSupportSleep: Swift.Bool {
+    get
+  }
+  @objc public var isSupportCalorie: Swift.Bool {
+    get
+  }
+  @objc public var isSupportTimeLong: Swift.Bool {
+    get
+  }
+  @objc public var isSupportDistance: Swift.Bool {
+    get
+  }
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc public class AntPersonalModel : ObjectiveC.NSObject {
+  @objc public var age: Swift.Int
+  @objc public var gender: Swift.Bool
+  @objc public var height: Swift.Float
+  @objc public var weight: Swift.Float
+  @objc override dynamic public init()
+  @objc deinit
+}
+@objc public enum AntWeatherType : Swift.Int {
+  case overcast
+  case fog
+  case sunny
+  case cloudy
+  case snow
+  case rain
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@_inheritsConvenienceInitializers @objc public class AntWeatherModel : ObjectiveC.NSObject {
+  @objc public var dayCount: Swift.Int
+  @objc public var type: AntSDK.AntWeatherType
+  @objc public var temp: Swift.Int
+  @objc public var airQuality: Swift.Int
+  @objc public var minTemp: Swift.Int
+  @objc public var maxTemp: Swift.Int
+  @objc public var tomorrowMinTemp: Swift.Int
+  @objc public var tomorrowMaxTemp: Swift.Int
+  @objc override dynamic public init()
+  @objc deinit
+}
+@objc public enum AntAlarmType : Swift.Int {
+  case single
+  case cycle
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@_inheritsConvenienceInitializers @objc public class AntAlarmModel : ObjectiveC.NSObject {
+  @objc public var alarmIndex: Swift.Int
+  @objc public var alarmOpen: Swift.Bool
+  @objc public var alarmHour: Swift.Int
+  @objc public var alarmMinute: Swift.Int
+  @objc public var alarmType: AntSDK.AntAlarmType
+  @objc public var alarmRepeatArray: Swift.Array<Swift.Int>?
+  @objc public var alarmRepeatCount: Swift.Int {
+    get
+  }
+  @objc override dynamic public init()
+  @objc public init(dic: [Swift.String : Any])
+  @objc deinit
+}
+@objc public enum AntLanguageType : Swift.Int {
+  case English = 0
+  case SimplifiedChinese
+  case Japanese
+  case Korean
+  case German
+  case French
+  case Spanish
+  case Arabic
+  case Russian
+  case TraditionalChinese
+  case Italian
+  case Portuguese
+  case Ukrainian
+  case Hindi
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@objc public enum AntNotificationType : Swift.Int {
+  case Call = 1
+  case SMS
+  case Instagram
+  case Wechat
+  case QQ
+  case Line
+  case LinkedIn
+  case WhatsApp
+  case Twitter
+  case Facebook
+  case Messenger
+  case Skype
+  case Snapchat
+  case Other = 15
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@objc public enum AntPositionType : Swift.Int {
+  case leftUp
+  case leftMiddle
+  case letfDown
+  case rightUp
+  case rightMiddle
+  case rightDown
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@objc public enum AntPositionShowType : Swift.Int {
+  case close
+  case date
+  case sleep
+  case heartrate
+  case step
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class AntCustomDialModel : ObjectiveC.NSObject {
+  @objc public var colorHex: Swift.String {
+    get
+  }
+  @objc public var color: UIKit.UIColor
+  @objc public var positionType: AntSDK.AntPositionType
+  @objc public var timeUpType: AntSDK.AntPositionShowType
+  @objc public var timeDownType: AntSDK.AntPositionShowType
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class AntDialFrameSizeModel : ObjectiveC.NSObject {
+  @objc public var bigWidth: Swift.Int {
+    get
+  }
+  @objc public var bigHeight: Swift.Int {
+    get
+  }
+  @objc public var smallWidth: Swift.Int {
+    get
+  }
+  @objc public var smallHeight: Swift.Int {
+    get
+  }
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc public class AntOnlineDialModel : ObjectiveC.NSObject {
+  @objc public var dialId: Swift.Int
+  @objc public var dialImageUrl: Swift.String?
+  @objc public var dialFileUrl: Swift.String?
+  @objc public var dialName: Swift.String?
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class AntSedentaryModel : ObjectiveC.NSObject {
+  @objc public var isOpen: Swift.Bool
+  @objc public var timeLong: Swift.Int
+  @objc public var timeArray: [AntSDK.AntStartEndTimeModel]
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class AntDoNotDisturbModel : ObjectiveC.NSObject {
+  @objc public var isOpen: Swift.Bool
+  @objc public var timeModel: AntSDK.AntStartEndTimeModel
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class AntHrWaringModel : ObjectiveC.NSObject {
+  @objc public var isOpen: Swift.Bool
+  @objc public var maxValue: Swift.Int
+  @objc public var minValue: Swift.Int
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class AntStepModel : ObjectiveC.NSObject {
+  @objc public var step: Swift.Int
+  @objc public var calorie: Swift.Int
+  @objc public var distance: Swift.Int
+  @objc public var detailArray: [Swift.Int]
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class AntHrModel : ObjectiveC.NSObject {
+  @objc public var detailArray: [Swift.Int]
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class AntSleepModel : ObjectiveC.NSObject {
+  @objc public var deep: Swift.Int
+  @objc public var light: Swift.Int
+  @objc public var awake: Swift.Int
+  @objc public var detailArray: [[Swift.String : Swift.String]]
+  @objc public var detailArray_filter: [[Swift.String : Swift.String]]
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class AntExerciseModel : ObjectiveC.NSObject {
+  @objc public var type: Swift.Int
+  @objc public var startTime: Swift.String
+  @objc public var endTime: Swift.String
+  @objc public var validTimeLength: Swift.Int
+  @objc public var heartrate: Swift.Int
+  @objc public var step: Swift.Int
+  @objc public var calorie: Swift.Int
+  @objc public var distance: Swift.Int
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc public class AntStartEndTimeModel : ObjectiveC.NSObject {
+  @objc public var startHour: Swift.Int
+  @objc public var startMinute: Swift.Int
+  @objc public var endHour: Swift.Int
+  @objc public var endMinute: Swift.Int
+  @objc override dynamic public init()
+  @objc deinit
+}
+@objc public enum AntError : Swift.Int {
+  case none
+  case disconnected
+  case invalidCharacteristic
+  case invalidLength
+  case invalidState
+  case notSupport
+  case noResponse
+  case noMoreData
+  case fail
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class AntCommandModule : AntSDK.AntBaseModule {
+  @objc public static let shareInstance: AntSDK.AntCommandModule
+  @objc public func GetDeviceName(_ success: @escaping ((Swift.String?, AntSDK.AntError) -> Swift.Void))
+  @objc public func GetFirmwareVersion(_ success: @escaping ((Swift.String?, AntSDK.AntError) -> Swift.Void))
+  @objc public func GetSerialNumber(_ success: @escaping ((Swift.String?, AntSDK.AntError) -> Swift.Void))
+  @objc public func GetMac(_ success: @escaping ((Swift.String?, AntSDK.AntError) -> Swift.Void))
+  @objc public func GetBattery(_ success: @escaping ((Swift.String?, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetTime(time: Any? = nil, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetDeviceOtaVersionInfo(_ success: @escaping (([Swift.String : Any], AntSDK.AntError) -> Swift.Void))
+  @objc public func GetPersonalInformation(_ success: @escaping ((AntSDK.AntPersonalModel?, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetPersonalInformation(model: AntSDK.AntPersonalModel, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetTimeFormat(_ success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetTimeFormat(format: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetMetricSystem(_ success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetMetricSystem(metric: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetWeather(model: AntSDK.AntWeatherModel, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetInterCamera(success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetFindDevice(success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetLightScreen(_ success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetLightScreen(isOpen: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetScreenLevel(_ success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetScreenLevel(value: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetScreenTimeLong(_ success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetScreenTimeLong(value: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetLocalDial(_ success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetLocalDial(index: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetAlarm(index: Swift.Int, success: @escaping ((AntSDK.AntAlarmModel?, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetAlarm(index: Swift.String, repeatCount: Swift.String, hour: Swift.String, minute: Swift.String, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetAlarmModel(model: AntSDK.AntAlarmModel, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetDeviceLanguage(_ success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetDeviceLanguage(index: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetStepGoal(_ success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetStepGoal(target: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetDispalyMode(_ success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetDispalyMode(isVertical: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetWearingWay(_ success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetWearingWay(isLeftHand: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetSingleMeasurement(type: Swift.Int, isOpen: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetExerciseMode(_ success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetExerciseMode(type: Swift.Int, isOpen: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetDeviceMode(type: Swift.Int, isOpen: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetPhoneMode(type: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetWeatherUnit(_ success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetWeatherUnit(type: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetReportRealtimeData(isOpen: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetCustomDialEdit(_ success: @escaping ((AntSDK.AntCustomDialModel?, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetCustomDialEdit(color: UIKit.UIColor, positionType: Swift.String, timeUpType: Swift.String, timeDownType: Swift.String, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetCustomDialEdit(model: AntSDK.AntCustomDialModel, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetCustomDialEdit(image: UIKit.UIImage, progress: @escaping ((Swift.Float) -> Swift.Void), success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetPhoneState(state: Swift.String, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetCustonDialFrameSize(_ success: @escaping ((AntSDK.AntDialFrameSizeModel?, AntSDK.AntError) -> Swift.Void))
+  @objc public func Get24HrMonitor(_ success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func Set24HrMonitor(isOpen: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetNotificationRemind(_ success: @escaping (([Swift.Int], AntSDK.AntError) -> Swift.Void))
+  @objc public func SetNotificationRemind(isOpen: Swift.String, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetNotificationRemindArray(array: [Swift.Int], success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetSedentary(_ success: @escaping ((AntSDK.AntSedentaryModel?, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetSedentary(isOpen: Swift.String, timeLong: Swift.String, timeArray: [AntSDK.AntStartEndTimeModel], success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetSedentary(model: AntSDK.AntSedentaryModel, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetSedentary(isOpen: Swift.String, timeLong: Swift.String, startHour: Swift.String, startMinute: Swift.String, endHour: Swift.String, endMinute: Swift.String, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetLost(_ success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetLost(isOpen: Swift.String, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetDoNotDisturb(_ success: @escaping ((AntSDK.AntDoNotDisturbModel?, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetDoNotDisturb(isOpen: Swift.String, startHour: Swift.String, startMinute: Swift.String, endHour: Swift.String, endMinute: Swift.String, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetDoNotDisturb(model: AntSDK.AntDoNotDisturbModel, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetHrWaring(_ success: @escaping ((AntSDK.AntHrWaringModel?, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetHrWaring(isOpen: Swift.String, maxHr: Swift.String, minHr: Swift.String, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetHrWaring(model: AntSDK.AntHrWaringModel, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetMenstrualCycle(_ success: @escaping (([Swift.String : Any], AntSDK.AntError) -> Swift.Void))
+  @objc public func SetMenstrualCycle(type: Swift.String, cycleCount: Swift.String, menstrualCount: Swift.String, lastMonth: Swift.String, lastDay: Swift.String, remindHour: Swift.String, remindMinute: Swift.String, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetWashHand(_ success: @escaping (([Swift.String : Any], AntSDK.AntError) -> Swift.Void))
+  @objc public func SetWashHand(isOpen: Swift.String, startHour: Swift.String, startMinute: Swift.String, targetCount: Swift.String, remindInterval: Swift.String, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func GetDrinkWater(_ success: @escaping (([Swift.String : Any], AntSDK.AntError) -> Swift.Void))
+  @objc public func SetDrinkWater(isOpen: Swift.String, startHour: Swift.String, startMinute: Swift.String, endHour: Swift.String, endMinute: Swift.String, remindCount: Swift.String, remindInterval: Swift.String, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetSyncHealthData(type: Swift.String, dayCount: Swift.String, success: @escaping ((Any?, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetSyncExerciseData(type: Swift.String, numberCount: Swift.String, success: @escaping ((AntSDK.AntExerciseModel?, AntSDK.AntError) -> Swift.Void))
+  @objc public func GetDeviceSupportList(_ success: @escaping ((AntSDK.AntFunctionListModel?, AntSDK.AntError) -> Swift.Void))
+  @objc public func SetPowerTurnOff(success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetFactoryDataReset(success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetMotorVibration(type: Swift.String, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func setRestart(success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func ReportRealTimeStep(success: @escaping ((AntSDK.AntStepModel?, AntSDK.AntError) -> Swift.Void))
+  @objc public func ReportRealTimeHr(success: @escaping (([Swift.String : Any], AntSDK.AntError) -> Swift.Void))
+  @objc public func ReportSingleMeasurementResult(success: @escaping (([Swift.String : Any], AntSDK.AntError) -> Swift.Void))
+  @objc public func ReportSingleExerciseEnd(success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func ReportFindPhone(success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func ReportEndFindPhone(success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func ReportTakePictures(success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func ReportMusicControl(success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func ReportCallControl(success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func ReportScreenLevel(success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func ReportScreenTimeLong(success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func ReportLightScreen(success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func ReportDeviceVibration(success: @escaping ((Swift.Int, AntSDK.AntError) -> Swift.Void))
+  @objc public func setOtaStartUpgrade(type: Swift.Int, localFile: Any, isContinue: Swift.Bool, progress: @escaping ((Swift.Float) -> Swift.Void), success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func SetSubpackageInformationInteraction(maxSend: Swift.Int, maxReceive: Swift.Int, success: @escaping (([Swift.String : Any], AntSDK.AntError) -> Swift.Void))
+  @objc public func replySubpackageInformationInteraction(state: Swift.Int, maxSend: Swift.Int, maxReceive: Swift.Int, success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func setStartUpgrade(type: Swift.Int, localFile: Any, maxCount: Swift.Int, isContinue: Swift.Bool, progress: @escaping ((Swift.Float) -> Swift.Void), success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func setStopUpgrade(success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func checkUpgradeState(success: @escaping (([Swift.String : Any], AntSDK.AntError) -> Swift.Void))
+  @objc public func getServerOtaDeviceInfo(success: @escaping (([Swift.String : Any], AntSDK.AntError) -> Swift.Void))
+  @objc public func setAutoServerOtaDeviceInfo(progress: @escaping ((Swift.Float) -> Swift.Void), success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc public func getOnlineDialList(success: @escaping (([AntSDK.AntOnlineDialModel], AntSDK.AntError) -> Swift.Void))
+  @objc public func getOnlineDialList(pageIndex: Swift.Int, pageSize: Swift.Int, success: @escaping (([AntSDK.AntOnlineDialModel], AntSDK.AntError) -> Swift.Void))
+  @objc public func setOnlienDialFile(model: Any, progress: @escaping ((Swift.Float) -> Swift.Void), success: @escaping ((AntSDK.AntError) -> Swift.Void))
+  @objc deinit
+}
+@objc @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers public class AntSDKLog : ObjectiveC.NSObject {
+  @objc public class func writeStringToSDKLog(string: Swift.String)
+  @objc public class func showLog() -> Swift.String
+  @objc public class func showAllLog() -> Swift.String
+  @objc public class func clear()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class AntBaseModule : ObjectiveC.NSObject {
+  @objc public var matchingUUIDArray: [CoreBluetooth.CBUUID]?
+  @objc public var serviceUUIDArray: [CoreBluetooth.CBUUID]?
+  @objc dynamic public var scanInterval: Swift.Int
+  @objc dynamic public var peripheral: CoreBluetooth.CBPeripheral? {
+    @objc get
+  }
+  @objc dynamic public var blePowerState: CoreBluetooth.CBCentralManagerState {
+    get
+  }
+  @objc public func peripheralStateChange(state: @escaping ((CoreBluetooth.CBPeripheralState) -> ()))
+  @objc override dynamic public func observeValue(forKeyPath keyPath: Swift.String?, of object: Any?, change: [Foundation.NSKeyValueChangeKey : Any]?, context: Swift.UnsafeMutableRawPointer?)
+  @objc public func bluetoothPowerStateChange(state: @escaping ((CoreBluetooth.CBCentralManagerState) -> ()))
+  @objc public func setIsNeedReconnect(state: Swift.Bool)
+  @objc public func reconnectDevice(complete: @escaping (() -> ()))
+  @objc public func getReconnectIdentifier() -> Swift.String
+  @objc open func getSystemListPeripheral(modelArray: @escaping (([AntSDK.AntScanModel]) -> (Swift.Void)))
+  @objc open func scanDevice(scanModel: @escaping ((AntSDK.AntScanModel) -> (Swift.Void)), modelArray: @escaping (([AntSDK.AntScanModel]) -> (Swift.Void)))
+  @objc public func stopScan()
+  @objc public func connectDevice(peripheral: Any, connectState: @escaping ((Swift.Bool) -> ()))
+  @objc public func disconnect()
+  public func CRC16(data: Foundation.Data) -> Swift.UInt16
+  public func CRC16(val: [Swift.UInt8]) -> Swift.UInt16
+  public func CRC32(val: [Swift.UInt8]) -> zlib.uLong
+  public func CRC32(data: Foundation.Data) -> zlib.uLong
+  @objc public func getNotificationTypeArrayWithIntString(countString: Swift.String) -> [AntSDK.AntNotificationType.RawValue]
+  @objc deinit
+}
+extension AntSDK.AntFunctionListType : Swift.Equatable {}
+extension AntSDK.AntFunctionListType : Swift.Hashable {}
+extension AntSDK.AntFunctionListType : Swift.RawRepresentable {}
+extension AntSDK.AntWeatherType : Swift.Equatable {}
+extension AntSDK.AntWeatherType : Swift.Hashable {}
+extension AntSDK.AntWeatherType : Swift.RawRepresentable {}
+extension AntSDK.AntAlarmType : Swift.Equatable {}
+extension AntSDK.AntAlarmType : Swift.Hashable {}
+extension AntSDK.AntAlarmType : Swift.RawRepresentable {}
+extension AntSDK.AntLanguageType : Swift.Equatable {}
+extension AntSDK.AntLanguageType : Swift.Hashable {}
+extension AntSDK.AntLanguageType : Swift.RawRepresentable {}
+extension AntSDK.AntNotificationType : Swift.Equatable {}
+extension AntSDK.AntNotificationType : Swift.Hashable {}
+extension AntSDK.AntNotificationType : Swift.RawRepresentable {}
+extension AntSDK.AntPositionType : Swift.Equatable {}
+extension AntSDK.AntPositionType : Swift.Hashable {}
+extension AntSDK.AntPositionType : Swift.RawRepresentable {}
+extension AntSDK.AntPositionShowType : Swift.Equatable {}
+extension AntSDK.AntPositionShowType : Swift.Hashable {}
+extension AntSDK.AntPositionShowType : Swift.RawRepresentable {}
+extension AntSDK.AntError : Swift.Equatable {}
+extension AntSDK.AntError : Swift.Hashable {}
+extension AntSDK.AntError : Swift.RawRepresentable {}
