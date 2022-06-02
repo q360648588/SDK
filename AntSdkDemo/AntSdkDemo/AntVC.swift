@@ -198,7 +198,6 @@ class AntVC: UIViewController {
                 "0x08 获取电量",
                 "0x09 设置时间",
                 "0x0a 获取设备支持的功能列表",
-                "获取支持的功能详情",
                 "10 获取产品、固件、资源等版本信息",
             ],
             [
@@ -630,37 +629,6 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 }
             }
 
-            break
-            
-        case "获取支持的功能详情":
-            
-            let array = [
-                "序号:[0,255]"
-            ]
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "获取支持的功能详情")
-            
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "获取支持的功能详情", holderStringArray: array, cancel: "取消", cancelAction: {
-                
-            }, ok: "确定") { (textArray) in
-                let index = textArray[0]
-
-                self.logView.writeString(string: "index:\(index.count > 0 ? index:"0")")
-
-                AntCommandModule.shareInstance.GetDeviceSupportFunctionDetail(index: Int(index) ?? 0) { success, error in
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    
-                    if error == .none {
-                        print("GetDeviceSupportFunctionDetail ->",success)
-                    }
-                }
-                
-            }
-            
-            
-            
-            
             break
             
         case "10 获取产品、固件、资源等版本信息":

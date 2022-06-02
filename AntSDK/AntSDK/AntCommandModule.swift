@@ -7876,7 +7876,7 @@ import Alamofire
         }
     }
     
-    @objc /*public*/ func testMultiplePackages(cmdClass:Int,cmdId:Int,totalLength:Int,subpackageLength:Int) {
+    @objc public func testMultiplePackages(cmdClass:Int,cmdId:Int,totalLength:Int,subpackageLength:Int) {
         
         var valArray:[UInt8] = []
         let count = totalLength
@@ -7961,7 +7961,7 @@ import Alamofire
         
     }
     
-    @objc /*public*/ func testUtf8StringData(cmdClass: Int, cmdId: Int,type:String, sendString:String) {
+    @objc public func testUtf8StringData(cmdClass: Int, cmdId: Int,type:String, sendString:String) {
         
         for scalar in sendString.unicodeScalars {
             printLog(String.init(scalar.value, radix: 16, uppercase: false))
@@ -8032,7 +8032,7 @@ import Alamofire
     }
     
     
-    @objc /*public*/ func testUnicodeStringData(cmdClass: Int, cmdId: Int, type:String, sendString:String) {
+    @objc public func testUnicodeStringData(cmdClass: Int, cmdId: Int, type:String, sendString:String) {
         var value:[UInt8] = Array.init()
         for scalar in sendString.unicodeScalars {
             let str = String.init(scalar.value, radix: 16, uppercase: false)

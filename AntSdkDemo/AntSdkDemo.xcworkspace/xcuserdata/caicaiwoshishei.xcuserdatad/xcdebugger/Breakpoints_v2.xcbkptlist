@@ -51,8 +51,8 @@
             filePath = "AntSdkDemo/AntVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "3724"
-            endingLineNumber = "3724"
+            startingLineNumber = "3692"
+            endingLineNumber = "3692"
             landmarkName = "getErrorCodeString(error:)"
             landmarkType = "7">
          </BreakpointContent>
