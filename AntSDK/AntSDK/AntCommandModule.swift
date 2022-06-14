@@ -54,7 +54,7 @@ import Alamofire
     var receiveGetMetricSystemBlock:((Int,AntError) -> Void)?
     var receiveSetMetricSystemBlock:((AntError) -> Void)?
     var receiveSetWeatherBlock:((AntError) -> Void)?
-    var receiveSetInterCameraBlock:((AntError) -> Void)?
+    var receiveSetEnterCameraBlock:((AntError) -> Void)?
     var receiveSetFindDeviceBlock:((AntError) -> Void)?
     var receiveGetLightScreenBlock:((Int,AntError) -> Void)?
     var receiveSetLightScreenBlock:((AntError) -> Void)?
@@ -88,6 +88,7 @@ import Alamofire
     var receiveGetCustonDialFrameSizeBlock:((AntDialFrameSizeModel?,AntError) -> Void)?
     var receiveGet24HrMonitorBlock:((Int,AntError) -> Void)?
     var receiveSet24HrMonitorBlock:((AntError) -> Void)?
+    var receiveSetEnterOrExitCameraBlock:((AntError) -> Void)?
     
     var receiveGetNotificationRemindBlock:(([Int],AntError) -> Void)?
     var receiveSetNotificationRemindBlock:((AntError) -> Void)?
@@ -557,17 +558,17 @@ import Alamofire
                 if val[0] == 0x01 && val[1] == 0x89 {
                     if self.checkLength(val: [UInt8](val)) {
                         
-                        if let block = self.receiveSetInterCameraBlock {
-                            self.parseSetInterCamera(val: val, success: block)
+                        if let block = self.receiveSetEnterCameraBlock {
+                            self.parseSetEnterCamera(val: val, success: block)
                         }
                         
                     }else{
-                        if let block = self.receiveSetInterCameraBlock {
+                        if let block = self.receiveSetEnterCameraBlock {
                             block(.invalidLength)
                         }
                         //printLog("第\(#line)行" , "\(#function)")
                         self.signalCommandSemaphore()
-                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetInterCamera长度校验出错"))
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetEnterCamera长度校验出错"))
                     }
                     
                 }
@@ -1215,8 +1216,26 @@ import Alamofire
                         self.signalCommandSemaphore()
                         AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "Set24HrMonitor长度校验出错"))
                     }
-                    
                 }
+                
+                //设置进入或退出拍照模式
+                if val[0] == 0x01 && val[1] == 0xb7 {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveSetEnterOrExitCameraBlock {
+                            self.parseSetEnterOrExitCamera(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveSetEnterOrExitCameraBlock {
+                            block(.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetEnterOrExitCamera长度校验出错"))
+                    }
+                }
+                
                                 
                 //获取消息提醒
                 if val[0] == 0x02 && val[1] == 0x80 {
@@ -2638,9 +2657,9 @@ import Alamofire
             self.receiveSetWeatherBlock = nil
         }
         
-        if let block = self.receiveSetInterCameraBlock {
+        if let block = self.receiveSetEnterCameraBlock {
             block(.disconnected)
-            self.receiveSetInterCameraBlock = nil
+            self.receiveSetEnterCameraBlock = nil
         }
         
         if let block = self.receiveSetFindDeviceBlock {
@@ -2931,7 +2950,7 @@ import Alamofire
     // MARK: - 检测命令定时器方法
     @objc func commandDetectionTimerMethod() {
         if self.commandDetectionCount >= 50 {
-            //用信号量+1，只放一条命令过。如果用重置信号量会导致后续的命令全部怼出去，如果还要丢的命令也无法发现
+            //用信号量+1，只放一条命令过。如果用重置信号量会导致后续的命令全部怼出去，如果还有丢的命令也无法发现
             self.signalCommandSemaphore()
             //取消定时器
             self.commandDetectionTimerInvalid()
@@ -3550,7 +3569,7 @@ import Alamofire
     }
     
     // MARK: - 设置进入拍照模式 0x09
-    @objc public func SetInterCamera(success:@escaping((AntError) -> Void)) {
+    @objc public func SetEnterCamera(success:@escaping((AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x01,
@@ -3562,14 +3581,14 @@ import Alamofire
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
-            self.receiveSetInterCameraBlock = success
+            self.receiveSetEnterCameraBlock = success
         }else{
             success(state)
         }
         
     }
     
-    private func parseSetInterCamera(val:[UInt8],success:@escaping((AntError) -> Void)) {
+    private func parseSetEnterCamera(val:[UInt8],success:@escaping((AntError) -> Void)) {
         let state = String.init(format: "%02x", val[4])
         
         if val[4] == 1 {
@@ -5104,6 +5123,42 @@ import Alamofire
         self.signalCommandSemaphore()
     }
     
+    // MARK: - 设置设备进入或退出拍照模式 0x37
+    @objc public func SetEnterOrExitCamera(isOpen:Int,success:@escaping((AntError) -> Void)) {
+        
+        var val:[UInt8] = [
+            0x01,
+            0x37,
+            0x05,
+            0x00,
+            UInt8(isOpen)
+            
+        ]
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetEnterOrExitCameraBlock = success
+        }else{
+            success(state)
+        }
+    }
+    
+    private func parseSetEnterOrExitCamera(val:[UInt8],success:@escaping((AntError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val[4] == 1 {
+            
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@", state))
+            success(.none)
+            
+        }else{
+            success(.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
     // MARK: - 设备提醒 0x02
     // MARK: - 获取消息提醒 0x00
     @objc public func GetNotificationRemind(_ success:@escaping(([Int],AntError) -> Void)) {
@@ -6239,6 +6294,7 @@ import Alamofire
                     let currentTotal = Int(changeDic["total"] ?? "0") ?? 0
                     let nextTotal = Int(nextDic["total"] ?? "0") ?? 0
                     changeDic["total"] = "\(currentTotal + nextTotal)"
+                    totalAwake += currentTotal + nextTotal
                     
                 }else{
                     newArray.append(changeDic)
@@ -6266,8 +6322,8 @@ import Alamofire
             //AntSDKLog.writeStringToSDKLog(string: "睡眠整合数据")
             AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@\n\n\n", modelArray))
             
-            printLog("originalArray =",originalArray)
-            printLog("sleepArray =",sleepArray,sleepArray.count)
+//            printLog("originalArray =",originalArray)
+//            printLog("sleepArray =",sleepArray,sleepArray.count)
             printLog("modelArray =",modelArray)
             printLog("modelArray_filter =",modelArray_filter)
             

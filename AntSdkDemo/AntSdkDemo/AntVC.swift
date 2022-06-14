@@ -245,6 +245,7 @@ class AntVC: UIViewController {
                 "0x30 获取自定义表盘尺寸",
                 "0x34 获取24小时心率监测",
                 "0x35 设置24小时心率监测",
+                "0x37 设置设备进入或退出拍照模式",
             ],
             [
                 "0x00 获取消息提醒",
@@ -906,12 +907,12 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             self.logView.clearString()
             self.logView.writeString(string: "设备进入拍照模式")
-            AntCommandModule.shareInstance.SetInterCamera { error in
+            AntCommandModule.shareInstance.SetEnterCamera { error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
                 if error == .none {
-                    print("SetInterCamera ->","success")
+                    print("SetEnterCamera ->","success")
                 }
                 //self.navigationController?.pushViewController(vc, animated: true)
             }
@@ -1798,6 +1799,31 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 AntCommandModule.shareInstance.Set24HrMonitor(isOpen: Int(isOpen) ?? 0) { error in
                     
                     self.logView.writeString(string: (Int(isOpen) ?? 0) == 0 ? "关闭":"启动")
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        print("Set24HrMonitor ->","success")
+                    }
+                }
+            }
+            
+            break
+            
+        case "0x37 设置设备进入或退出拍照模式":
+            
+            let array = [
+                "0:进入,1:退出",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "设置设备进入或退出拍照模式")
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置设备进入或退出拍照模式", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let isOpen = textArray[0]
+                
+                AntCommandModule.shareInstance.SetEnterOrExitCamera(isOpen: Int(isOpen) ?? 0) { error in
+                    self.logView.writeString(string: (Int(isOpen) ?? 0) == 0 ? "进入":"退出")
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
                     if error == .none {

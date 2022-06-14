@@ -181,8 +181,8 @@ import zlib
                 model.uuidString = item.identifier.uuidString
                 peripheralArray.append(model)
             }
-            modelArray(peripheralArray)
         }
+        modelArray(peripheralArray)
     }
     
     /// 扫描设备，每新增一个设备都会有回调

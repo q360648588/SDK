@@ -68,7 +68,7 @@ class ViewController: UIViewController {
             }
             
             let vc = UIViewController.getAnyVC(vc: AntVC())
-            vc?.test()
+            //vc?.test()
             //vc?.test()
         }
         
@@ -237,7 +237,7 @@ class ViewController: UIViewController {
         
         let dateLabel = UILabel.init(frame: .init(x: 0, y: 600, width: screenWidth, height: 44))
         dateLabel.backgroundColor = .green
-        dateLabel.text = "更新日期:2022-05-10"
+        dateLabel.text = "更新日期:2022-06-09"
         dateLabel.textColor = .red
         dateLabel.numberOfLines = 0
         dateLabel.textAlignment = .center

@@ -35,8 +35,8 @@
             filePath = "../AntSDK/AntSDK/AntCommandModule.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "7574"
-            endingLineNumber = "7574"
+            startingLineNumber = "7630"
+            endingLineNumber = "7630"
             landmarkName = "serverOtaMethod(indexCount:dataArray:progress:success:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -51,9 +51,41 @@
             filePath = "AntSdkDemo/AntVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "3692"
-            endingLineNumber = "3692"
+            startingLineNumber = "3718"
+            endingLineNumber = "3718"
             landmarkName = "getErrorCodeString(error:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "11B1DEE1-CA76-483A-AA23-59254EF8BDC7"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../AntSDK/AntSDK/AntCommandModule.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "6290"
+            endingLineNumber = "6290"
+            landmarkName = "parseSetSyncHealthData(val:type:day:success:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "93D0CAA2-FC8E-49E9-B2AC-B97C85F21AB7"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../AntSDK/AntSDK/AntCommandModule.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "6277"
+            endingLineNumber = "6277"
+            landmarkName = "parseSetSyncHealthData(val:type:day:success:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
