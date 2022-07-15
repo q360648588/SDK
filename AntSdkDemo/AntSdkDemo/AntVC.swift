@@ -2422,9 +2422,9 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 
             }, ok: nil) { (textArray) in
                 //let type = textArray[0]
-                let numberCount = textArray[0]
+                let indexCount = textArray[0]
                                 
-                AntCommandModule.shareInstance.SetSyncExerciseData(type: "4", numberCount: numberCount) { success, error in
+                AntCommandModule.shareInstance.SetSyncExerciseData(indexCount: Int(indexCount) ?? 0) { success, error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     print("SetSyncExerciseData ->",success)

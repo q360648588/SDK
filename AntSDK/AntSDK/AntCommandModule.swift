@@ -3046,6 +3046,8 @@ import Alamofire
         for _ in 0..<resetCount {
             self.signalCommandSemaphore()
         }
+        //重置之后网络请求的isRequesting置为false
+        self.isRequesting = false
     }
     
     // MARK: - 设备信息 0x00
@@ -6267,7 +6269,6 @@ import Alamofire
                     }
                 }
             }
-            
             var newArray:[[String:String]] = []
             var changeDic:[String:String] = [:]
             for i in 0..<modelArray.count-1 {
@@ -6286,8 +6287,8 @@ import Alamofire
                 let nextType = nextDic["type"]
                 
                 
-                
-                if (currentType == "0" || currentType == "3") && (nextType == "0" || nextType == "3") {
+                //nextType==0的数据在上面一个for里面已经添加过
+                if (currentType == "0" || currentType == "3") && (nextType == "3") {
                     
                     changeDic["end"] = nextDic["end"]
                     changeDic["type"] = "0"
@@ -6295,7 +6296,6 @@ import Alamofire
                     let nextTotal = Int(nextDic["total"] ?? "0") ?? 0
                     changeDic["total"] = "\(currentTotal + nextTotal)"
                     totalAwake += currentTotal + nextTotal
-                    
                 }else{
                     newArray.append(changeDic)
                     changeDic = [:]
@@ -6335,15 +6335,15 @@ import Alamofire
     }
     
     // MARK: - 同步锻炼数据 0x02
-    @objc public func SetSyncExerciseData(type:String,numberCount:String,success:@escaping((AntExerciseModel?,AntError) -> Void)) {
-        
+    @objc public func SetSyncExerciseData(indexCount:Int,success:@escaping((AntExerciseModel?,AntError) -> Void)) {
+        let type = 4
         var val:[UInt8] = [
             0x03,
             0x02,
             0x06,
             0x00,
             (UInt8(type) ?? 0),
-            (UInt8(numberCount) ?? 0)
+            (UInt8(indexCount) ?? 0)
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -7267,10 +7267,10 @@ import Alamofire
         printLog("getServerOtaDeviceInfo 调用成功")
         
         self.isRequesting = true
-        
+        //此处如果在等待的时候把设备断开连接或者是解绑，命令不会再进入回调，而isRequesting是true下次请求永远都不会往下调用。断开连接之后把isRequesting置位false
         self.GetDeviceOtaVersionInfo { versionSuccess, error in
             if error == .none {
-                printLog("GetDeviceOtaVersionInfo ->",versionSuccess)
+                printLog("GetDeviceOtaVersionInfo ->\(versionSuccess)")
                 
                 let product = versionSuccess["product"] as! String
                 let project = versionSuccess["project"] as! String
@@ -7281,10 +7281,11 @@ import Alamofire
                 self.GetMac { macSuccess, error in
                     if error == .none {
                         if let string = macSuccess {
+                            printLog("macSuccess =\(string)")
                             let url = AntNetworkManager.shareInstance.basicUrl+"/api/ota/getNewVersionByAddress?"+String.init(format: "productId=%@&projectId=%@&firmwareId=%@&imageId=%@&fontId=%@&address=%@",product,project,firmware,library,font,string)
                             AntNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
                                 self.isRequesting = false
-                                printLog("info =",info)
+                                printLog("getNewVersionByAddress info =",info)
                                 success(info,.none)
                             } fail: { error in
                                 self.isRequesting = false
@@ -8047,8 +8048,8 @@ import Alamofire
                 valArray[7] = UInt8(type) ?? 1
                 valArray[8] = UInt8((i) & 0xff)
                 valArray[9] = UInt8((i >> 8) & 0xff)
-                valArray[10] = 1
-                valArray[11] = 1
+                valArray[10] = UInt8((CRC16(data: data) & 0xff) & 0xff)
+                valArray[11] = UInt8(CRC16(data: data) >> 8 )
                 valArray[12] = UInt8(lastLength)
                 let vArray = data.withUnsafeBytes { (byte) -> [UInt8] in
                     let b = (byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4))!
