@@ -38,6 +38,8 @@ import Alamofire
     private var screenSmallWidth = 0
     private var screenSmallHeight = 0
     
+    private var otaVersionInfo:[String:Any]?
+    
     var receiveGetDeviceNameBlock:((String?,AntError) -> Void)?
     var receiveGetFirmwareVersionBlock:((String?,AntError) -> Void)?
     var receiveGetMacBlock:((String?,AntError) -> Void)?
@@ -46,6 +48,7 @@ import Alamofire
     var receiveGetDeviceSupportListBlock:((AntFunctionListModel?,AntError) -> Void)?
     var receiveGetDeviceSupportFunctionDetailBlock:(([String:Any],AntError) -> Void)?
     var receiveGetDeviceOtaVersionInfo:(([String:Any],AntError) -> Void)?
+    var receivePrivateGetDeviceOtaVersionInfo:(([String:Any],AntError) -> Void)?
     var receiveGetSerialNumberBlock:((String?,AntError) -> Void)?
     var receiveGetPersonalInformationBlock:((AntPersonalModel?,AntError) -> Void)?
     var receiveSetPersonalInformationBlock:((AntError) -> Void)?
@@ -128,6 +131,7 @@ import Alamofire
     var receiveReportScreenTimeLongBlock:((Int,AntError) -> Void)?
     var receiveReportLightScreenBlock:((Int,AntError) -> Void)?
     var receiveReportDeviceVibrationBlock:((Int,AntError) -> Void)?
+    var receiveReportNewRealtimeDataBlock:((AntStepModel?,Int,Int,Int,Int,AntError) -> Void)?
     var receiveSetSubpackageInformationInteractionBlock:(([String:Any],AntError) -> Void)?
     var receiveSetStartUpgradeBlock:((AntError) -> Void)?
     var receiveSetStartUpgradeProgressBlock:((Float) -> Void)?
@@ -2316,6 +2320,24 @@ import Alamofire
                     
                 }
                 
+                if val[0] == 0x80 && val[1] == 0x98 {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveReportNewRealtimeDataBlock {
+                            self.parseReportNewRealtimeData(val: val, success: block)
+                        }
+                        
+                    }else{
+                        
+                        if let block = self.receiveReportNewRealtimeDataBlock {
+                            block(nil,-1,-1,-1,-1,.invalidLength)
+                        }
+                        
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "长度校验出错"))
+                    }
+                    
+                }
+                
                 
                 //2.3.1.分包信息交互(APP) 0x00
                 if val[0] == 0x05 && val[1] == 0x80 {
@@ -2544,7 +2566,7 @@ import Alamofire
 
                 DispatchQueue.global().async {
 
-                    printLog("send dataString -> wait 之前 self.semaphoreCount =",self.semaphoreCount,self.convertDataToSpaceHexStr(data: data,isSend: true))
+                    //printLog("send dataString -> wait 之前 self.semaphoreCount =",self.semaphoreCount,self.convertDataToSpaceHexStr(data: data,isSend: true))
                     self.semaphoreCount -= 1
                     self.commandSemaphore.wait()
 
@@ -3040,6 +3062,8 @@ import Alamofire
     
     // MARK: - 检测命令信号量重置
     func resetCommandSemaphore() {
+        self.otaVersionInfo = nil
+        self.receiveGetDeviceOtaVersionInfo = nil
         //目前SDK内部重置会在重连、断开连接、关闭蓝牙三个地方调用
         let resetCount = 1-self.semaphoreCount
         printLog("resetCommandSemaphore resetCount->",resetCount)
@@ -3297,6 +3321,23 @@ import Alamofire
         }
     }
     
+    private func privateGetOtaVersionInfo(_ success:@escaping(([String:Any],AntError)->Void)) {
+        printLog("privateGetOtaVersionInfo")
+        if let otaInfo = self.otaVersionInfo {
+            printLog("self.otaVersionInfo 有值")
+            success(otaInfo,.none)
+        }else{
+            print("self.otaVersionInfo = nil")
+            if self.receiveGetDeviceOtaVersionInfo != nil {
+                printLog("receiveGetDeviceOtaVersionInfo != nil")
+                self.receivePrivateGetDeviceOtaVersionInfo = success
+            }else{
+                printLog("receiveGetDeviceOtaVersionInfo == nil")
+                self.GetDeviceOtaVersionInfo(success)
+            }
+        }
+    }
+    
     private func parseGetDeviceOtaVersionInfo(val:[UInt8],success:@escaping(([String:Any],AntError) -> Void)) {
         let state = String.init(format: "%02x", val[4])
         
@@ -3312,6 +3353,11 @@ import Alamofire
             let string = String.init(format: "\nproduct:%d\nproject:%d\nfirmware:%@\nlibrary:%@\nfont:%@", product,project,firmware,library,font)
             AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
             success(["product":"\(product)","project":"\(project)","boot":boot,"firmware":firmware,"library":library,"font":font],.none)
+            self.otaVersionInfo = ["product":"\(product)","project":"\(project)","boot":boot,"firmware":firmware,"library":library,"font":font]
+            if let block = self.receivePrivateGetDeviceOtaVersionInfo  {
+                block(self.otaVersionInfo!,.none)
+                self.receivePrivateGetDeviceOtaVersionInfo = nil
+            }
             
         }else{
             success([:],.invalidState)
@@ -6672,7 +6718,7 @@ import Alamofire
 
             success(["type":"\(type)","value1":"\(value1)","value2":"\(value2)"],.none)
             
-        }else{
+        }else if val[4] != 1{
             success(["type":"\(type)","value1":"\(value1)","value2":"\(value2)"],.fail)
         }
     }
@@ -6816,6 +6862,86 @@ import Alamofire
         
     }
     
+    // MARK: - 上报实时数据 0x98
+    @objc public func ReportNewRealtimeData(success:@escaping((AntStepModel?,Int,Int,Int,Int,AntError) -> Void)) {
+        self.receiveReportNewRealtimeDataBlock = success
+//        let val:[UInt8] = [0x80,0x98,0x10,0x00,0x01,0x35,0x00,0x01,0x27,0x00,0x00,0x36,0x01,0x62,0x80,0x4e]//[0x80,0x98,0x13,0x00,0x01,0x3f,0x00,0x01,0x27,0x00,0x00,0x58,0x1b,0x36,0x01,0x41,0x62,0x80,0x4e]
+//        self.parseReportNewRealtimeData(val: val, success: success)
+    }
+    
+    private func parseReportNewRealtimeData(val:[UInt8],success:@escaping((AntStepModel?,Int,Int,Int,Int,AntError) -> Void)) {
+        
+        if val[4] == 1 {
+            
+            let typeCount = (Int(val[5]) | Int(val[6]) << 8)
+            var startIndex = 7
+            
+            var step = 0
+            var distance = 0
+            var calorie = 0
+            var hr = 0
+            var bo = 0
+            var dbp = 0
+            var sbp = 0
+            
+            for i in 0..<16 {
+                let state = (typeCount >> i) & 0x01
+                //string += "\nbit\(i+index*64) = \(state)"
+                
+                switch i {
+                case 0:
+                    if state != 0 {
+                        step = (Int(val[startIndex]) | Int(val[startIndex+1]) << 8 | Int(val[startIndex+2]) << 16 | Int(val[startIndex+3]) << 24)
+                        startIndex += 4
+                    }
+                    break
+                case 1:
+                    if state != 0 {
+                        distance = (Int(val[startIndex]) | Int(val[startIndex+1]) << 8)
+                        startIndex += 2
+                    }
+                    break
+                case 2:
+                    if state != 0 {
+                        calorie = (Int(val[startIndex]) | Int(val[startIndex+1]) << 8)
+                        startIndex += 2
+                    }
+                    break
+                case 3:
+                    if state != 0 {
+                        hr = (Int(val[startIndex]))
+                        startIndex += 1
+                    }
+                    break
+                case 4:
+                    if state != 0 {
+                        bo = (Int(val[startIndex]))
+                        startIndex += 1
+                    }
+                    break
+                case 5:
+                    if state != 0 {
+                        sbp = (Int(val[startIndex]))
+                        dbp = (Int(val[startIndex+1]))
+                        startIndex += 2
+                    }
+                    break
+                default:
+                    break
+                }
+            }
+            
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "实时数据 步数:%d,距离:%d,卡路里:%d,心率:%d,血氧:%d,血压:%d/%d",step,distance,calorie,hr,bo,sbp,dbp))//
+            
+            let model = AntStepModel.init(dic: ["step":"\(step)","distance":"\(distance)","calorie":"\(calorie)"])
+            success(model,hr,bo,sbp,dbp,.none)//
+            
+        }else{
+            success(nil,-1,-1,-1,-1,.invalidState)
+        }
+        
+    }
+     
     // MARK: - ota升级
     @objc public func setOtaStartUpgrade(type:Int,localFile:Any,isContinue:Bool,progress:@escaping((Float) -> Void),success:@escaping((AntError) -> Void)) {
         //所有ota相关的命令不用信号量等待机制   直接用writeData方法发送
@@ -7268,7 +7394,7 @@ import Alamofire
         
         self.isRequesting = true
         //此处如果在等待的时候把设备断开连接或者是解绑，命令不会再进入回调，而isRequesting是true下次请求永远都不会往下调用。断开连接之后把isRequesting置位false
-        self.GetDeviceOtaVersionInfo { versionSuccess, error in
+        self.privateGetOtaVersionInfo { versionSuccess, error in
             if error == .none {
                 printLog("GetDeviceOtaVersionInfo ->\(versionSuccess)")
                 
@@ -7317,7 +7443,7 @@ import Alamofire
         
         let group = DispatchGroup()
         group.enter()
-        self.GetDeviceOtaVersionInfo { versionSuccess, error in
+        self.privateGetOtaVersionInfo { versionSuccess, error in
             if error == .none {
                 printLog("GetDeviceOtaVersionInfo ->",versionSuccess)
                 
@@ -7378,7 +7504,7 @@ import Alamofire
         self.getServerOtaDeviceInfo { dic, error in
             //printLog("dic =",dic,"error =",dic)
             if error == .none {
-                //["data": Optional([["version": Optional(0.2), "url": Optional(http://oss.antjuyi.com/ota/firmware/P22pro_v0.2.bin), "type": Optional(1)], ["type": Optional(2), "url": Optional(http://oss.antjuyi.com/ota/image/P22pro_v0.2.bin), "version": Optional(0.2)], ["version": Optional(0.2), "url": Optional(http://oss.antjuyi.com/ota/font/P22pro_v0.2.bin), "type": Optional(3)]]), "message": Optional(当前有新版本), "code": Optional(200)]
+                //["data": Optional([["version": Optional(0.2), "urlx080": Optional(http://oss.antjuyi.com/ota/firmware/P22pro_v0.2.bin), "type": Optional(1)], ["type": Optional(2), "url": Optional(http://oss.antjuyi.com/ota/image/P22pro_v0.2.bin), "version": Optional(0.2)], ["version": Optional(0.2), "url": Optional(http://oss.antjuyi.com/ota/font/P22pro_v0.2.bin), "type": Optional(3)]]), "message": Optional(当前有新版本), "code": Optional(200)]
                 
                 if let code = dic["code"] as? Int {
                     if code == 200 {
@@ -7428,7 +7554,7 @@ import Alamofire
                                 }
                                 
                                 /*
-                                self.GetDeviceOtaVersionInfo { versionSuccess, error in
+                                self.privateGetOtaVersionInfo { versionSuccess, error in
                                     if error == .none {
 
                                         let firmware = versionSuccess["firmware"] as! String
@@ -7673,146 +7799,246 @@ import Alamofire
         }
     }
     
+    // MARK: - 获取服务器本地表盘文件
+    @objc public func getLocalDialImageServerInfo(success:@escaping(([Dictionary<String,Any>]?,AntError)->Void)) {
+        self.privateGetOtaVersionInfo { versionSuccess, error in
+            if error == .none {
+                printLog("GetDeviceOtaVersionInfo ->\(versionSuccess)")
+                
+                let product = versionSuccess["product"] as! String
+                let project = versionSuccess["project"] as! String
+
+                let url = AntNetworkManager.shareInstance.basicUrl+String.init(format: "/api/online/getCover?productId=%@&projectId=%@", product,project)
+                /*
+                 {
+                     "code": 200,
+                     "message": "获取本地表盘信息成功",
+                     "data": [
+                         {
+                             "url": "http://oss.antjuyi.com/online/local/240x240/p0xp0/1.png",
+                             "width": 240,
+                             "height": 240,
+                             "type": 0
+                         },
+                         {
+                             "url": "http://oss.antjuyi.com/online/local/240x240/p0xp0/2.png",
+                             "width": 240,
+                             "height": 240,
+                             "type": 0
+                         },
+                         {
+                             "url": "http://oss.antjuyi.com/online/local/240x240/p0xp0/3.png",
+                             "width": 240,
+                             "height": 240,
+                             "type": 0
+                         }
+                     ]
+                 }
+                 */
+                
+                AntNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
+                                
+                    let dic = info
+                    if let code = dic["code"] as? Int {
+                        if code == 200 {
+                            
+                            if let dataDic:[Dictionary<String,Any>] = dic["data"] as? [Dictionary<String,Any>] {
+                                success(dataDic,.none)
+                            }else{
+                                printLog("data错误 ->",dic["data"] as Any)
+                                success(nil,.fail)
+                            }
+                            
+                        }else{
+                            printLog("code != 200",dic["code"] as Any)
+                            success(nil,.fail)
+                        }
+                    }else{
+                        printLog("code错误 ->",dic["code"] as Any)
+                        success(nil,.fail)
+                    }
+
+                } fail: { error in
+                    printLog("error =",error as Any)
+                    success(nil,.fail)
+                }
+                
+            }else{
+                
+                success(nil,.fail)
+            }
+        }
+    }
+    
     // MARK: - 获取在线表盘  旧接口，获取全部
     @objc public func getOnlineDialList(success:@escaping(([AntOnlineDialModel],AntError) -> Void)) {
-        let url = AntNetworkManager.shareInstance.basicUrl+"/api/online/get?"+String.init(format: "productId=%@&projectId=%@","0","0")
-        /*
-         {
-             "code": 200,
-             "message": "获取数据成功",
-             "data": {
-                 "list": [
-                     {
-                         "id": 1,
-                         "imageUrl": "http://oss.antjuyi.com/online/240x240/image/v0.1_dial_1.png",
-                         "binUrl": "http://oss.antjuyi.com/online/240x240/bin/v0.1_dial_1.bin",
-                         "name": "春风得意",
-                         "downloadCount": 1000,
-                         "createAt": "2022-01-17T03:21:24.000+0000",
-                         "updateAt": "2022-01-17T03:21:27.000+0000"
+        self.privateGetOtaVersionInfo { versionSuccess, error in
+            if error == .none {
+                printLog("GetDeviceOtaVersionInfo ->\(versionSuccess)")
+                
+                let product = versionSuccess["product"] as! String
+                let project = versionSuccess["project"] as! String
+
+                let url = AntNetworkManager.shareInstance.basicUrl+"/api/online/get?"+String.init(format: "productId=%@&projectId=%@",product,project)
+                /*
+                 {
+                     "code": 200,
+                     "message": "获取数据成功",
+                     "data": {
+                         "list": [
+                             {
+                                 "id": 1,
+                                 "imageUrl": "http://oss.antjuyi.com/online/240x240/image/v0.1_dial_1.png",
+                                 "binUrl": "http://oss.antjuyi.com/online/240x240/bin/v0.1_dial_1.bin",
+                                 "name": "春风得意",
+                                 "downloadCount": 1000,
+                                 "createAt": "2022-01-17T03:21:24.000+0000",
+                                 "updateAt": "2022-01-17T03:21:27.000+0000"
+                             }
+                         ]
                      }
-                 ]
-             }
-         }
-         */
-        AntNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
-                        
-            let dic = info
-            if let code = dic["code"] as? Int {
-                if code == 200 {
-                    
-                    if let dataDic = dic["data"] as? Dictionary<String,Any> {
-                        
-                        var dialArray:[AntOnlineDialModel] = Array.init()
-                        
-                        if let listArray = dataDic["list"] as? Array<Dictionary<String,Any>> {
-                            for item in listArray {
-                                let dialModel = AntOnlineDialModel.init()
-                                if let id = item["id"] as? Int {
-                                    dialModel.dialId = id
+                 }
+                 */
+                
+                AntNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
+                                
+                    let dic = info
+                    if let code = dic["code"] as? Int {
+                        if code == 200 {
+                            
+                            if let dataDic = dic["data"] as? Dictionary<String,Any> {
+                                
+                                var dialArray:[AntOnlineDialModel] = Array.init()
+                                
+                                if let listArray = dataDic["list"] as? Array<Dictionary<String,Any>> {
+                                    for item in listArray {
+                                        let dialModel = AntOnlineDialModel.init()
+                                        if let id = item["id"] as? Int {
+                                            dialModel.dialId = id
+                                        }
+                                        if let imageUrl = item["imageUrl"] as? String {
+                                            dialModel.dialImageUrl = imageUrl
+                                        }
+                                        if let binUrl = item["binUrl"] as? String {
+                                            dialModel.dialFileUrl = binUrl
+                                        }
+                                        if let name = item["name"] as? String {
+                                            dialModel.dialName = name
+                                        }
+                                        dialArray.append(dialModel)
+                                    }
                                 }
-                                if let imageUrl = item["imageUrl"] as? String {
-                                    dialModel.dialImageUrl = imageUrl
-                                }
-                                if let binUrl = item["binUrl"] as? String {
-                                    dialModel.dialFileUrl = binUrl
-                                }
-                                if let name = item["name"] as? String {
-                                    dialModel.dialName = name
-                                }
-                                dialArray.append(dialModel)
+                                success(dialArray,.none)
+                            }else{
+                                printLog("data错误 ->",dic["data"] as Any)
+                                success([],.fail)
                             }
+                            
+                        }else{
+                            printLog("code != 200",dic["code"] as Any)
+                            success([],.fail)
                         }
-                        success(dialArray,.none)
                     }else{
-                        printLog("data错误 ->",dic["data"] as Any)
+                        printLog("code错误 ->",dic["code"] as Any)
                         success([],.fail)
                     }
-                    
-                }else{
-                    printLog("code != 200",dic["code"] as Any)
+
+                } fail: { error in
+                    printLog("error =",error as Any)
                     success([],.fail)
                 }
+                
             }else{
-                printLog("code错误 ->",dic["code"] as Any)
+                
                 success([],.fail)
             }
-
-        } fail: { error in
-            printLog("error =",error as Any)
-            success([],.fail)
         }
     }
     // MARK: - 获取在线表盘 新接口，分页获取
     @objc public func getOnlineDialList(pageIndex:Int,pageSize:Int,success:@escaping(([AntOnlineDialModel],AntError) -> Void)) {
-    //http://www.antjuyi.com/api/online/getNew?productId=0&projectId=0&pageIndex=1&pageSize=5
-        let url = AntNetworkManager.shareInstance.basicUrl+"/api/online/getNew?"+String.init(format: "productId=%@&projectId=%@&pageIndex=%d&pageSize=%d","0","0",pageIndex,pageSize)
-        /*
-         {
-             "code": 200,
-             "message": "获取数据成功",
-             "data": {
-                 "list": [
-                     {
-                         "id": 1,
-                         "imageUrl": "http://oss.antjuyi.com/online/240x240/image/v0.1_dial_1.png",
-                         "binUrl": "http://oss.antjuyi.com/online/240x240/bin/v0.1_dial_1.bin",
-                         "name": "春风得意",
-                         "downloadCount": 1000,
-                         "createAt": "2022-01-17T03:21:24.000+0000",
-                         "updateAt": "2022-01-17T03:21:27.000+0000"
+        
+        self.privateGetOtaVersionInfo { versionSuccess, error in
+            if error == .none {
+                printLog("GetDeviceOtaVersionInfo ->\(versionSuccess)")
+                
+                let product = versionSuccess["product"] as! String
+                let project = versionSuccess["project"] as! String
+                
+                //http://www.antjuyi.com/api/online/getNew?productId=0&projectId=0&pageIndex=1&pageSize=5
+                let url = AntNetworkManager.shareInstance.basicUrl+"/api/online/getNew?"+String.init(format: "productId=%@&projectId=%@&pageIndex=%d&pageSize=%d",product,project,pageIndex,pageSize)
+
+                /*
+                 {
+                     "code": 200,
+                     "message": "获取数据成功",
+                     "data": {
+                         "list": [
+                             {
+                                 "id": 1,
+                                 "imageUrl": "http://oss.antjuyi.com/online/240x240/image/v0.1_dial_1.png",
+                                 "binUrl": "http://oss.antjuyi.com/online/240x240/bin/v0.1_dial_1.bin",
+                                 "name": "春风得意",
+                                 "downloadCount": 1000,
+                                 "createAt": "2022-01-17T03:21:24.000+0000",
+                                 "updateAt": "2022-01-17T03:21:27.000+0000"
+                             }
+                         ]
                      }
-                 ]
-             }
-         }
-         */
-        AntNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
-                        
-            let dic = info
-            if let code = dic["code"] as? Int {
-                if code == 200 {
-                    
-                    if let dataDic = dic["data"] as? Dictionary<String,Any> {
-                        
-                        var dialArray:[AntOnlineDialModel] = Array.init()
-                        
-                        if let listArray = dataDic["list"] as? Array<Dictionary<String,Any>> {
-                            for item in listArray {
-                                let dialModel = AntOnlineDialModel.init()
-                                if let id = item["id"] as? Int {
-                                    dialModel.dialId = id
+                 }
+                 */
+                AntNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
+                                
+                    let dic = info
+                    if let code = dic["code"] as? Int {
+                        if code == 200 {
+                            
+                            if let dataDic = dic["data"] as? Dictionary<String,Any> {
+                                
+                                var dialArray:[AntOnlineDialModel] = Array.init()
+                                
+                                if let listArray = dataDic["list"] as? Array<Dictionary<String,Any>> {
+                                    for item in listArray {
+                                        let dialModel = AntOnlineDialModel.init()
+                                        if let id = item["id"] as? Int {
+                                            dialModel.dialId = id
+                                        }
+                                        if let imageUrl = item["imageUrl"] as? String {
+                                            dialModel.dialImageUrl = imageUrl
+                                        }
+                                        if let binUrl = item["binUrl"] as? String {
+                                            dialModel.dialFileUrl = binUrl
+                                        }
+                                        if let name = item["name"] as? String {
+                                            dialModel.dialName = name
+                                        }
+                                        dialArray.append(dialModel)
+                                    }
                                 }
-                                if let imageUrl = item["imageUrl"] as? String {
-                                    dialModel.dialImageUrl = imageUrl
-                                }
-                                if let binUrl = item["binUrl"] as? String {
-                                    dialModel.dialFileUrl = binUrl
-                                }
-                                if let name = item["name"] as? String {
-                                    dialModel.dialName = name
-                                }
-                                dialArray.append(dialModel)
+                                success(dialArray,.none)
+                            }else{
+                                printLog("data错误 ->",dic["data"] as Any)
+                                success([],.fail)
                             }
+                            
+                        }else{
+                            printLog("code != 200",dic["code"] as Any)
+                            success([],.fail)
                         }
-                        success(dialArray,.none)
                     }else{
-                        printLog("data错误 ->",dic["data"] as Any)
+                        printLog("code错误 ->",dic["code"] as Any)
                         success([],.fail)
                     }
-                    
-                }else{
-                    printLog("code != 200",dic["code"] as Any)
+
+                } fail: { error in
+                    printLog("error =",error as Any)
                     success([],.fail)
                 }
             }else{
-                printLog("code错误 ->",dic["code"] as Any)
                 success([],.fail)
             }
-
-        } fail: { error in
-            printLog("error =",error as Any)
-            success([],.fail)
         }
+        
+        
     }
     
     // MARK: - 同步在线表盘

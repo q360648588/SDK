@@ -294,6 +294,7 @@ class AntVC: UIViewController {
                 "上报亮屏时长",
                 "上报抬腕亮屏",
                 "上报设备振动",
+                "上报实时数据",
             ],
             [
                 "多包测试命令",
@@ -320,6 +321,7 @@ class AntVC: UIViewController {
                 "获取在线表盘(旧接口，获取全部)",
                 "获取在线表盘(新接口，获取分页)",
                 "发送在线表盘",
+                "获取本地表盘图片",
             ],
             [
                 "保存现有命令log",
@@ -665,6 +667,19 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                     self.logView.writeString(string: "字库:\(font)")
                 }
             }
+            
+//            AntCommandModule.shareInstance.getOnlineDialList(pageIndex: 0, pageSize: 10) { dialArray, error in
+//                self.logView.writeString(string: self.getErrorCodeString(error: error))
+//                print("getOnlineDialList ->",dialArray.count)
+//
+//                for item in dialArray {
+//                    print("item.dialId =",item.dialId,"item.dialImageUrl =",item.dialImageUrl,"item.dialFileUrl =",item.dialFileUrl,"item.dialName =",item.dialName)
+//                    self.logView.writeString(string: "id:\(item.dialId)")
+//                    self.logView.writeString(string: "imageUrl:\(item.dialImageUrl!)")
+//                    self.logView.writeString(string: "fileUrl:\(item.dialFileUrl!)")
+//                    self.logView.writeString(string: "name:\(item.dialName!)\n\n")
+//                }
+//            }
             
             break
         case "0x00 获取个人信息":
@@ -2745,6 +2760,30 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
+        case "上报实时数据":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "设备端点击显示")
+            
+            AntCommandModule.shareInstance.ReportNewRealtimeData { stepModel, hr, bo, sbp, dbp, error in
+                if error == .none {
+                    if let model:AntStepModel = stepModel as? AntStepModel {
+                        let step = model.step
+                        let calorie = model.calorie
+                        let distance = model.distance
+                        
+                        self.logView.writeString(string: "总步数:\(step)")
+                        self.logView.writeString(string: "总卡路里:\(calorie)")
+                        self.logView.writeString(string: "总距离:\(distance)")
+                    }
+                    self.logView.writeString(string: "心率:\(hr)")
+                    self.logView.writeString(string: "血氧:\(bo)")
+                    self.logView.writeString(string: "血压:\(sbp)/\(dbp)")
+                }
+            }
+            
+            break
+            
         case "多包测试命令":
             
             let array = [
@@ -3464,6 +3503,9 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                     self.dialArray = dialArray
 
                 }
+                
+//                AntCommandModule.shareInstance.GetDeviceOtaVersionInfo
+                
             }
             
             break
@@ -3495,6 +3537,25 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 }else{
                     self.logView.writeString(string: "没有此ID的表盘")
                 }
+            }
+            
+            break
+            
+        case "获取本地表盘图片":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "获取本地表盘图片")
+            
+            AntCommandModule.shareInstance.getLocalDialImageServerInfo { dic, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                if error == .none {
+                    if let dic = dic {
+                        print("获取本地表盘图片 \ndic =\(dic)")
+                        self.logView.writeString(string: "本地表盘图片信息:\(dic)")
+                    }
+                }
+                
             }
             
             break
