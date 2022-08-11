@@ -3480,8 +3480,11 @@ import Alamofire
     
     // MARK: - 设置时间制式 0x03
     @objc public func SetTimeFormat(format:Int,success:@escaping((AntError) -> Void)) {
-        
-        
+        var format = format
+        if format > UInt8.max || format < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            format = 0
+        }
         var val:[UInt8] = [0x01,0x03,0x05,0x00,UInt8(format)]
         let data = Data.init(bytes: &val, count: val.count)
                 
@@ -3544,7 +3547,11 @@ import Alamofire
     // MARK: - 设置公英制 0x05
     @objc public func SetMetricSystem(metric:Int,success:@escaping((AntError) -> Void)) {
         
-        
+        var metric = metric
+        if metric > UInt8.max || metric < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            metric = 0
+        }
         var val:[UInt8] = [0x01,0x05,0x05,0x00,UInt8(metric)]
         let data = Data.init(bytes: &val, count: val.count)
                 
@@ -3720,7 +3727,11 @@ import Alamofire
     
     // MARK: - 设置抬腕亮屏 0x0d
     @objc public func SetLightScreen(isOpen:Int,success:@escaping((AntError) -> Void)) {
-        
+        var isOpen = isOpen
+        if isOpen > UInt8.max || isOpen < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isOpen = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x0d,
@@ -3788,7 +3799,11 @@ import Alamofire
     
     // MARK: - 设置屏幕亮度 0x0f
     @objc public func SetScreenLevel(value:Int,success:@escaping((AntError) -> Void)) {
-        
+        var value = value
+        if value > UInt8.max || value < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            value = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x0f,
@@ -3856,7 +3871,11 @@ import Alamofire
     
     // MARK: - 设置屏幕时长 0x33
     @objc public func SetScreenTimeLong(value:Int,success:@escaping((AntError) -> Void)) {
-        
+        var value = value
+        if value > UInt8.max || value < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            value = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x33,
@@ -3923,7 +3942,11 @@ import Alamofire
     
     // MARK: - 设置本地表盘 0x11
     @objc public func SetLocalDial(index:Int,success:@escaping((AntError) -> Void)) {
-        
+        var index = index
+        if index > UInt8.max || index < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            index = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x11,
@@ -3957,7 +3980,11 @@ import Alamofire
     
     // MARK: - 获取闹钟 0x12
     @objc public func GetAlarm(index:Int,success:@escaping((AntAlarmModel?,AntError) -> Void)) {
-        
+        var index = index
+        if index > UInt8.max || index < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            index = 0
+        }
         var val:[UInt8] = [0x01,0x12,0x05,0x00,UInt8(index)]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -4058,9 +4085,9 @@ import Alamofire
             0x08,
             0x00,
             UInt8(index),
-            (UInt8(repeatCount)),
-            (UInt8(hour) ?? 0),
-            (UInt8(minute) ?? 0)
+            UInt8(repeatCount),
+            UInt8(hour),
+            UInt8(minute)
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -4112,7 +4139,11 @@ import Alamofire
     
     // MARK: - 设置设备语言 0x15
     @objc public func SetDeviceLanguage(index:Int,success:@escaping((AntError) -> Void)) {
-        
+        var index = index
+        if index > UInt8.max || index < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            index = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x15,
@@ -4186,7 +4217,12 @@ import Alamofire
     // MARK: - 设置目标步数 0x17
     @objc public func SetStepGoal(target:Int,success:@escaping((AntError) -> Void)) {
         
-        let goal:Int = target
+        var goal:Int = target
+        if goal > UInt32.max || goal < UInt32.min {
+            print("输入参数超过范围,改为默认值0")
+            goal = 0
+        }
+        
         var val:[UInt8] = [
             0x01,
             0x17,
@@ -4261,7 +4297,11 @@ import Alamofire
     
     // MARK: - 设置显示方式 0x19
     @objc public func SetDispalyMode(isVertical:Int,success:@escaping((AntError) -> Void)) {
-        
+        var isVertical = isVertical
+        if isVertical > UInt8.max || isVertical < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isVertical = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x19,
@@ -4333,7 +4373,11 @@ import Alamofire
     
     // MARK: - 设置佩戴方式 0x1b
     @objc public func SetWearingWay(isLeftHand:Int,success:@escaping((AntError) -> Void)) {
-        
+        var isLeftHand = isLeftHand
+        if isLeftHand > UInt8.max || isLeftHand < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isLeftHand = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x1b,
@@ -4368,7 +4412,16 @@ import Alamofire
     
     // MARK: - 设置单次测量 0x1d
     @objc public func SetSingleMeasurement(type:Int,isOpen:Int,success:@escaping((AntError) -> Void)) {
-        
+        var type = type
+        if type > UInt8.max || type < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            type = 0
+        }
+        var isOpen = isOpen
+        if isOpen > UInt8.max || isOpen < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isOpen = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x1d,
@@ -4441,7 +4494,16 @@ import Alamofire
     
     // MARK: - 设置锻炼模式 0x1f
     @objc public func SetExerciseMode(type:Int,isOpen:Int,success:@escaping((AntError) -> Void)) {
-        
+        var type = type
+        if type > UInt8.max || type < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            type = 0
+        }
+        var isOpen = isOpen
+        if isOpen > UInt8.max || isOpen < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isOpen = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x1f,
@@ -4478,7 +4540,16 @@ import Alamofire
     
     // MARK: - 设置设备模式 0x21
     @objc public func SetDeviceMode(type:Int,isOpen:Int,success:@escaping((AntError) -> Void)) {
-        
+        var type = type
+        if type > UInt8.max || type < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            type = 0
+        }
+        var isOpen = isOpen
+        if isOpen > UInt8.max || isOpen < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isOpen = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x21,
@@ -4515,7 +4586,11 @@ import Alamofire
     
     // MARK: - 设置手机类型 0x25
     @objc public func SetPhoneMode(type:Int,success:@escaping((AntError) -> Void)) {
-        
+        var type = type
+        if type > UInt8.max || type < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            type = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x25,//
@@ -4590,7 +4665,11 @@ import Alamofire
     
     // MARK: - 设置天气单位 0x29
     @objc public func SetWeatherUnit(type:Int,success:@escaping((AntError) -> Void)) {
-        
+        var type = type
+        if type > UInt8.max || type < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            type = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x29,
@@ -4626,6 +4705,11 @@ import Alamofire
     
     // MARK: - 设置实时数据上报开关 0x2B
     @objc public func SetReportRealtimeData(isOpen:Int,success:@escaping((AntError) -> Void)) {
+        var isOpen = isOpen
+        if isOpen > UInt8.max || isOpen < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isOpen = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x2B,
@@ -5137,7 +5221,11 @@ import Alamofire
     
     // MARK: - 设置24小时心率监测 0x35
     @objc public func Set24HrMonitor(isOpen:Int,success:@escaping((AntError) -> Void)) {
-        
+        var isOpen = isOpen
+        if isOpen > UInt8.max || isOpen < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isOpen = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x35,
@@ -5173,7 +5261,11 @@ import Alamofire
     
     // MARK: - 设置设备进入或退出拍照模式 0x37
     @objc public func SetEnterOrExitCamera(isOpen:Int,success:@escaping((AntError) -> Void)) {
-        
+        var isOpen = isOpen
+        if isOpen > UInt8.max || isOpen < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isOpen = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x37,
@@ -5249,7 +5341,7 @@ import Alamofire
     // MARK: - 设置消息提醒 0x01
     @objc public func SetNotificationRemind(isOpen:String,success:@escaping((AntError) -> Void)) {
         
-        let switchCount = Int(isOpen) ?? 0
+        let switchCount = UInt16(isOpen) ?? 0
         var val:[UInt8] = [
             0x02,
             0x01,
@@ -6382,14 +6474,19 @@ import Alamofire
     
     // MARK: - 同步锻炼数据 0x02
     @objc public func SetSyncExerciseData(indexCount:Int,success:@escaping((AntExerciseModel?,AntError) -> Void)) {
+        var indexCount = indexCount
+        if indexCount > UInt8.max || indexCount < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            indexCount = 0
+        }
         let type = 4
         var val:[UInt8] = [
             0x03,
             0x02,
             0x06,
             0x00,
-            (UInt8(type) ?? 0),
-            (UInt8(indexCount) ?? 0)
+            UInt8(type),
+            UInt8(indexCount)
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -6944,6 +7041,11 @@ import Alamofire
      
     // MARK: - ota升级
     @objc public func setOtaStartUpgrade(type:Int,localFile:Any,isContinue:Bool,progress:@escaping((Float) -> Void),success:@escaping((AntError) -> Void)) {
+        var type = type
+        if type > UInt8.max || type < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            type = 0
+        }
         //所有ota相关的命令不用信号量等待机制   直接用writeData方法发送
         if isContinue {
             self.setStartUpgrade(type: type, localFile: localFile, maxCount: 20,isContinue: true, progress: progress, success: success)
@@ -6994,6 +7096,16 @@ import Alamofire
     
     // MARK: - 分包信息交互(APP) 0x00
     @objc public func SetSubpackageInformationInteraction(maxSend:Int,maxReceive:Int,success:@escaping(([String:Any],AntError) -> Void)) {
+        var maxSend = maxSend
+        if maxSend > UInt16.max || maxSend < UInt16.min {
+            print("输入参数超过范围,改为默认值0")
+            maxSend = 0
+        }
+        var maxReceive = maxReceive
+        if maxReceive > UInt16.max || maxReceive < UInt16.min {
+            print("输入参数超过范围,改为默认值0")
+            maxReceive = 0
+        }
         var val:[UInt8] = [
             0x05,
             0x00,
@@ -7033,6 +7145,21 @@ import Alamofire
     
     // MARK: - 分包信息交互(APP) 0x01
     @objc public func replySubpackageInformationInteraction(state:Int,maxSend:Int,maxReceive:Int,success:@escaping((AntError) -> Void)) {
+        var state = state
+        if state > UInt8.max || state < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            state = 0
+        }
+        var maxSend = maxSend
+        if maxSend > UInt16.max || maxSend < UInt16.min {
+            print("输入参数超过范围,改为默认值0")
+            maxSend = 0
+        }
+        var maxReceive = maxReceive
+        if maxReceive > UInt16.max || maxReceive < UInt16.min {
+            print("输入参数超过范围,改为默认值0")
+            maxReceive = 0
+        }
         var val:[UInt8] = [
             0x05,
             0x81,
@@ -7069,7 +7196,16 @@ import Alamofire
     
     // MARK: - 开始升级
     @objc public func setStartUpgrade(type:Int,localFile:Any,maxCount:Int,isContinue:Bool,progress:@escaping((Float) -> Void),success:@escaping((AntError) -> Void)) {
-        
+        var type = type
+        if type > UInt8.max || type < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            type = 0
+        }
+        var maxCount = maxCount
+        if maxCount > UInt16.max || maxCount < UInt16.min {
+            print("输入参数超过范围,改为默认值0")
+            maxCount = 0
+        }
         var fileData:Data?
         if localFile is String {
             let file:String = localFile as! String

@@ -803,10 +803,32 @@ import UIKit
 }
 
 @objc public class AntPersonalModel:NSObject {
-    @objc public var age:Int = 0
+    @objc public var age:Int = 0 {
+        didSet {
+            if self.age < UInt8.min || self.age > UInt8.max {
+                self.age = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
     @objc public var gender:Bool = false
-    @objc public var height:Float = 0
-    @objc public var weight:Float = 0
+    @objc public var height:Float = 0 {
+        didSet {
+            if Int(self.height)*10 < UInt16.min || Int(self.height)*10 > UInt16.max {
+                self.height = 0
+                //print(" UInt16.min = \(UInt16.min) , UInt16.max = \(UInt16.max)")
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var weight:Float = 0 {
+        didSet {
+            if Int(self.weight)*10 < UInt16.min || Int(self.weight)*10 > UInt16.max {
+                self.weight = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
     
     public override init() {
         super.init()
@@ -822,14 +844,72 @@ import UIKit
 }
 
 @objc public class AntWeatherModel:NSObject {
-    @objc public var dayCount:Int = 0
-    @objc public var type:AntWeatherType = AntWeatherType.sunny
-    @objc public var temp:Int = 0
-    @objc public var airQuality:Int = 0
-    @objc public var minTemp:Int = 0
-    @objc public var maxTemp:Int = 0
-    @objc public var tomorrowMinTemp:Int = 0
-    @objc public var tomorrowMaxTemp:Int = 0
+    @objc public var dayCount:Int = 0 {
+        didSet {
+            if self.dayCount < Int8.min || self.dayCount > Int8.max {
+                self.dayCount = 0
+                //print(" Int8.min = \(Int8.min) , Int8.max = \(Int8.max)")
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var type:AntWeatherType = AntWeatherType.sunny {
+        didSet {
+            if self.type.rawValue < Int8.min || self.type.rawValue > Int8.max {
+                self.type = AntWeatherType.sunny
+                print("输入参数超过范围,改为默认值.sunny")
+            }
+        }
+    }
+    @objc public var temp:Int = 0 {
+        didSet {
+            if self.temp < Int8.min || self.temp > Int8.max {
+                self.temp = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var airQuality:Int = 0 {
+        didSet {
+            if self.airQuality < Int8.min || self.airQuality > Int8.max {
+                self.airQuality = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    
+    @objc public var minTemp:Int = 0 {
+        didSet {
+            if self.minTemp < Int8.min || self.minTemp > Int8.max {
+                self.minTemp = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var maxTemp:Int = 0 {
+        didSet {
+            if self.maxTemp < Int8.min || self.maxTemp > Int8.max {
+                self.maxTemp = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var tomorrowMinTemp:Int = 0 {
+        didSet {
+            if self.tomorrowMinTemp < Int8.min || self.tomorrowMinTemp > Int8.max {
+                self.tomorrowMinTemp = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var tomorrowMaxTemp:Int = 0 {
+        didSet {
+            if self.tomorrowMaxTemp < Int8.min || self.tomorrowMaxTemp > Int8.max {
+                self.tomorrowMaxTemp = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
     
     public override init() {
         super.init()
@@ -841,10 +921,31 @@ import UIKit
     case cycle
 }
 @objc public class AntAlarmModel:NSObject {
-    @objc public var alarmIndex:Int = -1
+    @objc public var alarmIndex:Int = -1 {
+        didSet {
+            if self.alarmIndex < UInt8.min || self.alarmIndex > UInt8.max {
+                self.alarmIndex = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
     @objc public var alarmOpen:Bool = false
-    @objc public var alarmHour:Int = -1
-    @objc public var alarmMinute = -1
+    @objc public var alarmHour:Int = -1 {
+        didSet {
+            if self.alarmHour < UInt8.min || self.alarmHour > UInt8.max {
+                self.alarmHour = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var alarmMinute = -1 {
+        didSet {
+            if self.alarmMinute < UInt8.min || self.alarmMinute > UInt8.max {
+                self.alarmMinute = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
     @objc public var alarmType:AntAlarmType = .single
     @objc public var alarmRepeatArray:Array<Int>?
     @objc public private(set) var alarmRepeatCount:Int = 0
@@ -858,15 +959,15 @@ import UIKit
         
         if dic.keys.contains("index") && dic.keys.contains("repeatCount") && dic.keys.contains("hour") && dic.keys.contains("minute") {
             if let index = dic["index"] as? String {
-                self.alarmIndex = Int(index) ?? 0
+                self.alarmIndex = Int(UInt8(index) ?? 0)
             }
 
-            self.alarmHour = Int(dic["hour"] as! String) ?? 0
-            self.alarmMinute = Int(dic["minute"] as! String) ?? 0
-            let repeatCount = Int(dic["repeatCount"] as! String) ?? 0
+            self.alarmHour = Int(UInt8(dic["hour"] as! String) ?? 0)
+            self.alarmMinute = Int(UInt8(dic["minute"] as! String) ?? 0)
+            let repeatCount = Int(UInt8(dic["repeatCount"] as! String) ?? 0)
             
             if let repeatString = dic["repeatCount"] as? String {
-                self.alarmRepeatCount = Int(repeatString) ?? 0
+                self.alarmRepeatCount = Int(UInt8(repeatString) ?? 0)
             }
             
             if repeatCount < 128 {
@@ -992,7 +1093,14 @@ import UIKit
 
 
 @objc public class AntOnlineDialModel:NSObject {
-    @objc public var dialId:Int = -1
+    @objc public var dialId:Int = -1 {
+        didSet {
+            if self.dialId < UInt8.min || self.dialId > UInt8.max {
+                self.dialId = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
     @objc public var dialImageUrl:String?
     @objc public var dialFileUrl:String?
     @objc public var dialName:String?
@@ -1004,7 +1112,14 @@ import UIKit
 
 @objc public class AntSedentaryModel:NSObject {
     @objc public var isOpen:Bool = false
-    @objc public var timeLong:Int = 0
+    @objc public var timeLong:Int = 0 {
+        didSet {
+            if self.timeLong < UInt8.min || self.timeLong > UInt8.max {
+                self.timeLong = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
     @objc public var timeArray:[AntStartEndTimeModel] = []
     
     public override init() {
@@ -1044,8 +1159,22 @@ import UIKit
 
 @objc public class AntHrWaringModel:NSObject {
     @objc public var isOpen:Bool = false
-    @objc public var maxValue:Int = 0
-    @objc public var minValue:Int = 0
+    @objc public var maxValue:Int = 0 {
+        didSet {
+            if self.maxValue < UInt8.min || self.maxValue > UInt8.max {
+                self.maxValue = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var minValue:Int = 0 {
+        didSet {
+            if self.minValue < UInt8.min || self.minValue > UInt8.max {
+                self.minValue = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
     
     public override init() {
         super.init()
@@ -1159,10 +1288,38 @@ import UIKit
 
 
 @objc public class AntStartEndTimeModel:NSObject {
-    @objc public var startHour:Int = -1
-    @objc public var startMinute:Int = -1
-    @objc public var endHour:Int = -1
-    @objc public var endMinute:Int = -1
+    @objc public var startHour:Int = -1 {
+        didSet {
+            if self.startHour < UInt8.min || self.startHour > UInt8.max {
+                self.startHour = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var startMinute:Int = -1 {
+        didSet {
+            if self.startMinute < UInt8.min || self.startMinute > UInt8.max {
+                self.startMinute = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var endHour:Int = -1 {
+        didSet {
+            if self.endHour < UInt8.min || self.endHour > UInt8.max {
+                self.endHour = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var endMinute:Int = -1 {
+        didSet {
+            if self.endMinute < UInt8.min || self.endMinute > UInt8.max {
+                self.endMinute = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
     
     public override init() {
         super.init()

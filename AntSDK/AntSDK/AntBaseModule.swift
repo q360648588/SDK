@@ -567,7 +567,7 @@ import zlib
     
     @objc public func getNotificationTypeArrayWithIntString(countString:String) -> [AntNotificationType.RawValue] {
         var array = [Int].init()
-        let count = Int(countString) ?? 0
+        let count = UInt16(countString) ?? 0
         printLog("count =",count)
         for i in stride(from: 0, to: 16, by: 1) {
             if (((count >> i) & 0x01) != 0) {

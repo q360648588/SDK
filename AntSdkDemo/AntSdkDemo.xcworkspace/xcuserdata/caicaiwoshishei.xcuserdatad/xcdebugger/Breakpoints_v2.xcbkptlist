@@ -35,8 +35,8 @@
             filePath = "../AntSDK/AntSDK/AntCommandModule.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "7756"
-            endingLineNumber = "7756"
+            startingLineNumber = "7892"
+            endingLineNumber = "7892"
             landmarkName = "serverOtaMethod(indexCount:dataArray:progress:success:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -44,33 +44,33 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "ADFBCB78-E57C-4D00-B456-77B973A45EC4"
+            uuid = "69617383-CA47-4F98-BACC-835B0A8EE6F0"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "AntSdkDemo/ScanVC.swift"
+            filePath = "../AntSDK/AntSDK/AntModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "123"
-            endingLineNumber = "123"
-            landmarkName = "tableView(_:didSelectRowAt:)"
-            landmarkType = "7">
+            startingLineNumber = "928"
+            endingLineNumber = "928"
+            landmarkName = "alarmIndex"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "693561D2-D48D-49E1-BE83-746FAEE1C557"
+            uuid = "223214FD-B693-4857-9A43-27B27A0BE063"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../AntSDK/AntSDK/AntBaseModule.swift"
+            filePath = "../AntSDK/AntSDK/AntModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "277"
-            endingLineNumber = "277"
-            landmarkName = "connectDevice(peripheral:connectState:)"
-            landmarkType = "7">
+            startingLineNumber = "925"
+            endingLineNumber = "925"
+            landmarkName = "alarmIndex"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

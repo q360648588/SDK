@@ -897,7 +897,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 
                 let model = AntWeatherModel.init()
                 model.dayCount = Int(dayCount) ?? 0
-                model.type = AntWeatherType(rawValue:Int(type) ?? 0)!
+                model.type = AntWeatherType(rawValue:Int(type) ?? 0) ?? .sunny
                 model.temp = Int(temp) ?? 0
                 model.airQuality = Int(airQuality) ?? 0
                 model.minTemp = Int(minTemp) ?? 0
@@ -1712,9 +1712,9 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 
                 let model = AntCustomDialModel.init()
                 model.color = UIColor.init(hexString: color)
-                model.positionType = AntPositionType.init(rawValue: Int(positionType) ?? 0)!
-                model.timeUpType = AntPositionShowType.init(rawValue: Int(timeUpType) ?? 0)!
-                model.timeDownType = AntPositionShowType.init(rawValue: Int(timeDownType) ?? 0)!
+                model.positionType = AntPositionType.init(rawValue: Int(positionType) ?? 0) ?? .leftUp
+                model.timeUpType = AntPositionShowType.init(rawValue: Int(timeUpType) ?? 0) ?? .close
+                model.timeDownType = AntPositionShowType.init(rawValue: Int(timeDownType) ?? 0) ?? .close
                 
                 AntCommandModule.shareInstance.SetCustomDialEdit(model: model) { error in
                     
