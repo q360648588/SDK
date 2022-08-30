@@ -1032,12 +1032,15 @@ import UIKit
 }
 
 @objc public enum AntPositionType : Int {
-    case leftUp
+    case leftTop
     case leftMiddle
-    case letfDown
-    case rightUp
+    case letfBottom
+    case rightTop
     case rightMiddle
-    case rightDown
+    case rightBottom
+    case centerTop
+    case centerMiddle
+    case centerBottom
 }
 @objc public enum AntPositionShowType : Int {
     case close
@@ -1049,7 +1052,7 @@ import UIKit
 @objc public class AntCustomDialModel:NSObject {
     @objc public private(set) var colorHex:String = "0xFFFFFF"
     @objc public var color:UIColor = .white
-    @objc public var positionType:AntPositionType = .leftUp
+    @objc public var positionType:AntPositionType = .leftTop
     @objc public var timeUpType:AntPositionShowType = .close
     @objc public var timeDownType:AntPositionShowType = .close
     
@@ -1065,7 +1068,7 @@ import UIKit
         let positionType = dic["positionType"] as! String
         let timeUpType = dic["timeUpType"] as! String
         let timeDownType = dic["timeDownType"] as! String
-        self.positionType = AntPositionType.init(rawValue: Int(positionType) ?? 0) ?? .leftUp
+        self.positionType = AntPositionType.init(rawValue: Int(positionType) ?? 0) ?? .leftTop
         self.timeUpType = AntPositionShowType.init(rawValue: Int(timeUpType) ?? 0) ?? .close
         self.timeDownType = AntPositionShowType.init(rawValue: Int(timeDownType) ?? 0) ?? .close
     }
@@ -1187,6 +1190,15 @@ import UIKit
         self.isOpen = result == 0 ? false:true
         self.maxValue = Int(dic["maxHr"] as! String) ?? 0
         self.minValue = Int(dic["minHr"] as! String) ?? 0
+    }
+}
+
+@objc public class AntAddressBookModel:NSObject {
+    @objc public var name = ""
+    @objc public var phoneNumber = ""
+    
+    public override init() {
+        super.init()
     }
 }
 

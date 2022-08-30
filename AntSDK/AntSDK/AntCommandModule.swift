@@ -109,7 +109,8 @@ import Alamofire
     var receiveSetWashHandBlock:((AntError) -> Void)?
     var receiveGetDrinkWaterBlock:(([String:Any],AntError) -> Void)?
     var receiveSetDrinkWaterBlock:((AntError) -> Void)?
-    //    var receiveSetSyncHealthDataBlock:(day:String,type:String,success:(([String:Any],AntError) -> Void))?
+    var receiveSetAddressBookBlock:((AntError) -> Void)?
+        //    var receiveSetSyncHealthDataBlock:(day:String,type:String,success:(([String:Any],AntError) -> Void))?
     var receiveSetSyncStepDataBlock:(day:String,type:String,success:((Any?,AntError) -> Void))?
     var receiveSetSyncSleepDataBlock:(day:String,type:String,success:((Any?,AntError) -> Void))?
     var receiveSetSyncHeartrateDataBlock:(day:String,type:String,success:((Any?,AntError) -> Void))?
@@ -1541,6 +1542,25 @@ import Alamofire
                         //printLog("第\(#line)行" , "\(#function)")
                         self.signalCommandSemaphore()
                         AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetDrinkWater长度校验出错"))
+                    }
+                    
+                }
+                
+                //同步联系人
+                if val[0] == 0x02 && val[1] == 0x93 {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveSetAddressBookBlock {
+                            self.parseSetAddressBook(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveSetAddressBookBlock {
+                            block(.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetAddress长度校验出错"))
                     }
                     
                 }
@@ -4998,10 +5018,20 @@ import Alamofire
     
     func createSendImageFile(image:UIImage) -> Data {
                 
-        let smallImage = image.changeSize(size: .init(width: self.screenSmallWidth, height: self.screenSmallHeight))
+        var smallImage = image.changeSize(size: .init(width: self.screenSmallWidth, height: self.screenSmallHeight))
+        var bigImage = image//.changeSize(size: .init(width: 240, height: 240))
+        
+        if let versionDic = self.otaVersionInfo {
+            let product = versionDic["product"] as! String
+            let project = versionDic["project"] as! String
+            
+            if product == "1" && project == "1" {
+                smallImage = smallImage.changeCircle(fillColor: .black)
+                bigImage = bigImage.changeCircle(fillColor: .black)
+            }
+        }
+        
         let data_80_80:Data = self.createImageBin(image: smallImage)
-
-        let bigImage = image//.changeSize(size: .init(width: 240, height: 240))
         let data_240_240:Data = self.createImageBin(image: bigImage)
         
 //        let bigPath = NSHomeDirectory() + "/Documents/test_big.bin"
@@ -6081,6 +6111,178 @@ import Alamofire
     }
     
     private func parseSetDrinkWater(val:[UInt8],success:@escaping((AntError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        
+        if val[4] == 1 {
+            
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@", state))
+            success(.none)
+            
+        }else{
+            success(.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 设置常用联系人
+    @objc public func SetAddressBook(modelArray:[AntAddressBookModel],success:@escaping((AntError) -> Void)) {
+        
+        /*
+         bit0           cmd_class
+         bit1           cmd_id
+         bit2~5         所有数据长度(所有联系人数据，不是整个命令的长度)
+         bit6           状态(默认01)
+         bit7           类型(默认0)
+         bit8~9         序号
+         bit10~11       crc16校验(所有联系人数据，不是整个命令的长度)
+         bit12          最后一个包的数据长度(所有联系人数据的最后一包长度。不包括前面4byte的固定部分)
+         bit13~Total_N  联系人数据
+         
+         数据格式(bit13~Total_N)
+         bit0~1         数据总长度
+         bit2~3         联系人数量
+         bit4~Model_N   联系人数据格式
+         
+         单个联系人数据格式(bit4~Model_N)
+         bit0~1         联系人序号
+         bit2           姓名长度N
+         bit3           号码长度M
+         bit4~N         姓名utf8
+         bitN+1~M       号码utf8
+         ...
+         
+         张三 13755660033
+         李四 0755-6128998
+         {length = 47 , bytes = 0x2f 00 02 00 00 00 06 0b e5 bc a0 e4 b8 89 31 33 37 35 35 36 36 30 30 33 33 01 00 06 0c e6 9d 8e e5 9b 9b 30 37 35 35 2d 36 31 32 38 39 39 38}
+         {length = 47 , bytes = 0x2f00(数据总长度) 0200(联系人数量) 0000(联系人序号) 06(姓名长度) 0b(号码长度) e5bca0e4b889(张三) 3133373535363630303333(13755660033) 0100() 06() 0c() e69d8ee59b9b(李四) 303735352d36313238393938(0755-6128998)}
+         
+         */
+        
+        let cmdClass = 0x02
+        let cmdId = 0x13
+        let state = 0x01
+        let type = 0x00
+        
+        //数据格式(bit13~Total_N) bit0~3数据总长度+联系人数量
+        var modelDataArray:[UInt8] = [0,0,0,0]
+        for i in 0..<modelArray.count {
+            let model = modelArray[i]
+            let nameData = model.name.data(using: .utf8) ?? .init()
+            let nameValArray = nameData.withUnsafeBytes { (byte) -> [UInt8] in
+                let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+                return [UInt8](UnsafeBufferPointer.init(start: b, count: nameData.count))
+            }
+            let phoneData = model.phoneNumber.data(using: .utf8) ?? .init()
+            let phoneValArray = phoneData.withUnsafeBytes { (byte) -> [UInt8] in
+                let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+                return [UInt8](UnsafeBufferPointer.init(start: b, count: phoneData.count))
+            }
+            
+            modelDataArray.append(contentsOf: [UInt8(i & 0xff),UInt8((i >> 8) & 0xff),UInt8(nameData.count),UInt8(phoneData.count)])
+            modelDataArray.append(contentsOf: nameValArray)
+            modelDataArray.append(contentsOf: phoneValArray)
+        }
+        
+        let allModelLenght = modelDataArray.count
+        let modelCount = modelArray.count
+        modelDataArray[0] = UInt8((allModelLenght ) & 0xff)
+        modelDataArray[1] = UInt8((allModelLenght >> 8) & 0xff)
+        modelDataArray[2] = UInt8((modelCount ) & 0xff)
+        modelDataArray[4] = UInt8((modelCount >> 8 ) & 0xff)
+        
+        let crc16 = self.CRC16(val: modelDataArray)
+
+        let testData = modelDataArray.withUnsafeBufferPointer { (bytes) -> Data in
+            return Data.init(buffer: bytes)
+        }
+        print("modelDataArray = \(self.convertDataToSpaceHexStr(data: testData,isSend: true))")
+        
+        let indexCount = 1 + (allModelLenght + 8) / 16//应该能接收的所有包序号
+        let lastLength = (allModelLenght - 7) > 0 ? ((allModelLenght - 7) % 16) : allModelLenght
+        
+        if self.peripheral?.state != .connected {
+            
+            success(.disconnected)
+            return
+            
+        }
+        
+        if self.writeCharacteristic == nil || self.peripheral == nil {
+            
+            success(.invalidCharacteristic)
+            return
+        }
+
+        
+        DispatchQueue.global().async {
+
+            self.semaphoreCount -= 1
+            self.commandSemaphore.wait()
+                                
+            DispatchQueue.main.async {
+
+                printLog("发送命令 -> self.semaphoreCount =",self.semaphoreCount)
+                self.receiveSetAddressBookBlock = success
+                
+                for i in stride(from: 0, to: indexCount, by: 1) {
+                    var valArray:[UInt8] = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]//Array.init()//(arrayLiteral: 20)
+                    valArray[0] = UInt8(cmdClass)
+                    valArray[1] = UInt8(cmdId)
+                    if i == 0 {
+                        valArray[2] = UInt8((allModelLenght ) & 0xff)
+                        valArray[3] = UInt8((allModelLenght >> 8) & 0xff)
+                        valArray[4] = UInt8((allModelLenght >> 16) & 0xff)
+                        valArray[5] = UInt8((allModelLenght >> 24) & 0xff)
+                        valArray[6] = UInt8(state)
+                        valArray[7] = UInt8(type)
+                        valArray[8] = UInt8((i) & 0xff)
+                        valArray[9] = UInt8((i >> 8) & 0xff)
+                        valArray[10] = UInt8((crc16) & 0xff)
+                        valArray[11] = UInt8((crc16 >> 8) & 0xff)
+                        valArray[12] = UInt8(lastLength)
+
+                        let arr:[UInt8] = Array.init(modelDataArray[0..<7])
+                        valArray.replaceSubrange(valArray.index(0, offsetBy: 13)..<valArray.endIndex, with: arr)
+                        
+                    }else{
+                        
+                        valArray[2] = UInt8(i & 0xff)
+                        valArray[3] = UInt8((i >> 8) & 0xff)
+                        
+                        let startIndex = ((i-1)*16+7)
+                        print("startIndex = \(startIndex)")
+                        if allModelLenght - ((i-1)*16) - 7 >= 16 {
+                            let arr:[UInt8] = Array.init(modelDataArray[startIndex..<(startIndex+16)])
+                            valArray.replaceSubrange(valArray.index(0, offsetBy: 4)..<valArray.endIndex, with: arr)
+                        }else{
+                            print("(allModelLenght - startIndex-1) = \((allModelLenght - startIndex-1))")
+                            let arr:[UInt8] = Array.init(modelDataArray[startIndex..<allModelLenght])
+                            valArray.replaceSubrange(valArray.index(0, offsetBy: 4)..<valArray.endIndex, with: arr)
+                        }
+                    }
+                    
+                    let newData = valArray.withUnsafeBufferPointer { (bytes) -> Data in
+                        return Data.init(buffer: bytes)
+                    }
+                    
+                    let dataString = String.init(format: "%@", self.convertDataToSpaceHexStr(data: newData,isSend: true))
+                    printLog("SetAddressBook send =",dataString)
+                    self.writeData(data: newData)
+                }
+
+                //定时器计数重置
+                self.commandDetectionCount = 0
+                if self.commandDetectionTimer == nil {
+                    //检测命令发送之后是否有回复，在deviceReceivedData方法内有数据则把此定时器销毁。如果没有回复，那么5s之后把信号量回复默认值
+                    self.commandDetectionTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.commandDetectionTimerMethod), userInfo: nil, repeats: true)
+                }
+            }
+        }
+    }
+    
+    private func parseSetAddressBook(val:[UInt8],success:@escaping((AntError) -> Void)) {
         let state = String.init(format: "%02x", val[4])
         
         
@@ -7979,6 +8181,67 @@ import Alamofire
                         if code == 200 {
                             
                             if let dataDic:[Dictionary<String,Any>] = dic["data"] as? [Dictionary<String,Any>] {
+                                success(dataDic,.none)
+                            }else{
+                                printLog("data错误 ->",dic["data"] as Any)
+                                success(nil,.fail)
+                            }
+                            
+                        }else{
+                            printLog("code != 200",dic["code"] as Any)
+                            success(nil,.fail)
+                        }
+                    }else{
+                        printLog("code错误 ->",dic["code"] as Any)
+                        success(nil,.fail)
+                    }
+
+                } fail: { error in
+                    printLog("error =",error as Any)
+                    success(nil,.fail)
+                }
+                
+            }else{
+                
+                success(nil,.fail)
+            }
+        }
+    }
+    
+    // MARK: - 获取服务器自定义表盘图片
+    @objc public func getCustomDialImageServerInfo(success:@escaping(([String:Any]?,AntError)->Void)) {
+        self.privateGetOtaVersionInfo { versionSuccess, error in
+            if error == .none {
+                printLog("GetDeviceOtaVersionInfo ->\(versionSuccess)")
+                
+                let product = versionSuccess["product"] as! String
+                let project = versionSuccess["project"] as! String
+
+                let url = AntNetworkManager.shareInstance.basicUrl+String.init(format: "/api/online/getCustom?productId=%@&projectId=%@", product,project)
+                /*
+                 {
+                     "code": 200,
+                     "message": "获取数据成功",
+                     "data": {
+                         "custom": {
+                             "backGroundImage": "http://oss.antjuyi.com/online/custom/240x240/P22_Pro_en/background.png",
+                             "timeImage": "http://oss.antjuyi.com/online/custom/240x240/P22_Pro_en/time.png",
+                             "dateImage": "http://oss.antjuyi.com/online/custom/240x240/P22_Pro_en/date.png",
+                             "stepImage": "http://oss.antjuyi.com/online/custom/240x240/P22_Pro_en/step.png",
+                             "sleepImage": "http://oss.antjuyi.com/online/custom/240x240/P22_Pro_en/sleep.png",
+                             "hrImage": "http://oss.antjuyi.com/online/custom/240x240/P22_Pro_en/hr.png"
+                         }
+                     }
+                 }
+                 */
+                
+                AntNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
+                                
+                    let dic = info
+                    if let code = dic["code"] as? Int {
+                        if code == 200 {
+                            
+                            if let dataDic:[String:Any] = dic["data"] as? [String:Any] {
                                 success(dataDic,.none)
                             }else{
                                 printLog("data错误 ->",dic["data"] as Any)

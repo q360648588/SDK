@@ -37,7 +37,47 @@ class AntVC: UIViewController {
     var autoTimer:Timer?
 
     func test() {
+        return
+        AntCommandModule.shareInstance.GetDeviceSupportList { _, _ in
+            
+        }
         
+        AntCommandModule.shareInstance.SetReportRealtimeData(isOpen: 1) { _ in
+            
+        }
+        
+        AntCommandModule.shareInstance.SetNotificationRemind(isOpen: "65535") { _ in
+            
+        }
+        
+        AntCommandModule.shareInstance.SetLightScreen(isOpen: 1) { _ in
+            
+        }
+        
+        AntCommandModule.shareInstance.Set24HrMonitor(isOpen: 1) { _ in
+            
+        }
+        
+        AntCommandModule.shareInstance.SetTime { _ in
+            
+        }
+        
+        AntCommandModule.shareInstance.GetCustonDialFrameSize { _, _ in
+            
+        }
+        
+        AntCommandModule.shareInstance.SetMetricSystem(metric: 0) { error in
+            
+        }
+        
+        for i in stride(from: 0, to: 3, by: 1) {
+
+            AntCommandModule.shareInstance.GetAlarm(index: i) { _, _ in
+                                    
+            }
+        }
+        
+        return
         AntCommandModule.shareInstance.checkUpgradeState { _, _ in
             
         }
@@ -116,13 +156,24 @@ class AntVC: UIViewController {
         AntCommandModule.shareInstance.SetWeatherUnit(type: 0) { _ in
             
         }
+        
+        AntCommandModule.shareInstance.GetCustonDialFrameSize { _, _ in
+            
+        }
+        
+        AntCommandModule.shareInstance.SetMetricSystem(metric: 0) { error in
+            
+        }
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         //e4 bd a0 e5 a5 bd e6 98 8e e5 a4 a9
-        let valArray:[UInt8] = [0x00, 0x8a,0x00, 0x00 ,0x01, 0xAA ,0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xAA , 0xAA , 0xAA]
+        let valArray:[UInt8] = [0x2F, 0x00, 0x02, 0x00,0x00, 0x00, 0x06, 0x0B, 0xE5, 0xBC, 0xA0, 0xE4, 0xB8, 0x89, 0x31, 0x33, 0x37, 0x35, 0x35, 0x36, 0x36, 0x30, 0x30, 0x33, 0x33,0x01, 0x00, 0x06, 0x0C, 0xE6, 0x9D, 0x8E, 0xE5, 0x9B, 0x9B, 0x30, 0x37, 0x35, 0x35, 0x2D, 0x36,0x31, 0x32, 0x38, 0x39, 0x39, 0x38]
+                
+        let result = AntCommandModule.shareInstance.CRC16(val: valArray)
+//        print("result =\(result)")
 
 //        let val = data.withUnsafeBytes { (byte) -> [UInt8] in
 //            let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
@@ -265,6 +316,7 @@ class AntVC: UIViewController {
                 //"0x0d 设置洗手提醒",
                 //"0x0e 获取喝水提醒",
                 //"0x0f 设置喝水提醒",
+                "同步联系人",
             ],
             [
                 "0x00 同步计步数据",
@@ -322,6 +374,7 @@ class AntVC: UIViewController {
                 "获取在线表盘(新接口，获取分页)",
                 "发送在线表盘",
                 "获取本地表盘图片",
+                "获取自定义表盘图片",
             ],
             [
                 "保存现有命令log",
@@ -1712,7 +1765,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 
                 let model = AntCustomDialModel.init()
                 model.color = UIColor.init(hexString: color)
-                model.positionType = AntPositionType.init(rawValue: Int(positionType) ?? 0) ?? .leftUp
+                model.positionType = AntPositionType.init(rawValue: Int(positionType) ?? 0) ?? .leftTop
                 model.timeUpType = AntPositionShowType.init(rawValue: Int(timeUpType) ?? 0) ?? .close
                 model.timeDownType = AntPositionShowType.init(rawValue: Int(timeDownType) ?? 0) ?? .close
                 
@@ -2214,6 +2267,50 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                         print("SetHrWaring -> success")
                     }
                 }
+            }
+            
+            break
+            
+        case "同步联系人":
+            
+            let array = [
+                "0姓名(默认张三)",
+                "0号码(默认13755660033)",
+                "1姓名(默认李四)",
+                "1号码(默认0755-6128998)",
+                "2姓名",
+                "2号码",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "同步联系人")
+            
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认为空)", message: "设置联系人", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let model_0 = AntAddressBookModel.init()
+                model_0.name = textArray[0].count == 0 ? "张三" : textArray[0]
+                model_0.phoneNumber = textArray[1].count == 0 ? "13755660033" : textArray[0]
+
+                let model_1 = AntAddressBookModel.init()
+                model_1.name = textArray[2].count == 0 ? "李四" : textArray[0]
+                model_1.phoneNumber = textArray[3].count == 0 ? "0755-6128998" : textArray[0]
+                
+                let model_2 = AntAddressBookModel.init()
+                model_2.name = textArray[4]
+                model_2.phoneNumber = textArray[5]
+                
+                self.logView.writeString(string: "联系人0 姓名:\(model_0.name),号码:\(model_0.phoneNumber)")
+                self.logView.writeString(string: "联系人1 姓名:\(model_1.name),号码:\(model_1.phoneNumber)")
+                self.logView.writeString(string: "联系人2 姓名:\(model_2.name),号码:\(model_2.phoneNumber)")
+                
+                AntCommandModule.shareInstance.SetAddressBook(modelArray: [model_0,model_1,model_2]) { error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    if error == .none {
+                        print("SetAddressBook -> success")
+                    }
+                }
+                
             }
             
             break
@@ -3560,6 +3657,25 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
+        case "获取自定义表盘图片":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "获取自定义表盘图片")
+            
+            AntCommandModule.shareInstance.getCustomDialImageServerInfo { dic, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                if error == .none {
+                    if let dic = dic {
+                        print("获取自定义表盘图片 \ndic =\(dic)")
+                        self.logView.writeString(string: "获取自定义表盘图片:\(dic)")
+                    }
+                }
+                
+            }
+            
+            break
+            
         case "保存现有命令log":
                         
             let date:Date = Date()
@@ -4239,6 +4355,27 @@ extension UIImage{
         }
         return UIImage.init()
 
+    }
+    
+    func img_changeCircle(fillColor:UIColor) -> UIImage{
+
+        if let cgImage = self.cgImage {
+            let rect = CGRect.init(origin: .zero, size: CGSize.init(width: cgImage.width, height: cgImage.height))
+            
+            UIGraphicsBeginImageContextWithOptions(rect.size, true, 1.0)
+            fillColor.setFill()
+            UIRectFill(rect)
+            
+            let path = UIBezierPath.init(ovalIn: rect)
+            path.addClip()
+            
+            self.draw(in: rect)
+            let newImage = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+            
+            return newImage ?? UIImage.init()
+        }
+        return UIImage.init()
     }
     
     /**

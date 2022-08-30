@@ -715,6 +715,27 @@ extension UIImage{
         return newImage ?? UIImage.init()
         
     }
+    
+    func changeCircle(fillColor:UIColor) -> UIImage{
+
+        if let cgImage = self.cgImage {
+            let rect = CGRect.init(origin: .zero, size: CGSize.init(width: cgImage.width, height: cgImage.height))
+            
+            UIGraphicsBeginImageContextWithOptions(rect.size, true, 1.0)
+            fillColor.setFill()
+            UIRectFill(rect)
+            
+            let path = UIBezierPath.init(ovalIn: rect)
+            path.addClip()
+            
+            self.draw(in: rect)
+            let newImage = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+            
+            return newImage ?? UIImage.init()
+        }
+        return UIImage.init()
+    }
 }
 
 extension FileManager {

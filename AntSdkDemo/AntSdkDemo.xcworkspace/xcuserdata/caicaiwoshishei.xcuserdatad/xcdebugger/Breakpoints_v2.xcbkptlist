@@ -35,8 +35,8 @@
             filePath = "../AntSDK/AntSDK/AntCommandModule.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "7892"
-            endingLineNumber = "7892"
+            startingLineNumber = "8094"
+            endingLineNumber = "8094"
             landmarkName = "serverOtaMethod(indexCount:dataArray:progress:success:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -71,6 +71,22 @@
             endingLineNumber = "925"
             landmarkName = "alarmIndex"
             landmarkType = "24">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "80166638-76D7-412F-8BB2-D57D623DCB30"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../AntSDK/AntSDK/AntBaseModule.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "84"
+            endingLineNumber = "84"
+            landmarkName = "observeValue(forKeyPath:of:change:context:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
