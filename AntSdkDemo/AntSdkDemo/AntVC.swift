@@ -278,7 +278,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             self.logView.clearString()
             self.logView.writeString(string: "获取设备名称")
-            AntCommandModule.shareInstance.GetDeviceName { success, error in
+            AntCommandModule.shareInstance.getDeviceName { success, error in
 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
 
@@ -299,7 +299,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
             self.logView.clearString()
             self.logView.writeString(string: "获取固件版本")
-            AntCommandModule.shareInstance.GetFirmwareVersion{ success, error in
+            AntCommandModule.shareInstance.getFirmwareVersion{ success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -321,7 +321,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
             self.logView.clearString()
             self.logView.writeString(string: "获取序列号")
-            AntCommandModule.shareInstance.GetSerialNumber {success, error in
+            AntCommandModule.shareInstance.getSerialNumber {success, error in
 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
 
@@ -344,7 +344,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
             self.logView.clearString()
             self.logView.writeString(string: "获取mac地址")
-            AntCommandModule.shareInstance.GetMac { success, error in
+            AntCommandModule.shareInstance.getMac { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -367,7 +367,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             self.logView.clearString()
             self.logView.writeString(string: "获取电量")
-            AntCommandModule.shareInstance.GetBattery { success, error in
+            AntCommandModule.shareInstance.getBattery { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -393,7 +393,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             let format = DateFormatter.init()
             format.dateFormat = "yyyy-MM-dd HH:mm:ss"
             self.logView.writeString(string: String.init(format: "%@", format.string(from: Date.init())))
-            AntCommandModule.shareInstance.SetTime(time: "") { error in
+            AntCommandModule.shareInstance.setTime(time: "") { error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -408,7 +408,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
         case "获取设备支持的功能列表":
             
-            AntCommandModule.shareInstance.GetDeviceSupportList { success, error in
+            AntCommandModule.shareInstance.getDeviceSupportList { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -429,7 +429,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "获取产品、固件、资源等版本信息")
             
-            AntCommandModule.shareInstance.GetDeviceOtaVersionInfo { success, error in
+            AntCommandModule.shareInstance.getDeviceOtaVersionInfo { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -477,7 +477,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "获取个人信息")
             
-            AntCommandModule.shareInstance.GetPersonalInformation { success, error in
+            AntCommandModule.shareInstance.getPersonalInformation { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -535,7 +535,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 model.weight = Float(weight) ?? 0
                 model.gender = (Int(gender) ?? 0) == 0 ? false:true
                 
-                AntCommandModule.shareInstance.SetPersonalInformation(model: model) { error in
+                AntCommandModule.shareInstance.setPersonalInformation(model: model) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -553,7 +553,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "获取时间制式")
             
-            AntCommandModule.shareInstance.GetTimeFormat { success, error in
+            AntCommandModule.shareInstance.getTimeFormat { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -585,7 +585,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 let format = textArray[0]
                 
                 self.logView.writeString(string: "\(format == "1" ? "12小时制":"24小时制")")
-                AntCommandModule.shareInstance.SetTimeFormat(format: Int(format) ?? 0) { error in
+                AntCommandModule.shareInstance.setTimeFormat(format: Int(format) ?? 0) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -604,7 +604,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             self.logView.clearString()
             self.logView.writeString(string: "获取公英制")
-            AntCommandModule.shareInstance.GetMetricSystem { success, error in
+            AntCommandModule.shareInstance.getMetricSystem { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -635,7 +635,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 
                 self.logView.writeString(string: format == "1" ? "英制":"公制")
                 
-                AntCommandModule.shareInstance.SetMetricSystem(metric: Int(format) ?? 0) { error in
+                AntCommandModule.shareInstance.setMetricSystem(metric: Int(format) ?? 0) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -695,7 +695,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 model.tomorrowMinTemp = Int(tomorrowMinTemp) ?? 0
                 model.tomorrowMaxTemp = Int(tomorrowMaxTemp) ?? 0
                 
-                AntCommandModule.shareInstance.SetWeather(model: model) { error in
+                AntCommandModule.shareInstance.setWeather(model: model) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -712,7 +712,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             self.logView.clearString()
             self.logView.writeString(string: "设备进入拍照模式")
-            AntCommandModule.shareInstance.SetEnterCamera { error in
+            AntCommandModule.shareInstance.setEnterCamera { error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -728,7 +728,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             self.logView.clearString()
             self.logView.writeString(string: "寻找手环")
-            AntCommandModule.shareInstance.SetFindDevice { error in
+            AntCommandModule.shareInstance.setFindDevice { error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -744,7 +744,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             self.logView.clearString()
             self.logView.writeString(string: "获取抬腕亮屏")
-            AntCommandModule.shareInstance.GetLightScreen { success, error in
+            AntCommandModule.shareInstance.getLightScreen { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -776,7 +776,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 let isOpen = textArray[0]
                 
                 self.logView.writeString(string: (Int(isOpen) ?? 0) > 0 ? "开启":"关闭")
-                AntCommandModule.shareInstance.SetLightScreen(isOpen: Int(isOpen) ?? 0) { error in
+                AntCommandModule.shareInstance.setLightScreen(isOpen: Int(isOpen) ?? 0) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -794,7 +794,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "获取屏幕亮度")
             
-            AntCommandModule.shareInstance.GetScreenLevel { success, error in
+            AntCommandModule.shareInstance.getScreenLevel { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -826,7 +826,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 
                 self.logView.writeString(string: "亮度等级:\(level.count>0 ? level:"0")")
                 
-                AntCommandModule.shareInstance.SetScreenLevel(value: Int(level) ?? 0) { error in
+                AntCommandModule.shareInstance.setScreenLevel(value: Int(level) ?? 0) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -844,7 +844,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "获取亮屏时长")
             
-            AntCommandModule.shareInstance.GetScreenTimeLong { success, error in
+            AntCommandModule.shareInstance.getScreenTimeLong { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -876,7 +876,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 
                 self.logView.writeString(string: "亮屏时长:\(timeLong.count>0 ? timeLong:"0")")
                 
-                AntCommandModule.shareInstance.SetScreenTimeLong(value: Int(timeLong) ?? 0) { error in
+                AntCommandModule.shareInstance.setScreenTimeLong(value: Int(timeLong) ?? 0) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -892,7 +892,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             self.logView.clearString()
             self.logView.writeString(string: "获取本地表盘")
-            AntCommandModule.shareInstance.GetLocalDial { success, error in
+            AntCommandModule.shareInstance.getLocalDial { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -923,7 +923,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 let index = textArray[0]
                 
                 self.logView.writeString(string: "\(index.count>0 ? index:"0")")
-                AntCommandModule.shareInstance.SetLocalDial(index: Int(index) ?? 0) { error in
+                AntCommandModule.shareInstance.setLocalDial(index: Int(index) ?? 0) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -984,7 +984,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 //            }
             
             for i in stride(from: 0, to: 3, by: 1) {
-                AntCommandModule.shareInstance.GetAlarm(index: i) { success, error in
+                AntCommandModule.shareInstance.getAlarm(index: i) { success, error in
 
                     if error == .none {
                         print("GetAlarm ->",success)
@@ -1062,7 +1062,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 
                 print("alarmModel",alarmModel.alarmIndex,"alarmOpen ->",alarmModel.alarmOpen,"alarmTime ->",String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute),"alarmType ->",alarmModel.alarmType.rawValue,"alarmRepeat ->",alarmModel.alarmRepeatArray)
                 
-                AntCommandModule.shareInstance.SetAlarmModel(model: alarmModel) { error in
+                AntCommandModule.shareInstance.setAlarmModel(model: alarmModel) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -1080,7 +1080,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             self.logView.clearString()
             self.logView.writeString(string: "获取设备语言")
-            AntCommandModule.shareInstance.GetDeviceLanguage { success, error in
+            AntCommandModule.shareInstance.getDeviceLanguage { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -1111,7 +1111,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 let index = textArray[0]
                 
                 self.logView.writeString(string: index.count > 0 ? index:"0")
-                AntCommandModule.shareInstance.SetDeviceLanguage(index: Int(index) ?? 0) { error in
+                AntCommandModule.shareInstance.setDeviceLanguage(index: Int(index) ?? 0) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -1128,7 +1128,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             self.logView.clearString()
             self.logView.writeString(string: "获取目标步数")
-            AntCommandModule.shareInstance.GetStepGoal { success, error in
+            AntCommandModule.shareInstance.getStepGoal { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -1159,7 +1159,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 let target = textArray[0]
                 
                 self.logView.writeString(string: target.count>0 ? target:"0")
-                AntCommandModule.shareInstance.SetStepGoal(target: Int(target) ?? 0) { error in
+                AntCommandModule.shareInstance.setStepGoal(target: Int(target) ?? 0) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -1205,7 +1205,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
                 self.logView.writeString(string: (Int(isOpen) ?? 0) > 0 ? "开启":"关闭")
                 
-                AntCommandModule.shareInstance.SetSingleMeasurement(type: Int(type) ?? 0, isOpen: Int(isOpen) ?? 0) { error in
+                AntCommandModule.shareInstance.setSingleMeasurement(type: Int(type) ?? 0, isOpen: Int(isOpen) ?? 0) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -1223,7 +1223,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "获取锻炼模式")
             
-            AntCommandModule.shareInstance.GetExerciseMode { success, error in
+            AntCommandModule.shareInstance.getExerciseMode { success, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 if error == .none {
                     print("GetExerciseMode ->",success)
@@ -1254,7 +1254,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 
                 self.logView.writeString(string: "锻炼类型:\(type.count>0 ? type:"0")")
                 self.logView.writeString(string: (Int(isOpen) ?? 0) > 0 ? "进入":"退出")
-                AntCommandModule.shareInstance.SetExerciseMode(type: Int(type) ?? 0, isOpen: Int(isOpen) ?? 0) { error in
+                AntCommandModule.shareInstance.setExerciseMode(type: Int(type) ?? 0, isOpen: Int(isOpen) ?? 0) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -1272,7 +1272,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "获取天气单位")
             
-            AntCommandModule.shareInstance.GetWeatherUnit { success, error in
+            AntCommandModule.shareInstance.getWeatherUnit { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -1300,7 +1300,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 
             }, ok: nil) { (textArray) in
                 let type = textArray[0]
-                AntCommandModule.shareInstance.SetWeatherUnit(type: Int(type) ?? 0) { error in
+                AntCommandModule.shareInstance.setWeatherUnit(type: Int(type) ?? 0) { error in
                     
                     self.logView.writeString(string: (type as NSString).intValue > 0 ? "华氏度":"摄氏度")
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -1324,7 +1324,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }, ok: nil) { (textArray) in
                 let isOpen = textArray[0]
                 
-                AntCommandModule.shareInstance.SetReportRealtimeData(isOpen: Int(isOpen) ?? 0, success: { error in
+                AntCommandModule.shareInstance.setReportRealtimeData(isOpen: Int(isOpen) ?? 0, success: { error in
                     
                     self.logView.writeString(string: (Int(isOpen) ?? 0) == 0 ? "关闭":"开启")
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -1341,7 +1341,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "获取自定义表盘")
             
-            AntCommandModule.shareInstance.GetCustomDialEdit { success, error in
+            AntCommandModule.shareInstance.getCustomDialEdit { success, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
                 if error == .none {
@@ -1394,7 +1394,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 model.timeUpType = AntPositionShowType.init(rawValue: Int(timeUpType) ?? 0) ?? .close
                 model.timeDownType = AntPositionShowType.init(rawValue: Int(timeDownType) ?? 0) ?? .close
                 
-                AntCommandModule.shareInstance.SetCustomDialEdit(model: model) { error in
+                AntCommandModule.shareInstance.setCustomDialEdit(model: model) { error in
                     
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -1420,7 +1420,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }, ok: nil) { (textArray) in
                 let state = textArray[0]
                 
-                AntCommandModule.shareInstance.SetPhoneState(state: state) { error in
+                AntCommandModule.shareInstance.setPhoneState(state: state) { error in
                     
                     self.logView.writeString(string: state == "1" ? "接听":"挂断")
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -1439,7 +1439,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "获取消息提醒")
             
-            AntCommandModule.shareInstance.GetCustonDialFrameSize { success, error in
+            AntCommandModule.shareInstance.getCustonDialFrameSize { success, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
 
                 if error == .none {
@@ -1463,7 +1463,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "获取24小时心率监测")
             
-            AntCommandModule.shareInstance.Get24HrMonitor { success, error in
+            AntCommandModule.shareInstance.get24HrMonitor { success, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
                 if error == .none {
@@ -1489,7 +1489,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }, ok: nil) { (textArray) in
                 let isOpen = textArray[0]
                 
-                AntCommandModule.shareInstance.Set24HrMonitor(isOpen: Int(isOpen) ?? 0) { error in
+                AntCommandModule.shareInstance.set24HrMonitor(isOpen: Int(isOpen) ?? 0) { error in
                     
                     self.logView.writeString(string: (Int(isOpen) ?? 0) == 0 ? "关闭":"启动")
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -1506,7 +1506,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             self.logView.clearString()
             self.logView.writeString(string: "获取消息提醒")
-            AntCommandModule.shareInstance.GetNotificationRemind { success, error in
+            AntCommandModule.shareInstance.getNotificationRemind { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -1552,7 +1552,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 print("array ->",array)
 
                 self.logView.writeString(string: "\(array)")
-                AntCommandModule.shareInstance.SetNotificationRemindArray(array: array) { error in
+                AntCommandModule.shareInstance.setNotificationRemindArray(array: array) { error in
 
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
 
@@ -1569,7 +1569,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             self.logView.clearString()
             self.logView.writeString(string: "获取久坐提醒")
-            AntCommandModule.shareInstance.GetSedentary { success, error in
+            AntCommandModule.shareInstance.getSedentary { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -1621,7 +1621,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 self.logView.writeString(string: "结束时间:\(endHour.count>0 ? endHour:"0").\(endMinute.count>0 ? endMinute:"0")")
                 self.logView.writeString(string: "提醒时长:\(timeLong.count>0 ? timeLong:"0")")
                 
-                AntCommandModule.shareInstance.SetSedentary(isOpen: isOpen, timeLong: timeLong, startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute) { error in
+                AntCommandModule.shareInstance.setSedentary(isOpen: isOpen, timeLong: timeLong, startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -1689,7 +1689,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 sedentaryModel.timeLong = Int(timeLong) ?? 0
                 sedentaryModel.timeArray = [model,model_2]
                 
-                AntCommandModule.shareInstance.SetSedentary(model: sedentaryModel) { error in
+                AntCommandModule.shareInstance.setSedentary(model: sedentaryModel) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
 
@@ -1699,7 +1699,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
                 }
                 
-//                AntCommandModule.shareInstance.SetSedentary(isOpen: isOpen, timeLong: timeLong, timeArray: [model,model_2]) { error in
+//                AntCommandModule.shareInstance.setSedentary(isOpen: isOpen, timeLong: timeLong, timeArray: [model,model_2]) { error in
 //
 //                    self.logView.writeString(string: self.getErrorCodeString(error: error))
 //
@@ -1717,7 +1717,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "获取勿扰提醒")
             
-            AntCommandModule.shareInstance.GetDoNotDisturb { success, error in
+            AntCommandModule.shareInstance.getDoNotDisturb { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -1767,7 +1767,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 self.logView.writeString(string: String.init(format: "开始时间 %02d:%02d", Int(startHour) ?? 0,Int(startMinute) ?? 0))
                 self.logView.writeString(string: String.init(format: "结束时间 %02d:%02d", Int(endHour) ?? 0,Int(endMinute) ?? 0))
                 
-                AntCommandModule.shareInstance.SetDoNotDisturb(isOpen: isOpen, startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute) { error in
+                AntCommandModule.shareInstance.setDoNotDisturb(isOpen: isOpen, startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -1784,7 +1784,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "获取心率预警")
             
-            AntCommandModule.shareInstance.GetHrWaring { success, error in
+            AntCommandModule.shareInstance.getHrWaring { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -1829,7 +1829,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 self.logView.writeString(string: "最大值:\(maxHr)")
                 self.logView.writeString(string: "最小值:\(minHr)")
                 
-                AntCommandModule.shareInstance.SetHrWaring(isOpen: isOpen, maxHr: maxHr, minHr: minHr) { error in
+                AntCommandModule.shareInstance.setHrWaring(isOpen: isOpen, maxHr: maxHr, minHr: minHr) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -1874,7 +1874,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 self.logView.writeString(string: "联系人1 姓名:\(model_1.name),号码:\(model_1.phoneNumber)")
                 self.logView.writeString(string: "联系人2 姓名:\(model_2.name),号码:\(model_2.phoneNumber)")
                 
-                AntCommandModule.shareInstance.SetAddressBook(modelArray: [model_0,model_1,model_2]) { error in
+                AntCommandModule.shareInstance.setAddressBook(modelArray: [model_0,model_1,model_2]) { error in
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     if error == .none {
                         print("SetAddressBook -> success")
@@ -1908,7 +1908,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                     self.logView.writeString(string: "联系人0 姓名:\(model.name),号码:\(model.phoneNumber)")
                 }
                 
-                AntCommandModule.shareInstance.SetAddressBook(modelArray: modelArray) { error in
+                AntCommandModule.shareInstance.setAddressBook(modelArray: modelArray) { error in
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     if error == .none {
                         print("SetAddressBook -> success")
@@ -1935,7 +1935,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 let type = textArray[0]
                 let dayCount = textArray[1]
                 
-                AntCommandModule.shareInstance.SetSyncHealthData(type: type, dayCount: dayCount) { success,error in
+                AntCommandModule.shareInstance.setSyncHealthData(type: type, dayCount: dayCount) { success,error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -2018,7 +2018,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 //let type = textArray[0]
                 let indexCount = textArray[0]
                                 
-                AntCommandModule.shareInstance.SetSyncExerciseData(indexCount: Int(indexCount) ?? 0) { success, error in
+                AntCommandModule.shareInstance.setSyncExerciseData(indexCount: Int(indexCount) ?? 0) { success, error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     print("SetSyncExerciseData ->",success)
@@ -2054,7 +2054,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "关机")
             
-            AntCommandModule.shareInstance.SetPowerTurnOff { error in
+            AntCommandModule.shareInstance.setPowerTurnOff { error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
                 if error == .none {
@@ -2070,7 +2070,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "恢复出厂设置")
             
-            AntCommandModule.shareInstance.SetFactoryDataReset { error in
+            AntCommandModule.shareInstance.setFactoryDataReset { error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
                 if error == .none {
@@ -2105,7 +2105,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 }
                 self.logView.writeString(string: "类型:\(str)")
                 
-                AntCommandModule.shareInstance.SetMotorVibration(type: type) { error in
+                AntCommandModule.shareInstance.setMotorVibration(type: type) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -2132,7 +2132,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
             
-            AntCommandModule.shareInstance.ReportRealTimeStep { success, error in
+            AntCommandModule.shareInstance.reportRealTimeStep { success, error in
                 //self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
                 if error == .none {
@@ -2157,7 +2157,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
                         
-            AntCommandModule.shareInstance.ReportRealTimeHr { success, error in
+            AntCommandModule.shareInstance.reportRealTimeHr { success, error in
                 //self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
                 if error == .none {
@@ -2170,7 +2170,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
                         
-            AntCommandModule.shareInstance.ReportSingleMeasurementResult { success, error in
+            AntCommandModule.shareInstance.reportSingleMeasurementResult { success, error in
                 //self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
                 if error == .none {
@@ -2195,7 +2195,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
             
-            AntCommandModule.shareInstance.ReportSingleExerciseEnd { error in
+            AntCommandModule.shareInstance.reportSingleExerciseEnd { error in
                 
                 if error == .none {
                     self.logView.writeString(string: "单次锻炼结束")
@@ -2206,7 +2206,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
             
-            AntCommandModule.shareInstance.ReportFindPhone { error in
+            AntCommandModule.shareInstance.reportFindPhone { error in
                 if error == .none {
                     self.logView.writeString(string: "找手机")
                 }
@@ -2216,7 +2216,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
             
-            AntCommandModule.shareInstance.ReportEndFindPhone { error in
+            AntCommandModule.shareInstance.reportEndFindPhone { error in
                 if error == .none {
                     self.logView.writeString(string: "结束找手机")
                 }
@@ -2226,7 +2226,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
             
-            AntCommandModule.shareInstance.ReportTakePictures { error in
+            AntCommandModule.shareInstance.reportTakePictures { error in
                 if error == .none {
                     self.logView.writeString(string: "拍照")
                 }
@@ -2237,7 +2237,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
             
-            AntCommandModule.shareInstance.ReportScreenLevel { success, error in
+            AntCommandModule.shareInstance.reportScreenLevel { success, error in
                 if error == .none {
                     let level = success
                     self.logView.writeString(string: "屏幕亮度:\(level)")
@@ -2250,7 +2250,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
             
-            AntCommandModule.shareInstance.ReportScreenTimeLong { success, error in
+            AntCommandModule.shareInstance.reportScreenTimeLong { success, error in
                 if error == .none {
                     let timeLong = success
                     self.logView.writeString(string: "屏幕时长:\(timeLong)")
@@ -2263,7 +2263,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
             
-            AntCommandModule.shareInstance.ReportLightScreen { success, error in
+            AntCommandModule.shareInstance.reportLightScreen { success, error in
                 if error == .none {
                     let isOpen = success
                     self.logView.writeString(string: "抬腕亮屏 开关:\(isOpen == 0 ? "关":"开")")
@@ -2276,7 +2276,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
             
-            AntCommandModule.shareInstance.ReportDeviceVibration { success, error in
+            AntCommandModule.shareInstance.reportDeviceVibration { success, error in
                 if error == .none {
                     let isOpen = success
                     self.logView.writeString(string: "设备振动 开关:\(isOpen == 0 ? "关":"开")")
@@ -2289,7 +2289,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
             
-            AntCommandModule.shareInstance.ReportNewRealtimeData { stepModel, hr, bo, sbp, dbp, error in
+            AntCommandModule.shareInstance.reportNewRealtimeData { stepModel, hr, bo, sbp, dbp, error in
                 if error == .none {
                     if let model:AntStepModel = stepModel as? AntStepModel {
                         let step = model.step
@@ -2730,7 +2730,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
             if var image = self.customBgImage {
                 
-                AntCommandModule.shareInstance.GetCustonDialFrameSize { success, error in
+                AntCommandModule.shareInstance.getCustonDialFrameSize { success, error in
 
                     if error == .none {
 
@@ -2741,7 +2741,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                             if bigWidth > 0 && bigheight > 0 {
                                 image = image.img_changeSize(size: .init(width: bigWidth, height: bigheight))
                                 
-                                AntCommandModule.shareInstance.SetCustomDialEdit(image: image) { progress in
+                                AntCommandModule.shareInstance.setCustomDialEdit(image: image) { progress in
                                     self.logView.writeString(string: "进度:\(progress)")
                                     print("progress ->",progress)
                                 } success: { error in
