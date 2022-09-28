@@ -378,7 +378,7 @@ import zlib
                 
                 if let block = self.connectCompleteBlock {
                     //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
-                    AntCommandModule.shareInstance.GetDeviceSupportList { model, error in
+                    AntCommandModule.shareInstance.getDeviceSupportList { model, error in
                         if error == .none {
                             printLog("连接成功")
                             self.functionListModel = model
@@ -388,9 +388,9 @@ import zlib
                             block(false)
                         }
                     }
-                    AntCommandModule.shareInstance.SetPhoneMode(type: 0) { _ in
+                    AntCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
                     }
-                    AntCommandModule.shareInstance.GetDeviceOtaVersionInfo { _, _ in
+                    AntCommandModule.shareInstance.getDeviceOtaVersionInfo { _, _ in
                     }
                     //这里是升级过程中异常断开还保存未发完的ota数据，那么检测升级，拿到回调之后会继续升级
                     if AntCommandModule.shareInstance.otaData != nil {

@@ -7,7 +7,6 @@ target 'AntSdkDemo' do
 
   # Pods for AntSdkDemo
   pod 'Alamofire'
-#  pod 'MZRSA_Swift'
 
   target 'AntSdkDemoTests' do
     inherit! :search_paths

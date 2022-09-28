@@ -2457,7 +2457,7 @@ import Alamofire
                                 
                             }else{
                                 
-                                self.ResendUpgradeData(maxSingleCount: self.otaMaxSingleCount, packageCount: self.otaPackageCount, resendVal: val, val: otaVal, progress: self.receiveSetStartUpgradeProgressBlock!, success: self.receiveSetStartUpgradeBlock!)
+                                self.resendUpgradeData(maxSingleCount: self.otaMaxSingleCount, packageCount: self.otaPackageCount, resendVal: val, val: otaVal, progress: self.receiveSetStartUpgradeProgressBlock!, success: self.receiveSetStartUpgradeBlock!)
                                 if self.failCheckCount >= 2 {
                                     self.otaCheckFailResendData = data
                                     self.failCheckCount = 0
@@ -3096,7 +3096,7 @@ import Alamofire
     
     // MARK: - 设备信息 0x00
     // MARK: - 获取设备名称 0x00
-    @objc public func GetDeviceName(_ success:@escaping((String?,AntError)->Void)) {
+    @objc public func getDeviceName(_ success:@escaping((String?,AntError)->Void)) {
         
         var val:[UInt8] = [0x00,0x00,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
@@ -3130,7 +3130,7 @@ import Alamofire
     }
     
     // MARK: - 获取固件版本号 0x02
-    @objc public func GetFirmwareVersion(_ success:@escaping((String?,AntError)->Void)) {
+    @objc public func getFirmwareVersion(_ success:@escaping((String?,AntError)->Void)) {
         
         var val:[UInt8] = [0x00,0x02,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
@@ -3165,7 +3165,7 @@ import Alamofire
     }
     
     // MARK: - 获取序列号 0x04
-    @objc public func GetSerialNumber(_ success:@escaping((String?,AntError)->Void)) {
+    @objc public func getSerialNumber(_ success:@escaping((String?,AntError)->Void)) {
         
         var val:[UInt8] = [0x00,0x04,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
@@ -3200,7 +3200,7 @@ import Alamofire
     }
     
     // MARK: - 获取mac地址 0x06
-    @objc public func GetMac(_ success:@escaping((String?,AntError)->Void)) {
+    @objc public func getMac(_ success:@escaping((String?,AntError)->Void)) {
         
         var val:[UInt8] = [0x00,0x06,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
@@ -3233,7 +3233,7 @@ import Alamofire
     }
     
     // MARK: - 获取电量 0x08
-    @objc public func GetBattery(_ success:@escaping((String?,AntError)->Void)) {
+    @objc public func getBattery(_ success:@escaping((String?,AntError)->Void)) {
         
         var val:[UInt8] = [0x00,0x08,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
@@ -3264,7 +3264,7 @@ import Alamofire
     }
     
     // MARK: - 设置时间 0x09
-    @objc public func SetTime(time:Any? = nil,success:@escaping((AntError) -> Void)) {
+    @objc public func setTime(time:Any? = nil,success:@escaping((AntError) -> Void)) {
         
         var date = Date.init()
         
@@ -3328,7 +3328,7 @@ import Alamofire
     }
     
     // MARK: - 获取产品、固件、资源等版本信息 0x0E
-    @objc public func GetDeviceOtaVersionInfo(_ success:@escaping(([String:Any],AntError)->Void)) {
+    @objc public func getDeviceOtaVersionInfo(_ success:@escaping(([String:Any],AntError)->Void)) {
         
         var val:[UInt8] = [0x00,0x0E,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
@@ -3353,7 +3353,7 @@ import Alamofire
                 self.receivePrivateGetDeviceOtaVersionInfo = success
             }else{
                 printLog("receiveGetDeviceOtaVersionInfo == nil")
-                self.GetDeviceOtaVersionInfo(success)
+                self.getDeviceOtaVersionInfo(success)
             }
         }
     }
@@ -3388,7 +3388,7 @@ import Alamofire
     
     // MARK: - 设备设置 0x01
     // MARK: - 获取个人信息 0x00
-    @objc public func GetPersonalInformation(_ success:@escaping((AntPersonalModel?,AntError) -> Void)) {
+    @objc public func getPersonalInformation(_ success:@escaping((AntPersonalModel?,AntError) -> Void)) {
         
         
         var val:[UInt8] = [0x01,0x00,0x04,0x00]
@@ -3434,7 +3434,7 @@ import Alamofire
     }
     
     // MARK: - 设置个人信息 0x01
-    @objc public func SetPersonalInformation(model:AntPersonalModel,success:@escaping((AntError) -> Void)) {
+    @objc public func setPersonalInformation(model:AntPersonalModel,success:@escaping((AntError) -> Void)) {
         
         let heightFloat = Int(model.height * 10)
         let weightFloat = Int(model.weight * 10)
@@ -3467,7 +3467,7 @@ import Alamofire
     }
     
     // MARK: - 获取时间制式 0x02
-    @objc public func GetTimeFormat(_ success:@escaping((Int,AntError) -> Void)) {
+    @objc public func getTimeFormat(_ success:@escaping((Int,AntError) -> Void)) {
         
         
         var val:[UInt8] = [0x01,0x02,0x04,0x00]
@@ -3499,7 +3499,7 @@ import Alamofire
     }
     
     // MARK: - 设置时间制式 0x03
-    @objc public func SetTimeFormat(format:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func setTimeFormat(format:Int,success:@escaping((AntError) -> Void)) {
         var format = format
         if format > UInt8.max || format < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -3533,7 +3533,7 @@ import Alamofire
     }
     
     // MARK: - 获取公英制 0x04
-    @objc public func GetMetricSystem(_ success:@escaping((Int,AntError) -> Void)) {
+    @objc public func getMetricSystem(_ success:@escaping((Int,AntError) -> Void)) {
         
         
         var val:[UInt8] = [0x01,0x04,0x04,0x00]
@@ -3565,7 +3565,7 @@ import Alamofire
     }
     
     // MARK: - 设置公英制 0x05
-    @objc public func SetMetricSystem(metric:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func setMetricSystem(metric:Int,success:@escaping((AntError) -> Void)) {
         
         var metric = metric
         if metric > UInt8.max || metric < UInt8.min {
@@ -3601,7 +3601,7 @@ import Alamofire
     }
     
     // MARK: - 设置天气 0x07
-    @objc public func SetWeather(model:AntWeatherModel,success:@escaping((AntError) -> Void)) {
+    @objc public func setWeather(model:AntWeatherModel,success:@escaping((AntError) -> Void)) {
         
         var val:[Int8] = [
             0x01,
@@ -3644,7 +3644,7 @@ import Alamofire
     }
     
     // MARK: - 设置进入拍照模式 0x09
-    @objc public func SetEnterCamera(success:@escaping((AntError) -> Void)) {
+    @objc public func setEnterCamera(success:@escaping((AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x01,
@@ -3679,7 +3679,7 @@ import Alamofire
     }
     
     // MARK: - 寻找手环 0x0b
-    @objc public func SetFindDevice(success:@escaping((AntError) -> Void)) {
+    @objc public func setFindDevice(success:@escaping((AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x01,
@@ -3713,7 +3713,7 @@ import Alamofire
     }
     
     // MARK: - 获取抬腕亮屏 0x0c
-    @objc public func GetLightScreen(_ success:@escaping((Int,AntError) -> Void)) {
+    @objc public func getLightScreen(_ success:@escaping((Int,AntError) -> Void)) {
         
         
         var val:[UInt8] = [0x01,0x0c,0x04,0x00]
@@ -3746,7 +3746,7 @@ import Alamofire
     }
     
     // MARK: - 设置抬腕亮屏 0x0d
-    @objc public func SetLightScreen(isOpen:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func setLightScreen(isOpen:Int,success:@escaping((AntError) -> Void)) {
         var isOpen = isOpen
         if isOpen > UInt8.max || isOpen < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -3786,7 +3786,7 @@ import Alamofire
     }
     
     // MARK: - 获取屏幕亮度 0x0e
-    @objc public func GetScreenLevel(_ success:@escaping((Int,AntError) -> Void)) {
+    @objc public func getScreenLevel(_ success:@escaping((Int,AntError) -> Void)) {
         
         var val:[UInt8] = [0x01,0x0e,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
@@ -3818,7 +3818,7 @@ import Alamofire
     }
     
     // MARK: - 设置屏幕亮度 0x0f
-    @objc public func SetScreenLevel(value:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func setScreenLevel(value:Int,success:@escaping((AntError) -> Void)) {
         var value = value
         if value > UInt8.max || value < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -3858,7 +3858,7 @@ import Alamofire
     }
     
     // MARK: - 获取屏幕时长 0x32
-    @objc public func GetScreenTimeLong(_ success:@escaping((Int,AntError) -> Void)) {
+    @objc public func getScreenTimeLong(_ success:@escaping((Int,AntError) -> Void)) {
         
         var val:[UInt8] = [0x01,0x32,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
@@ -3890,7 +3890,7 @@ import Alamofire
     }
     
     // MARK: - 设置屏幕时长 0x33
-    @objc public func SetScreenTimeLong(value:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func setScreenTimeLong(value:Int,success:@escaping((AntError) -> Void)) {
         var value = value
         if value > UInt8.max || value < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -3930,7 +3930,7 @@ import Alamofire
     }
     
     // MARK: - 获取本地表盘 0x10
-    @objc public func GetLocalDial(_ success:@escaping((Int,AntError) -> Void)) {
+    @objc public func getLocalDial(_ success:@escaping((Int,AntError) -> Void)) {
         
         var val:[UInt8] = [0x01,0x10,0x04,0x00]
         let data = Data.init(bytes: &val, count: val.count)
@@ -3961,7 +3961,7 @@ import Alamofire
     }
     
     // MARK: - 设置本地表盘 0x11
-    @objc public func SetLocalDial(index:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func setLocalDial(index:Int,success:@escaping((AntError) -> Void)) {
         var index = index
         if index > UInt8.max || index < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -3999,7 +3999,7 @@ import Alamofire
     }
     
     // MARK: - 获取闹钟 0x12
-    @objc public func GetAlarm(index:Int,success:@escaping((AntAlarmModel?,AntError) -> Void)) {
+    @objc public func getAlarm(index:Int,success:@escaping((AntAlarmModel?,AntError) -> Void)) {
         var index = index
         if index > UInt8.max || index < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -4042,7 +4042,7 @@ import Alamofire
     }
     
     // MARK: - 设置闹钟 0x13
-    @objc public func SetAlarm(index:String,repeatCount:String,hour:String,minute:String,success:@escaping((AntError) -> Void)) {
+    @objc public func setAlarm(index:String,repeatCount:String,hour:String,minute:String,success:@escaping((AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x01,
@@ -4079,7 +4079,7 @@ import Alamofire
         self.signalCommandSemaphore()
     }
     
-    @objc public func SetAlarmModel(model:AntAlarmModel,success:@escaping((AntError) -> Void)) {
+    @objc public func setAlarmModel(model:AntAlarmModel,success:@escaping((AntError) -> Void)) {
         
         let index = model.alarmIndex
         var repeatCount = 0
@@ -4121,7 +4121,7 @@ import Alamofire
     }
     
     // MARK: - 获取设备语言 0x14
-    @objc public func GetDeviceLanguage(_ success:@escaping((Int,AntError) -> Void)) {
+    @objc public func getDeviceLanguage(_ success:@escaping((Int,AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x01,
@@ -4158,7 +4158,7 @@ import Alamofire
     }
     
     // MARK: - 设置设备语言 0x15
-    @objc public func SetDeviceLanguage(index:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func setDeviceLanguage(index:Int,success:@escaping((AntError) -> Void)) {
         var index = index
         if index > UInt8.max || index < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -4198,7 +4198,7 @@ import Alamofire
     }
     
     // MARK: - 获取目标步数 0x16
-    @objc public func GetStepGoal(_ success:@escaping((Int,AntError) -> Void)) {
+    @objc public func getStepGoal(_ success:@escaping((Int,AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x01,
@@ -4235,7 +4235,7 @@ import Alamofire
     }
     
     // MARK: - 设置目标步数 0x17
-    @objc public func SetStepGoal(target:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func setStepGoal(target:Int,success:@escaping((AntError) -> Void)) {
         
         var goal:Int = target
         if goal > UInt32.max || goal < UInt32.min {
@@ -4279,7 +4279,7 @@ import Alamofire
     }
     
     // MARK: - 获取显示方式 0x18
-    @objc public func GetDispalyMode(_ success:@escaping((Int,AntError) -> Void)) {
+    @objc public func getDispalyMode(_ success:@escaping((Int,AntError) -> Void)) {
         //vertical竖   horizontal横
         var val:[UInt8] = [
             0x01,
@@ -4316,7 +4316,7 @@ import Alamofire
     }
     
     // MARK: - 设置显示方式 0x19
-    @objc public func SetDispalyMode(isVertical:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func setDispalyMode(isVertical:Int,success:@escaping((AntError) -> Void)) {
         var isVertical = isVertical
         if isVertical > UInt8.max || isVertical < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -4355,7 +4355,7 @@ import Alamofire
     }
     
     // MARK: - 获取佩戴方式 0x1a
-    @objc public func GetWearingWay(_ success:@escaping((Int,AntError) -> Void)) {
+    @objc public func getWearingWay(_ success:@escaping((Int,AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x01,
@@ -4392,7 +4392,7 @@ import Alamofire
     }
     
     // MARK: - 设置佩戴方式 0x1b
-    @objc public func SetWearingWay(isLeftHand:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func setWearingWay(isLeftHand:Int,success:@escaping((AntError) -> Void)) {
         var isLeftHand = isLeftHand
         if isLeftHand > UInt8.max || isLeftHand < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -4431,7 +4431,7 @@ import Alamofire
     }
     
     // MARK: - 设置单次测量 0x1d
-    @objc public func SetSingleMeasurement(type:Int,isOpen:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func setSingleMeasurement(type:Int,isOpen:Int,success:@escaping((AntError) -> Void)) {
         var type = type
         if type > UInt8.max || type < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -4476,7 +4476,7 @@ import Alamofire
     }
     
     // MARK: - 获取锻炼模式 0x1e
-    @objc public func GetExerciseMode(_ success:@escaping((Int,AntError) -> Void)) {
+    @objc public func getExerciseMode(_ success:@escaping((Int,AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x01,
@@ -4513,7 +4513,7 @@ import Alamofire
     }
     
     // MARK: - 设置锻炼模式 0x1f
-    @objc public func SetExerciseMode(type:Int,isOpen:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func setExerciseMode(type:Int,isOpen:Int,success:@escaping((AntError) -> Void)) {
         var type = type
         if type > UInt8.max || type < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -4559,7 +4559,7 @@ import Alamofire
     }
     
     // MARK: - 设置设备模式 0x21
-    @objc public func SetDeviceMode(type:Int,isOpen:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func setDeviceMode(type:Int,isOpen:Int,success:@escaping((AntError) -> Void)) {
         var type = type
         if type > UInt8.max || type < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -4605,7 +4605,7 @@ import Alamofire
     }
     
     // MARK: - 设置手机类型 0x25
-    @objc public func SetPhoneMode(type:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func setPhoneMode(type:Int,success:@escaping((AntError) -> Void)) {
         var type = type
         if type > UInt8.max || type < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -4656,7 +4656,7 @@ import Alamofire
     }
     
     // MARK: - 获取天气单位 0x28
-    @objc public func GetWeatherUnit(_ success:@escaping((Int,AntError) -> Void)) {
+    @objc public func getWeatherUnit(_ success:@escaping((Int,AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x01,
@@ -4693,7 +4693,7 @@ import Alamofire
     }
     
     // MARK: - 设置天气单位 0x29
-    @objc public func SetWeatherUnit(type:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func setWeatherUnit(type:Int,success:@escaping((AntError) -> Void)) {
         var type = type
         if type > UInt8.max || type < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -4733,7 +4733,7 @@ import Alamofire
     }
     
     // MARK: - 设置实时数据上报开关 0x2B
-    @objc public func SetReportRealtimeData(isOpen:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func setReportRealtimeData(isOpen:Int,success:@escaping((AntError) -> Void)) {
         var isOpen = isOpen
         if isOpen > UInt8.max || isOpen < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -4773,7 +4773,7 @@ import Alamofire
     }
     
     // MARK: - 获取自定义表盘 0x2C
-    @objc public func GetCustomDialEdit(_ success:@escaping((AntCustomDialModel?,AntError) -> Void)) {
+    @objc public func getCustomDialEdit(_ success:@escaping((AntCustomDialModel?,AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x01,
@@ -4833,7 +4833,7 @@ import Alamofire
     }
     
     // MARK: - 设置自定义表盘 0x2D
-    @objc public func SetCustomDialEdit(color:UIColor,positionType:String,timeUpType:String,timeDownType:String,success:@escaping((AntError) -> Void)) {
+    @objc public func setCustomDialEdit(color:UIColor,positionType:String,timeUpType:String,timeDownType:String,success:@escaping((AntError) -> Void)) {
         
         let uint8Max = CGFloat(UInt8.max)
         var r:CGFloat = 0
@@ -4884,7 +4884,7 @@ import Alamofire
         self.signalCommandSemaphore()
     }
     
-    @objc public func SetCustomDialEdit(model:AntCustomDialModel,success:@escaping((AntError) -> Void)) {
+    @objc public func setCustomDialEdit(model:AntCustomDialModel,success:@escaping((AntError) -> Void)) {
         
         let uint8Max = CGFloat(UInt8.max)
         var r:CGFloat = 0
@@ -4921,9 +4921,9 @@ import Alamofire
     }
     
     // MARK: - 设置自定义表盘图片
-    @objc public func SetCustomDialEdit(image:UIImage,progress:@escaping((Float) -> Void),success:@escaping((AntError) -> Void)) {
+    @objc public func setCustomDialEdit(image:UIImage,progress:@escaping((Float) -> Void),success:@escaping((AntError) -> Void)) {
         
-        self.GetCustonDialFrameSize { frameSuccess, error in
+        self.getCustonDialFrameSize { frameSuccess, error in
             if error == .none {
                 let bigWidth = frameSuccess?.bigWidth ?? 0
                 let bigheight = frameSuccess?.bigHeight ?? 0
@@ -5145,7 +5145,7 @@ import Alamofire
     }
     
     // MARK: - 设置电话状态 0x2E
-    @objc public func SetPhoneState(state:String,success:@escaping((AntError) -> Void)) {
+    @objc public func setPhoneState(state:String,success:@escaping((AntError) -> Void)) {
         var val:[UInt8] = [
             0x01,
             0x2f,
@@ -5179,7 +5179,7 @@ import Alamofire
     }
     
     // MARK: -  获取自定义表盘尺寸 0x30
-    @objc public func GetCustonDialFrameSize(_ success:@escaping((AntDialFrameSizeModel?,AntError) -> Void)) {
+    @objc public func getCustonDialFrameSize(_ success:@escaping((AntDialFrameSizeModel?,AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x01,
@@ -5222,7 +5222,7 @@ import Alamofire
     }
     
     // MARK: - 获取24小时心率监测 0x34
-    @objc public func Get24HrMonitor(_ success:@escaping((Int,AntError) -> Void)) {
+    @objc public func get24HrMonitor(_ success:@escaping((Int,AntError) -> Void)) {
         var val:[UInt8] = [
             0x01,
             0x34,
@@ -5256,7 +5256,7 @@ import Alamofire
     }
     
     // MARK: - 设置24小时心率监测 0x35
-    @objc public func Set24HrMonitor(isOpen:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func set24HrMonitor(isOpen:Int,success:@escaping((AntError) -> Void)) {
         var isOpen = isOpen
         if isOpen > UInt8.max || isOpen < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -5296,7 +5296,7 @@ import Alamofire
     }
     
     // MARK: - 设置设备进入或退出拍照模式 0x37
-    @objc public func SetEnterOrExitCamera(isOpen:Int,success:@escaping((AntError) -> Void)) {
+    @objc public func setEnterOrExitCamera(isOpen:Int,success:@escaping((AntError) -> Void)) {
         var isOpen = isOpen
         if isOpen > UInt8.max || isOpen < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -5337,7 +5337,7 @@ import Alamofire
     
     // MARK: - 设备提醒 0x02
     // MARK: - 获取消息提醒 0x00
-    @objc public func GetNotificationRemind(_ success:@escaping(([Int],AntError) -> Void)) {
+    @objc public func getNotificationRemind(_ success:@escaping(([Int],AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
@@ -5375,7 +5375,7 @@ import Alamofire
     }
     
     // MARK: - 设置消息提醒 0x01
-    @objc public func SetNotificationRemind(isOpen:String,success:@escaping((AntError) -> Void)) {
+    @objc public func setNotificationRemind(isOpen:String,success:@escaping((AntError) -> Void)) {
         
         let switchCount = UInt16(isOpen) ?? 0
         var val:[UInt8] = [
@@ -5411,7 +5411,7 @@ import Alamofire
         self.signalCommandSemaphore()
     }
     
-    @objc public func SetNotificationRemindArray(array:[Int],success:@escaping((AntError) -> Void)) {
+    @objc public func setNotificationRemindArray(array:[Int],success:@escaping((AntError) -> Void)) {
         
         var switchCount = 0
         for i in stride(from: 0, to: array.count, by: 1) {
@@ -5437,7 +5437,7 @@ import Alamofire
     }
     
     // MARK: - 获取久坐提醒 0x02
-    @objc public func GetSedentary(_ success:@escaping((AntSedentaryModel?,AntError) -> Void)) {
+    @objc public func getSedentary(_ success:@escaping((AntSedentaryModel?,AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
@@ -5489,7 +5489,7 @@ import Alamofire
     }
     
     // MARK: - 设置久坐提醒 0x03
-    @objc public func SetSedentary(isOpen:String,timeLong:String,timeArray:[AntStartEndTimeModel],success:@escaping((AntError) -> Void)) {
+    @objc public func setSedentary(isOpen:String,timeLong:String,timeArray:[AntStartEndTimeModel],success:@escaping((AntError) -> Void)) {
         
         let headVal:[UInt8] = [
             0x02,
@@ -5526,7 +5526,7 @@ import Alamofire
         }
     }
     
-    @objc public func SetSedentary(model:AntSedentaryModel,success:@escaping((AntError) -> Void)) {
+    @objc public func setSedentary(model:AntSedentaryModel,success:@escaping((AntError) -> Void)) {
         
         let isOpen = model.isOpen
         let headVal:[UInt8] = [
@@ -5564,7 +5564,7 @@ import Alamofire
         }
     }
     
-    @objc public func SetSedentary(isOpen:String,timeLong:String,startHour:String,startMinute:String,endHour:String,endMinute:String,success:@escaping((AntError) -> Void)) {
+    @objc public func setSedentary(isOpen:String,timeLong:String,startHour:String,startMinute:String,endHour:String,endMinute:String,success:@escaping((AntError) -> Void)) {
         
         let val:[UInt8] = [
             0x02,
@@ -5607,7 +5607,7 @@ import Alamofire
     }
     
     // MARK: - 获取防丢提醒 0x04
-    @objc public func GetLost(_ success:@escaping((Int,AntError) -> Void)) {
+    @objc public func getLost(_ success:@escaping((Int,AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
@@ -5643,7 +5643,7 @@ import Alamofire
     }
     
     // MARK: - 设置防丢提醒 0x05
-    @objc public func SetLost(isOpen:String,success:@escaping((AntError) -> Void)) {
+    @objc public func setLost(isOpen:String,success:@escaping((AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
@@ -5678,7 +5678,7 @@ import Alamofire
     }
     
     // MARK: - 获取勿扰 0x06
-    @objc public func GetDoNotDisturb(_ success:@escaping((AntDoNotDisturbModel?,AntError) -> Void)) {
+    @objc public func getDoNotDisturb(_ success:@escaping((AntDoNotDisturbModel?,AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
@@ -5722,7 +5722,7 @@ import Alamofire
     }
     
     // MARK: - 设置勿扰 0x07
-    @objc public func SetDoNotDisturb(isOpen:String,startHour:String,startMinute:String,endHour:String,endMinute:String,success:@escaping((AntError) -> Void)) {
+    @objc public func setDoNotDisturb(isOpen:String,startHour:String,startMinute:String,endHour:String,endMinute:String,success:@escaping((AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
@@ -5745,7 +5745,7 @@ import Alamofire
         }
     }
     
-    @objc public func SetDoNotDisturb(model:AntDoNotDisturbModel,success:@escaping((AntError) -> Void)) {
+    @objc public func setDoNotDisturb(model:AntDoNotDisturbModel,success:@escaping((AntError) -> Void)) {
         
         let isOpen = model.isOpen
         var val:[UInt8] = [
@@ -5785,7 +5785,7 @@ import Alamofire
     }
     
     // MARK: - 获取心率预警 0x08
-    @objc public func GetHrWaring(_ success:@escaping((AntHrWaringModel?,AntError) -> Void)) {
+    @objc public func getHrWaring(_ success:@escaping((AntHrWaringModel?,AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
@@ -5825,7 +5825,7 @@ import Alamofire
     }
     
     // MARK: - 设置心率预警 0x09
-    @objc public func SetHrWaring(isOpen:String,maxHr:String,minHr:String,success:@escaping((AntError) -> Void)) {
+    @objc public func setHrWaring(isOpen:String,maxHr:String,minHr:String,success:@escaping((AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
@@ -5847,7 +5847,7 @@ import Alamofire
         
     }
     
-    @objc public func SetHrWaring(model:AntHrWaringModel,success:@escaping((AntError) -> Void)) {
+    @objc public func setHrWaring(model:AntHrWaringModel,success:@escaping((AntError) -> Void)) {
         
         let isOpen = model.isOpen
         var val:[UInt8] = [
@@ -5886,7 +5886,7 @@ import Alamofire
     }
     
     // MARK: - 获取生理周期 0x0a
-    @objc public func GetMenstrualCycle(_ success:@escaping(([String:Any],AntError) -> Void)) {
+    @objc public func getMenstrualCycle(_ success:@escaping(([String:Any],AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
@@ -5928,7 +5928,7 @@ import Alamofire
     }
     
     // MARK: - 设置生理周期 0x0b
-    @objc public func SetMenstrualCycle(type:String,cycleCount:String,menstrualCount:String,lastMonth:String,lastDay:String,remindHour:String,remindMinute:String,success:@escaping((AntError) -> Void)) {
+    @objc public func setMenstrualCycle(type:String,cycleCount:String,menstrualCount:String,lastMonth:String,lastDay:String,remindHour:String,remindMinute:String,success:@escaping((AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
@@ -5970,7 +5970,7 @@ import Alamofire
     }
     
     // MARK: - 获取洗手提醒 0x0c
-    @objc public func GetWashHand(_ success:@escaping(([String:Any],AntError) -> Void)) {
+    @objc public func getWashHand(_ success:@escaping(([String:Any],AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
@@ -6010,7 +6010,7 @@ import Alamofire
     }
     
     // MARK: - 设置洗手提醒 0x0d
-    @objc public func SetWashHand(isOpen:String,startHour:String,startMinute:String,targetCount:String,remindInterval:String,success:@escaping((AntError) -> Void)) {
+    @objc public func setWashHand(isOpen:String,startHour:String,startMinute:String,targetCount:String,remindInterval:String,success:@escaping((AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
@@ -6049,7 +6049,7 @@ import Alamofire
     }
     
     // MARK: - 获取喝水提醒 0x0e
-    @objc public func GetDrinkWater(_ success:@escaping(([String:Any],AntError) -> Void)) {
+    @objc public func getDrinkWater(_ success:@escaping(([String:Any],AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
@@ -6091,7 +6091,7 @@ import Alamofire
     }
     
     // MARK: - 设置喝水提醒 0x0f
-    @objc public func SetDrinkWater(isOpen:String,startHour:String,startMinute:String,endHour:String,endMinute:String,remindCount:String,remindInterval:String,success:@escaping((AntError) -> Void)) {
+    @objc public func setDrinkWater(isOpen:String,startHour:String,startMinute:String,endHour:String,endMinute:String,remindCount:String,remindInterval:String,success:@escaping((AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
@@ -6133,7 +6133,7 @@ import Alamofire
     }
     
     // MARK: - 设置常用联系人
-    @objc public func SetAddressBook(modelArray:[AntAddressBookModel],success:@escaping((AntError) -> Void)) {
+    @objc public func setAddressBook(modelArray:[AntAddressBookModel],success:@escaping((AntError) -> Void)) {
         
         /*
          bit0           cmd_class
@@ -6314,7 +6314,7 @@ import Alamofire
     
     // MARK: - 同步数据 0x03
     // MARK: - 同步健康数据 0x00
-    @objc public func SetSyncHealthData(type:String,dayCount:String,success:@escaping((Any?,AntError) -> Void)) {
+    @objc public func setSyncHealthData(type:String,dayCount:String,success:@escaping((Any?,AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x03,
@@ -6689,7 +6689,7 @@ import Alamofire
     }
     
     // MARK: - 同步锻炼数据 0x02
-    @objc public func SetSyncExerciseData(indexCount:Int,success:@escaping((AntExerciseModel?,AntError) -> Void)) {
+    @objc public func setSyncExerciseData(indexCount:Int,success:@escaping((AntExerciseModel?,AntError) -> Void)) {
         var indexCount = indexCount
         if indexCount > UInt8.max || indexCount < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -6744,7 +6744,7 @@ import Alamofire
     }
     
     // MARK: - 获取设备支持的功能列表 0x04
-    @objc public func GetDeviceSupportList(_ success:@escaping((AntFunctionListModel?,AntError)->Void)) {
+    @objc public func getDeviceSupportList(_ success:@escaping((AntFunctionListModel?,AntError)->Void)) {
         
         
         var val:[UInt8] = [0x03,0x04,0x05,0x00,0x06]
@@ -6822,7 +6822,7 @@ import Alamofire
     
     // MARK: - 测试命令 0x04
     // MARK: - 关机 0x01
-    @objc public func SetPowerTurnOff(success:@escaping((AntError) -> Void)) {
+    @objc public func setPowerTurnOff(success:@escaping((AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x04,
@@ -6859,7 +6859,7 @@ import Alamofire
     }
     
     // MARK: - 恢复出厂设置 0x03
-    @objc public func SetFactoryDataReset(success:@escaping((AntError) -> Void)) {
+    @objc public func setFactoryDataReset(success:@escaping((AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x04,
@@ -6893,7 +6893,7 @@ import Alamofire
     }
     
     // MARK: - 马达震动 0x05
-    @objc public func SetMotorVibration(type:String,success:@escaping((AntError) -> Void)) {
+    @objc public func setMotorVibration(type:String,success:@escaping((AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x04,
@@ -6968,7 +6968,7 @@ import Alamofire
     }
     
     // MARK: - 实时步数
-    @objc public func ReportRealTimeStep(success:@escaping((AntStepModel?,AntError) -> Void)) {
+    @objc public func reportRealTimeStep(success:@escaping((AntStepModel?,AntError) -> Void)) {
         self.receiveReportRealTiemStepBlock = success
     }
     
@@ -6997,7 +6997,7 @@ import Alamofire
     }
     
     // MARK: - 实时心率
-    @objc public func ReportRealTimeHr(success:@escaping(([String:Any],AntError) -> Void)) {
+    @objc public func reportRealTimeHr(success:@escaping(([String:Any],AntError) -> Void)) {
         self.receiveReportRealTiemHrBlock = success
     }
     
@@ -7016,7 +7016,7 @@ import Alamofire
     }
     
     // MARK: - 单次测量结果
-    @objc public func ReportSingleMeasurementResult(success:@escaping(([String:Any],AntError) -> Void)) {
+    @objc public func reportSingleMeasurementResult(success:@escaping(([String:Any],AntError) -> Void)) {
         self.receiveReportSingleMeasurementResultBlock = success
     }
     
@@ -7038,7 +7038,7 @@ import Alamofire
     }
     
     // MARK: - 单次锻炼结束标识
-    @objc public func ReportSingleExerciseEnd(success:@escaping((AntError) -> Void)) {
+    @objc public func reportSingleExerciseEnd(success:@escaping((AntError) -> Void)) {
         self.receiveReportSingleExerciseEndBlock = success
     }
     
@@ -7057,7 +7057,7 @@ import Alamofire
     }
     
     // MARK: - 找手机
-    @objc public func ReportFindPhone(success:@escaping((AntError) -> Void)) {
+    @objc public func reportFindPhone(success:@escaping((AntError) -> Void)) {
         self.receiveReportFindPhoneBlock = success
     }
     
@@ -7069,7 +7069,7 @@ import Alamofire
     }
     
     // MARK: - 结束找手机
-    @objc public func ReportEndFindPhone(success:@escaping((AntError) -> Void)) {
+    @objc public func reportEndFindPhone(success:@escaping((AntError) -> Void)) {
         self.receiveReportEndFindPhoneBlock = success
     }
     
@@ -7081,7 +7081,7 @@ import Alamofire
     }
     
     // MARK: - 拍照
-    @objc public func ReportTakePictures(success:@escaping((AntError) -> Void)) {
+    @objc public func reportTakePictures(success:@escaping((AntError) -> Void)) {
         self.receiveReportTakePicturesBlock = success
     }
     
@@ -7093,7 +7093,7 @@ import Alamofire
     }
     
     // MARK: - 音乐控制
-    @objc public func ReportMusicControl(success:@escaping((Int,AntError) -> Void)) {
+    @objc public func reportMusicControl(success:@escaping((Int,AntError) -> Void)) {
         self.receiveReportMusicControlBlock = success
     }
     
@@ -7107,7 +7107,7 @@ import Alamofire
     }
     
     // MARK: - 来电控制 0x8E
-    @objc public func ReportCallControl(success:@escaping((Int,AntError) -> Void)) {
+    @objc public func reportCallControl(success:@escaping((Int,AntError) -> Void)) {
         self.receiveReportCallControlBlock = success
     }
     
@@ -7121,7 +7121,7 @@ import Alamofire
     }
     
     // MARK: - 上报屏幕亮度 0x90
-    @objc public func ReportScreenLevel(success:@escaping((Int,AntError) -> Void)) {
+    @objc public func reportScreenLevel(success:@escaping((Int,AntError) -> Void)) {
         self.receiveReportScreenLevelBlock = success
     }
     
@@ -7135,7 +7135,7 @@ import Alamofire
     }
     
     // MARK: - 上报屏幕时长 0x92
-    @objc public func ReportScreenTimeLong(success:@escaping((Int,AntError) -> Void)) {
+    @objc public func reportScreenTimeLong(success:@escaping((Int,AntError) -> Void)) {
         self.receiveReportScreenTimeLongBlock = success
     }
     
@@ -7149,7 +7149,7 @@ import Alamofire
     }
     
     // MARK: - 上报抬腕亮屏开关
-    @objc public func ReportLightScreen(success:@escaping((Int,AntError) -> Void)) {
+    @objc public func reportLightScreen(success:@escaping((Int,AntError) -> Void)) {
         self.receiveReportLightScreenBlock = success
     }
     
@@ -7163,7 +7163,7 @@ import Alamofire
     }
     
     // MARK: - 上报设备震动开关
-    @objc public func ReportDeviceVibration(success:@escaping((Int,AntError) -> Void)) {
+    @objc public func reportDeviceVibration(success:@escaping((Int,AntError) -> Void)) {
         self.receiveReportDeviceVibrationBlock = success
     }
     
@@ -7177,7 +7177,7 @@ import Alamofire
     }
     
     // MARK: - 上报实时数据 0x98
-    @objc public func ReportNewRealtimeData(success:@escaping((AntStepModel?,Int,Int,Int,Int,AntError) -> Void)) {
+    @objc public func reportNewRealtimeData(success:@escaping((AntStepModel?,Int,Int,Int,Int,AntError) -> Void)) {
         self.receiveReportNewRealtimeDataBlock = success
 //        let val:[UInt8] = [0x80,0x98,0x10,0x00,0x01,0x35,0x00,0x01,0x27,0x00,0x00,0x36,0x01,0x62,0x80,0x4e]//[0x80,0x98,0x13,0x00,0x01,0x3f,0x00,0x01,0x27,0x00,0x00,0x58,0x1b,0x36,0x01,0x41,0x62,0x80,0x4e]
 //        self.parseReportNewRealtimeData(val: val, success: success)
@@ -7271,7 +7271,7 @@ import Alamofire
             
             self.setStopUpgrade { error in
                 if error == .none {
-                    self.SetSubpackageInformationInteraction(maxSend: 1024, maxReceive: 1024) { subpackageInfo, error in
+                    self.setSubpackageInformationInteraction(maxSend: 1024, maxReceive: 1024) { subpackageInfo, error in
                         if error == .none {
                             if let maxSend = subpackageInfo["maxSend"] as? String {
                                 if let maxCount = Int(maxSend) {
@@ -7312,7 +7312,7 @@ import Alamofire
     }
     
     // MARK: - 分包信息交互(APP) 0x00
-    @objc public func SetSubpackageInformationInteraction(maxSend:Int,maxReceive:Int,success:@escaping(([String:Any],AntError) -> Void)) {
+    @objc public func setSubpackageInformationInteraction(maxSend:Int,maxReceive:Int,success:@escaping(([String:Any],AntError) -> Void)) {
         var maxSend = maxSend
         if maxSend > UInt16.max || maxSend < UInt16.min {
             print("输入参数超过范围,改为默认值0")
@@ -7601,7 +7601,7 @@ import Alamofire
     }
     
     // MARK: - 重发包号数据
-    private func ResendUpgradeData(maxSingleCount:Int,packageCount:Int,resendVal:[UInt8],val:[UInt8],progress:@escaping((Float) -> Void),success:@escaping((AntError) -> Void)) {
+    private func resendUpgradeData(maxSingleCount:Int,packageCount:Int,resendVal:[UInt8],val:[UInt8],progress:@escaping((Float) -> Void),success:@escaping((AntError) -> Void)) {
         
         //重传总包数
         let resendTotalCount = (Int(resendVal[6]) | Int(resendVal[7]) << 8 | Int(resendVal[8]) << 16 | Int(resendVal[9]) << 24 )
@@ -7757,7 +7757,7 @@ import Alamofire
                 let library = versionSuccess["library"] as! String
                 let font = versionSuccess["font"] as! String
 
-                self.GetMac { macSuccess, error in
+                self.getMac { macSuccess, error in
                     if error == .none {
                         if let string = macSuccess {
                             printLog("macSuccess =\(string)")
