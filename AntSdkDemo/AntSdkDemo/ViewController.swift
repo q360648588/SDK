@@ -61,7 +61,7 @@ class ViewController: UIViewController {
         
         AntCommandModule.shareInstance.reconnectDevice {
             print("重连成功")
-            
+
             if self.navigationController?.viewControllers.count == 1 {
                 let vc = AntVC()
                 self.navigationController?.pushViewController(vc, animated: true)
@@ -237,7 +237,7 @@ class ViewController: UIViewController {
         
         let dateLabel = UILabel.init(frame: .init(x: 0, y: 600, width: screenWidth, height: 44))
         dateLabel.backgroundColor = .green
-        dateLabel.text = "更新日期:2022-08-30"
+        dateLabel.text = "更新日期:2022-09-27"
         dateLabel.textColor = .red
         dateLabel.numberOfLines = 0
         dateLabel.textAlignment = .center

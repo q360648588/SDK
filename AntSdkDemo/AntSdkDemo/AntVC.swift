@@ -317,6 +317,7 @@ class AntVC: UIViewController {
                 //"0x0e 获取喝水提醒",
                 //"0x0f 设置喝水提醒",
                 "同步联系人",
+                "同步联系人x100",
             ],
             [
                 "0x00 同步计步数据",
@@ -2290,11 +2291,11 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }, ok: nil) { (textArray) in
                 let model_0 = AntAddressBookModel.init()
                 model_0.name = textArray[0].count == 0 ? "张三" : textArray[0]
-                model_0.phoneNumber = textArray[1].count == 0 ? "13755660033" : textArray[0]
+                model_0.phoneNumber = textArray[1].count == 0 ? "13755660033" : textArray[1]
 
                 let model_1 = AntAddressBookModel.init()
-                model_1.name = textArray[2].count == 0 ? "李四" : textArray[0]
-                model_1.phoneNumber = textArray[3].count == 0 ? "0755-6128998" : textArray[0]
+                model_1.name = textArray[2].count == 0 ? "李四" : textArray[2]
+                model_1.phoneNumber = textArray[3].count == 0 ? "0755-6128998" : textArray[3]
                 
                 let model_2 = AntAddressBookModel.init()
                 model_2.name = textArray[4]
@@ -2305,6 +2306,40 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 self.logView.writeString(string: "联系人2 姓名:\(model_2.name),号码:\(model_2.phoneNumber)")
                 
                 AntCommandModule.shareInstance.SetAddressBook(modelArray: [model_0,model_1,model_2]) { error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    if error == .none {
+                        print("SetAddressBook -> success")
+                    }
+                }
+                
+            }
+            
+            break
+            
+        case "同步联系人x100":
+            
+            let array = [
+                "姓名(默认张三)",
+                "号码(默认13755660033)",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "同步联系人")
+            
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认为空)", message: "设置联系人", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                
+                var modelArray = Array<AntAddressBookModel>.init()
+                for i in 0..<100 {
+                    let model = AntAddressBookModel.init()
+                    model.name = (textArray[0].count == 0 ? "张三" : textArray[0])+"\(-i)"
+                    model.phoneNumber = textArray[1].count == 0 ? "13755660033" : textArray[1]
+                    modelArray.append(model)
+                    self.logView.writeString(string: "联系人0 姓名:\(model.name),号码:\(model.phoneNumber)")
+                }
+                
+                AntCommandModule.shareInstance.SetAddressBook(modelArray: modelArray) { error in
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     if error == .none {
                         print("SetAddressBook -> success")

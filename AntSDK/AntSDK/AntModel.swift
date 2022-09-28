@@ -99,6 +99,7 @@ import UIKit
     @objc public private(set) var functionList_ringOff = false
     @objc public private(set) var functionList_answerCalls = false
     @objc public private(set) var functionList_timeFormat = false
+    @objc public private(set) var functionList_screenType = false
     
     @objc public private(set) var functionDetail_notification:AntFunctionModel_notification?
     @objc public private(set) var functionDetail_language:AntFunctionModel_language?
@@ -107,6 +108,7 @@ import UIKit
     @objc public private(set) var functionDetail_localDial:AntFunctionModel_localDial?
     @objc public private(set) var functionDetail_hrWarning:AntFunctionModel_hrWarning?
     @objc public private(set) var functionDetail_goal:AntFunctionModel_goal?
+    @objc public private(set) var functionDetail_screenType:AntFunctionModel_scrrenType?
     
     init(val:[UInt8]) {
         
@@ -246,6 +248,7 @@ import UIKit
             case 34:
                 break
             case 35:
+                self.functionDetail_screenType = AntFunctionModel_scrrenType.init(result: functionCount)
                 break
             default:
                 break
@@ -332,7 +335,7 @@ import UIKit
                 break
             case 34:self.functionList_timeFormat = state == 0 ? false:true
                 break
-            case 35:
+            case 35:self.functionList_screenType = state == 0 ? false:true
                 break
             case 36:
                 break
@@ -586,6 +589,12 @@ import UIKit
         if self.functionList_timeFormat {
             log += "\n时间格式"
         }
+        if self.functionList_screenType {
+            log += "\n手表款式"
+            if let model = self.functionDetail_screenType {
+                log += "\n      手表款式 \(model.supportType)(0方1圆2圆角)"
+            }
+        }
         return log
     }
 }
@@ -799,6 +808,16 @@ import UIKit
                 break
             }
         }
+    }
+}
+
+@objc public class AntFunctionModel_scrrenType:NSObject {
+
+    @objc public private(set) var supportType = 0                //0:方 1:圆 2:圆角
+    
+    init(result:Int) {
+        self.supportType = result
+        super.init()
     }
 }
 

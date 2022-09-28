@@ -35,8 +35,8 @@
             filePath = "../AntSDK/AntSDK/AntCommandModule.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "8094"
-            endingLineNumber = "8094"
+            startingLineNumber = "8109"
+            endingLineNumber = "8109"
             landmarkName = "serverOtaMethod(indexCount:dataArray:progress:success:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -51,8 +51,8 @@
             filePath = "../AntSDK/AntSDK/AntModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "928"
-            endingLineNumber = "928"
+            startingLineNumber = "947"
+            endingLineNumber = "947"
             landmarkName = "alarmIndex"
             landmarkType = "24">
          </BreakpointContent>
@@ -67,8 +67,8 @@
             filePath = "../AntSDK/AntSDK/AntModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "925"
-            endingLineNumber = "925"
+            startingLineNumber = "944"
+            endingLineNumber = "944"
             landmarkName = "alarmIndex"
             landmarkType = "24">
          </BreakpointContent>
@@ -83,9 +83,41 @@
             filePath = "../AntSDK/AntSDK/AntBaseModule.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "84"
-            endingLineNumber = "84"
+            startingLineNumber = "85"
+            endingLineNumber = "85"
             landmarkName = "observeValue(forKeyPath:of:change:context:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "8E8DB854-DD66-42EE-A624-DC8ABEB2650A"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../AntSDK/AntSDK/AntModel.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "134"
+            endingLineNumber = "134"
+            landmarkName = "init(val:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "F333DB9F-7ABF-49A0-94F7-EBB29D0E8493"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../AntSDK/AntSDK/AntCommandModule.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "6805"
+            endingLineNumber = "6805"
+            landmarkName = "parseGetDeviceSupportList(val:success:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

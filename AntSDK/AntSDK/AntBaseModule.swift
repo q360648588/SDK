@@ -36,6 +36,7 @@ import zlib
     }
     
     @objc dynamic public internal(set) var blePowerState:CBCentralManagerState = .unknown
+    @objc dynamic public internal(set) var functionListModel:AntFunctionListModel? = nil
     
     var writeCharacteristic:CBCharacteristic?//6E400002-B5A3-F393-E0A9-E50E24DCCA9E
     var receiveCharacteristic:CBCharacteristic?//6E400003-B5A3-F393-E0A9-E50E24DCCA9E
@@ -290,7 +291,7 @@ import zlib
     
     /// 断开连接
     @objc public func disconnect() {
-        
+        self.functionListModel = nil
         //此方法只能让外部调用，此方法会删除重连标识，如果SDK内部调用会影响重连，重连只调用一次就自动取消。内部调用断开连接用if的判断
         if self.peripheral != nil && self.peripheral?.state != .disconnected{
             AntBleManager.shareInstance.disconnect(peripheral: self.peripheral!)
@@ -376,7 +377,20 @@ import zlib
                 userDefault.setValue(peripheral.identifier.uuidString, forKey: "Ant_ReconnectIdentifierKey")
                 
                 if let block = self.connectCompleteBlock {
+                    //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
+                    AntCommandModule.shareInstance.GetDeviceSupportList { model, error in
+                        if error == .none {
+                            printLog("连接成功")
+                            self.functionListModel = model
+                            block(true)
+                        }else{
+                            printLog("连接成功")
+                            block(false)
+                        }
+                    }
                     AntCommandModule.shareInstance.SetPhoneMode(type: 0) { _ in
+                    }
+                    AntCommandModule.shareInstance.GetDeviceOtaVersionInfo { _, _ in
                     }
                     //这里是升级过程中异常断开还保存未发完的ota数据，那么检测升级，拿到回调之后会继续升级
                     if AntCommandModule.shareInstance.otaData != nil {
@@ -384,14 +398,7 @@ import zlib
                             
                         }
                     }
-//                    DispatchQueue.main.asyncAfter(deadline: .now()+0.5) {
-//
-//                    }
-                    printLog("连接成功")
-                    block(true)
                 }
-                
-                
             }
         }
     

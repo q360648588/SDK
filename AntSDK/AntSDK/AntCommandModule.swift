@@ -3365,10 +3365,10 @@ import Alamofire
             
             let product = (Int(val[5]) | Int(val[6]) << 8 )
             let project = (Int(val[7]) | Int(val[8]) << 8 )
-            let boot = String.init(format: "%d.%d", val[9],val[10])
-            let firmware = String.init(format: "%d.%d", val[11],val[12])
-            let library = String.init(format: "%d.%d", val[13],val[14])
-            let font = String.init(format: "%d.%d", val[15],val[16])
+            let boot = String.init(format: "%d.%02d", val[9],val[10])
+            let firmware = String.init(format: "%d.%02d", val[11],val[12])
+            let library = String.init(format: "%d.%02d", val[13],val[14])
+            let font = String.init(format: "%d.%02d", val[15],val[16])
             
             let string = String.init(format: "\nproduct:%d\nproject:%d\nfirmware:%@\nlibrary:%@\nfont:%@", product,project,firmware,library,font)
             AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
@@ -4618,8 +4618,17 @@ import Alamofire
             0x00,
             UInt8(type),
         ]
+
+//        if let mac = mac {
+//            for i in stride(from: 0, to: mac.count/2, by: 1) {
+//                let indexCount = i*2
+//                let string = "0x" + mac.dropFirst(indexCount).dropLast(mac.count-indexCount-2)
+//                let value = UInt8(string) ?? 0
+//                val.append(value)
+//            }
+//            val[2] = UInt8(val.count)
+//        }
         let data = Data.init(bytes: &val, count: val.count)
-        
         //self.receiveSetPhoneModeBlock = success
         
         let state = self.writeDataAndBackError(data: data)
@@ -4788,7 +4797,7 @@ import Alamofire
         
         if val[4] == 1 {
             
-            let colorHex = String.init(format: "0x%02x", (Int(val[5]) | Int(val[6]) << 8 | Int(val[7]) << 16))
+            let colorHex = String.init(format: "0x%06x", (Int(val[5]) | Int(val[6]) << 8 | Int(val[7]) << 16))
             let position = val[8]
             let timeUpType = val[9]
             let timeDownType = val[10]
@@ -5021,11 +5030,8 @@ import Alamofire
         var smallImage = image.changeSize(size: .init(width: self.screenSmallWidth, height: self.screenSmallHeight))
         var bigImage = image//.changeSize(size: .init(width: 240, height: 240))
         
-        if let versionDic = self.otaVersionInfo {
-            let product = versionDic["product"] as! String
-            let project = versionDic["project"] as! String
-            
-            if product == "1" && project == "1" {
+        if let screenType = self.functionListModel?.functionDetail_screenType {
+            if screenType.supportType == 1 {
                 smallImage = smallImage.changeCircle(fillColor: .black)
                 bigImage = bigImage.changeCircle(fillColor: .black)
             }
@@ -6226,6 +6232,7 @@ import Alamofire
                 printLog("发送命令 -> self.semaphoreCount =",self.semaphoreCount)
                 self.receiveSetAddressBookBlock = success
                 
+                var delayCount = 0
                 for i in stride(from: 0, to: indexCount, by: 1) {
                     var valArray:[UInt8] = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]//Array.init()//(arrayLiteral: 20)
                     valArray[0] = UInt8(cmdClass)
@@ -6270,6 +6277,13 @@ import Alamofire
                     let dataString = String.init(format: "%@", self.convertDataToSpaceHexStr(data: newData,isSend: true))
                     printLog("SetAddressBook send =",dataString)
                     self.writeData(data: newData)
+                    if delayCount > 5 {
+                        printLog("通讯录延时0.1s")
+                        delayCount = 0
+                        Thread.sleep(forTimeInterval: 0.1)
+                    }else{
+                        delayCount += 1
+                    }
                 }
 
                 //定时器计数重置
@@ -6781,6 +6795,7 @@ import Alamofire
          Bit32 挂断电话
          Bit33 接听电话
          Bit34 时间格式
+         Bit35 手环款式
          */
         
         let valData = val.withUnsafeBufferPointer { (v) -> Data in
@@ -6791,7 +6806,7 @@ import Alamofire
         
         let model = AntFunctionListModel.init(val: val)
 
-        success(model,.none)
+            success(model,.none)
         //printLog("第\(#line)行" , "\(#function)")
         self.signalCommandSemaphore()
     }
