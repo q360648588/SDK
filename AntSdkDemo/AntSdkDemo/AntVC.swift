@@ -37,7 +37,7 @@ class AntVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         self.currentBleState = AntCommandModule.shareInstance.peripheral?.state ?? .disconnected
         
         AntCommandModule.shareInstance.peripheralStateChange { [weak self] state in
@@ -152,6 +152,8 @@ class AntVC: UIViewController {
                 "设置勿扰提醒",
                 "获取心率预警",
                 "设置心率预警",
+                "同步联系人",
+                "同步联系人x100",
             ],
             [
                 "同步计步数据",
@@ -175,6 +177,7 @@ class AntVC: UIViewController {
                 "上报亮屏时长",
                 "上报抬腕亮屏",
                 "上报设备振动",
+                "上报实时数据",
             ],
             [
                 "0引导文件",
@@ -193,6 +196,8 @@ class AntVC: UIViewController {
                 "自动OTA升级服务器最新设备相关版本",
                 "获取在线表盘",
                 "发送在线表盘",
+                "获取本地表盘图片",
+                "获取自定义表盘图片",
             ],
         ]
 
@@ -453,6 +458,19 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 }
             }
             
+//            AntCommandModule.shareInstance.getOnlineDialList(pageIndex: 0, pageSize: 10) { dialArray, error in
+//                self.logView.writeString(string: self.getErrorCodeString(error: error))
+//                print("getOnlineDialList ->",dialArray.count)
+//
+//                for item in dialArray {
+//                    print("item.dialId =",item.dialId,"item.dialImageUrl =",item.dialImageUrl,"item.dialFileUrl =",item.dialFileUrl,"item.dialName =",item.dialName)
+//                    self.logView.writeString(string: "id:\(item.dialId)")
+//                    self.logView.writeString(string: "imageUrl:\(item.dialImageUrl!)")
+//                    self.logView.writeString(string: "fileUrl:\(item.dialFileUrl!)")
+//                    self.logView.writeString(string: "name:\(item.dialName!)\n\n")
+//                }
+//            }
+            
             break
         case "获取个人信息":
             
@@ -669,7 +687,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 
                 let model = AntWeatherModel.init()
                 model.dayCount = Int(dayCount) ?? 0
-                model.type = AntWeatherType(rawValue:Int(type) ?? 0)!
+                model.type = AntWeatherType(rawValue:Int(type) ?? 0) ?? .sunny
                 model.temp = Int(temp) ?? 0
                 model.airQuality = Int(airQuality) ?? 0
                 model.minTemp = Int(minTemp) ?? 0
@@ -694,12 +712,12 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             self.logView.clearString()
             self.logView.writeString(string: "设备进入拍照模式")
-            AntCommandModule.shareInstance.SetInterCamera { error in
+            AntCommandModule.shareInstance.SetEnterCamera { error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
                 if error == .none {
-                    print("SetInterCamera ->","success")
+                    print("SetEnterCamera ->","success")
                 }
                 //self.navigationController?.pushViewController(vc, animated: true)
             }
@@ -1372,9 +1390,9 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 
                 let model = AntCustomDialModel.init()
                 model.color = UIColor.init(hexString: color)
-                model.positionType = AntPositionType.init(rawValue: Int(positionType) ?? 0)!
-                model.timeUpType = AntPositionShowType.init(rawValue: Int(timeUpType) ?? 0)!
-                model.timeDownType = AntPositionShowType.init(rawValue: Int(timeDownType) ?? 0)!
+                model.positionType = AntPositionType.init(rawValue: Int(positionType) ?? 0) ?? .leftTop
+                model.timeUpType = AntPositionShowType.init(rawValue: Int(timeUpType) ?? 0) ?? .close
+                model.timeDownType = AntPositionShowType.init(rawValue: Int(timeDownType) ?? 0) ?? .close
                 
                 AntCommandModule.shareInstance.SetCustomDialEdit(model: model) { error in
                     
@@ -1823,6 +1841,84 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
+        case "同步联系人":
+            
+            let array = [
+                "0姓名(默认张三)",
+                "0号码(默认13755660033)",
+                "1姓名(默认李四)",
+                "1号码(默认0755-6128998)",
+                "2姓名",
+                "2号码",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "同步联系人")
+            
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认为空)", message: "设置联系人", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let model_0 = AntAddressBookModel.init()
+                model_0.name = textArray[0].count == 0 ? "张三" : textArray[0]
+                model_0.phoneNumber = textArray[1].count == 0 ? "13755660033" : textArray[1]
+
+                let model_1 = AntAddressBookModel.init()
+                model_1.name = textArray[2].count == 0 ? "李四" : textArray[2]
+                model_1.phoneNumber = textArray[3].count == 0 ? "0755-6128998" : textArray[3]
+                
+                let model_2 = AntAddressBookModel.init()
+                model_2.name = textArray[4]
+                model_2.phoneNumber = textArray[5]
+                
+                self.logView.writeString(string: "联系人0 姓名:\(model_0.name),号码:\(model_0.phoneNumber)")
+                self.logView.writeString(string: "联系人1 姓名:\(model_1.name),号码:\(model_1.phoneNumber)")
+                self.logView.writeString(string: "联系人2 姓名:\(model_2.name),号码:\(model_2.phoneNumber)")
+                
+                AntCommandModule.shareInstance.SetAddressBook(modelArray: [model_0,model_1,model_2]) { error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    if error == .none {
+                        print("SetAddressBook -> success")
+                    }
+                }
+                
+            }
+            
+            break
+            
+        case "同步联系人x100":
+            
+            let array = [
+                "姓名(默认张三)",
+                "号码(默认13755660033)",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "同步联系人")
+            
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认为空)", message: "设置联系人", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                
+                var modelArray = Array<AntAddressBookModel>.init()
+                for i in 0..<100 {
+                    let model = AntAddressBookModel.init()
+                    model.name = (textArray[0].count == 0 ? "张三" : textArray[0])+"\(-i)"
+                    model.phoneNumber = textArray[1].count == 0 ? "13755660033" : textArray[1]
+                    modelArray.append(model)
+                    self.logView.writeString(string: "联系人0 姓名:\(model.name),号码:\(model.phoneNumber)")
+                }
+                
+                AntCommandModule.shareInstance.SetAddressBook(modelArray: modelArray) { error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    if error == .none {
+                        print("SetAddressBook -> success")
+                    }
+                }
+                
+            }
+            
+            break
+            
         case "同步计步数据":
             
             let array = [
@@ -1920,9 +2016,9 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 
             }, ok: nil) { (textArray) in
                 //let type = textArray[0]
-                let numberCount = textArray[0]
+                let indexCount = textArray[0]
                                 
-                AntCommandModule.shareInstance.SetSyncExerciseData(type: "4", numberCount: numberCount) { success, error in
+                AntCommandModule.shareInstance.SetSyncExerciseData(indexCount: Int(indexCount) ?? 0) { success, error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     print("SetSyncExerciseData ->",success)
@@ -2186,6 +2282,30 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                     self.logView.writeString(string: "设备振动 开关:\(isOpen == 0 ? "关":"开")")
                 }
             }
+            break
+            
+        case "上报实时数据":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "设备端点击显示")
+            
+            AntCommandModule.shareInstance.ReportNewRealtimeData { stepModel, hr, bo, sbp, dbp, error in
+                if error == .none {
+                    if let model:AntStepModel = stepModel as? AntStepModel {
+                        let step = model.step
+                        let calorie = model.calorie
+                        let distance = model.distance
+                        
+                        self.logView.writeString(string: "总步数:\(step)")
+                        self.logView.writeString(string: "总卡路里:\(calorie)")
+                        self.logView.writeString(string: "总距离:\(distance)")
+                    }
+                    self.logView.writeString(string: "心率:\(hr)")
+                    self.logView.writeString(string: "血氧:\(bo)")
+                    self.logView.writeString(string: "血压:\(sbp)/\(dbp)")
+                }
+            }
+            
             break
             
         case "0引导文件":
@@ -2713,6 +2833,9 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                     self.dialArray = dialArray
 
                 }
+                
+//                AntCommandModule.shareInstance.GetDeviceOtaVersionInfo
+                
             }
             
             break
@@ -2748,6 +2871,44 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
+        case "获取本地表盘图片":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "获取本地表盘图片")
+            
+            AntCommandModule.shareInstance.getLocalDialImageServerInfo { dic, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                if error == .none {
+                    if let dic = dic {
+                        print("获取本地表盘图片 \ndic =\(dic)")
+                        self.logView.writeString(string: "本地表盘图片信息:\(dic)")
+                    }
+                }
+                
+            }
+            
+            break
+            
+        case "获取自定义表盘图片":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "获取自定义表盘图片")
+            
+            AntCommandModule.shareInstance.getCustomDialImageServerInfo { dic, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                if error == .none {
+                    if let dic = dic {
+                        print("获取自定义表盘图片 \ndic =\(dic)")
+                        self.logView.writeString(string: "获取自定义表盘图片:\(dic)")
+                    }
+                }
+                
+            }
+            
+            break
+
         default:
             break
         }

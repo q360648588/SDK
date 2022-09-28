@@ -38,6 +38,8 @@ import Alamofire
     private var screenSmallWidth = 0
     private var screenSmallHeight = 0
     
+    private var otaVersionInfo:[String:Any]?
+    
     var receiveGetDeviceNameBlock:((String?,AntError) -> Void)?
     var receiveGetFirmwareVersionBlock:((String?,AntError) -> Void)?
     var receiveGetMacBlock:((String?,AntError) -> Void)?
@@ -46,6 +48,7 @@ import Alamofire
     var receiveGetDeviceSupportListBlock:((AntFunctionListModel?,AntError) -> Void)?
     var receiveGetDeviceSupportFunctionDetailBlock:(([String:Any],AntError) -> Void)?
     var receiveGetDeviceOtaVersionInfo:(([String:Any],AntError) -> Void)?
+    var receivePrivateGetDeviceOtaVersionInfo:(([String:Any],AntError) -> Void)?
     var receiveGetSerialNumberBlock:((String?,AntError) -> Void)?
     var receiveGetPersonalInformationBlock:((AntPersonalModel?,AntError) -> Void)?
     var receiveSetPersonalInformationBlock:((AntError) -> Void)?
@@ -54,7 +57,7 @@ import Alamofire
     var receiveGetMetricSystemBlock:((Int,AntError) -> Void)?
     var receiveSetMetricSystemBlock:((AntError) -> Void)?
     var receiveSetWeatherBlock:((AntError) -> Void)?
-    var receiveSetInterCameraBlock:((AntError) -> Void)?
+    var receiveSetEnterCameraBlock:((AntError) -> Void)?
     var receiveSetFindDeviceBlock:((AntError) -> Void)?
     var receiveGetLightScreenBlock:((Int,AntError) -> Void)?
     var receiveSetLightScreenBlock:((AntError) -> Void)?
@@ -88,6 +91,7 @@ import Alamofire
     var receiveGetCustonDialFrameSizeBlock:((AntDialFrameSizeModel?,AntError) -> Void)?
     var receiveGet24HrMonitorBlock:((Int,AntError) -> Void)?
     var receiveSet24HrMonitorBlock:((AntError) -> Void)?
+    var receiveSetEnterOrExitCameraBlock:((AntError) -> Void)?
     
     var receiveGetNotificationRemindBlock:(([Int],AntError) -> Void)?
     var receiveSetNotificationRemindBlock:((AntError) -> Void)?
@@ -105,7 +109,8 @@ import Alamofire
     var receiveSetWashHandBlock:((AntError) -> Void)?
     var receiveGetDrinkWaterBlock:(([String:Any],AntError) -> Void)?
     var receiveSetDrinkWaterBlock:((AntError) -> Void)?
-    //    var receiveSetSyncHealthDataBlock:(day:String,type:String,success:(([String:Any],AntError) -> Void))?
+    var receiveSetAddressBookBlock:((AntError) -> Void)?
+        //    var receiveSetSyncHealthDataBlock:(day:String,type:String,success:(([String:Any],AntError) -> Void))?
     var receiveSetSyncStepDataBlock:(day:String,type:String,success:((Any?,AntError) -> Void))?
     var receiveSetSyncSleepDataBlock:(day:String,type:String,success:((Any?,AntError) -> Void))?
     var receiveSetSyncHeartrateDataBlock:(day:String,type:String,success:((Any?,AntError) -> Void))?
@@ -127,6 +132,7 @@ import Alamofire
     var receiveReportScreenTimeLongBlock:((Int,AntError) -> Void)?
     var receiveReportLightScreenBlock:((Int,AntError) -> Void)?
     var receiveReportDeviceVibrationBlock:((Int,AntError) -> Void)?
+    var receiveReportNewRealtimeDataBlock:((AntStepModel?,Int,Int,Int,Int,AntError) -> Void)?
     var receiveSetSubpackageInformationInteractionBlock:(([String:Any],AntError) -> Void)?
     var receiveSetStartUpgradeBlock:((AntError) -> Void)?
     var receiveSetStartUpgradeProgressBlock:((Float) -> Void)?
@@ -557,17 +563,17 @@ import Alamofire
                 if val[0] == 0x01 && val[1] == 0x89 {
                     if self.checkLength(val: [UInt8](val)) {
                         
-                        if let block = self.receiveSetInterCameraBlock {
-                            self.parseSetInterCamera(val: val, success: block)
+                        if let block = self.receiveSetEnterCameraBlock {
+                            self.parseSetEnterCamera(val: val, success: block)
                         }
                         
                     }else{
-                        if let block = self.receiveSetInterCameraBlock {
+                        if let block = self.receiveSetEnterCameraBlock {
                             block(.invalidLength)
                         }
                         //printLog("第\(#line)行" , "\(#function)")
                         self.signalCommandSemaphore()
-                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetInterCamera长度校验出错"))
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetEnterCamera长度校验出错"))
                     }
                     
                 }
@@ -1215,8 +1221,26 @@ import Alamofire
                         self.signalCommandSemaphore()
                         AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "Set24HrMonitor长度校验出错"))
                     }
-                    
                 }
+                
+                //设置进入或退出拍照模式
+                if val[0] == 0x01 && val[1] == 0xb7 {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveSetEnterOrExitCameraBlock {
+                            self.parseSetEnterOrExitCamera(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveSetEnterOrExitCameraBlock {
+                            block(.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetEnterOrExitCamera长度校验出错"))
+                    }
+                }
+                
                                 
                 //获取消息提醒
                 if val[0] == 0x02 && val[1] == 0x80 {
@@ -1518,6 +1542,25 @@ import Alamofire
                         //printLog("第\(#line)行" , "\(#function)")
                         self.signalCommandSemaphore()
                         AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetDrinkWater长度校验出错"))
+                    }
+                    
+                }
+                
+                //同步联系人
+                if val[0] == 0x02 && val[1] == 0x93 {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveSetAddressBookBlock {
+                            self.parseSetAddressBook(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveSetAddressBookBlock {
+                            block(.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetAddress长度校验出错"))
                     }
                     
                 }
@@ -2297,6 +2340,24 @@ import Alamofire
                     
                 }
                 
+                if val[0] == 0x80 && val[1] == 0x98 {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveReportNewRealtimeDataBlock {
+                            self.parseReportNewRealtimeData(val: val, success: block)
+                        }
+                        
+                    }else{
+                        
+                        if let block = self.receiveReportNewRealtimeDataBlock {
+                            block(nil,-1,-1,-1,-1,.invalidLength)
+                        }
+                        
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "长度校验出错"))
+                    }
+                    
+                }
+                
                 
                 //2.3.1.分包信息交互(APP) 0x00
                 if val[0] == 0x05 && val[1] == 0x80 {
@@ -2525,7 +2586,7 @@ import Alamofire
 
                 DispatchQueue.global().async {
 
-                    printLog("send dataString -> wait 之前 self.semaphoreCount =",self.semaphoreCount,self.convertDataToSpaceHexStr(data: data,isSend: true))
+                    //printLog("send dataString -> wait 之前 self.semaphoreCount =",self.semaphoreCount,self.convertDataToSpaceHexStr(data: data,isSend: true))
                     self.semaphoreCount -= 1
                     self.commandSemaphore.wait()
 
@@ -2638,9 +2699,9 @@ import Alamofire
             self.receiveSetWeatherBlock = nil
         }
         
-        if let block = self.receiveSetInterCameraBlock {
+        if let block = self.receiveSetEnterCameraBlock {
             block(.disconnected)
-            self.receiveSetInterCameraBlock = nil
+            self.receiveSetEnterCameraBlock = nil
         }
         
         if let block = self.receiveSetFindDeviceBlock {
@@ -2931,7 +2992,7 @@ import Alamofire
     // MARK: - 检测命令定时器方法
     @objc func commandDetectionTimerMethod() {
         if self.commandDetectionCount >= 50 {
-            //用信号量+1，只放一条命令过。如果用重置信号量会导致后续的命令全部怼出去，如果还要丢的命令也无法发现
+            //用信号量+1，只放一条命令过。如果用重置信号量会导致后续的命令全部怼出去，如果还有丢的命令也无法发现
             self.signalCommandSemaphore()
             //取消定时器
             self.commandDetectionTimerInvalid()
@@ -3021,12 +3082,16 @@ import Alamofire
     
     // MARK: - 检测命令信号量重置
     func resetCommandSemaphore() {
+        self.otaVersionInfo = nil
+        self.receiveGetDeviceOtaVersionInfo = nil
         //目前SDK内部重置会在重连、断开连接、关闭蓝牙三个地方调用
         let resetCount = 1-self.semaphoreCount
         printLog("resetCommandSemaphore resetCount->",resetCount)
         for _ in 0..<resetCount {
             self.signalCommandSemaphore()
         }
+        //重置之后网络请求的isRequesting置为false
+        self.isRequesting = false
     }
     
     // MARK: - 设备信息 0x00
@@ -3276,6 +3341,23 @@ import Alamofire
         }
     }
     
+    private func privateGetOtaVersionInfo(_ success:@escaping(([String:Any],AntError)->Void)) {
+        printLog("privateGetOtaVersionInfo")
+        if let otaInfo = self.otaVersionInfo {
+            printLog("self.otaVersionInfo 有值")
+            success(otaInfo,.none)
+        }else{
+            print("self.otaVersionInfo = nil")
+            if self.receiveGetDeviceOtaVersionInfo != nil {
+                printLog("receiveGetDeviceOtaVersionInfo != nil")
+                self.receivePrivateGetDeviceOtaVersionInfo = success
+            }else{
+                printLog("receiveGetDeviceOtaVersionInfo == nil")
+                self.GetDeviceOtaVersionInfo(success)
+            }
+        }
+    }
+    
     private func parseGetDeviceOtaVersionInfo(val:[UInt8],success:@escaping(([String:Any],AntError) -> Void)) {
         let state = String.init(format: "%02x", val[4])
         
@@ -3283,14 +3365,19 @@ import Alamofire
             
             let product = (Int(val[5]) | Int(val[6]) << 8 )
             let project = (Int(val[7]) | Int(val[8]) << 8 )
-            let boot = String.init(format: "%d.%d", val[9],val[10])
-            let firmware = String.init(format: "%d.%d", val[11],val[12])
-            let library = String.init(format: "%d.%d", val[13],val[14])
-            let font = String.init(format: "%d.%d", val[15],val[16])
+            let boot = String.init(format: "%d.%02d", val[9],val[10])
+            let firmware = String.init(format: "%d.%02d", val[11],val[12])
+            let library = String.init(format: "%d.%02d", val[13],val[14])
+            let font = String.init(format: "%d.%02d", val[15],val[16])
             
             let string = String.init(format: "\nproduct:%d\nproject:%d\nfirmware:%@\nlibrary:%@\nfont:%@", product,project,firmware,library,font)
             AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
             success(["product":"\(product)","project":"\(project)","boot":boot,"firmware":firmware,"library":library,"font":font],.none)
+            self.otaVersionInfo = ["product":"\(product)","project":"\(project)","boot":boot,"firmware":firmware,"library":library,"font":font]
+            if let block = self.receivePrivateGetDeviceOtaVersionInfo  {
+                block(self.otaVersionInfo!,.none)
+                self.receivePrivateGetDeviceOtaVersionInfo = nil
+            }
             
         }else{
             success([:],.invalidState)
@@ -3413,8 +3500,11 @@ import Alamofire
     
     // MARK: - 设置时间制式 0x03
     @objc public func SetTimeFormat(format:Int,success:@escaping((AntError) -> Void)) {
-        
-        
+        var format = format
+        if format > UInt8.max || format < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            format = 0
+        }
         var val:[UInt8] = [0x01,0x03,0x05,0x00,UInt8(format)]
         let data = Data.init(bytes: &val, count: val.count)
                 
@@ -3477,7 +3567,11 @@ import Alamofire
     // MARK: - 设置公英制 0x05
     @objc public func SetMetricSystem(metric:Int,success:@escaping((AntError) -> Void)) {
         
-        
+        var metric = metric
+        if metric > UInt8.max || metric < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            metric = 0
+        }
         var val:[UInt8] = [0x01,0x05,0x05,0x00,UInt8(metric)]
         let data = Data.init(bytes: &val, count: val.count)
                 
@@ -3550,7 +3644,7 @@ import Alamofire
     }
     
     // MARK: - 设置进入拍照模式 0x09
-    @objc public func SetInterCamera(success:@escaping((AntError) -> Void)) {
+    @objc public func SetEnterCamera(success:@escaping((AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x01,
@@ -3562,14 +3656,14 @@ import Alamofire
         
         let state = self.writeDataAndBackError(data: data)
         if state == .none {
-            self.receiveSetInterCameraBlock = success
+            self.receiveSetEnterCameraBlock = success
         }else{
             success(state)
         }
         
     }
     
-    private func parseSetInterCamera(val:[UInt8],success:@escaping((AntError) -> Void)) {
+    private func parseSetEnterCamera(val:[UInt8],success:@escaping((AntError) -> Void)) {
         let state = String.init(format: "%02x", val[4])
         
         if val[4] == 1 {
@@ -3653,7 +3747,11 @@ import Alamofire
     
     // MARK: - 设置抬腕亮屏 0x0d
     @objc public func SetLightScreen(isOpen:Int,success:@escaping((AntError) -> Void)) {
-        
+        var isOpen = isOpen
+        if isOpen > UInt8.max || isOpen < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isOpen = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x0d,
@@ -3721,7 +3819,11 @@ import Alamofire
     
     // MARK: - 设置屏幕亮度 0x0f
     @objc public func SetScreenLevel(value:Int,success:@escaping((AntError) -> Void)) {
-        
+        var value = value
+        if value > UInt8.max || value < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            value = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x0f,
@@ -3789,7 +3891,11 @@ import Alamofire
     
     // MARK: - 设置屏幕时长 0x33
     @objc public func SetScreenTimeLong(value:Int,success:@escaping((AntError) -> Void)) {
-        
+        var value = value
+        if value > UInt8.max || value < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            value = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x33,
@@ -3856,7 +3962,11 @@ import Alamofire
     
     // MARK: - 设置本地表盘 0x11
     @objc public func SetLocalDial(index:Int,success:@escaping((AntError) -> Void)) {
-        
+        var index = index
+        if index > UInt8.max || index < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            index = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x11,
@@ -3890,7 +4000,11 @@ import Alamofire
     
     // MARK: - 获取闹钟 0x12
     @objc public func GetAlarm(index:Int,success:@escaping((AntAlarmModel?,AntError) -> Void)) {
-        
+        var index = index
+        if index > UInt8.max || index < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            index = 0
+        }
         var val:[UInt8] = [0x01,0x12,0x05,0x00,UInt8(index)]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -3991,9 +4105,9 @@ import Alamofire
             0x08,
             0x00,
             UInt8(index),
-            (UInt8(repeatCount)),
-            (UInt8(hour) ?? 0),
-            (UInt8(minute) ?? 0)
+            UInt8(repeatCount),
+            UInt8(hour),
+            UInt8(minute)
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -4045,7 +4159,11 @@ import Alamofire
     
     // MARK: - 设置设备语言 0x15
     @objc public func SetDeviceLanguage(index:Int,success:@escaping((AntError) -> Void)) {
-        
+        var index = index
+        if index > UInt8.max || index < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            index = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x15,
@@ -4119,7 +4237,12 @@ import Alamofire
     // MARK: - 设置目标步数 0x17
     @objc public func SetStepGoal(target:Int,success:@escaping((AntError) -> Void)) {
         
-        let goal:Int = target
+        var goal:Int = target
+        if goal > UInt32.max || goal < UInt32.min {
+            print("输入参数超过范围,改为默认值0")
+            goal = 0
+        }
+        
         var val:[UInt8] = [
             0x01,
             0x17,
@@ -4194,7 +4317,11 @@ import Alamofire
     
     // MARK: - 设置显示方式 0x19
     @objc public func SetDispalyMode(isVertical:Int,success:@escaping((AntError) -> Void)) {
-        
+        var isVertical = isVertical
+        if isVertical > UInt8.max || isVertical < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isVertical = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x19,
@@ -4266,7 +4393,11 @@ import Alamofire
     
     // MARK: - 设置佩戴方式 0x1b
     @objc public func SetWearingWay(isLeftHand:Int,success:@escaping((AntError) -> Void)) {
-        
+        var isLeftHand = isLeftHand
+        if isLeftHand > UInt8.max || isLeftHand < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isLeftHand = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x1b,
@@ -4301,7 +4432,16 @@ import Alamofire
     
     // MARK: - 设置单次测量 0x1d
     @objc public func SetSingleMeasurement(type:Int,isOpen:Int,success:@escaping((AntError) -> Void)) {
-        
+        var type = type
+        if type > UInt8.max || type < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            type = 0
+        }
+        var isOpen = isOpen
+        if isOpen > UInt8.max || isOpen < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isOpen = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x1d,
@@ -4374,7 +4514,16 @@ import Alamofire
     
     // MARK: - 设置锻炼模式 0x1f
     @objc public func SetExerciseMode(type:Int,isOpen:Int,success:@escaping((AntError) -> Void)) {
-        
+        var type = type
+        if type > UInt8.max || type < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            type = 0
+        }
+        var isOpen = isOpen
+        if isOpen > UInt8.max || isOpen < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isOpen = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x1f,
@@ -4411,7 +4560,16 @@ import Alamofire
     
     // MARK: - 设置设备模式 0x21
     @objc public func SetDeviceMode(type:Int,isOpen:Int,success:@escaping((AntError) -> Void)) {
-        
+        var type = type
+        if type > UInt8.max || type < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            type = 0
+        }
+        var isOpen = isOpen
+        if isOpen > UInt8.max || isOpen < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isOpen = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x21,
@@ -4448,7 +4606,11 @@ import Alamofire
     
     // MARK: - 设置手机类型 0x25
     @objc public func SetPhoneMode(type:Int,success:@escaping((AntError) -> Void)) {
-        
+        var type = type
+        if type > UInt8.max || type < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            type = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x25,//
@@ -4456,8 +4618,17 @@ import Alamofire
             0x00,
             UInt8(type),
         ]
+
+//        if let mac = mac {
+//            for i in stride(from: 0, to: mac.count/2, by: 1) {
+//                let indexCount = i*2
+//                let string = "0x" + mac.dropFirst(indexCount).dropLast(mac.count-indexCount-2)
+//                let value = UInt8(string) ?? 0
+//                val.append(value)
+//            }
+//            val[2] = UInt8(val.count)
+//        }
         let data = Data.init(bytes: &val, count: val.count)
-        
         //self.receiveSetPhoneModeBlock = success
         
         let state = self.writeDataAndBackError(data: data)
@@ -4523,7 +4694,11 @@ import Alamofire
     
     // MARK: - 设置天气单位 0x29
     @objc public func SetWeatherUnit(type:Int,success:@escaping((AntError) -> Void)) {
-        
+        var type = type
+        if type > UInt8.max || type < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            type = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x29,
@@ -4559,6 +4734,11 @@ import Alamofire
     
     // MARK: - 设置实时数据上报开关 0x2B
     @objc public func SetReportRealtimeData(isOpen:Int,success:@escaping((AntError) -> Void)) {
+        var isOpen = isOpen
+        if isOpen > UInt8.max || isOpen < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isOpen = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x2B,
@@ -4617,7 +4797,7 @@ import Alamofire
         
         if val[4] == 1 {
             
-            let colorHex = String.init(format: "0x%02x", (Int(val[5]) | Int(val[6]) << 8 | Int(val[7]) << 16))
+            let colorHex = String.init(format: "0x%06x", (Int(val[5]) | Int(val[6]) << 8 | Int(val[7]) << 16))
             let position = val[8]
             let timeUpType = val[9]
             let timeDownType = val[10]
@@ -4847,10 +5027,17 @@ import Alamofire
     
     func createSendImageFile(image:UIImage) -> Data {
                 
-        let smallImage = image.changeSize(size: .init(width: self.screenSmallWidth, height: self.screenSmallHeight))
+        var smallImage = image.changeSize(size: .init(width: self.screenSmallWidth, height: self.screenSmallHeight))
+        var bigImage = image//.changeSize(size: .init(width: 240, height: 240))
+        
+        if let screenType = self.functionListModel?.functionDetail_screenType {
+            if screenType.supportType == 1 {
+                smallImage = smallImage.changeCircle(fillColor: .black)
+                bigImage = bigImage.changeCircle(fillColor: .black)
+            }
+        }
+        
         let data_80_80:Data = self.createImageBin(image: smallImage)
-
-        let bigImage = image//.changeSize(size: .init(width: 240, height: 240))
         let data_240_240:Data = self.createImageBin(image: bigImage)
         
 //        let bigPath = NSHomeDirectory() + "/Documents/test_big.bin"
@@ -5070,7 +5257,11 @@ import Alamofire
     
     // MARK: - 设置24小时心率监测 0x35
     @objc public func Set24HrMonitor(isOpen:Int,success:@escaping((AntError) -> Void)) {
-        
+        var isOpen = isOpen
+        if isOpen > UInt8.max || isOpen < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isOpen = 0
+        }
         var val:[UInt8] = [
             0x01,
             0x35,
@@ -5090,6 +5281,46 @@ import Alamofire
     }
     
     private func parseSet24HrMonitor(val:[UInt8],success:@escaping((AntError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val[4] == 1 {
+            
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@", state))
+            success(.none)
+            
+        }else{
+            success(.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 设置设备进入或退出拍照模式 0x37
+    @objc public func SetEnterOrExitCamera(isOpen:Int,success:@escaping((AntError) -> Void)) {
+        var isOpen = isOpen
+        if isOpen > UInt8.max || isOpen < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isOpen = 0
+        }
+        var val:[UInt8] = [
+            0x01,
+            0x37,
+            0x05,
+            0x00,
+            UInt8(isOpen)
+            
+        ]
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetEnterOrExitCameraBlock = success
+        }else{
+            success(state)
+        }
+    }
+    
+    private func parseSetEnterOrExitCamera(val:[UInt8],success:@escaping((AntError) -> Void)) {
         let state = String.init(format: "%02x", val[4])
         
         if val[4] == 1 {
@@ -5146,7 +5377,7 @@ import Alamofire
     // MARK: - 设置消息提醒 0x01
     @objc public func SetNotificationRemind(isOpen:String,success:@escaping((AntError) -> Void)) {
         
-        let switchCount = Int(isOpen) ?? 0
+        let switchCount = UInt16(isOpen) ?? 0
         var val:[UInt8] = [
             0x02,
             0x01,
@@ -5901,6 +6132,186 @@ import Alamofire
         self.signalCommandSemaphore()
     }
     
+    // MARK: - 设置常用联系人
+    @objc public func SetAddressBook(modelArray:[AntAddressBookModel],success:@escaping((AntError) -> Void)) {
+        
+        /*
+         bit0           cmd_class
+         bit1           cmd_id
+         bit2~5         所有数据长度(所有联系人数据，不是整个命令的长度)
+         bit6           状态(默认01)
+         bit7           类型(默认0)
+         bit8~9         序号
+         bit10~11       crc16校验(所有联系人数据，不是整个命令的长度)
+         bit12          最后一个包的数据长度(所有联系人数据的最后一包长度。不包括前面4byte的固定部分)
+         bit13~Total_N  联系人数据
+         
+         数据格式(bit13~Total_N)
+         bit0~1         数据总长度
+         bit2~3         联系人数量
+         bit4~Model_N   联系人数据格式
+         
+         单个联系人数据格式(bit4~Model_N)
+         bit0~1         联系人序号
+         bit2           姓名长度N
+         bit3           号码长度M
+         bit4~N         姓名utf8
+         bitN+1~M       号码utf8
+         ...
+         
+         张三 13755660033
+         李四 0755-6128998
+         {length = 47 , bytes = 0x2f 00 02 00 00 00 06 0b e5 bc a0 e4 b8 89 31 33 37 35 35 36 36 30 30 33 33 01 00 06 0c e6 9d 8e e5 9b 9b 30 37 35 35 2d 36 31 32 38 39 39 38}
+         {length = 47 , bytes = 0x2f00(数据总长度) 0200(联系人数量) 0000(联系人序号) 06(姓名长度) 0b(号码长度) e5bca0e4b889(张三) 3133373535363630303333(13755660033) 0100() 06() 0c() e69d8ee59b9b(李四) 303735352d36313238393938(0755-6128998)}
+         
+         */
+        
+        let cmdClass = 0x02
+        let cmdId = 0x13
+        let state = 0x01
+        let type = 0x00
+        
+        //数据格式(bit13~Total_N) bit0~3数据总长度+联系人数量
+        var modelDataArray:[UInt8] = [0,0,0,0]
+        for i in 0..<modelArray.count {
+            let model = modelArray[i]
+            let nameData = model.name.data(using: .utf8) ?? .init()
+            let nameValArray = nameData.withUnsafeBytes { (byte) -> [UInt8] in
+                let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+                return [UInt8](UnsafeBufferPointer.init(start: b, count: nameData.count))
+            }
+            let phoneData = model.phoneNumber.data(using: .utf8) ?? .init()
+            let phoneValArray = phoneData.withUnsafeBytes { (byte) -> [UInt8] in
+                let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+                return [UInt8](UnsafeBufferPointer.init(start: b, count: phoneData.count))
+            }
+            
+            modelDataArray.append(contentsOf: [UInt8(i & 0xff),UInt8((i >> 8) & 0xff),UInt8(nameData.count),UInt8(phoneData.count)])
+            modelDataArray.append(contentsOf: nameValArray)
+            modelDataArray.append(contentsOf: phoneValArray)
+        }
+        
+        let allModelLenght = modelDataArray.count
+        let modelCount = modelArray.count
+        modelDataArray[0] = UInt8((allModelLenght ) & 0xff)
+        modelDataArray[1] = UInt8((allModelLenght >> 8) & 0xff)
+        modelDataArray[2] = UInt8((modelCount ) & 0xff)
+        modelDataArray[4] = UInt8((modelCount >> 8 ) & 0xff)
+        
+        let crc16 = self.CRC16(val: modelDataArray)
+
+        let testData = modelDataArray.withUnsafeBufferPointer { (bytes) -> Data in
+            return Data.init(buffer: bytes)
+        }
+        print("modelDataArray = \(self.convertDataToSpaceHexStr(data: testData,isSend: true))")
+        
+        let indexCount = 1 + (allModelLenght + 8) / 16//应该能接收的所有包序号
+        let lastLength = (allModelLenght - 7) > 0 ? ((allModelLenght - 7) % 16) : allModelLenght
+        
+        if self.peripheral?.state != .connected {
+            
+            success(.disconnected)
+            return
+            
+        }
+        
+        if self.writeCharacteristic == nil || self.peripheral == nil {
+            
+            success(.invalidCharacteristic)
+            return
+        }
+
+        
+        DispatchQueue.global().async {
+
+            self.semaphoreCount -= 1
+            self.commandSemaphore.wait()
+                                
+            DispatchQueue.main.async {
+
+                printLog("发送命令 -> self.semaphoreCount =",self.semaphoreCount)
+                self.receiveSetAddressBookBlock = success
+                
+                var delayCount = 0
+                for i in stride(from: 0, to: indexCount, by: 1) {
+                    var valArray:[UInt8] = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]//Array.init()//(arrayLiteral: 20)
+                    valArray[0] = UInt8(cmdClass)
+                    valArray[1] = UInt8(cmdId)
+                    if i == 0 {
+                        valArray[2] = UInt8((allModelLenght ) & 0xff)
+                        valArray[3] = UInt8((allModelLenght >> 8) & 0xff)
+                        valArray[4] = UInt8((allModelLenght >> 16) & 0xff)
+                        valArray[5] = UInt8((allModelLenght >> 24) & 0xff)
+                        valArray[6] = UInt8(state)
+                        valArray[7] = UInt8(type)
+                        valArray[8] = UInt8((i) & 0xff)
+                        valArray[9] = UInt8((i >> 8) & 0xff)
+                        valArray[10] = UInt8((crc16) & 0xff)
+                        valArray[11] = UInt8((crc16 >> 8) & 0xff)
+                        valArray[12] = UInt8(lastLength)
+
+                        let arr:[UInt8] = Array.init(modelDataArray[0..<7])
+                        valArray.replaceSubrange(valArray.index(0, offsetBy: 13)..<valArray.endIndex, with: arr)
+                        
+                    }else{
+                        
+                        valArray[2] = UInt8(i & 0xff)
+                        valArray[3] = UInt8((i >> 8) & 0xff)
+                        
+                        let startIndex = ((i-1)*16+7)
+                        print("startIndex = \(startIndex)")
+                        if allModelLenght - ((i-1)*16) - 7 >= 16 {
+                            let arr:[UInt8] = Array.init(modelDataArray[startIndex..<(startIndex+16)])
+                            valArray.replaceSubrange(valArray.index(0, offsetBy: 4)..<valArray.endIndex, with: arr)
+                        }else{
+                            print("(allModelLenght - startIndex-1) = \((allModelLenght - startIndex-1))")
+                            let arr:[UInt8] = Array.init(modelDataArray[startIndex..<allModelLenght])
+                            valArray.replaceSubrange(valArray.index(0, offsetBy: 4)..<valArray.endIndex, with: arr)
+                        }
+                    }
+                    
+                    let newData = valArray.withUnsafeBufferPointer { (bytes) -> Data in
+                        return Data.init(buffer: bytes)
+                    }
+                    
+                    let dataString = String.init(format: "%@", self.convertDataToSpaceHexStr(data: newData,isSend: true))
+                    printLog("SetAddressBook send =",dataString)
+                    self.writeData(data: newData)
+                    if delayCount > 5 {
+                        printLog("通讯录延时0.1s")
+                        delayCount = 0
+                        Thread.sleep(forTimeInterval: 0.1)
+                    }else{
+                        delayCount += 1
+                    }
+                }
+
+                //定时器计数重置
+                self.commandDetectionCount = 0
+                if self.commandDetectionTimer == nil {
+                    //检测命令发送之后是否有回复，在deviceReceivedData方法内有数据则把此定时器销毁。如果没有回复，那么5s之后把信号量回复默认值
+                    self.commandDetectionTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.commandDetectionTimerMethod), userInfo: nil, repeats: true)
+                }
+            }
+        }
+    }
+    
+    private func parseSetAddressBook(val:[UInt8],success:@escaping((AntError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        
+        if val[4] == 1 {
+            
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@", state))
+            success(.none)
+            
+        }else{
+            success(.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
     // MARK: - 同步数据 0x03
     // MARK: - 同步健康数据 0x00
     @objc public func SetSyncHealthData(type:String,dayCount:String,success:@escaping((Any?,AntError) -> Void)) {
@@ -6212,7 +6623,6 @@ import Alamofire
                     }
                 }
             }
-            
             var newArray:[[String:String]] = []
             var changeDic:[String:String] = [:]
             for i in 0..<modelArray.count-1 {
@@ -6231,15 +6641,15 @@ import Alamofire
                 let nextType = nextDic["type"]
                 
                 
-                
-                if (currentType == "0" || currentType == "3") && (nextType == "0" || nextType == "3") {
+                //nextType==0的数据在上面一个for里面已经添加过
+                if (currentType == "0" || currentType == "3") && (nextType == "3") {
                     
                     changeDic["end"] = nextDic["end"]
                     changeDic["type"] = "0"
                     let currentTotal = Int(changeDic["total"] ?? "0") ?? 0
                     let nextTotal = Int(nextDic["total"] ?? "0") ?? 0
                     changeDic["total"] = "\(currentTotal + nextTotal)"
-                    
+                    totalAwake += currentTotal + nextTotal
                 }else{
                     newArray.append(changeDic)
                     changeDic = [:]
@@ -6266,8 +6676,8 @@ import Alamofire
             //AntSDKLog.writeStringToSDKLog(string: "睡眠整合数据")
             AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@\n\n\n", modelArray))
             
-            printLog("originalArray =",originalArray)
-            printLog("sleepArray =",sleepArray,sleepArray.count)
+//            printLog("originalArray =",originalArray)
+//            printLog("sleepArray =",sleepArray,sleepArray.count)
             printLog("modelArray =",modelArray)
             printLog("modelArray_filter =",modelArray_filter)
             
@@ -6279,15 +6689,20 @@ import Alamofire
     }
     
     // MARK: - 同步锻炼数据 0x02
-    @objc public func SetSyncExerciseData(type:String,numberCount:String,success:@escaping((AntExerciseModel?,AntError) -> Void)) {
-        
+    @objc public func SetSyncExerciseData(indexCount:Int,success:@escaping((AntExerciseModel?,AntError) -> Void)) {
+        var indexCount = indexCount
+        if indexCount > UInt8.max || indexCount < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            indexCount = 0
+        }
+        let type = 4
         var val:[UInt8] = [
             0x03,
             0x02,
             0x06,
             0x00,
-            (UInt8(type) ?? 0),
-            (UInt8(numberCount) ?? 0)
+            UInt8(type),
+            UInt8(indexCount)
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -6380,6 +6795,7 @@ import Alamofire
          Bit32 挂断电话
          Bit33 接听电话
          Bit34 时间格式
+         Bit35 手环款式
          */
         
         let valData = val.withUnsafeBufferPointer { (v) -> Data in
@@ -6390,7 +6806,7 @@ import Alamofire
         
         let model = AntFunctionListModel.init(val: val)
 
-        success(model,.none)
+            success(model,.none)
         //printLog("第\(#line)行" , "\(#function)")
         self.signalCommandSemaphore()
     }
@@ -6616,7 +7032,7 @@ import Alamofire
 
             success(["type":"\(type)","value1":"\(value1)","value2":"\(value2)"],.none)
             
-        }else{
+        }else if val[4] != 1{
             success(["type":"\(type)","value1":"\(value1)","value2":"\(value2)"],.fail)
         }
     }
@@ -6760,8 +7176,93 @@ import Alamofire
         
     }
     
+    // MARK: - 上报实时数据 0x98
+    @objc public func ReportNewRealtimeData(success:@escaping((AntStepModel?,Int,Int,Int,Int,AntError) -> Void)) {
+        self.receiveReportNewRealtimeDataBlock = success
+//        let val:[UInt8] = [0x80,0x98,0x10,0x00,0x01,0x35,0x00,0x01,0x27,0x00,0x00,0x36,0x01,0x62,0x80,0x4e]//[0x80,0x98,0x13,0x00,0x01,0x3f,0x00,0x01,0x27,0x00,0x00,0x58,0x1b,0x36,0x01,0x41,0x62,0x80,0x4e]
+//        self.parseReportNewRealtimeData(val: val, success: success)
+    }
+    
+    private func parseReportNewRealtimeData(val:[UInt8],success:@escaping((AntStepModel?,Int,Int,Int,Int,AntError) -> Void)) {
+        
+        if val[4] == 1 {
+            
+            let typeCount = (Int(val[5]) | Int(val[6]) << 8)
+            var startIndex = 7
+            
+            var step = 0
+            var distance = 0
+            var calorie = 0
+            var hr = 0
+            var bo = 0
+            var dbp = 0
+            var sbp = 0
+            
+            for i in 0..<16 {
+                let state = (typeCount >> i) & 0x01
+                //string += "\nbit\(i+index*64) = \(state)"
+                
+                switch i {
+                case 0:
+                    if state != 0 {
+                        step = (Int(val[startIndex]) | Int(val[startIndex+1]) << 8 | Int(val[startIndex+2]) << 16 | Int(val[startIndex+3]) << 24)
+                        startIndex += 4
+                    }
+                    break
+                case 1:
+                    if state != 0 {
+                        distance = (Int(val[startIndex]) | Int(val[startIndex+1]) << 8)
+                        startIndex += 2
+                    }
+                    break
+                case 2:
+                    if state != 0 {
+                        calorie = (Int(val[startIndex]) | Int(val[startIndex+1]) << 8)
+                        startIndex += 2
+                    }
+                    break
+                case 3:
+                    if state != 0 {
+                        hr = (Int(val[startIndex]))
+                        startIndex += 1
+                    }
+                    break
+                case 4:
+                    if state != 0 {
+                        bo = (Int(val[startIndex]))
+                        startIndex += 1
+                    }
+                    break
+                case 5:
+                    if state != 0 {
+                        sbp = (Int(val[startIndex]))
+                        dbp = (Int(val[startIndex+1]))
+                        startIndex += 2
+                    }
+                    break
+                default:
+                    break
+                }
+            }
+            
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "实时数据 步数:%d,距离:%d,卡路里:%d,心率:%d,血氧:%d,血压:%d/%d",step,distance,calorie,hr,bo,sbp,dbp))//
+            
+            let model = AntStepModel.init(dic: ["step":"\(step)","distance":"\(distance)","calorie":"\(calorie)"])
+            success(model,hr,bo,sbp,dbp,.none)//
+            
+        }else{
+            success(nil,-1,-1,-1,-1,.invalidState)
+        }
+        
+    }
+     
     // MARK: - ota升级
     @objc public func setOtaStartUpgrade(type:Int,localFile:Any,isContinue:Bool,progress:@escaping((Float) -> Void),success:@escaping((AntError) -> Void)) {
+        var type = type
+        if type > UInt8.max || type < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            type = 0
+        }
         //所有ota相关的命令不用信号量等待机制   直接用writeData方法发送
         if isContinue {
             self.setStartUpgrade(type: type, localFile: localFile, maxCount: 20,isContinue: true, progress: progress, success: success)
@@ -6812,6 +7313,16 @@ import Alamofire
     
     // MARK: - 分包信息交互(APP) 0x00
     @objc public func SetSubpackageInformationInteraction(maxSend:Int,maxReceive:Int,success:@escaping(([String:Any],AntError) -> Void)) {
+        var maxSend = maxSend
+        if maxSend > UInt16.max || maxSend < UInt16.min {
+            print("输入参数超过范围,改为默认值0")
+            maxSend = 0
+        }
+        var maxReceive = maxReceive
+        if maxReceive > UInt16.max || maxReceive < UInt16.min {
+            print("输入参数超过范围,改为默认值0")
+            maxReceive = 0
+        }
         var val:[UInt8] = [
             0x05,
             0x00,
@@ -6851,6 +7362,21 @@ import Alamofire
     
     // MARK: - 分包信息交互(APP) 0x01
     @objc public func replySubpackageInformationInteraction(state:Int,maxSend:Int,maxReceive:Int,success:@escaping((AntError) -> Void)) {
+        var state = state
+        if state > UInt8.max || state < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            state = 0
+        }
+        var maxSend = maxSend
+        if maxSend > UInt16.max || maxSend < UInt16.min {
+            print("输入参数超过范围,改为默认值0")
+            maxSend = 0
+        }
+        var maxReceive = maxReceive
+        if maxReceive > UInt16.max || maxReceive < UInt16.min {
+            print("输入参数超过范围,改为默认值0")
+            maxReceive = 0
+        }
         var val:[UInt8] = [
             0x05,
             0x81,
@@ -6887,7 +7413,16 @@ import Alamofire
     
     // MARK: - 开始升级
     @objc public func setStartUpgrade(type:Int,localFile:Any,maxCount:Int,isContinue:Bool,progress:@escaping((Float) -> Void),success:@escaping((AntError) -> Void)) {
-        
+        var type = type
+        if type > UInt8.max || type < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            type = 0
+        }
+        var maxCount = maxCount
+        if maxCount > UInt16.max || maxCount < UInt16.min {
+            print("输入参数超过范围,改为默认值0")
+            maxCount = 0
+        }
         var fileData:Data?
         if localFile is String {
             let file:String = localFile as! String
@@ -7211,10 +7746,10 @@ import Alamofire
         printLog("getServerOtaDeviceInfo 调用成功")
         
         self.isRequesting = true
-        
-        self.GetDeviceOtaVersionInfo { versionSuccess, error in
+        //此处如果在等待的时候把设备断开连接或者是解绑，命令不会再进入回调，而isRequesting是true下次请求永远都不会往下调用。断开连接之后把isRequesting置位false
+        self.privateGetOtaVersionInfo { versionSuccess, error in
             if error == .none {
-                printLog("GetDeviceOtaVersionInfo ->",versionSuccess)
+                printLog("GetDeviceOtaVersionInfo ->\(versionSuccess)")
                 
                 let product = versionSuccess["product"] as! String
                 let project = versionSuccess["project"] as! String
@@ -7225,10 +7760,11 @@ import Alamofire
                 self.GetMac { macSuccess, error in
                     if error == .none {
                         if let string = macSuccess {
+                            printLog("macSuccess =\(string)")
                             let url = AntNetworkManager.shareInstance.basicUrl+"/api/ota/getNewVersionByAddress?"+String.init(format: "productId=%@&projectId=%@&firmwareId=%@&imageId=%@&fontId=%@&address=%@",product,project,firmware,library,font,string)
                             AntNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
                                 self.isRequesting = false
-                                printLog("info =",info)
+                                printLog("getNewVersionByAddress info =",info)
                                 success(info,.none)
                             } fail: { error in
                                 self.isRequesting = false
@@ -7260,7 +7796,7 @@ import Alamofire
         
         let group = DispatchGroup()
         group.enter()
-        self.GetDeviceOtaVersionInfo { versionSuccess, error in
+        self.privateGetOtaVersionInfo { versionSuccess, error in
             if error == .none {
                 printLog("GetDeviceOtaVersionInfo ->",versionSuccess)
                 
@@ -7321,7 +7857,7 @@ import Alamofire
         self.getServerOtaDeviceInfo { dic, error in
             //printLog("dic =",dic,"error =",dic)
             if error == .none {
-                //["data": Optional([["version": Optional(0.2), "url": Optional(http://oss.antjuyi.com/ota/firmware/P22pro_v0.2.bin), "type": Optional(1)], ["type": Optional(2), "url": Optional(http://oss.antjuyi.com/ota/image/P22pro_v0.2.bin), "version": Optional(0.2)], ["version": Optional(0.2), "url": Optional(http://oss.antjuyi.com/ota/font/P22pro_v0.2.bin), "type": Optional(3)]]), "message": Optional(当前有新版本), "code": Optional(200)]
+                //["data": Optional([["version": Optional(0.2), "urlx080": Optional(http://oss.antjuyi.com/ota/firmware/P22pro_v0.2.bin), "type": Optional(1)], ["type": Optional(2), "url": Optional(http://oss.antjuyi.com/ota/image/P22pro_v0.2.bin), "version": Optional(0.2)], ["version": Optional(0.2), "url": Optional(http://oss.antjuyi.com/ota/font/P22pro_v0.2.bin), "type": Optional(3)]]), "message": Optional(当前有新版本), "code": Optional(200)]
                 
                 if let code = dic["code"] as? Int {
                     if code == 200 {
@@ -7371,7 +7907,7 @@ import Alamofire
                                 }
                                 
                                 /*
-                                self.GetDeviceOtaVersionInfo { versionSuccess, error in
+                                self.privateGetOtaVersionInfo { versionSuccess, error in
                                     if error == .none {
 
                                         let firmware = versionSuccess["firmware"] as! String
@@ -7616,146 +8152,307 @@ import Alamofire
         }
     }
     
+    // MARK: - 获取服务器本地表盘文件
+    @objc public func getLocalDialImageServerInfo(success:@escaping(([Dictionary<String,Any>]?,AntError)->Void)) {
+        self.privateGetOtaVersionInfo { versionSuccess, error in
+            if error == .none {
+                printLog("GetDeviceOtaVersionInfo ->\(versionSuccess)")
+                
+                let product = versionSuccess["product"] as! String
+                let project = versionSuccess["project"] as! String
+
+                let url = AntNetworkManager.shareInstance.basicUrl+String.init(format: "/api/online/getCover?productId=%@&projectId=%@", product,project)
+                /*
+                 {
+                     "code": 200,
+                     "message": "获取本地表盘信息成功",
+                     "data": [
+                         {
+                             "url": "http://oss.antjuyi.com/online/local/240x240/p0xp0/1.png",
+                             "width": 240,
+                             "height": 240,
+                             "type": 0
+                         },
+                         {
+                             "url": "http://oss.antjuyi.com/online/local/240x240/p0xp0/2.png",
+                             "width": 240,
+                             "height": 240,
+                             "type": 0
+                         },
+                         {
+                             "url": "http://oss.antjuyi.com/online/local/240x240/p0xp0/3.png",
+                             "width": 240,
+                             "height": 240,
+                             "type": 0
+                         }
+                     ]
+                 }
+                 */
+                
+                AntNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
+                                
+                    let dic = info
+                    if let code = dic["code"] as? Int {
+                        if code == 200 {
+                            
+                            if let dataDic:[Dictionary<String,Any>] = dic["data"] as? [Dictionary<String,Any>] {
+                                success(dataDic,.none)
+                            }else{
+                                printLog("data错误 ->",dic["data"] as Any)
+                                success(nil,.fail)
+                            }
+                            
+                        }else{
+                            printLog("code != 200",dic["code"] as Any)
+                            success(nil,.fail)
+                        }
+                    }else{
+                        printLog("code错误 ->",dic["code"] as Any)
+                        success(nil,.fail)
+                    }
+
+                } fail: { error in
+                    printLog("error =",error as Any)
+                    success(nil,.fail)
+                }
+                
+            }else{
+                
+                success(nil,.fail)
+            }
+        }
+    }
+    
+    // MARK: - 获取服务器自定义表盘图片
+    @objc public func getCustomDialImageServerInfo(success:@escaping(([String:Any]?,AntError)->Void)) {
+        self.privateGetOtaVersionInfo { versionSuccess, error in
+            if error == .none {
+                printLog("GetDeviceOtaVersionInfo ->\(versionSuccess)")
+                
+                let product = versionSuccess["product"] as! String
+                let project = versionSuccess["project"] as! String
+
+                let url = AntNetworkManager.shareInstance.basicUrl+String.init(format: "/api/online/getCustom?productId=%@&projectId=%@", product,project)
+                /*
+                 {
+                     "code": 200,
+                     "message": "获取数据成功",
+                     "data": {
+                         "custom": {
+                             "backGroundImage": "http://oss.antjuyi.com/online/custom/240x240/P22_Pro_en/background.png",
+                             "timeImage": "http://oss.antjuyi.com/online/custom/240x240/P22_Pro_en/time.png",
+                             "dateImage": "http://oss.antjuyi.com/online/custom/240x240/P22_Pro_en/date.png",
+                             "stepImage": "http://oss.antjuyi.com/online/custom/240x240/P22_Pro_en/step.png",
+                             "sleepImage": "http://oss.antjuyi.com/online/custom/240x240/P22_Pro_en/sleep.png",
+                             "hrImage": "http://oss.antjuyi.com/online/custom/240x240/P22_Pro_en/hr.png"
+                         }
+                     }
+                 }
+                 */
+                
+                AntNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
+                                
+                    let dic = info
+                    if let code = dic["code"] as? Int {
+                        if code == 200 {
+                            
+                            if let dataDic:[String:Any] = dic["data"] as? [String:Any] {
+                                success(dataDic,.none)
+                            }else{
+                                printLog("data错误 ->",dic["data"] as Any)
+                                success(nil,.fail)
+                            }
+                            
+                        }else{
+                            printLog("code != 200",dic["code"] as Any)
+                            success(nil,.fail)
+                        }
+                    }else{
+                        printLog("code错误 ->",dic["code"] as Any)
+                        success(nil,.fail)
+                    }
+
+                } fail: { error in
+                    printLog("error =",error as Any)
+                    success(nil,.fail)
+                }
+                
+            }else{
+                
+                success(nil,.fail)
+            }
+        }
+    }
+    
     // MARK: - 获取在线表盘  旧接口，获取全部
     @objc public func getOnlineDialList(success:@escaping(([AntOnlineDialModel],AntError) -> Void)) {
-        let url = AntNetworkManager.shareInstance.basicUrl+"/api/online/get?"+String.init(format: "productId=%@&projectId=%@","0","0")
-        /*
-         {
-             "code": 200,
-             "message": "获取数据成功",
-             "data": {
-                 "list": [
-                     {
-                         "id": 1,
-                         "imageUrl": "http://oss.antjuyi.com/online/240x240/image/v0.1_dial_1.png",
-                         "binUrl": "http://oss.antjuyi.com/online/240x240/bin/v0.1_dial_1.bin",
-                         "name": "春风得意",
-                         "downloadCount": 1000,
-                         "createAt": "2022-01-17T03:21:24.000+0000",
-                         "updateAt": "2022-01-17T03:21:27.000+0000"
+        self.privateGetOtaVersionInfo { versionSuccess, error in
+            if error == .none {
+                printLog("GetDeviceOtaVersionInfo ->\(versionSuccess)")
+                
+                let product = versionSuccess["product"] as! String
+                let project = versionSuccess["project"] as! String
+
+                let url = AntNetworkManager.shareInstance.basicUrl+"/api/online/get?"+String.init(format: "productId=%@&projectId=%@",product,project)
+                /*
+                 {
+                     "code": 200,
+                     "message": "获取数据成功",
+                     "data": {
+                         "list": [
+                             {
+                                 "id": 1,
+                                 "imageUrl": "http://oss.antjuyi.com/online/240x240/image/v0.1_dial_1.png",
+                                 "binUrl": "http://oss.antjuyi.com/online/240x240/bin/v0.1_dial_1.bin",
+                                 "name": "春风得意",
+                                 "downloadCount": 1000,
+                                 "createAt": "2022-01-17T03:21:24.000+0000",
+                                 "updateAt": "2022-01-17T03:21:27.000+0000"
+                             }
+                         ]
                      }
-                 ]
-             }
-         }
-         */
-        AntNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
-                        
-            let dic = info
-            if let code = dic["code"] as? Int {
-                if code == 200 {
-                    
-                    if let dataDic = dic["data"] as? Dictionary<String,Any> {
-                        
-                        var dialArray:[AntOnlineDialModel] = Array.init()
-                        
-                        if let listArray = dataDic["list"] as? Array<Dictionary<String,Any>> {
-                            for item in listArray {
-                                let dialModel = AntOnlineDialModel.init()
-                                if let id = item["id"] as? Int {
-                                    dialModel.dialId = id
+                 }
+                 */
+                
+                AntNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
+                                
+                    let dic = info
+                    if let code = dic["code"] as? Int {
+                        if code == 200 {
+                            
+                            if let dataDic = dic["data"] as? Dictionary<String,Any> {
+                                
+                                var dialArray:[AntOnlineDialModel] = Array.init()
+                                
+                                if let listArray = dataDic["list"] as? Array<Dictionary<String,Any>> {
+                                    for item in listArray {
+                                        let dialModel = AntOnlineDialModel.init()
+                                        if let id = item["id"] as? Int {
+                                            dialModel.dialId = id
+                                        }
+                                        if let imageUrl = item["imageUrl"] as? String {
+                                            dialModel.dialImageUrl = imageUrl
+                                        }
+                                        if let binUrl = item["binUrl"] as? String {
+                                            dialModel.dialFileUrl = binUrl
+                                        }
+                                        if let name = item["name"] as? String {
+                                            dialModel.dialName = name
+                                        }
+                                        dialArray.append(dialModel)
+                                    }
                                 }
-                                if let imageUrl = item["imageUrl"] as? String {
-                                    dialModel.dialImageUrl = imageUrl
-                                }
-                                if let binUrl = item["binUrl"] as? String {
-                                    dialModel.dialFileUrl = binUrl
-                                }
-                                if let name = item["name"] as? String {
-                                    dialModel.dialName = name
-                                }
-                                dialArray.append(dialModel)
+                                success(dialArray,.none)
+                            }else{
+                                printLog("data错误 ->",dic["data"] as Any)
+                                success([],.fail)
                             }
+                            
+                        }else{
+                            printLog("code != 200",dic["code"] as Any)
+                            success([],.fail)
                         }
-                        success(dialArray,.none)
                     }else{
-                        printLog("data错误 ->",dic["data"] as Any)
+                        printLog("code错误 ->",dic["code"] as Any)
                         success([],.fail)
                     }
-                    
-                }else{
-                    printLog("code != 200",dic["code"] as Any)
+
+                } fail: { error in
+                    printLog("error =",error as Any)
                     success([],.fail)
                 }
+                
             }else{
-                printLog("code错误 ->",dic["code"] as Any)
+                
                 success([],.fail)
             }
-
-        } fail: { error in
-            printLog("error =",error as Any)
-            success([],.fail)
         }
     }
     // MARK: - 获取在线表盘 新接口，分页获取
     @objc public func getOnlineDialList(pageIndex:Int,pageSize:Int,success:@escaping(([AntOnlineDialModel],AntError) -> Void)) {
-    //http://www.antjuyi.com/api/online/getNew?productId=0&projectId=0&pageIndex=1&pageSize=5
-        let url = AntNetworkManager.shareInstance.basicUrl+"/api/online/getNew?"+String.init(format: "productId=%@&projectId=%@&pageIndex=%d&pageSize=%d","0","0",pageIndex,pageSize)
-        /*
-         {
-             "code": 200,
-             "message": "获取数据成功",
-             "data": {
-                 "list": [
-                     {
-                         "id": 1,
-                         "imageUrl": "http://oss.antjuyi.com/online/240x240/image/v0.1_dial_1.png",
-                         "binUrl": "http://oss.antjuyi.com/online/240x240/bin/v0.1_dial_1.bin",
-                         "name": "春风得意",
-                         "downloadCount": 1000,
-                         "createAt": "2022-01-17T03:21:24.000+0000",
-                         "updateAt": "2022-01-17T03:21:27.000+0000"
+        
+        self.privateGetOtaVersionInfo { versionSuccess, error in
+            if error == .none {
+                printLog("GetDeviceOtaVersionInfo ->\(versionSuccess)")
+                
+                let product = versionSuccess["product"] as! String
+                let project = versionSuccess["project"] as! String
+                
+                //http://www.antjuyi.com/api/online/getNew?productId=0&projectId=0&pageIndex=1&pageSize=5
+                let url = AntNetworkManager.shareInstance.basicUrl+"/api/online/getNew?"+String.init(format: "productId=%@&projectId=%@&pageIndex=%d&pageSize=%d",product,project,pageIndex,pageSize)
+
+                /*
+                 {
+                     "code": 200,
+                     "message": "获取数据成功",
+                     "data": {
+                         "list": [
+                             {
+                                 "id": 1,
+                                 "imageUrl": "http://oss.antjuyi.com/online/240x240/image/v0.1_dial_1.png",
+                                 "binUrl": "http://oss.antjuyi.com/online/240x240/bin/v0.1_dial_1.bin",
+                                 "name": "春风得意",
+                                 "downloadCount": 1000,
+                                 "createAt": "2022-01-17T03:21:24.000+0000",
+                                 "updateAt": "2022-01-17T03:21:27.000+0000"
+                             }
+                         ]
                      }
-                 ]
-             }
-         }
-         */
-        AntNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
-                        
-            let dic = info
-            if let code = dic["code"] as? Int {
-                if code == 200 {
-                    
-                    if let dataDic = dic["data"] as? Dictionary<String,Any> {
-                        
-                        var dialArray:[AntOnlineDialModel] = Array.init()
-                        
-                        if let listArray = dataDic["list"] as? Array<Dictionary<String,Any>> {
-                            for item in listArray {
-                                let dialModel = AntOnlineDialModel.init()
-                                if let id = item["id"] as? Int {
-                                    dialModel.dialId = id
+                 }
+                 */
+                AntNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
+                                
+                    let dic = info
+                    if let code = dic["code"] as? Int {
+                        if code == 200 {
+                            
+                            if let dataDic = dic["data"] as? Dictionary<String,Any> {
+                                
+                                var dialArray:[AntOnlineDialModel] = Array.init()
+                                
+                                if let listArray = dataDic["list"] as? Array<Dictionary<String,Any>> {
+                                    for item in listArray {
+                                        let dialModel = AntOnlineDialModel.init()
+                                        if let id = item["id"] as? Int {
+                                            dialModel.dialId = id
+                                        }
+                                        if let imageUrl = item["imageUrl"] as? String {
+                                            dialModel.dialImageUrl = imageUrl
+                                        }
+                                        if let binUrl = item["binUrl"] as? String {
+                                            dialModel.dialFileUrl = binUrl
+                                        }
+                                        if let name = item["name"] as? String {
+                                            dialModel.dialName = name
+                                        }
+                                        dialArray.append(dialModel)
+                                    }
                                 }
-                                if let imageUrl = item["imageUrl"] as? String {
-                                    dialModel.dialImageUrl = imageUrl
-                                }
-                                if let binUrl = item["binUrl"] as? String {
-                                    dialModel.dialFileUrl = binUrl
-                                }
-                                if let name = item["name"] as? String {
-                                    dialModel.dialName = name
-                                }
-                                dialArray.append(dialModel)
+                                success(dialArray,.none)
+                            }else{
+                                printLog("data错误 ->",dic["data"] as Any)
+                                success([],.fail)
                             }
+                            
+                        }else{
+                            printLog("code != 200",dic["code"] as Any)
+                            success([],.fail)
                         }
-                        success(dialArray,.none)
                     }else{
-                        printLog("data错误 ->",dic["data"] as Any)
+                        printLog("code错误 ->",dic["code"] as Any)
                         success([],.fail)
                     }
-                    
-                }else{
-                    printLog("code != 200",dic["code"] as Any)
+
+                } fail: { error in
+                    printLog("error =",error as Any)
                     success([],.fail)
                 }
             }else{
-                printLog("code错误 ->",dic["code"] as Any)
                 success([],.fail)
             }
-
-        } fail: { error in
-            printLog("error =",error as Any)
-            success([],.fail)
         }
+        
+        
     }
     
     // MARK: - 同步在线表盘
@@ -7876,7 +8573,7 @@ import Alamofire
         }
     }
     
-    @objc /*public*/ func testMultiplePackages(cmdClass:Int,cmdId:Int,totalLength:Int,subpackageLength:Int) {
+    @objc public func testMultiplePackages(cmdClass:Int,cmdId:Int,totalLength:Int,subpackageLength:Int) {
         
         var valArray:[UInt8] = []
         let count = totalLength
@@ -7961,7 +8658,7 @@ import Alamofire
         
     }
     
-    @objc /*public*/ func testUtf8StringData(cmdClass: Int, cmdId: Int,type:String, sendString:String) {
+    @objc public func testUtf8StringData(cmdClass: Int, cmdId: Int,type:String, sendString:String) {
         
         for scalar in sendString.unicodeScalars {
             printLog(String.init(scalar.value, radix: 16, uppercase: false))
@@ -7991,8 +8688,8 @@ import Alamofire
                 valArray[7] = UInt8(type) ?? 1
                 valArray[8] = UInt8((i) & 0xff)
                 valArray[9] = UInt8((i >> 8) & 0xff)
-                valArray[10] = 1
-                valArray[11] = 1
+                valArray[10] = UInt8((CRC16(data: data) & 0xff) & 0xff)
+                valArray[11] = UInt8(CRC16(data: data) >> 8 )
                 valArray[12] = UInt8(lastLength)
                 let vArray = data.withUnsafeBytes { (byte) -> [UInt8] in
                     let b = (byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4))!
@@ -8032,7 +8729,7 @@ import Alamofire
     }
     
     
-    @objc /*public*/ func testUnicodeStringData(cmdClass: Int, cmdId: Int, type:String, sendString:String) {
+    @objc public func testUnicodeStringData(cmdClass: Int, cmdId: Int, type:String, sendString:String) {
         var value:[UInt8] = Array.init()
         for scalar in sendString.unicodeScalars {
             let str = String.init(scalar.value, radix: 16, uppercase: false)
