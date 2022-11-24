@@ -39,10 +39,12 @@ import Alamofire
     private var screenSmallHeight = 0
     
     private var otaVersionInfo:[String:Any]?
+    private var macString:String?
     
     var receiveGetDeviceNameBlock:((String?,AntError) -> Void)?
     var receiveGetFirmwareVersionBlock:((String?,AntError) -> Void)?
     var receiveGetMacBlock:((String?,AntError) -> Void)?
+    var receivePrivateGetMacBlock:((String?,AntError) -> Void)?
     var receiveGetBatteryBlock:((String?,AntError) -> Void)?
     var receiveSetTimeBlock:((AntError) -> Void)?
     var receiveGetDeviceSupportListBlock:((AntFunctionListModel?,AntError) -> Void)?
@@ -79,7 +81,7 @@ import Alamofire
     var receiveSetWearingWayBlock:((AntError) -> Void)?
     var receiveSetSingleMeasurementBlock:((AntError) -> Void)?
     var receiveSetExerciseModeBlock:((AntError) -> Void)?
-    var receiveGetExerciseModeBlock:((Int,AntError) -> Void)?
+    var receiveGetExerciseModeBlock:((AntExerciseType,AntExerciseState,AntError) -> Void)?
     var receiveSetDeviceModeBlock:((AntError) -> Void)?
     var receiveSetPhoneModeBlock:((AntError) -> Void)?
     var receiveGetWeatherUnitBlock:((Int,AntError) -> Void)?
@@ -92,7 +94,8 @@ import Alamofire
     var receiveGet24HrMonitorBlock:((Int,AntError) -> Void)?
     var receiveSet24HrMonitorBlock:((AntError) -> Void)?
     var receiveSetEnterOrExitCameraBlock:((AntError) -> Void)?
-    
+    var receiveSetDeviceUUIDBlock:((AntError) -> Void)?
+
     var receiveGetNotificationRemindBlock:(([Int],AntError) -> Void)?
     var receiveSetNotificationRemindBlock:((AntError) -> Void)?
     var receiveGetSedentaryBlock:((AntSedentaryModel?,AntError) -> Void)?
@@ -107,9 +110,11 @@ import Alamofire
     var receiveSetMenstrualCycleBlock:((AntError) -> Void)?
     var receiveGetWashHandBlock:(([String:Any],AntError) -> Void)?
     var receiveSetWashHandBlock:((AntError) -> Void)?
-    var receiveGetDrinkWaterBlock:(([String:Any],AntError) -> Void)?
+    var receiveGetDrinkWaterBlock:((AntDrinkWaterModel?,AntError) -> Void)?
     var receiveSetDrinkWaterBlock:((AntError) -> Void)?
     var receiveSetAddressBookBlock:((AntError) -> Void)?
+    var receiveGetLowBatteryRemindBlock:((AntLowBatteryModel?,AntError) -> Void)?
+    var receiveSetLowBatteryRemindBlock:((AntError) -> Void)?
         //    var receiveSetSyncHealthDataBlock:(day:String,type:String,success:(([String:Any],AntError) -> Void))?
     var receiveSetSyncStepDataBlock:(day:String,type:String,success:((Any?,AntError) -> Void))?
     var receiveSetSyncSleepDataBlock:(day:String,type:String,success:((Any?,AntError) -> Void))?
@@ -122,7 +127,7 @@ import Alamofire
     var receiveReportRealTiemStepBlock:((AntStepModel?,AntError) -> Void)?
     var receiveReportRealTiemHrBlock:(([String:Any],AntError) -> Void)?
     var receiveReportSingleMeasurementResultBlock:(([String:Any],AntError) -> Void)?
-    var receiveReportSingleExerciseEndBlock:((AntError) -> Void)?
+    var receiveReportExerciseStateBlock:((AntExerciseState,AntError) -> Void)?
     var receiveReportFindPhoneBlock:((AntError) -> Void)?
     var receiveReportEndFindPhoneBlock:((AntError) -> Void)?
     var receiveReportTakePicturesBlock:((AntError) -> Void)?
@@ -994,7 +999,7 @@ import Alamofire
                         
                     }else{
                         if let block = self.receiveGetExerciseModeBlock {
-                            block(-1,.invalidLength)
+                            block(.runOutside,.unknow,.invalidLength)
                         }
                         //printLog("第\(#line)行" , "\(#function)")
                         self.signalCommandSemaphore()
@@ -1241,6 +1246,23 @@ import Alamofire
                     }
                 }
                 
+                //设置UUID
+                if val[0] == 0x01 && val[1] == 0xb9 {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveSetDeviceUUIDBlock {
+                            self.parseSetDeviceUUID(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveSetDeviceUUIDBlock {
+                            block(.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetDeviceUUID长度校验出错"))
+                    }
+                }
                                 
                 //获取消息提醒
                 if val[0] == 0x02 && val[1] == 0x80 {
@@ -1518,7 +1540,7 @@ import Alamofire
                         
                     }else{
                         if let block = self.receiveGetDrinkWaterBlock {
-                            block([:],.invalidLength)
+                            block(nil,.invalidLength)
                         }
                         //printLog("第\(#line)行" , "\(#function)")
                         self.signalCommandSemaphore()
@@ -1563,6 +1585,43 @@ import Alamofire
                         AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetAddress长度校验出错"))
                     }
                     
+                }
+                
+                //获取低电提醒
+                if val[0] == 0x02 && val[1] == 0x94 {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveGetLowBatteryRemindBlock {
+                            self.parseGetLowBatteryRemind(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveGetLowBatteryRemindBlock {
+                            block(nil,.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetLowBatteryRemind长度校验出错"))
+                    }
+                    
+                }
+                
+                //设置低电提醒
+                if val[0] == 0x02 && val[1] == 0x95 {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveSetLowBatteryRemindBlock {
+                            self.parseSetLowBatteryRemind(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveSetLowBatteryRemindBlock {
+                            block(.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetLowBatteryRemind长度校验出错"))
+                    }
                 }
                 
                 //同步健康数据 0x00
@@ -2166,13 +2225,13 @@ import Alamofire
                 if val[0] == 0x80 && val[1] == 0x86 {
                     if self.checkLength(val: [UInt8](val)) {
                         
-                        if let block = self.receiveReportSingleExerciseEndBlock {
-                            self.parseReportSingleExerciseEndData(val: val, success: block)
+                        if let block = self.receiveReportExerciseStateBlock {
+                            self.parseReportExerciseStateData(val: val, success: block)
                         }
                         
                     }else{
-                        if let block = self.receiveReportSingleExerciseEndBlock {
-                            block(.invalidLength)
+                        if let block = self.receiveReportExerciseStateBlock {
+                            block(.unknow,.invalidLength)
                         }
                         
                         AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "长度校验出错"))
@@ -2574,6 +2633,11 @@ import Alamofire
         }
     }
     
+    @objc public func checkCurrentCommamdIsNeedWait() -> Bool {
+        printLog("self.semaphoreCount =",self.semaphoreCount)
+        return self.semaphoreCount >= 0 ? false : true
+    }
+    
     func writeDataAndBackError(data:Data) -> AntError {
         
         if self.peripheral?.state != .connected {
@@ -2809,7 +2873,7 @@ import Alamofire
         }
         
         if let block = self.receiveGetExerciseModeBlock {
-            block(-1,.disconnected)
+            block(.runOutside,.unknow,.disconnected)
             self.receiveGetExerciseModeBlock = nil
         }
         
@@ -2939,7 +3003,7 @@ import Alamofire
         }
         
         if let block = self.receiveGetDrinkWaterBlock {
-            block([:],.disconnected)
+            block(nil,.disconnected)
             self.receiveGetDrinkWaterBlock = nil
         }
         
@@ -3083,6 +3147,7 @@ import Alamofire
     // MARK: - 检测命令信号量重置
     func resetCommandSemaphore() {
         self.otaVersionInfo = nil
+        self.macString = nil
         self.receiveGetDeviceOtaVersionInfo = nil
         //目前SDK内部重置会在重连、断开连接、关闭蓝牙三个地方调用
         let resetCount = 1-self.semaphoreCount
@@ -3216,6 +3281,23 @@ import Alamofire
         
     }
     
+    private func privateGetMac(_ success:@escaping((String?,AntError)->Void)) {
+        printLog("privateGetMac")
+        if let macString = self.macString {
+            printLog("self.macString 有值")
+            success(macString,.none)
+        }else{
+            print("self.macString = nil")
+            if self.receiveGetMacBlock != nil {
+                printLog("receiveGetMacBlock != nil")
+                self.receivePrivateGetMacBlock = success
+            }else{
+                printLog("receiveGetMacBlock == nil")
+                self.getMac(success)
+            }
+        }
+    }
+    
     private func parseGetMac(val:[UInt8],success:@escaping((String?,AntError) -> Void)) {
         let state = String.init(format: "%02x", val[4])
         if val[4] == 1 {
@@ -3224,6 +3306,11 @@ import Alamofire
             
             AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
             success(string,.none)
+            self.macString = string
+            if let block = self.receivePrivateGetMacBlock {
+                block(string,.none)
+                self.receivePrivateGetMacBlock = nil
+            }
             
         }else{
             success(nil,.invalidState)
@@ -4476,7 +4563,7 @@ import Alamofire
     }
     
     // MARK: - 获取锻炼模式 0x1e
-    @objc public func getExerciseMode(_ success:@escaping((Int,AntError) -> Void)) {
+    @objc public func getExerciseMode(_ success:@escaping((AntExerciseType,AntExerciseState,AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x01,
@@ -4490,36 +4577,50 @@ import Alamofire
         if state == .none {
             self.receiveGetExerciseModeBlock = success
         }else{
-            success(-1,state)
+            success(.runOutside,.unknow,state)
         }
         
     }
     
-    private func parseGetExerciseMode(val:[UInt8],success:@escaping((Int,AntError) -> Void)) {
+    private func parseGetExerciseMode(val:[UInt8],success:@escaping((AntExerciseType,AntExerciseState,AntError) -> Void)) {
         let state = String.init(format: "%02x", val[4])
         
         if val[4] == 1 {
             
             let type = val[5]
             let string = String.init(format: "%d",type)
-            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
-            success(Int(type),.none)
+            if val.count >= 7 {
+                let exerciseString = String.init(format: "%d",val[6])
+                AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@,锻炼状态:%@", state,string,exerciseString))
+            }else{
+                AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
+            }
             
+            if let exerciseType = AntExerciseType.init(rawValue: Int(type)) {
+                if val.count >= 7 {
+                    let exerciseState = AntExerciseState.init(rawValue: Int(val[6])) ?? .unknow
+                    success(exerciseType,exerciseState,.none)
+                }else{
+                    success(exerciseType,.unknow,.none)
+                }
+            }else{
+                success(.runOutside,.unknow,.notSupport)
+            }
         }else{
-            success(-1,.invalidState)
+            success(.runOutside,.unknow,.invalidState)
         }
         //printLog("第\(#line)行" , "\(#function)")
         self.signalCommandSemaphore()
     }
     
     // MARK: - 设置锻炼模式 0x1f
-    @objc public func setExerciseMode(type:Int,isOpen:Int,success:@escaping((AntError) -> Void)) {
-        var type = type
+    @objc public func setExerciseMode(type:AntExerciseType,isOpen:AntExerciseState,success:@escaping((AntError) -> Void)) {
+        var type = type.rawValue
         if type > UInt8.max || type < UInt8.min {
             print("输入参数超过范围,改为默认值0")
             type = 0
         }
-        var isOpen = isOpen
+        var isOpen = isOpen.rawValue
         if isOpen > UInt8.max || isOpen < UInt8.min {
             print("输入参数超过范围,改为默认值0")
             isOpen = 0
@@ -4619,15 +4720,6 @@ import Alamofire
             UInt8(type),
         ]
 
-//        if let mac = mac {
-//            for i in stride(from: 0, to: mac.count/2, by: 1) {
-//                let indexCount = i*2
-//                let string = "0x" + mac.dropFirst(indexCount).dropLast(mac.count-indexCount-2)
-//                let value = UInt8(string) ?? 0
-//                val.append(value)
-//            }
-//            val[2] = UInt8(val.count)
-//        }
         let data = Data.init(bytes: &val, count: val.count)
         //self.receiveSetPhoneModeBlock = success
         
@@ -5321,6 +5413,55 @@ import Alamofire
     }
     
     private func parseSetEnterOrExitCamera(val:[UInt8],success:@escaping((AntError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val[4] == 1 {
+            
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@", state))
+            success(.none)
+            
+        }else{
+            success(.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 设置设备UUID 0x39
+    @objc public func setDeviceUUID(uuidString:String? = nil,success:@escaping((AntError) -> Void)) {
+        
+        var val:[UInt8] = [
+            0x01,
+            0x39,
+            0x14,
+            0x00,
+        ]
+        
+        var uuidStr = ""
+        if let mac = uuidString {
+            uuidStr = mac
+        }else{
+            uuidStr = self.peripheral?.identifier.uuidString.replacingOccurrences(of: "-", with: "") ?? ""
+        }
+        for i in stride(from: 0, to: uuidStr.count/2, by: 1) {
+            let indexCount = i*2
+            let string = "" + uuidStr.dropFirst(indexCount).dropLast(uuidStr.count-indexCount-2)
+            let value = self.hexStringToInt(from: string)
+            val.append(UInt8(value))
+        }
+        val[2] = UInt8(val.count)
+        
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetDeviceUUIDBlock = success
+        }else{
+            success(state)
+        }
+    }
+    
+    private func parseSetDeviceUUID(val:[UInt8],success:@escaping((AntError) -> Void)) {
         let state = String.init(format: "%02x", val[4])
         
         if val[4] == 1 {
@@ -6049,7 +6190,7 @@ import Alamofire
     }
     
     // MARK: - 获取喝水提醒 0x0e
-    @objc public func getDrinkWater(_ success:@escaping(([String:Any],AntError) -> Void)) {
+    @objc public func getDrinkWater(_ success:@escaping((AntDrinkWaterModel?,AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
@@ -6063,11 +6204,11 @@ import Alamofire
         if state == .none {
             self.receiveGetDrinkWaterBlock = success
         }else{
-            success([:],state)
+            success(nil,state)
         }
     }
     
-    private func parseGetDrinkWater(val:[UInt8],success:@escaping(([String:Any],AntError) -> Void)) {
+    private func parseGetDrinkWater(val:[UInt8],success:@escaping((AntDrinkWaterModel?,AntError) -> Void)) {
         let state = String.init(format: "%02x", val[4])
         
         if val[4] == 1 {
@@ -6077,34 +6218,60 @@ import Alamofire
             let startMinute = val[7]
             let endHour = val[8]
             let endMinute = val[9]
-            let remindCount = val[10]
-            let remindInterval = val[11]
-            let string = String.init(format: "开关:%d,开始时间：%d:%d,结束时间：%d:%d,提醒次数:%d,提醒间隔:%d",isOpen,startHour,startMinute,endHour,endMinute,remindCount,remindInterval)
+            let remindInterval = val[10]
+            let string = String.init(format: "开关:%d,开始时间：%d:%d,结束时间：%d:%d,提醒间隔:%d",isOpen,startHour,startMinute,endHour,endMinute,remindInterval)
             AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
-            success(["ttt":"\(string)"],.none)
+            
+            let model = AntDrinkWaterModel.init(dic: ["isOpen":"\(isOpen)","startHour":String.init(format: "%02d", startHour),"startMinute":String.init(format: "%02d", startMinute),"endHour":String.init(format: "%02d", endHour),"endMinute":String.init(format: "%02d", endMinute),"remindInterval":"\(remindInterval)"])
+            
+            success(model,.none)
             
         }else{
-            success([:],.invalidState)
+            success(nil,.invalidState)
         }
         //printLog("第\(#line)行" , "\(#function)")
         self.signalCommandSemaphore()
     }
     
     // MARK: - 设置喝水提醒 0x0f
-    @objc public func setDrinkWater(isOpen:String,startHour:String,startMinute:String,endHour:String,endMinute:String,remindCount:String,remindInterval:String,success:@escaping((AntError) -> Void)) {
+    @objc public func setDrinkWater(isOpen:String,startHour:String,startMinute:String,endHour:String,endMinute:String,remindInterval:String,success:@escaping((AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
             0x0f,
-            0x0b,
+            0x0a,
             0x00,
             (UInt8(isOpen) ?? 0),
             (UInt8(startHour) ?? 0),
             (UInt8(startMinute) ?? 0),
             (UInt8(endHour) ?? 0),
             (UInt8(endMinute) ?? 0),
-            (UInt8(remindCount) ?? 0),
             (UInt8(remindInterval) ?? 0)
+        ]
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetDrinkWaterBlock = success
+        }else{
+            success(state)
+        }
+    }
+    
+    @objc public func setDrinkWater(model:AntDrinkWaterModel,success:@escaping((AntError) -> Void)) {
+        let isOpen = model.isOpen
+        let remindInterval = model.remindInterval
+        var val:[UInt8] = [
+            0x02,
+            0x07,
+            0x09,
+            0x00,
+            isOpen == false ? 0:1,
+            UInt8(model.timeModel.startHour),
+            UInt8(model.timeModel.startMinute),
+            UInt8(model.timeModel.endHour),
+            UInt8(model.timeModel.endMinute),
+            UInt8(remindInterval)
         ]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -6297,6 +6464,112 @@ import Alamofire
     }
     
     private func parseSetAddressBook(val:[UInt8],success:@escaping((AntError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        
+        if val[4] == 1 {
+            
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@", state))
+            success(.none)
+            
+        }else{
+            success(.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 获取低电提醒
+    @objc public func getLowBatteryRemind(_ success:@escaping((AntLowBatteryModel?,AntError) -> Void)) {
+        
+        var val:[UInt8] = [
+            0x02,
+            0x14,
+            0x04,
+            0x00,
+        ]
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveGetLowBatteryRemindBlock = success
+        }else{
+            success(nil,state)
+        }
+    }
+    
+    private func parseGetLowBatteryRemind(val:[UInt8],success:@escaping((AntLowBatteryModel?,AntError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val[4] == 1 {
+            
+            let isOpen = val[5]
+            let remindBattery = val[6]
+            let remindCount = val[7]
+            let remindInterval = val[8]
+            let string = String.init(format: "开关:%d,提醒电量：%d,提醒次数：%d,提醒间隔:%d",isOpen,remindBattery,remindCount,remindInterval)
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
+            
+            let model = AntLowBatteryModel.init(dic: ["isOpen":"\(isOpen)","remindBattery":"\(remindBattery)","remindCount":"\(remindCount)","remindInterval":"\(remindInterval)"])
+            
+            success(model,.none)
+            
+        }else{
+            success(nil,.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 设置低电提醒
+    @objc public func setLowBatteryRemind(isOpen:String,remindBattery:String,remindCount:String,remindInterval:String,success:@escaping((AntError) -> Void)) {
+        
+        var val:[UInt8] = [
+            0x02,
+            0x15,
+            0x08,
+            0x00,
+            (UInt8(isOpen) ?? 0),
+            (UInt8(remindBattery) ?? 0),
+            (UInt8(remindCount) ?? 0),
+            (UInt8(remindInterval) ?? 0)
+        ]
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetLowBatteryRemindBlock = success
+        }else{
+            success(state)
+        }
+    }
+    
+    @objc public func setLowBatteryRemind(model:AntLowBatteryModel,success:@escaping((AntError) -> Void)) {
+        let isOpen = model.isOpen
+        let remindBattery = model.remindBattery
+        let remindCount = model.remindCount
+        let remindInterval = model.remindInterval
+        var val:[UInt8] = [
+            0x02,
+            0x15,
+            0x08,
+            0x00,
+            isOpen == false ? 0:1,
+            UInt8(remindBattery),
+            UInt8(remindCount),
+            UInt8(remindInterval)
+        ]
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetLowBatteryRemindBlock = success
+        }else{
+            success(state)
+        }
+    }
+    
+    private func parseSetLowBatteryRemind(val:[UInt8],success:@escaping((AntError) -> Void)) {
         let state = String.init(format: "%02x", val[4])
         
         
@@ -7020,7 +7293,7 @@ import Alamofire
         self.receiveReportSingleMeasurementResultBlock = success
     }
     
-    private func parseReportSingleMeasurementResultData(val:[UInt8],success:@escaping(([String:Any],AntError) -> Void)) {
+        private func parseReportSingleMeasurementResultData(val:[UInt8],success:@escaping(([String:Any],AntError) -> Void)) {
         
         let type = val[5]
         let value1 = val[6]
@@ -7037,22 +7310,24 @@ import Alamofire
         }
     }
     
-    // MARK: - 单次锻炼结束标识
-    @objc public func reportSingleExerciseEnd(success:@escaping((AntError) -> Void)) {
-        self.receiveReportSingleExerciseEndBlock = success
+    // MARK: - 上报锻炼状态
+    @objc public func reportExerciseState(success:@escaping((AntExerciseState,AntError) -> Void)) {
+        self.receiveReportExerciseStateBlock = success
     }
     
-    private func parseReportSingleExerciseEndData(val:[UInt8],success:@escaping((AntError) -> Void)) {
+    private func parseReportExerciseStateData(val:[UInt8],success:@escaping((AntExerciseState,AntError) -> Void)) {
         
         if val[4] == 1 {
             
-            success(.none)
             if val.count >= 6 {
-                AntSDKLog.writeStringToSDKLog(string: String.init(format: "单次锻炼模式结束 类型:%d",val[5]))
+                let state = AntExerciseState.init(rawValue: Int(val[5])) ?? .unknow
+                success(state,.none)
+                AntSDKLog.writeStringToSDKLog(string: String.init(format: "锻炼状态 类型:%d",val[5]))
+            }else{
+                success(.end,.none)
             }
-            
         }else{
-            success(.invalidState)
+            success(.unknow,.invalidState)
         }
     }
     
@@ -7176,7 +7451,7 @@ import Alamofire
         
     }
     
-    // MARK: - 上报实时数据 0x98
+    // MARK: - 上报实时 数据 0x98
     @objc public func reportNewRealtimeData(success:@escaping((AntStepModel?,Int,Int,Int,Int,AntError) -> Void)) {
         self.receiveReportNewRealtimeDataBlock = success
 //        let val:[UInt8] = [0x80,0x98,0x10,0x00,0x01,0x35,0x00,0x01,0x27,0x00,0x00,0x36,0x01,0x62,0x80,0x4e]//[0x80,0x98,0x13,0x00,0x01,0x3f,0x00,0x01,0x27,0x00,0x00,0x58,0x1b,0x36,0x01,0x41,0x62,0x80,0x4e]
@@ -7757,7 +8032,7 @@ import Alamofire
                 let library = versionSuccess["library"] as! String
                 let font = versionSuccess["font"] as! String
 
-                self.getMac { macSuccess, error in
+                self.privateGetMac { macSuccess, error in
                     if error == .none {
                         if let string = macSuccess {
                             printLog("macSuccess =\(string)")

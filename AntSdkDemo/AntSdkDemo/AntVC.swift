@@ -28,6 +28,7 @@ class AntVC: UIViewController {
             }
         }
     }
+    var ancsState:Bool = false
     var testCount = 0
     var tableView:UITableView!
     var dataSourceArray = [[String]].init()
@@ -188,6 +189,18 @@ class AntVC: UIViewController {
             self?.currentBleState = state
         }
         
+        if #available(iOS 13.0, *) {
+            if let state = AntCommandModule.shareInstance.peripheral?.ancsAuthorized {
+                self.ancsState = state
+            }
+        } else {
+            
+        }
+        
+        AntCommandModule.shareInstance.bluetoothAncsStateChange { [weak self] state in
+            self?.ancsState = state
+        }
+        
         AntCommandModule.shareInstance.checkUpgradeState { success, error in
             print("继续升级")
 
@@ -314,10 +327,12 @@ class AntVC: UIViewController {
                 //"0x0b 设置生理周期",
                 //"0x0c 获取洗手提醒",
                 //"0x0d 设置洗手提醒",
-                //"0x0e 获取喝水提醒",
-                //"0x0f 设置喝水提醒",
+                "0x0e 获取喝水提醒",
+                "0x0f 设置喝水提醒",
                 "同步联系人",
-                "同步联系人x100",
+                "同步N个联系人",
+                "0x14 获取低电提醒",
+                "0x15 设置低电提醒",
             ],
             [
                 "0x00 同步计步数据",
@@ -337,7 +352,7 @@ class AntVC: UIViewController {
                 "0x80 实时步数",
                 "0x82 实时心率",
                 "0x84 单次测量结果",
-                "0x86 单次锻炼结束",
+                "0x86 锻炼状态",
                 "0x88 找手机",
                 "0x89 结束找手机",
                 "0x8a 拍照",
@@ -1234,7 +1249,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 //                }
 //            }
             
-            for i in stride(from: 0, to: 3, by: 1) {
+            for i in stride(from: 0, to: 10, by: 1) {
                 AntCommandModule.shareInstance.getAlarm(index: i) { success, error in
 
                     if error == .none {
@@ -1534,16 +1549,31 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
             self.logView.clearString()
             self.logView.writeString(string: "获取锻炼模式")
-            
-            AntCommandModule.shareInstance.getExerciseMode { success, error in
+            AntCommandModule.shareInstance.getExerciseMode { success, state, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 if error == .none {
                     print("GetExerciseMode ->",success)
                     
                     let type = success
                     print("type ->",type)
-                    
-                    self.logView.writeString(string: "\(type)")
+                    var stateString = ""
+                    if state == .unknow {
+                        stateString = "不支持的状态"
+                        print(stateString)
+                    }else if state == .end {
+                        stateString = "结束"
+                        print(stateString)
+                    }else if state == .start {
+                        stateString = "开始"
+                        print(stateString)
+                    }else if state == .continue {
+                        stateString = "继续"
+                        print(stateString)
+                    }else if state == .pause {
+                        stateString = "暂停"
+                        print(stateString)
+                    }
+                    self.logView.writeString(string: "\(type.rawValue),\(stateString)")
                 }
             }
             
@@ -1553,7 +1583,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             let array = [
                 "锻炼类型",
-                "0:退出,1:进入,2:暂停/继续",
+                "0:退出,1:进入,2:继续,3:暂停",
             ]
             
             self.logView.clearString()
@@ -1565,8 +1595,19 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 let isOpen = textArray[1]
                 
                 self.logView.writeString(string: "锻炼类型:\(type.count>0 ? type:"0")")
-                self.logView.writeString(string: (Int(isOpen) ?? 0) > 0 ? "进入":"退出")
-                AntCommandModule.shareInstance.setExerciseMode(type: Int(type) ?? 0, isOpen: Int(isOpen) ?? 0) { error in
+                var stateString = "退出"
+                if Int(isOpen) == 0 {
+                    stateString = "退出"
+                }else if Int(isOpen) == 1 {
+                    stateString = "进入"
+                }else if Int(isOpen) == 2 {
+                    stateString = "继续"
+                }else if Int(isOpen) == 3 {
+                    stateString = "暂停"
+                }
+                self.logView.writeString(string: stateString)
+                let state = AntExerciseState.init(rawValue: Int(isOpen) ?? 0) ?? .end
+                AntCommandModule.shareInstance.setExerciseMode(type: AntExerciseType.init(rawValue: Int(type) ?? 0) ?? .runOutside, isOpen: state) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -1800,7 +1841,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
         case "0x30 获取自定义表盘尺寸":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取消息提醒")
+            self.logView.writeString(string: "获取自定义表盘尺寸")
             
             AntCommandModule.shareInstance.getCustonDialFrameSize { success, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -1935,7 +1976,11 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 //                    }
 //                    //self.navigationController?.pushViewController(vc, animated: true)
 //                }
-                
+                if #available(iOS 13.0, *) {
+                    if let state = AntCommandModule.shareInstance.peripheral?.ancsAuthorized {
+                        self.logView.writeString(string: "蓝牙共享系统通知:\(state ? "开":"关")")
+                    }
+                }
                 let array = AntCommandModule.shareInstance.getNotificationTypeArrayWithIntString(countString: isOpen)
                 print("array ->",array)
 
@@ -2303,27 +2348,31 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "同步联系人x100":
+        case "同步N个联系人":
             
             let array = [
-                "姓名(默认张三)",
-                "号码(默认13755660033)",
+                "同步个数(默认10个)",
+                "姓名(默认张三,+\"-序号\")",
+                "号码(默认13755660000,+序号)",
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "同步联系人")
+            self.logView.writeString(string: "同步N个联系人")
             
             self.presentTextFieldAlertVC(title: "提示(无效数据默认为空)", message: "设置联系人", holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
-                
+                var peopleCount = 10
+                if let string = textArray[0] as? String{
+                    peopleCount = Int(string) ?? 10
+                }
                 var modelArray = Array<AntAddressBookModel>.init()
-                for i in 0..<100 {
+                for i in 0..<peopleCount {
                     let model = AntAddressBookModel.init()
-                    model.name = (textArray[0].count == 0 ? "张三" : textArray[0])+"\(-i)"
-                    model.phoneNumber = textArray[1].count == 0 ? "13755660033" : textArray[1]
+                    model.name = (textArray[1].count == 0 ? "张三" : textArray[1])+"-\(i)"
+                    model.phoneNumber = String.init(format: "%ld", (Int64(textArray[2].count == 0 ? "13755660000" : textArray[2]) ?? 13755660000)+Int64(i))
                     modelArray.append(model)
-                    self.logView.writeString(string: "联系人0 姓名:\(model.name),号码:\(model.phoneNumber)")
+                    self.logView.writeString(string: "联系人\(i) 姓名:\(model.name),号码:\(model.phoneNumber)")
                 }
                 
                 AntCommandModule.shareInstance.setAddressBook(modelArray: modelArray) { error in
@@ -2416,9 +2465,28 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
         case "0x0e 获取喝水提醒":
             
+            self.logView.clearString()
+            self.logView.writeString(string: "获取喝水提醒")
+
             AntCommandModule.shareInstance.getDrinkWater { success, error in
-                print("GetDrinkWater ->",success)
-                self.navigationController?.pushViewController(vc, animated: true)
+                
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                if error == .none {
+                    if let model = success {
+                        let isOpen = model.isOpen
+                        let startHour = model.timeModel.startHour
+                        let startMinute = model.timeModel.startMinute
+                        let endHour = model.timeModel.endHour
+                        let endMinute = model.timeModel.endMinute
+                        let remindInterval = model.remindInterval
+                        
+                        self.logView.writeString(string: isOpen ? "开启":"关闭")
+                        self.logView.writeString(string: "开始时间: \(startHour):\(startMinute)")
+                        self.logView.writeString(string: "结束时间: \(endHour):\(endMinute)")
+                        self.logView.writeString(string: "提醒间隔: \(remindInterval)")
+                    }
+                }
             }
             
             break
@@ -2431,7 +2499,6 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 "开始分钟",
                 "结束小时",
                 "结束分钟",
-                "提醒次数",
                 "提醒间隔"
             ]
             
@@ -2443,14 +2510,89 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 let startMinute = textArray[2]
                 let endHour = textArray[3]
                 let endMinute = textArray[4]
-                let remindCount = textArray[5]
-                let remindInterval = textArray[6]
+                let remindInterval = textArray[5]
                 
-                AntCommandModule.shareInstance.setDrinkWater(isOpen: isOpen, startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute, remindCount: remindCount, remindInterval: remindInterval) { success in
-                    print("SetDrinkWater ->",success)
-                    self.navigationController?.pushViewController(vc, animated: true)
+//                let model = AntDrinkWaterModel.init()
+//                model.isOpen = isOpen
+//                model.remindInterval = remindInterval
+//                model.timeModel.startHour = startHour
+//                model.timeModel.startMinute = startMinute
+//                model.timeModel.endHour = endHour
+//                model.timeModel.endMinute = endMinute
+//
+//                AntCommandModule.shareInstance.setDrinkWater(model: model) { error in
+                AntCommandModule.shareInstance.setDrinkWater(isOpen: isOpen, startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute, remindInterval: remindInterval) { error in
+                    
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        print("SetDrinkWater -> success")
+                    }
                 }
                 
+            }
+            
+            break
+            
+        case "0x14 获取低电提醒":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "获取低电提醒")
+            
+            AntCommandModule.shareInstance.getLowBatteryRemind { success, error in
+                
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                if error == .none {
+                    if let model = success {
+                        let isOpen = model.isOpen
+                        let remindBattery = model.remindBattery
+                        let remindCount = model.remindCount
+                        let remindInterval = model.remindInterval
+                        
+                        self.logView.writeString(string: isOpen ? "开启":"关闭")
+                        self.logView.writeString(string: "提醒电量:\(remindBattery)")
+                        self.logView.writeString(string: "提醒次数:\(remindCount)")
+                        self.logView.writeString(string: "提醒间隔:\(remindInterval)")
+                    }
+                }
+                
+            }
+            
+            break
+            
+        case "0x15 设置低电提醒":
+            
+            let array = [
+                "0:关，1:开",
+                "提醒电量",
+                "提醒次数",
+                "提醒间隔",
+            ]
+            
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置洗手提醒", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let isOpen = textArray[0]
+                let remindBattery = textArray[1]
+                let remindCount = textArray[2]
+                let remindInterval = textArray[3]
+                
+//                let model = AntLowBatteryModel.init()
+//                model.isOpen = isOpen
+//                model.remindBattery = remindBattery
+//                model.remindCount = remindCount
+//                model.remindInterval = remindInterval
+//
+//                AntCommandModule.shareInstance.setLowBatteryRemind(model: model) { error in
+                AntCommandModule.shareInstance.setLowBatteryRemind(isOpen: isOpen, remindBattery: remindBattery, remindCount: remindCount, remindInterval: remindInterval) { error in
+                    
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        print("setLowBatteryRemind -> success")
+                    }
+                }
             }
             
             break
@@ -2574,7 +2716,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                         let distance = model.distance
                         
                         self.logView.writeString(string: "开始时间:\(startTime)")
-                        self.logView.writeString(string: "类型:\(type)")
+                        self.logView.writeString(string: "类型:\(type.rawValue)")
                         self.logView.writeString(string: "心率:\(hr)")
                         self.logView.writeString(string: "运动时长:\(validTimeLength)")
                         self.logView.writeString(string: "步数:\(step)")
@@ -2744,14 +2886,26 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 }
             }
             break
-        case "0x86 单次锻炼结束":
+        case "0x86 锻炼状态":
             self.logView.clearString()
             self.logView.writeString(string: "设备端点击显示")
             
-            AntCommandModule.shareInstance.reportSingleExerciseEnd { error in
-                
+            AntCommandModule.shareInstance.reportExerciseState { state ,error in
+
                 if error == .none {
-                    self.logView.writeString(string: "单次锻炼结束")
+                    var stateString = ""
+                    if state == .unknow {
+                        stateString = "不支持状态"
+                    }else if state == .end {
+                        stateString = "结束"
+                    }else if state == .start {
+                        stateString = "开始"
+                    }else if state == .pause {
+                        stateString = "暂停"
+                    }else if state == .continue {
+                        stateString = "继续"
+                    }
+                    self.logView.writeString(string: "上报锻炼状态:\(stateString)")
                 }
             }
             break
@@ -4166,7 +4320,7 @@ extension AntVC : UIImagePickerControllerDelegate,UINavigationControllerDelegate
                         
                     }else {
                        
-                        self.presentSystemAlertVC(title: NSLocalizedString("public_tip_title_photoAuthorization", comment: ""), message: "\(NSLocalizedString("public_settings", comment: ""))->\(NSLocalizedString("public_settings", comment: "public_privacy"))->\(NSLocalizedString("public_settings", comment: "public_photo"))", cancel: NSLocalizedString("public_tip_cancel", comment: ""), cancelAction: {
+                        self.presentSystemAlertVC(title: NSLocalizedString("public_tip_title_photoAuthorization", comment: ""), message: "\(NSLocalizedString("public_settings", comment: ""))->\(NSLocalizedString("public_settings", comment: "public_privacy"))->\(NSLocalizedString("public_photo", comment: ""))", cancel: NSLocalizedString("public_tip_cancel", comment: ""), cancelAction: {
                             
                         }, ok: NSLocalizedString("public_tip_ok", comment: "")) {
                             let url = URL(string: UIApplication.openSettingsURLString)
