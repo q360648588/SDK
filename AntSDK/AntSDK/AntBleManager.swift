@@ -16,6 +16,7 @@ class AntBleManager: NSObject {
 //    fileprivate(set) var blePowerState:CBManagerState = .unknown
     private var bleManager:CBCentralManager!
     private var blePowerBlock:((CBCentralManagerState)->())?
+    private var ancsStateBlock:((Bool)->())?
     
     private var bleCentralDiscoverBlock:((CBCentralManager,CBPeripheral,[String : Any],NSNumber)->())?
     private var bleCentralConnectPeripheralBlock:((_ state: Bool,_ central: CBCentralManager, _ peripheral: CBPeripheral, _ error: Error?)->())?
@@ -43,6 +44,10 @@ class AntBleManager: NSObject {
     
     func getBlePowerState() -> CBCentralManagerState {
         return CBCentralManagerState.init(rawValue: self.bleManager.state.rawValue)!
+    }
+    
+    func getAncsDidUpdateState(value:@escaping((Bool)->())) {
+        self.ancsStateBlock = value
     }
     
     func scanPeripheralWithServices(array:[CBUUID]? = nil) {
@@ -118,6 +123,19 @@ extension AntBleManager:CBCentralManagerDelegate {
             block(CBCentralManagerState.init(rawValue: central.state.rawValue)!)
         }
     }
+    func peripheralDidUpdateName(_ peripheral: CBPeripheral) {
+        print("peripheralDidUpdateName \(peripheral.name)")
+    }
+    func centralManager(_ central: CBCentralManager, didUpdateANCSAuthorizationFor peripheral: CBPeripheral) {
+        if #available(iOS 13.0, *) {
+            printLog("didUpdateANCSAuthorizationFor = \(peripheral.ancsAuthorized)")
+            if let block = self.ancsStateBlock {
+                block(peripheral.ancsAuthorized)
+            }
+        } else {
+            printLog("didUpdateANCSAuthorizationFor ")
+        }
+    }
     
     // MARK: - 扫描到蓝牙设备
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
@@ -151,6 +169,16 @@ extension AntBleManager:CBCentralManagerDelegate {
             printLog("----------设备非正常断开---------- ")
             if let block = self.bleReconnectBlock {
                 block()
+            }
+        }else{
+            //蓝牙列表忽略设备，error是nil  该重连的还是要继续
+            if let identifierString = UserDefaults.standard.string(forKey: "Ant_ReconnectIdentifierKey") {
+                if identifierString.count > 0 {
+                    printLog("----------蓝牙列表忽略设备---------- ")
+                    if let block = self.bleReconnectBlock {
+                        block()
+                    }
+                }
             }
         }
         

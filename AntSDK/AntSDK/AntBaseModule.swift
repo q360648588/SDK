@@ -67,7 +67,9 @@ import zlib
             }
         }
     }
-    
+    // MARK: - 外设连接状态变化回调
+    /// 外设连接状态变化回调
+    /// - Parameter state: <#state description#>
     @objc public func peripheralStateChange(state:@escaping((CBPeripheralState)->())) {
         self.peripheralStateChange = state
     }
@@ -87,6 +89,10 @@ import zlib
             }
         }
     }
+    
+    // MARK: - 蓝牙状态变化回调
+    /// 蓝牙状态变化回调
+    /// - Parameter state: <#state description#>
     @objc public func bluetoothPowerStateChange(state:@escaping((CBCentralManagerState)->())) {
         AntBleManager.shareInstance.getBlePowerDidUpdateState { bleState in
             state(bleState)
@@ -107,6 +113,13 @@ import zlib
                 }
             }
         }
+    }
+    
+    // MARK: - ancs共享通知变化回调
+    /// ancs共享通知变化回调
+    /// - Parameter state: iOS13及以上才会正常返回
+    @objc public func bluetoothAncsStateChange(state:@escaping((Bool)->())) {
+        AntBleManager.shareInstance.getAncsDidUpdateState(value: state)
     }
     
     @objc func reconnectMethod() {
@@ -140,14 +153,18 @@ import zlib
             self.ant_ReconnectTimer?.fireDate = .distantFuture
         }
     }
-    
+    // MARK: - 设置是否需要重连
+    /// 设置是否需要重连
+    /// - Parameter state: true:重连 false:不重连
     @objc public func setIsNeedReconnect(state:Bool) {
         printLog("setIsNeedReconnect =",state)
         let userDefault = UserDefaults.standard
         userDefault.setValue(state, forKey: "Ant_ReconnectKey")
         userDefault.synchronize()
     }
-    
+    // MARK: - 重连成功回调
+    /// 重连成功回调
+    /// - Parameter complete: <#complete description#>
     @objc public func reconnectDevice(complete:@escaping(()->())) {
         self.reconnectComplete = complete
     }
@@ -162,13 +179,18 @@ import zlib
         userDefault.synchronize()
     }
     
+    // MARK: - 获取重连标识
+    /// 获取重连标识
+    /// - Returns: 外设唯一标识
     @objc public func getReconnectIdentifier() -> String {
         let userDefault = UserDefaults.standard
         let idString:String = userDefault.string(forKey: "Ant_ReconnectIdentifierKey") ?? ""
         
         return idString
     }
-    
+    // MARK: - 获取系统蓝牙列表的设备
+    /// 获取系统列表的设备
+    /// - Parameter modelArray: <#modelArray description#>
     @objc open func getSystemListPeripheral(modelArray:@escaping(([AntScanModel])->(Void))) {
         var peripheralArray = [AntScanModel].init()
         
@@ -216,11 +238,18 @@ import zlib
             model.rssi = Int(truncating: rssi)
             model.peripheral = peripheral
             model.uuidString = peripheral.identifier.uuidString
-            peripheralArray.append(model)
+            if !peripheralArray.contains(where: { item in
+                if item.uuidString == model.uuidString {
+                    return true
+                }
+                return false
+            }) {
+                scanModel(model)
+                peripheralArray.append(model)
+            }
             peripheralArray.sort { (scanModel1, scanModel2) -> Bool in
                 return scanModel1.rssi > scanModel2.rssi
             }
-            scanModel(model)
             modelArray(peripheralArray)
         }
         
@@ -255,7 +284,11 @@ import zlib
                 if self.peripheral != p! {
                     self.peripheral = p!
                 }
-                AntBleManager.shareInstance.connect(peripheral: p!, options: nil)
+                if #available(iOS 13.0, *) {
+                    AntBleManager.shareInstance.connect(peripheral: p!, options: [CBConnectPeripheralOptionRequiresANCS:true])
+                } else {
+                    AntBleManager.shareInstance.connect(peripheral: p!, options: nil)
+                }
             }else{
                 connectState(false)
             }
@@ -263,12 +296,20 @@ import zlib
             if self.peripheral != peripheral as? CBPeripheral {
                 self.peripheral = peripheral as? CBPeripheral
             }
-            AntBleManager.shareInstance.connect(peripheral: peripheral as! CBPeripheral, options: nil)
+            if #available(iOS 13.0, *) {
+                AntBleManager.shareInstance.connect(peripheral: peripheral as! CBPeripheral, options: [CBConnectPeripheralOptionRequiresANCS:true])
+            } else {
+                AntBleManager.shareInstance.connect(peripheral: peripheral as! CBPeripheral, options: nil)
+            }
         }else if peripheral is AntScanModel {
             if self.peripheral != (peripheral as! AntScanModel).peripheral {
                 self.peripheral = (peripheral as! AntScanModel).peripheral
             }
-            AntBleManager.shareInstance.connect(peripheral: (peripheral as! AntScanModel).peripheral!, options: nil)
+            if #available(iOS 13.0, *) {
+                AntBleManager.shareInstance.connect(peripheral: (peripheral as! AntScanModel).peripheral!, options: [CBConnectPeripheralOptionRequiresANCS:true])
+            } else {
+                AntBleManager.shareInstance.connect(peripheral: (peripheral as! AntScanModel).peripheral!, options: nil)
+            }
             
         }else{
             connectState(false)
@@ -297,11 +338,26 @@ import zlib
             AntBleManager.shareInstance.disconnect(peripheral: self.peripheral!)
         }
         
+        let userDefault = UserDefaults.standard
+        userDefault.removeObject(forKey: "Ant_ReconnectIdentifierKey")
+        userDefault.synchronize()
+        
         AntBleManager.shareInstance.CentralDisonnectPeripheral { (central, peripheral, error) in
             printLog("----------设备已断开----------")
             if error == nil {
-                printLog("----------设备已主动断开----------")
-                AntSDKLog.writeStringToSDKLog(string: "----------设备已主动断开----------")
+                //蓝牙列表忽略设备，error是nil  该重连的还是要继续
+                if let identifierString = UserDefaults.standard.string(forKey: "Ant_ReconnectIdentifierKey") {
+                    if identifierString.count > 0 {
+                        printLog("----------蓝牙列表忽略设备---------- ")
+                        AntSDKLog.writeStringToSDKLog(string: "----------蓝牙列表忽略设备----------")
+                    }else{
+                        printLog("----------设备已主动断开----------")
+                        AntSDKLog.writeStringToSDKLog(string: "----------设备已主动断开----------")
+                    }
+                }else{
+                    printLog("----------设备已主动断开----------")
+                    AntSDKLog.writeStringToSDKLog(string: "----------设备已主动断开----------")
+                }
             }
             self.peripheral = nil
             //命令信号量重置
@@ -318,8 +374,6 @@ import zlib
             }
         }
 
-        let userDefault = UserDefaults.standard
-        userDefault.removeObject(forKey: "Ant_ReconnectIdentifierKey")
     }
     
     /// 发现服务
@@ -332,7 +386,7 @@ import zlib
         AntBleManager.shareInstance.PeripheralDiscoverService { (peripheral, error) in
             if error == nil {
                 for service in peripheral.services ?? [] {
-//                    printLog("Service found with UUID:",service.uuid)
+                    printLog("Service found with UUID:",service.uuid)
                 }
                 self.discoverCharcristic(peripheral: peripheral)
             }
@@ -375,6 +429,7 @@ import zlib
                 
                 let userDefault = UserDefaults.standard
                 userDefault.setValue(peripheral.identifier.uuidString, forKey: "Ant_ReconnectIdentifierKey")
+                userDefault.synchronize()
                 
                 if let block = self.connectCompleteBlock {
                     //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
@@ -383,21 +438,33 @@ import zlib
                             printLog("连接成功")
                             self.functionListModel = model
                             block(true)
+                            if let _ = model?.functionList_addressBook {
+                                AntCommandModule.shareInstance.setDeviceUUID { _ in
+                                }
+                            }
+                            AntCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
+                            }
+                            AntCommandModule.shareInstance.getDeviceOtaVersionInfo { _, _ in
+                            }
+                            AntCommandModule.shareInstance.getMac { _, _ in
+                            }
+                            //这里是升级过程中异常断开还保存未发完的ota数据，那么检测升级，拿到回调之后会继续升级
+                            if AntCommandModule.shareInstance.otaData != nil {
+                                AntCommandModule.shareInstance.checkUpgradeState { _, _ in
+                                    
+                                }
+                            }
                         }else{
                             printLog("连接成功")
                             block(false)
                         }
                     }
-                    AntCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
-                    }
-                    AntCommandModule.shareInstance.getDeviceOtaVersionInfo { _, _ in
-                    }
-                    //这里是升级过程中异常断开还保存未发完的ota数据，那么检测升级，拿到回调之后会继续升级
-                    if AntCommandModule.shareInstance.otaData != nil {
-                        AntCommandModule.shareInstance.checkUpgradeState { _, _ in
-                            
-                        }
-                    }
+                    
+                    let uuidString:String = peripheral.identifier.uuidString.replacingOccurrences(of: "-", with: "")
+                    let mac = uuidString.substring(to: uuidString.index(uuidString.startIndex, offsetBy: 30))
+                    printLog("uuidString =\(peripheral.identifier.uuidString)")
+                    printLog("mac =\(mac)")
+                    
                 }
             }
         }

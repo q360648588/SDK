@@ -100,15 +100,20 @@ import UIKit
     @objc public private(set) var functionList_answerCalls = false
     @objc public private(set) var functionList_timeFormat = false
     @objc public private(set) var functionList_screenType = false
+    @objc public private(set) var functionList_sportCountdown = false
+    @objc public private(set) var functionList_lowBattery = false
     
+    @objc public private(set) var functionDetail_exercise:AntFunctionModel_exercise?
     @objc public private(set) var functionDetail_notification:AntFunctionModel_notification?
     @objc public private(set) var functionDetail_language:AntFunctionModel_language?
     @objc public private(set) var functionDetail_alarm:AntFunctionModel_alarm?
     @objc public private(set) var functionDetail_screenControl:AntFunctionModel_screenControl?
+    @objc public private(set) var functionDetail_addressBook:AntFunctionModel_addressBook?
     @objc public private(set) var functionDetail_localDial:AntFunctionModel_localDial?
     @objc public private(set) var functionDetail_hrWarning:AntFunctionModel_hrWarning?
     @objc public private(set) var functionDetail_goal:AntFunctionModel_goal?
     @objc public private(set) var functionDetail_screenType:AntFunctionModel_scrrenType?
+    @objc public private(set) var functionDetail_sportCountdown:AntFunctionModel_sportCountdown?
     
     init(val:[UInt8]) {
         
@@ -171,6 +176,7 @@ import UIKit
             
             switch functionId {
             case 0:
+                self.functionDetail_exercise = AntFunctionModel_exercise.init(result: functionCount)
                 break
             case 1:
                 break
@@ -188,7 +194,7 @@ import UIKit
             case 7:
                 break
             case 8:
-                self.functionDetail_alarm = AntFunctionModel_alarm.init(result: functionCount)
+                self.functionDetail_alarm = AntFunctionModel_alarm.init(val: functionVal)
                 break
             case 9:
                 break
@@ -210,6 +216,7 @@ import UIKit
                 self.functionDetail_screenControl = AntFunctionModel_screenControl.init(val: functionVal)
                 break
             case 17:
+                self.functionDetail_addressBook = AntFunctionModel_addressBook.init(val: functionVal)
                 break
             case 18:
                 break
@@ -249,6 +256,11 @@ import UIKit
                 break
             case 35:
                 self.functionDetail_screenType = AntFunctionModel_scrrenType.init(result: functionCount)
+                break
+            case 36:
+                break
+            case 37:
+                self.functionDetail_sportCountdown = AntFunctionModel_sportCountdown.init(result: functionCount)
                 break
             default:
                 break
@@ -339,9 +351,9 @@ import UIKit
                 break
             case 36:
                 break
-            case 37:
+            case 37:self.functionList_sportCountdown = state == 0 ? false:true
                 break
-            case 38:
+            case 38:self.functionList_lowBattery = state == 0 ? false:true
                 break
             default:
                 break
@@ -354,6 +366,83 @@ import UIKit
         
         if self.functionList_exercise {
             log += "\n锻炼"
+            if let model = self.functionDetail_exercise {
+                if model.isSupportRunOutside {
+                    log += "\n      户外跑 / isSupportRunOutside"
+                }
+                if model.isSupportWalk {
+                    log += "\n      走路 / isSupportWalk"
+                }
+                if model.isSupportCycling {
+                    log += "\n      骑行 / isSupportCycling"
+                }
+                if model.isSupportBasketball {
+                    log += "\n      篮球 / isSupportBasketball"
+                }
+                if model.isSupportFootball {
+                    log += "\n      足球 / isSupportFootball"
+                }
+                if model.isSupportBadminton {
+                    log += "\n      羽毛球 / isSupportBadminton"
+                }
+                if model.isSupportJumpRope {
+                    log += "\n      跳绳 / isSupportJumpRope"
+                }
+                if model.isSupportSwimming {
+                    log += "\n      游泳 / isSupportSwimming"
+                }
+                if model.isSupportRunIndoor {
+                    log += "\n      室内跑 / isSupportRunIndoor"
+                }
+                if model.isSupportVolleyball {
+                    log += "\n      排球 / isSupportVolleyball"
+                }
+                if model.isSupportWalkFast {
+                    log += "\n      健走 / isSupportWalkFast"
+                }
+                if model.isSupportSpinning {
+                    log += "\n      动感单车 / isSupportSpinning"
+                }
+                if model.isSupportSitUps {
+                    log += "\n      仰卧起坐 / isSupportSitUps"
+                }
+                if model.isSupportMountainClimbing {
+                    log += "\n      登山 / isSupportMountainClimbing"
+                }
+                if model.isSupportYoga {
+                    log += "\n      瑜伽 / isSupportYoga"
+                }
+                if model.isSupportDance {
+                    log += "\n      舞蹈 / isSupportDance"
+                }
+                if model.isSupportJumpingJacks {
+                    log += "\n      开合跳 / isSupportJumpingJacks"
+                }
+                if model.isSupportGymnastics {
+                    log += "\n      体操 / isSupportGymnastics"
+                }
+                if model.isSupportRowing {
+                    log += "\n      划船 / isSupportRowing"
+                }
+                if model.isSupportTennis {
+                    log += "\n      网球 / isSupportTennis"
+                }
+                if model.isSupportHockey {
+                    log += "\n      曲棍球 / isSupportHockey"
+                }
+                if model.isSupportBaseball {
+                    log += "\n      棒球 / isSupportBaseball"
+                }
+                if model.isSupportTableTennis {
+                    log += "\n      乒乓球 / isSupportTableTennis"
+                }
+                if model.isSupportCricket {
+                    log += "\n      板球 / isSupportCricket"
+                }
+                if model.isSupportRugby {
+                    log += "\n      橄榄球 / isSupportRugby"
+                }
+            }
         }
         if self.functionList_step {
             log += "\n计步"
@@ -421,6 +510,7 @@ import UIKit
             log += "\n闹钟"
             if let model = self.functionDetail_alarm {
                 log += "\n      最多支持 \(model.maxAlarmCount) 组"
+                log += "\n      设备端\(model.isSupportEdit ? "支持":"不支持")增加/删除"
             }
         }
         if self.functionList_sedentary {
@@ -530,6 +620,9 @@ import UIKit
         }
         if self.functionList_addressBook {
             log += "\n通讯录"
+            if let model = self.functionDetail_addressBook {
+                log += "\n      通讯录最多支持 \(model.maxContactCount) 个联系人"
+            }
         }
         if self.functionList_onlineDial {
             log += "\n在线表盘"
@@ -595,7 +688,114 @@ import UIKit
                 log += "\n      手表款式 \(model.supportType)(0方1圆2圆角)"
             }
         }
+        if self.functionList_sportCountdown {
+            log += "\n运动开始倒计时"
+            if let model = self.functionDetail_sportCountdown {
+                log += "\n      倒计时时长 \(model.countDownTime) 秒"
+            }
+        }
+        if self.functionList_lowBattery {
+            log += "\n低电量提醒"
+        }
         return log
+    }
+}
+
+@objc public class AntFunctionModel_exercise:NSObject {
+    var supportCount = 0
+    @objc public private(set) var isSupportRunOutside = false
+    @objc public private(set) var isSupportWalk = false
+    @objc public private(set) var isSupportCycling = false
+    @objc public private(set) var isSupportBasketball = false
+    @objc public private(set) var isSupportFootball = false
+    @objc public private(set) var isSupportBadminton = false
+    @objc public private(set) var isSupportJumpRope = false
+    @objc public private(set) var isSupportSwimming = false
+    @objc public private(set) var isSupportRunIndoor = false
+    @objc public private(set) var isSupportVolleyball = false
+    @objc public private(set) var isSupportWalkFast = false
+    @objc public private(set) var isSupportSpinning = false
+    @objc public private(set) var isSupportSitUps = false
+    @objc public private(set) var isSupportMountainClimbing = false
+    @objc public private(set) var isSupportYoga = false
+    @objc public private(set) var isSupportDance = false
+    @objc public private(set) var isSupportJumpingJacks = false
+    @objc public private(set) var isSupportGymnastics = false
+    @objc public private(set) var isSupportRowing = false
+    @objc public private(set) var isSupportTennis = false
+    @objc public private(set) var isSupportHockey = false
+    @objc public private(set) var isSupportBaseball = false
+    @objc public private(set) var isSupportTableTennis = false
+    @objc public private(set) var isSupportCricket = false
+    @objc public private(set) var isSupportRugby = false
+    
+    init(result:Int) {
+        self.supportCount = result
+        
+        super.init()
+        
+        for i in 0..<64 {
+            let state = (result >> i) & 0x01
+
+            switch i {
+            case 0:self.isSupportRunOutside = state == 0 ? false:true
+                break
+            case 1:self.isSupportWalk = state == 0 ? false:true
+                break
+            case 2:self.isSupportCycling = state == 0 ? false:true
+                break
+            case 3:self.isSupportBasketball = state == 0 ? false:true
+                break
+            case 4:self.isSupportFootball = state == 0 ? false:true
+                break
+            case 5:self.isSupportBadminton = state == 0 ? false:true
+                break
+            case 6:self.isSupportJumpRope = state == 0 ? false:true
+                break
+            case 7:self.isSupportSwimming = state == 0 ? false:true
+                break
+            case 8:self.isSupportRunIndoor = state == 0 ? false:true
+                break
+            case 9:self.isSupportVolleyball = state == 0 ? false:true
+                break
+            case 10:self.isSupportWalkFast = state == 0 ? false:true
+                break
+            case 11:self.isSupportSpinning = state == 0 ? false:true
+                break
+            case 12:self.isSupportSitUps = state == 0 ? false:true
+                break
+            case 13:self.isSupportMountainClimbing = state == 0 ? false:true
+                break
+            case 14:self.isSupportYoga = state == 0 ? false:true
+                break
+            case 15:self.isSupportDance = state == 0 ? false:true
+                break
+            case 16:self.isSupportJumpingJacks = state == 0 ? false:true
+                break
+            case 17:self.isSupportGymnastics = state == 0 ? false:true
+                break
+            case 18:self.isSupportRowing = state == 0 ? false:true
+                break
+            case 19:self.isSupportTennis = state == 0 ? false:true
+                break
+            case 20:self.isSupportHockey = state == 0 ? false:true
+                break
+            case 21:self.isSupportBaseball = state == 0 ? false:true
+                break
+            case 22:self.isSupportTableTennis = state == 0 ? false:true
+                break
+            case 23:self.isSupportCricket = state == 0 ? false:true
+                break
+            case 24:self.isSupportRugby = state == 0 ? false:true
+                break
+            case 25:
+                break
+            case 26:
+                break
+            default:
+                break
+            }
+        }
     }
 }
 
@@ -737,9 +937,13 @@ import UIKit
 
 @objc public class AntFunctionModel_alarm:NSObject {
     @objc public private(set) var maxAlarmCount = 0         //最多支持多少个闹钟
+    @objc public private(set) var isSupportEdit = false     //是否支持增删
     
-    init(result:Int) {
-        self.maxAlarmCount = result
+    init(val:[UInt8]) {
+        self.maxAlarmCount = Int(val[0])
+        if val.count > 1 {
+            self.isSupportEdit = Int(val[1]) == 0 ? false:true
+        }
         super.init()
     }
 }
@@ -756,6 +960,16 @@ import UIKit
         super.init()
     }
 }
+
+@objc public class AntFunctionModel_addressBook:NSObject {
+    @objc public private(set) var maxContactCount = 0       //支持的最大联系人数量
+    
+    init(val:[UInt8]) {
+        self.maxContactCount = (Int(val[0]) | Int(val[1]) << 8)
+        super.init()
+    }
+}
+
 
 @objc public class AntFunctionModel_localDial:NSObject {
     @objc public private(set) var maxDialCount = 0         //内置表盘个数
@@ -817,6 +1031,16 @@ import UIKit
     
     init(result:Int) {
         self.supportType = result
+        super.init()
+    }
+}
+
+@objc public class AntFunctionModel_sportCountdown:NSObject {
+    
+    @objc public private(set) var countDownTime = 0                 //倒计时时长
+    
+    init(result:Int) {
+        self.countDownTime = result
         super.init()
     }
 }
@@ -1179,6 +1403,77 @@ import UIKit
     }
 }
 
+@objc public class AntDrinkWaterModel:NSObject {
+    @objc public var isOpen:Bool = false
+    @objc public var remindInterval:Int = 0 {
+        didSet {
+            if self.remindInterval < UInt8.min || self.remindInterval > UInt8.max {
+                self.remindInterval = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var timeModel:AntStartEndTimeModel = AntStartEndTimeModel.init()
+    
+    public override init() {
+        super.init()
+    }
+    
+    init(dic:[String:Any]) {
+        super.init()
+        
+        let result = Int(dic["isOpen"] as! String) ?? 0
+        self.isOpen = result == 0 ? false:true
+        self.remindInterval = Int(dic["remindInterval"] as! String) ?? 0
+        self.timeModel.startHour = Int(dic["startHour"] as! String) ?? 0
+        self.timeModel.startMinute = Int(dic["startMinute"] as! String) ?? 0
+        self.timeModel.endHour = Int(dic["endHour"] as! String) ?? 0
+        self.timeModel.endMinute = Int(dic["endMinute"] as! String) ?? 0
+    }
+}
+
+@objc public class AntLowBatteryModel:NSObject {
+    @objc public var isOpen:Bool = false
+    @objc public var remindBattery:Int = 0 {
+        didSet {
+            if self.remindBattery < UInt8.min || self.remindBattery > UInt8.max {
+                self.remindBattery = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var remindCount:Int = 0 {
+        didSet {
+            if self.remindCount < UInt8.min || self.remindCount > UInt8.max {
+                self.remindCount = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var remindInterval:Int = 0 {
+        didSet {
+            if self.remindInterval < UInt8.min || self.remindInterval > UInt8.max {
+                self.remindInterval = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    
+    public override init() {
+        super.init()
+    }
+    
+    init(dic:[String:Any]) {
+        super.init()
+        
+        let result = Int(dic["isOpen"] as! String) ?? 0
+        self.isOpen = result == 0 ? false:true
+        self.remindBattery = Int(dic["remindBattery"] as! String) ?? 0
+        self.remindCount = Int(dic["remindCount"] as! String) ?? 0
+        self.remindInterval = Int(dic["remindInterval"] as! String) ?? 0
+    }
+}
+
 @objc public class AntHrWaringModel:NSObject {
     @objc public var isOpen:Bool = false
     @objc public var maxValue:Int = 0 {
@@ -1289,8 +1584,44 @@ import UIKit
     }
 }
 
+@objc public enum AntExerciseType : Int {
+    case runOutside                         //跑步/户外跑
+    case walk                               //走路
+    case cycling                            //骑行
+    case basketball                         //篮球
+    case football                           //足球
+    case badminton                          //羽毛球
+    case jumpRope                           //跳绳
+    case swimming                           //游泳
+    case runIndoor                          //室内跑
+    case volleyball                         //排球
+    case walkFast                           //健走
+    case spinning                           //动感单车
+    case sitUps                             //仰卧起坐
+    case mountainClimbing                   //登山
+    case yoga                               //瑜伽
+    case dance                              //舞蹈
+    case jumpingJacks                       //开合跳
+    case gymnastics                         //体操
+    case rowing                             //划船
+    case tennis                             //网球
+    case hockey                             //曲棍球
+    case baseball                           //棒球
+    case tableTennis                        //乒乓球
+    case cricket                            //板球
+    case rugby                              //橄榄球
+}
+
+@objc public enum AntExerciseState : Int {
+    case unknow = -1
+    case end
+    case start
+    case `continue`
+    case pause
+}
+
 @objc public class AntExerciseModel:NSObject {
-    @objc public var type:Int = 0
+    @objc public var type:AntExerciseType = .runOutside
     @objc public var startTime:String = ""
     @objc public var endTime:String = ""
     @objc public var validTimeLength:Int = 0
@@ -1305,7 +1636,7 @@ import UIKit
     init(dic:[String:Any]) {
         super.init()
         
-        self.type = Int(dic["type"] as! String) ?? 0
+        self.type = AntExerciseType.init(rawValue: (Int(dic["type"] as! String) ?? 0)) ?? .runOutside
         self.startTime = dic["startTime"] as! String
         self.endTime = dic["endTime"] as! String
         self.validTimeLength = Int(dic["validTimeLength"] as! String) ?? 0
