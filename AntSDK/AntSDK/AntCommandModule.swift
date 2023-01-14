@@ -26,6 +26,7 @@ import Alamofire
     @objc public static let shareInstance = AntCommandModule()
     
     private var semaphoreCount = 1
+    private var signalValue = 1
     private var commandSemaphore = DispatchSemaphore(value: 1)
     private var commandDetectionTimer:Timer?//检测发送的是否有命令回复的定时器
     private var commandDetectionCount = 0
@@ -95,7 +96,11 @@ import Alamofire
     var receiveSet24HrMonitorBlock:((AntError) -> Void)?
     var receiveSetEnterOrExitCameraBlock:((AntError) -> Void)?
     var receiveSetDeviceUUIDBlock:((AntError) -> Void)?
-
+    var receiveSetExerciseDataToDeviceBlock:((AntError) -> Void)?
+    var receiveSetClearAllDataBlock:((AntError) -> Void)?
+    var receiveSetBindBlock:((AntError) -> Void)?
+    var receiveSetUnbindBlock:((AntError) -> Void)?
+    
     var receiveGetNotificationRemindBlock:(([Int],AntError) -> Void)?
     var receiveSetNotificationRemindBlock:((AntError) -> Void)?
     var receiveGetSedentaryBlock:((AntSedentaryModel?,AntError) -> Void)?
@@ -106,7 +111,7 @@ import Alamofire
     var receiveSetDoNotDisturbBlock:((AntError) -> Void)?
     var receiveGetHrWaringBlock:((AntHrWaringModel?,AntError) -> Void)?
     var receiveSetHrWaringBlock:((AntError) -> Void)?
-    var receiveGetMenstrualCycleBlock:(([String:Any],AntError) -> Void)?
+    var receiveGetMenstrualCycleBlock:((AntMenstrualModel?,AntError) -> Void)?
     var receiveSetMenstrualCycleBlock:((AntError) -> Void)?
     var receiveGetWashHandBlock:(([String:Any],AntError) -> Void)?
     var receiveSetWashHandBlock:((AntError) -> Void)?
@@ -138,6 +143,7 @@ import Alamofire
     var receiveReportLightScreenBlock:((Int,AntError) -> Void)?
     var receiveReportDeviceVibrationBlock:((Int,AntError) -> Void)?
     var receiveReportNewRealtimeDataBlock:((AntStepModel?,Int,Int,Int,Int,AntError) -> Void)?
+    var receiveReportExerciseInteractionDataBlock:((Int,Int,Int,AntError) -> Void)?
     var receiveSetSubpackageInformationInteractionBlock:(([String:Any],AntError) -> Void)?
     var receiveSetStartUpgradeBlock:((AntError) -> Void)?
     var receiveSetStartUpgradeProgressBlock:((Float) -> Void)?
@@ -189,7 +195,8 @@ import Alamofire
     var otaContinueDataLength = 0
     var failCheckCount = 0
     var currentReceiveCommandEndOver = false //当前接收命令状态是否结束   5s没有接收到回复数据默认结束，赋值true
-
+    var sendFailState = false  //命令发送失败状态，true时在信号量需要发命令的地方return待发送的命令
+    
     private override init() {
         super.init()
         
@@ -1263,7 +1270,79 @@ import Alamofire
                         AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetDeviceUUID长度校验出错"))
                     }
                 }
-                                
+                
+                //app同步数据至设备
+                if val[0] == 0x01 && val[1] == 0xbb {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveSetExerciseDataToDeviceBlock {
+                            self.parseSetExerciseDataToDevice(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveSetExerciseDataToDeviceBlock {
+                            block(.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetSportsDataToDevice长度校验出错"))
+                    }
+                }
+                
+                //设置清除所有数据
+                if val[0] == 0x01 && val[1] == 0xbd {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveSetClearAllDataBlock {
+                            self.parseSetClearAllData(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveSetClearAllDataBlock {
+                            block(.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetClearAllData长度校验出错"))
+                    }
+                }
+                
+                //绑定
+                if val[0] == 0x01 && val[1] == 0xbf {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveSetBindBlock {
+                            self.parseSetBind(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveSetBindBlock {
+                            block(.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetBind长度校验出错"))
+                    }
+                }
+                
+                //解绑
+                if val[0] == 0x01 && val[1] == 0xc1 {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveSetUnbindBlock {
+                            self.parseSetUnbind(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveSetUnbindBlock {
+                            block(.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetUnbind长度校验出错"))
+                    }
+                }
+                
                 //获取消息提醒
                 if val[0] == 0x02 && val[1] == 0x80 {
                     if self.checkLength(val: [UInt8](val)) {
@@ -1464,7 +1543,7 @@ import Alamofire
                         
                     }else{
                         if let block = self.receiveGetMenstrualCycleBlock {
-                            block([:],.invalidLength)
+                            block(nil,.invalidLength)
                         }
                         //printLog("第\(#line)行" , "\(#function)")
                         self.signalCommandSemaphore()
@@ -2417,6 +2496,24 @@ import Alamofire
                     
                 }
                 
+                if val[0] == 0x80 && val[1] == 0x9c {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveReportExerciseInteractionDataBlock {
+                            self.parseReportExerciseInteractionData(val: val, success: block)
+                        }
+                        
+                    }else{
+                        
+                        if let block = self.receiveReportExerciseInteractionDataBlock {
+                            block(-1,-1,-1,.invalidLength)
+                        }
+                        
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "长度校验出错"))
+                    }
+                    
+                }
+                
                 
                 //2.3.1.分包信息交互(APP) 0x00
                 if val[0] == 0x05 && val[1] == 0x80 {
@@ -2639,7 +2736,7 @@ import Alamofire
     }
     
     func writeDataAndBackError(data:Data) -> AntError {
-        
+        self.sendFailState = false
         if self.peripheral?.state != .connected {
             
             return .disconnected
@@ -2650,10 +2747,14 @@ import Alamofire
 
                 DispatchQueue.global().async {
 
-                    //printLog("send dataString -> wait 之前 self.semaphoreCount =",self.semaphoreCount,self.convertDataToSpaceHexStr(data: data,isSend: true))
+                    printLog("send dataString -> wait 之前 sendData = \(self.convertDataToSpaceHexStr(data: data,isSend: true)) self.semaphoreCount = \(self.semaphoreCount) self.signalValue = \(self.signalValue)")
                     self.semaphoreCount -= 1
-                    self.commandSemaphore.wait()
-
+                    let result = self.commandSemaphore.wait(wallTimeout: DispatchWallTime.now()+5)//.wait(timeout: DispatchTime.now()+5)//
+                    if result == .timedOut {
+                        self.semaphoreCount += 1
+                    }
+                    printLog("result = \(result)")
+                    
                     let dataString = String.init(format: "%@", self.convertDataToSpaceHexStr(data: data,isSend: true))
                     AntSDKLog.writeStringToSDKLog(string: "发送:"+dataString)
                                         
@@ -2661,13 +2762,18 @@ import Alamofire
 
                         printLog("send",dataString)
                         printLog("发送命令 -> self.semaphoreCount =",self.semaphoreCount)
-                        self.peripheral?.writeValue(data, for: self.writeCharacteristic!, type: ((self.writeCharacteristic!.properties.rawValue & CBCharacteristicProperties.writeWithoutResponse.rawValue) != 0) ? .withoutResponse : .withResponse)
-                        //定时器计数重置
-                        self.commandDetectionCount = 0
-                        if self.commandDetectionTimer == nil {
-                            //检测命令发送之后是否有回复，在deviceReceivedData方法内有数据则把此定时器销毁。如果没有回复，那么5s之后把信号量回复默认值
-                            self.commandDetectionTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.commandDetectionTimerMethod), userInfo: nil, repeats: true)
+                        if self.sendFailState {
+                            printLog("重置信号量状态true，取消此命令发送")
+                            AntSDKLog.writeStringToSDKLog(string: "重置信号量状态true，取消此命令发送 \n\(dataString)")
+                        }else{
+                            self.peripheral?.writeValue(data, for: self.writeCharacteristic!, type: ((self.writeCharacteristic!.properties.rawValue & CBCharacteristicProperties.writeWithoutResponse.rawValue) != 0) ? .withoutResponse : .withResponse)
                         }
+                        //定时器计数重置
+//                        self.commandDetectionCount = 0
+//                        if self.commandDetectionTimer == nil {
+//                            //检测命令发送之后是否有回复，在deviceReceivedData方法内有数据则把此定时器销毁。如果没有回复，那么5s之后把信号量回复默认值
+//                            self.commandDetectionTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.commandDetectionTimerMethod), userInfo: nil, repeats: true)
+//                        }
                     }
                 }
                 return .none
@@ -2983,7 +3089,7 @@ import Alamofire
         }
         
         if let block = self.receiveGetMenstrualCycleBlock {
-            block([:],.disconnected)
+            block(nil,.disconnected)
             self.receiveGetMenstrualCycleBlock = nil
         }
         
@@ -3055,6 +3161,7 @@ import Alamofire
     
     // MARK: - 检测命令定时器方法
     @objc func commandDetectionTimerMethod() {
+        printLog("commandDetectionTimerMethod commandDetectionCount \(commandDetectionCount)")
         if self.commandDetectionCount >= 50 {
             //用信号量+1，只放一条命令过。如果用重置信号量会导致后续的命令全部怼出去，如果还有丢的命令也无法发现
             self.signalCommandSemaphore()
@@ -3070,7 +3177,7 @@ import Alamofire
         if self.commandDetectionTimer != nil {
             self.commandDetectionTimer?.invalidate()
             self.commandDetectionTimer = nil
-            //printLog("commandDetectionTimerInvalid 定时器销毁")
+            printLog("commandDetectionTimerInvalid 定时器销毁 \(self.commandDetectionTimer)")
         }
     }
     
@@ -3138,25 +3245,50 @@ import Alamofire
     // MARK: - 检测信号量+1
     func signalCommandSemaphore() {
         if self.semaphoreCount < 1 {
-            self.commandSemaphore.signal()
+            self.signalValue = self.commandSemaphore.signal()
             self.semaphoreCount += 1
         }
-        //printLog("signalCommandSemaphore -> self.semaphoreCount =",self.semaphoreCount)
+        AntSDKLog.writeStringToSDKLog(string: "signalCommandSemaphore 自定义值:\(self.semaphoreCount)")
+        AntSDKLog.writeStringToSDKLog(string: "signalCommandSemaphore signal值:\(self.signalValue)")
+        printLog("signalCommandSemaphore signalValue = \(self.signalValue)")
+        printLog("signalCommandSemaphore -> self.semaphoreCount =",self.semaphoreCount)
     }
     
     // MARK: - 检测命令信号量重置
-    func resetCommandSemaphore() {
+    func resetCommandSemaphore(showLog:Bool? = false) {
         self.otaVersionInfo = nil
         self.macString = nil
         self.receiveGetDeviceOtaVersionInfo = nil
         //目前SDK内部重置会在重连、断开连接、关闭蓝牙三个地方调用
         let resetCount = 1-self.semaphoreCount
+        if showLog == true {
+            AntSDKLog.writeStringToSDKLog(string: "同步异常处理，取消后续命令发送")
+        }else{
+            AntSDKLog.writeStringToSDKLog(string: "重连、断开连接、关闭蓝牙，取消后续命令发送")
+        }
+        
+        AntSDKLog.writeStringToSDKLog(string: "resetCommandSemaphore 恢复之前值:\(self.semaphoreCount)")
+        AntSDKLog.writeStringToSDKLog(string: "resetCommandSemaphore signal值:\(self.signalValue)")
         printLog("resetCommandSemaphore resetCount->",resetCount)
         for _ in 0..<resetCount {
             self.signalCommandSemaphore()
         }
+        AntSDKLog.writeStringToSDKLog(string: "resetCommandSemaphore 恢复之后值:\(self.semaphoreCount)")
+        AntSDKLog.writeStringToSDKLog(string: "resetCommandSemaphore signal值:\(self.signalValue)")
+        
+        if self.semaphoreCount < 1 || self.signalValue < 1 {
+            for _ in 0..<1-self.semaphoreCount {
+                self.signalCommandSemaphore()
+            }
+        }
         //重置之后网络请求的isRequesting置为false
         self.isRequesting = false
+    }
+    
+    // MARK: - 重置命令等待，待发命令全部移除不发送
+    @objc public func resetWaitCommand() {
+        self.sendFailState = true
+        self.resetCommandSemaphore(showLog: true)
     }
     
     // MARK: - 设备信息 0x00
@@ -4183,8 +4315,12 @@ import Alamofire
             repeatCount = model.alarmRepeatCount
         }
         
-        let hour = model.alarmHour
-        let minute = model.alarmMinute
+        var hour = model.alarmHour
+        var minute = model.alarmMinute
+        if !model.isValid {
+            hour = 255
+            minute = 255
+        }
         
         var val:[UInt8] = [
             0x01,
@@ -4614,7 +4750,7 @@ import Alamofire
     }
     
     // MARK: - 设置锻炼模式 0x1f
-    @objc public func setExerciseMode(type:AntExerciseType,isOpen:AntExerciseState,success:@escaping((AntError) -> Void)) {
+    @objc public func setExerciseMode(type:AntExerciseType,isOpen:AntExerciseState,timestamp:Int,success:@escaping((AntError) -> Void)) {
         var type = type.rawValue
         if type > UInt8.max || type < UInt8.min {
             print("输入参数超过范围,改为默认值0")
@@ -4633,6 +4769,16 @@ import Alamofire
             UInt8(type),
             UInt8(isOpen)
         ]
+        if /*let _ = self.functionListModel?.functionList_sportInteraction*/true {
+            let arr = [
+                UInt8((timestamp ) & 0xff),
+                UInt8((timestamp >> 8) & 0xff),
+                UInt8((timestamp >> 16) & 0xff),
+                UInt8((timestamp >> 24) & 0xff)
+            ]
+            val.append(contentsOf: arr)
+            val[2] = UInt8(val.count)
+        }
         let data = Data.init(bytes: &val, count: val.count)
         
         let state = self.writeDataAndBackError(data: data)
@@ -5476,6 +5622,177 @@ import Alamofire
         self.signalCommandSemaphore()
     }
     
+    // MARK: - app同步数据至设备 0x3b
+    @objc public func setExerciseDataToDevice(type:AntExerciseType,timeLong:Int,calories:Int,distance:Int,success:@escaping((AntError) -> Void)) {
+        var type = type.rawValue
+        if type > UInt8.max || type < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            type = 0
+        }
+        var timeLong = timeLong
+        if timeLong > UInt32.max || timeLong < UInt32.min {
+            print("输入参数超过范围,改为默认值0")
+            timeLong = 0
+        }
+        var calories = calories
+        if calories > UInt32.max || calories < UInt32.min {
+            print("输入参数超过范围,改为默认值0")
+            calories = 0
+        }
+        var distance = distance
+        if distance > UInt32.max || distance < UInt32.min {
+            print("输入参数超过范围,改为默认值0")
+            distance = 0
+        }
+        var val:[UInt8] = [
+            0x01,
+            0x3b,
+            0x11,
+            0x00,
+            UInt8(type),
+            UInt8((timeLong ) & 0xff),
+            UInt8((timeLong >> 8) & 0xff),
+            UInt8((timeLong >> 16) & 0xff),
+            UInt8((timeLong >> 24) & 0xff),
+            UInt8((calories ) & 0xff),
+            UInt8((calories >> 8) & 0xff),
+            UInt8((calories >> 16) & 0xff),
+            UInt8((calories >> 24) & 0xff),
+            UInt8((distance ) & 0xff),
+            UInt8((distance >> 8) & 0xff),
+            UInt8((distance >> 16) & 0xff),
+            UInt8((distance >> 24) & 0xff),
+        ]
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetExerciseDataToDeviceBlock = success
+        }else{
+            success(state)
+        }
+    }
+    
+    private func parseSetExerciseDataToDevice(val:[UInt8],success:@escaping((AntError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val[4] == 1 {
+            
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@", state))
+            success(.none)
+            
+        }else{
+            success(.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 设置清除所有数据
+    @objc public func setClearAllData(_ success:@escaping((AntError) -> Void)) {
+        
+        var val:[UInt8] = [
+            0x01,
+            0x3d,
+            0x04,
+            0x00,
+        ]
+        
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetClearAllDataBlock = success
+        }else{
+            success(state)
+        }
+    }
+    
+    private func parseSetClearAllData(val:[UInt8],success:@escaping((AntError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val[4] == 1 {
+            
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@", state))
+            success(.none)
+            
+        }else{
+            success(.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 绑定
+    @objc public func setBind(_ success:@escaping((AntError) -> Void)) {
+        
+        var val:[UInt8] = [
+            0x01,
+            0x3f,
+            0x04,
+            0x00,
+        ]
+        
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetBindBlock = success
+        }else{
+            success(state)
+        }
+    }
+    
+    private func parseSetBind(val:[UInt8],success:@escaping((AntError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val[4] == 1 {
+            
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@", state))
+            success(.none)
+            
+        }else{
+            success(.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 解绑
+    @objc public func setUnbind(_ success:@escaping((AntError) -> Void)) {
+        
+        var val:[UInt8] = [
+            0x01,
+            0x41,
+            0x04,
+            0x00,
+        ]
+        
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetUnbindBlock = success
+        }else{
+            success(state)
+        }
+    }
+    
+    private func parseSetUnbind(val:[UInt8],success:@escaping((AntError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val[4] == 1 {
+            
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@", state))
+            success(.none)
+            
+        }else{
+            success(.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
     // MARK: - 设备提醒 0x02
     // MARK: - 获取消息提醒 0x00
     @objc public func getNotificationRemind(_ success:@escaping(([Int],AntError) -> Void)) {
@@ -6027,7 +6344,7 @@ import Alamofire
     }
     
     // MARK: - 获取生理周期 0x0a
-    @objc public func getMenstrualCycle(_ success:@escaping(([String:Any],AntError) -> Void)) {
+    @objc public func getMenstrualCycle(_ success:@escaping((AntMenstrualModel?,AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
@@ -6041,46 +6358,95 @@ import Alamofire
         if state == .none {
             self.receiveGetMenstrualCycleBlock = success
         }else{
-            success([:],state)
+            success(nil,state)
         }
     }
     
-    private func parseGetMenstrualCycle(val:[UInt8],success:@escaping(([String:Any],AntError) -> Void)) {
+    private func parseGetMenstrualCycle(val:[UInt8],success:@escaping((AntMenstrualModel?,AntError) -> Void)) {
         let state = String.init(format: "%02x", val[4])
-        
+        if val.count < 15 {
+            success(nil,.invalidLength)
+            self.signalCommandSemaphore()
+            return
+        }
         if val[4] == 1 {
             
-            let type = val[5]
+            let isOpen = val[5]
             let cycleCount = val[6]
             let menstrualCount = val[7]
-            let lastMonth = val[8]
-            let lastDay = val[9]
-            let remindHour = val[10]
-            let remindMinute = val[11]
-            let string = String.init(format: "提醒模式:%d,周期天数:%d,经期天数:%d,上次经期月:%d,上次经期日:%d,提醒时间：%d:%d",type,cycleCount,menstrualCount,lastMonth,lastDay,remindHour,remindMinute)
+            let lastYear = (Int(val[8]) | Int(val[9]) << 8)
+            let lastMonth = val[10]
+            let lastDay = val[11]
+            let startDay = val[12]
+            let remindHour = val[13]
+            let remindMinute = val[14]
+            let string = String.init(format: "开关:%d,周期天数:%d,经期天数:%d,上次经期日期:%04d-%02d-%02d,提前%d天提醒,提醒时间：%d:%d",isOpen,cycleCount,menstrualCount,lastYear,lastMonth,lastDay,startDay,remindHour,remindMinute)
             AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
-            success(["ttt":"\(string)"],.none)
+            
+            let model = AntMenstrualModel.init(dic: ["isOpen":"\(isOpen)",
+                                                     "cycleCount":"\(cycleCount)",
+                                                     "menstrualCount":"\(menstrualCount)",
+                                                     "year":"\(lastYear)",
+                                                     "month":"\(lastMonth)",
+                                                     "day":"\(lastDay)",
+                                                     "advanceDay":"\(startDay)",
+                                                     "remindHour":"\(remindHour)",
+                                                     "remindMinute":"\(remindMinute)",
+                                                     ])
+            success(model,.none)
             
         }else{
-            success([:],.invalidState)
+            success(nil,.invalidState)
         }
         //printLog("第\(#line)行" , "\(#function)")
         self.signalCommandSemaphore()
     }
     
     // MARK: - 设置生理周期 0x0b
-    @objc public func setMenstrualCycle(type:String,cycleCount:String,menstrualCount:String,lastMonth:String,lastDay:String,remindHour:String,remindMinute:String,success:@escaping((AntError) -> Void)) {
-        
+    @objc public func setMenstrualCycle(model:AntMenstrualModel,success:@escaping((AntError) -> Void)) {
+        let isOpen = model.isOpen
         var val:[UInt8] = [
             0x02,
             0x0b,
-            0x05,
+            0x0e,
             0x00,
-            (UInt8(type) ?? 0),
+            isOpen == false ? 0:1,
+            UInt8(model.cycleCount),
+            UInt8(model.menstrualCount),
+            UInt8((model.year) & 0xff),
+            UInt8((model.year >> 8) & 0xff),
+            UInt8(model.month),
+            UInt8(model.day),
+            UInt8(model.advanceDay),
+            UInt8(model.remindHour),
+            UInt8(model.remindMinute),
+        ]
+        
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetMenstrualCycleBlock = success
+        }else{
+            success(state)
+        }
+    }
+     
+    @objc public func setMenstrualCycle(isOpen:String,cycleCount:String,menstrualCount:String,year:String,month:String,day:String,advanceDay:String,remindHour:String,remindMinute:String,success:@escaping((AntError) -> Void)) {
+        let yearCount = Int(year) ?? 0
+        var val:[UInt8] = [
+            0x02,
+            0x0b,
+            0x0e,
+            0x00,
+            (UInt8(isOpen) ?? 0),
             (UInt8(cycleCount) ?? 0),
             (UInt8(menstrualCount) ?? 0),
-            (UInt8(lastMonth) ?? 0),
-            (UInt8(lastDay) ?? 0),
+            UInt8((yearCount ) & 0xff),
+            UInt8((yearCount >> 8 ) & 0xff),
+            (UInt8(month) ?? 0),
+            (UInt8(day) ?? 0),
+            (UInt8(advanceDay) ?? 0),
             (UInt8(remindHour) ?? 0),
             (UInt8(remindMinute) ?? 0)
         ]
@@ -6092,7 +6458,6 @@ import Alamofire
         }else{
             success(state)
         }
-        
     }
     
     private func parseSetMenstrualCycle(val:[UInt8],success:@escaping((AntError) -> Void)) {
@@ -6210,7 +6575,11 @@ import Alamofire
     
     private func parseGetDrinkWater(val:[UInt8],success:@escaping((AntDrinkWaterModel?,AntError) -> Void)) {
         let state = String.init(format: "%02x", val[4])
-        
+        if val.count <= 10 {
+            success(nil,.invalidLength)
+            self.signalCommandSemaphore()
+            return
+        }
         if val[4] == 1 {
             
             let isOpen = val[5]
@@ -6299,7 +6668,7 @@ import Alamofire
         self.signalCommandSemaphore()
     }
     
-    // MARK: - 设置常用联系人
+    // MARK: - 设置常用联系人 0x13
     @objc public func setAddressBook(modelArray:[AntAddressBookModel],success:@escaping((AntError) -> Void)) {
         
         /*
@@ -6324,7 +6693,7 @@ import Alamofire
          bit3           号码长度M
          bit4~N         姓名utf8
          bitN+1~M       号码utf8
-         ...
+         ...()
          
          张三 13755660033
          李四 0755-6128998
@@ -6343,17 +6712,32 @@ import Alamofire
         for i in 0..<modelArray.count {
             let model = modelArray[i]
             let nameData = model.name.data(using: .utf8) ?? .init()
+            //要限制长度<=64字符
+            if nameData.count >= 64 {
+                let aData = nameData.subdata(in: 0..<64)
+                let str = NSString.init(data: aData, encoding:4)
+                print("str = \(str)")
+                
+                let strUtf8 = String.init(data: aData, encoding: .utf8)
+                print("strUtf8 = \(strUtf8)")
+                let test = String.init(data: nameData, encoding: .utf8)
+                print("nameData = \(test)")
+                print("\(model.name) 长度超过64，截取为:\(String.init(format: "%@", aData as CVarArg))")
+            }
             let nameValArray = nameData.withUnsafeBytes { (byte) -> [UInt8] in
                 let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
-                return [UInt8](UnsafeBufferPointer.init(start: b, count: nameData.count))
+                return [UInt8](UnsafeBufferPointer.init(start: b, count: nameData.count >= 64 ? 64 : nameData.count))
             }
             let phoneData = model.phoneNumber.data(using: .utf8) ?? .init()
+            if phoneData.count >= 32 {
+                print("\(model.phoneNumber) 长度超过32，截取为:\(String.init(data: phoneData.subdata(in: 0..<32), encoding: .utf8))")
+            }
             let phoneValArray = phoneData.withUnsafeBytes { (byte) -> [UInt8] in
                 let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
-                return [UInt8](UnsafeBufferPointer.init(start: b, count: phoneData.count))
+                return [UInt8](UnsafeBufferPointer.init(start: b, count: phoneData.count >= 32 ? 32 : phoneData.count))
             }
             
-            modelDataArray.append(contentsOf: [UInt8(i & 0xff),UInt8((i >> 8) & 0xff),UInt8(nameData.count),UInt8(phoneData.count)])
+            modelDataArray.append(contentsOf: [UInt8(i & 0xff),UInt8((i >> 8) & 0xff),UInt8(nameValArray.count),UInt8(phoneValArray.count)])
             modelDataArray.append(contentsOf: nameValArray)
             modelDataArray.append(contentsOf: phoneValArray)
         }
@@ -6392,8 +6776,11 @@ import Alamofire
         DispatchQueue.global().async {
 
             self.semaphoreCount -= 1
-            self.commandSemaphore.wait()
-                                
+            let result = self.commandSemaphore.wait(wallTimeout: DispatchWallTime.now()+5)
+            if result == .timedOut {
+                self.semaphoreCount += 1
+            }
+            
             DispatchQueue.main.async {
 
                 printLog("发送命令 -> self.semaphoreCount =",self.semaphoreCount)
@@ -6454,11 +6841,11 @@ import Alamofire
                 }
 
                 //定时器计数重置
-                self.commandDetectionCount = 0
-                if self.commandDetectionTimer == nil {
-                    //检测命令发送之后是否有回复，在deviceReceivedData方法内有数据则把此定时器销毁。如果没有回复，那么5s之后把信号量回复默认值
-                    self.commandDetectionTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.commandDetectionTimerMethod), userInfo: nil, repeats: true)
-                }
+//                self.commandDetectionCount = 0
+//                if self.commandDetectionTimer == nil {
+//                    //检测命令发送之后是否有回复，在deviceReceivedData方法内有数据则把此定时器销毁。如果没有回复，那么5s之后把信号量回复默认值
+//                    self.commandDetectionTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.commandDetectionTimerMethod), userInfo: nil, repeats: true)
+//                }
             }
         }
     }
@@ -7530,7 +7917,32 @@ import Alamofire
         }
         
     }
-     
+    
+    // MARK: - 运动数据交互上报 0x9c
+    @objc public func reportExerciseInteractionData(success:@escaping((_ timestamp:Int,_ step:Int,_ hr:Int,AntError) -> Void)) {
+        self.receiveReportExerciseInteractionDataBlock = success
+
+    }
+    
+    private func parseReportExerciseInteractionData(val:[UInt8],success:@escaping((Int,Int,Int,AntError) -> Void)) {
+        
+        if val[4] == 1 {
+            
+            let timestamp = (Int(val[5]) | Int(val[6]) << 8 | Int(val[7]) << 16 | Int(val[8]) << 24)
+            let step = (Int(val[9]) | Int(val[10]) << 8 | Int(val[11]) << 16 | Int(val[12]) << 24)
+            let hr = Int(val[13])
+                        
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "运动数据交互上报 时间戳:%d,步数:%d,心率:%d",timestamp,step,hr))//
+            
+            success(timestamp,step,hr,.none)//
+            
+        }else{
+            success(-1,-1,-1,.invalidState)
+        }
+        
+    }
+    
+    
     // MARK: - ota升级
     @objc public func setOtaStartUpgrade(type:Int,localFile:Any,isContinue:Bool,progress:@escaping((Float) -> Void),success:@escaping((AntError) -> Void)) {
         var type = type
@@ -8741,8 +9153,19 @@ import Alamofire
                 self.downloadBinFile(url: url, filePath: fileDownPath) { fileString, error in
                     if error == .none {
                         
-                        self.setOtaStartUpgrade(type: 4, localFile: fileString, isContinue: false, progress: progress, success: success)
-                        
+                        //拼接处完整的路径
+                        let fileURL = URL.init(fileURLWithPath: fileString)
+                        if let fileData = try? Data.init(contentsOf: fileURL) {
+                            printLog("fileData.count = \(fileData.count)")
+                            //小于5k的文件直接报失败
+                            if fileData.count <= 5*1024 {
+                                AntSDKLog.writeStringToSDKLog(string: "下载的文件大小 \(fileData.count) bytes <= 5kb 默认异常处理")
+                                printLog("下载的文件大小 \(fileData.count) bytes <= 5kb 默认异常处理")
+                                success(.fail)
+                                return
+                            }
+                            self.setOtaStartUpgrade(type: 4, localFile: fileString, isContinue: false, progress: progress, success: success)
+                        }
                     }
                 }
             }else{

@@ -61,6 +61,10 @@ import UIKit
     case ringOff            = 32            //挂断电话
     case answerCalls        = 33            //接听电话
     case timeFormat         = 34            //时间制
+    case screenType         = 35            //手表款式
+    case sportCountdown     = 37            //运动倒计时
+    case lowBattery         = 38            //低电提醒
+    case exerciseInteraction   = 39            //app发起运动交互
 }
 
 @objc public class AntFunctionListModel:NSObject {
@@ -102,6 +106,9 @@ import UIKit
     @objc public private(set) var functionList_screenType = false
     @objc public private(set) var functionList_sportCountdown = false
     @objc public private(set) var functionList_lowBattery = false
+    @objc public private(set) var functionList_exerciseInteraction = false
+    @objc public private(set) var functionList_clearData = false
+    @objc public private(set) var functionList_bind = false
     
     @objc public private(set) var functionDetail_exercise:AntFunctionModel_exercise?
     @objc public private(set) var functionDetail_notification:AntFunctionModel_notification?
@@ -354,6 +361,12 @@ import UIKit
             case 37:self.functionList_sportCountdown = state == 0 ? false:true
                 break
             case 38:self.functionList_lowBattery = state == 0 ? false:true
+                break
+            case 39:self.functionList_exerciseInteraction = state == 0 ? false:true
+                break
+            case 40:self.functionList_clearData = state == 0 ? false:true
+                break
+            case 41:self.functionList_bind = state == 0 ? false:true
                 break
             default:
                 break
@@ -696,6 +709,15 @@ import UIKit
         }
         if self.functionList_lowBattery {
             log += "\n低电量提醒"
+        }
+        if self.functionList_exerciseInteraction {
+            log += "\n运动交互"
+        }
+        if self.functionList_clearData {
+            log += "\n清除数据"
+        }
+        if self.functionList_bind {
+            log += "\n绑定/解绑"
         }
         return log
     }
@@ -1164,6 +1186,7 @@ import UIKit
     case cycle
 }
 @objc public class AntAlarmModel:NSObject {
+    @objc public var isValid:Bool = true
     @objc public var alarmIndex:Int = -1 {
         didSet {
             if self.alarmIndex < UInt8.min || self.alarmIndex > UInt8.max {
@@ -1207,6 +1230,11 @@ import UIKit
 
             self.alarmHour = Int(UInt8(dic["hour"] as! String) ?? 0)
             self.alarmMinute = Int(UInt8(dic["minute"] as! String) ?? 0)
+            
+            if self.alarmHour == 255 || self.alarmMinute == 255 {
+                self.isValid = false
+            }
+            
             let repeatCount = Int(UInt8(dic["repeatCount"] as! String) ?? 0)
             
             if let repeatString = dic["repeatCount"] as? String {
@@ -1504,6 +1532,99 @@ import UIKit
         self.isOpen = result == 0 ? false:true
         self.maxValue = Int(dic["maxHr"] as! String) ?? 0
         self.minValue = Int(dic["minHr"] as! String) ?? 0
+    }
+}
+
+@objc public class AntMenstrualModel:NSObject {
+    @objc public var isOpen:Bool = false
+    @objc public var cycleCount:Int = 0 {
+        didSet {
+            if self.cycleCount < UInt8.min || self.cycleCount > UInt8.max {
+                self.cycleCount = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var menstrualCount:Int = 0 {
+        didSet {
+            if self.menstrualCount < UInt8.min || self.menstrualCount > UInt8.max {
+                self.menstrualCount = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    
+    @objc public var year:Int = 0 {
+        didSet {
+            if self.year < UInt16.min || self.year > UInt16.max {
+                self.year = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    
+    @objc public var month:Int = 0 {
+        didSet {
+            if self.month < UInt8.min || self.month > UInt8.max {
+                self.month = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    
+    @objc public var day:Int = 0 {
+        didSet {
+            if self.day < UInt8.min || self.day > UInt8.max {
+                self.day = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    
+    @objc public var advanceDay:Int = 0 {
+        didSet {
+            if self.advanceDay < UInt8.min || self.advanceDay > UInt8.max {
+                self.advanceDay = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    
+    @objc public var remindHour:Int = 0 {
+        didSet {
+            if self.remindHour < UInt8.min || self.remindHour > UInt8.max {
+                self.remindHour = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    
+    @objc public var remindMinute:Int = 0 {
+        didSet {
+            if self.remindMinute < UInt8.min || self.remindMinute > UInt8.max {
+                self.remindMinute = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    
+    public override init() {
+        super.init()
+    }
+    
+    init(dic:[String:Any]) {
+        super.init()
+        
+        let result = Int(dic["isOpen"] as! String) ?? 0
+        self.isOpen = result == 0 ? false:true
+        self.cycleCount = Int(dic["cycleCount"] as! String) ?? 0
+        self.menstrualCount = Int(dic["menstrualCount"] as! String) ?? 0
+        self.year = Int(dic["year"] as! String) ?? 0
+        self.month = Int(dic["month"] as! String) ?? 0
+        self.day = Int(dic["day"] as! String) ?? 0
+        self.advanceDay = Int(dic["advanceDay"] as! String) ?? 0
+        self.remindHour = Int(dic["remindHour"] as! String) ?? 0
+        self.remindMinute = Int(dic["remindMinute"] as! String) ?? 0
     }
 }
 

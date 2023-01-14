@@ -310,6 +310,11 @@ class AntVC: UIViewController {
                 "0x34 获取24小时心率监测",
                 "0x35 设置24小时心率监测",
                 "0x37 设置设备进入或退出拍照模式",
+                "0x3b app同步运动数据至设备(手动自定义)",
+                "0x3b app同步运动数据至设备(自动1s递增)",
+                "0x3d 设置清除所有数据",
+                "0x3f 绑定",
+                "0x41 解绑",
             ],
             [
                 "0x00 获取消息提醒",
@@ -323,8 +328,8 @@ class AntVC: UIViewController {
                 "0x07 设置勿扰提醒",
                 "0x08 获取心率预警",
                 "0x09 设置心率预警",
-                //"0x0a 获取生理周期",
-                //"0x0b 设置生理周期",
+                "0x0a 获取生理周期",
+                "0x0b 设置生理周期",
                 //"0x0c 获取洗手提醒",
                 //"0x0d 设置洗手提醒",
                 "0x0e 获取喝水提醒",
@@ -363,6 +368,7 @@ class AntVC: UIViewController {
                 "上报抬腕亮屏",
                 "上报设备振动",
                 "上报实时数据",
+                "上报运动交互数据",
             ],
             [
                 "多包测试命令",
@@ -1249,29 +1255,65 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 //                }
 //            }
             
-            for i in stride(from: 0, to: 10, by: 1) {
-                AntCommandModule.shareInstance.getAlarm(index: i) { success, error in
+            self.presentTextFieldAlertVC(title: "获取闹钟", message: "", holderStringArray: nil, cancel: "有效闹钟", cancelAction: {
+                for i in stride(from: 0, to: 10, by: 1) {
+                    AntCommandModule.shareInstance.getAlarm(index: i) { success, error in
 
-                    if error == .none {
-                        print("GetAlarm ->",success)
+                        if error == .none {
+                            print("GetAlarm ->",success)
 
-                        if let alarmModel = success {
-                            print("alarmModel",alarmModel.alarmIndex,"alarmOpen ->",alarmModel.alarmOpen,"alarmTime ->",String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute),"alarmType ->",alarmModel.alarmType.rawValue,"alarmRepeat ->",alarmModel.alarmRepeatArray)
+                            if let alarmModel = success {
+                                print("alarmModel",alarmModel.alarmIndex,"alarmOpen ->",alarmModel.alarmOpen,"alarmTime ->",String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute),"alarmType ->",alarmModel.alarmType.rawValue,"alarmRepeat ->",alarmModel.alarmRepeatArray)
+                                if alarmModel.isValid {
+                                    self.logView.writeString(string: "闹钟序号:\(alarmModel.alarmIndex)")
+                                    self.logView.writeString(string: "闹钟时间:\(String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute))")
+                                    self.logView.writeString(string: "repeatCount:\(alarmModel.alarmRepeatCount)")
+                                    let str = alarmModel.alarmOpen ? "":"\n"
+                                    self.logView.writeString(string: "闹钟开关:\(alarmModel.alarmOpen)\(str)")
+                                    if alarmModel.alarmOpen {
+                                        self.logView.writeString(string: "闹钟重复类型:\(alarmModel.alarmType == .single ? "单次闹钟":"重复闹钟")")
+                                        if alarmModel.alarmType == .cycle {
+                                            if alarmModel.alarmRepeatArray != nil {
+                                                let str = ((alarmModel.alarmRepeatArray![0] != 0 ? "星期天":"")+(alarmModel.alarmRepeatArray![1] != 0 ? "星期一":"")+(alarmModel.alarmRepeatArray![2] != 0 ? "星期二":"")+(alarmModel.alarmRepeatArray![3] != 0 ? "星期三":"")+(alarmModel.alarmRepeatArray![4] != 0 ? "星期四":"")+(alarmModel.alarmRepeatArray![5] != 0 ? "星期五":"")+(alarmModel.alarmRepeatArray![6] != 0 ? "星期六":""))
+                                                print("闹钟重复星期:\(str)")
+                                                self.logView.writeString(string: "闹钟重复星期:\(str)\n")
+                                            }else{
+                                                self.logView.writeString(string: "闹钟重复星期:重复星期未开启,默认单次闹钟\n")
+                                                print("闹钟重复星期:重复星期未开启,默认单次闹钟")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }, ok: "全部闹钟") { _ in
+                for i in stride(from: 0, to: 10, by: 1) {
+                    AntCommandModule.shareInstance.getAlarm(index: i) { success, error in
 
-                            self.logView.writeString(string: "闹钟序号:\(alarmModel.alarmIndex)")
-                            self.logView.writeString(string: "闹钟时间:\(String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute))")
-                            self.logView.writeString(string: "repeatCount:\(alarmModel.alarmRepeatCount)")
-                            self.logView.writeString(string: "闹钟开关:\(alarmModel.alarmOpen)")
-                            if alarmModel.alarmOpen {
-                                self.logView.writeString(string: "闹钟重复类型:\(alarmModel.alarmType == .single ? "单次闹钟":"重复闹钟")")
-                                if alarmModel.alarmType == .cycle {
-                                    if alarmModel.alarmRepeatArray != nil {
-                                        let str = ((alarmModel.alarmRepeatArray![0] != 0 ? "星期天":"")+(alarmModel.alarmRepeatArray![1] != 0 ? "星期一":"")+(alarmModel.alarmRepeatArray![2] != 0 ? "星期二":"")+(alarmModel.alarmRepeatArray![3] != 0 ? "星期三":"")+(alarmModel.alarmRepeatArray![4] != 0 ? "星期四":"")+(alarmModel.alarmRepeatArray![5] != 0 ? "星期五":"")+(alarmModel.alarmRepeatArray![6] != 0 ? "星期六":""))
-                                        print("闹钟重复星期:\(str)")
-                                        self.logView.writeString(string: "闹钟重复星期:\(str)")
-                                    }else{
-                                        self.logView.writeString(string: "闹钟重复星期:重复星期未开启,默认单次闹钟")
-                                        print("闹钟重复星期:重复星期未开启,默认单次闹钟")
+                        if error == .none {
+                            print("GetAlarm ->",success)
+
+                            if let alarmModel = success {
+                                print("alarmModel",alarmModel.alarmIndex,"alarmOpen ->",alarmModel.alarmOpen,"alarmTime ->",String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute),"alarmType ->",alarmModel.alarmType.rawValue,"alarmRepeat ->",alarmModel.alarmRepeatArray)
+
+                                self.logView.writeString(string: "闹钟序号:\(alarmModel.alarmIndex)")
+                                self.logView.writeString(string: "闹钟时间:\(String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute))")
+                                self.logView.writeString(string: "repeatCount:\(alarmModel.alarmRepeatCount)")
+                                let str = alarmModel.alarmOpen ? "":"\n"
+                                self.logView.writeString(string: "闹钟开关:\(alarmModel.alarmOpen)\(str)")
+                                if alarmModel.alarmOpen {
+                                    self.logView.writeString(string: "闹钟重复类型:\(alarmModel.alarmType == .single ? "单次闹钟":"重复闹钟")")
+                                    if alarmModel.alarmType == .cycle {
+                                        if alarmModel.alarmRepeatArray != nil {
+                                            let str = ((alarmModel.alarmRepeatArray![0] != 0 ? "星期天":"")+(alarmModel.alarmRepeatArray![1] != 0 ? "星期一":"")+(alarmModel.alarmRepeatArray![2] != 0 ? "星期二":"")+(alarmModel.alarmRepeatArray![3] != 0 ? "星期三":"")+(alarmModel.alarmRepeatArray![4] != 0 ? "星期四":"")+(alarmModel.alarmRepeatArray![5] != 0 ? "星期五":"")+(alarmModel.alarmRepeatArray![6] != 0 ? "星期六":""))
+                                            print("闹钟重复星期:\(str)")
+                                            self.logView.writeString(string: "闹钟重复星期:\(str)\n")
+                                        }else{
+                                            self.logView.writeString(string: "闹钟重复星期:重复星期未开启,默认单次闹钟\n")
+                                            print("闹钟重复星期:重复星期未开启,默认单次闹钟")
+                                        }
                                     }
                                 }
                             }
@@ -1607,7 +1649,10 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 }
                 self.logView.writeString(string: stateString)
                 let state = AntExerciseState.init(rawValue: Int(isOpen) ?? 0) ?? .end
-                AntCommandModule.shareInstance.setExerciseMode(type: AntExerciseType.init(rawValue: Int(type) ?? 0) ?? .runOutside, isOpen: state) { error in
+                let timestamp = Int(Date().timeIntervalSince1970)
+                self.logView.writeString(string: "\(timestamp)")
+                print("timestamp = \(timestamp)")
+                AntCommandModule.shareInstance.setExerciseMode(type: AntExerciseType.init(rawValue: Int(type) ?? 0) ?? .runOutside, isOpen: state, timestamp: timestamp) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -1804,7 +1849,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
 
                     if error == .none {
-                        print("SetWeatherUnit ->","success")
+                        print("setCustomDialEdit ->","success")
                     }
                 }
                 
@@ -1931,6 +1976,139 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
+        case "0x3b app同步运动数据至设备(手动自定义)":
+            
+            let array = [
+                "锻炼类型",
+                "运动时长",
+                "卡路里",
+                "距离",
+            ]
+
+            self.logView.clearString()
+            self.logView.writeString(string: "app同步运动数据至设备")
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "app同步运动数据至设备", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let type = textArray[0]
+                let timeLong = textArray[1]
+                let calories = textArray[2]
+                let distance = textArray[3]
+                
+                AntCommandModule.shareInstance.setExerciseDataToDevice(type: AntExerciseType.init(rawValue: Int(type) ?? 0) ?? .runOutside, timeLong: Int(timeLong) ?? 0, calories: Int(calories) ?? 0, distance: Int(distance) ?? 0) { error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        print("setExerciseDataToDevice ->","success")
+                    }
+                }
+            }
+            
+            break
+            
+        case "0x3b app同步运动数据至设备(自动1s递增)":
+            
+            let array = [
+                "锻炼类型",
+                "运动时长递增数(默认1)",
+                "卡路里递增数(默认1)",
+                "距离递递增数(默认1)",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "app同步运动数据至设备")
+            
+            var timer:Timer?
+                
+            if #available(iOS 10.0, *) {
+                
+                self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "app同步运动数据至设备", holderStringArray: array, cancel: "取消", cancelAction: {
+                    
+                }, ok: "开始") { (textArray) in
+
+                    var timeLong = 0
+                    var calories = 0
+                    var distance = 0
+                    
+                    let type = textArray[0]
+                    let timeLongAddCount = textArray[1]
+                    let caloriesAddCount = textArray[2]
+                    let distanceAddCount = textArray[3]
+                    
+                    timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { time in
+                        timeLong += (Int(timeLongAddCount) ?? 1)
+                        calories += (Int(caloriesAddCount) ?? 1)
+                        distance += (Int(distanceAddCount) ?? 1)
+                        print("timeLong = \(timeLong), calories = \(calories), distance = \(distance)")
+                        self.logView.writeString(string: "运动类型:\(Int(type) ?? 0)")
+                        self.logView.writeString(string: "运动时长:\(timeLong)")
+                        self.logView.writeString(string: "卡路里:\(calories)")
+                        self.logView.writeString(string: "距离:\(distance)\n")
+                        AntCommandModule.shareInstance.setExerciseDataToDevice(type: AntExerciseType.init(rawValue: Int(type) ?? 0) ?? .runOutside, timeLong: timeLong, calories: calories, distance: distance) { error in
+
+                            if error == .none {
+                                print("setExerciseDataToDevice ->","success")
+                            }
+                        }
+                    }
+                    
+                    self.presentSystemAlertVC(title: "提示", message: "点击确定结束此次自动发送", cancelAction: nil) {
+                        timer?.invalidate()
+                        timer = nil
+                    }
+                }
+
+            } else {
+
+            }
+            
+            break
+            
+        case "0x3d 设置清除所有数据":
+            self.logView.clearString()
+            self.logView.writeString(string: "设置清除所有数据")
+            
+            AntCommandModule.shareInstance.setClearAllData { error in
+                
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                if error == .none {
+                    print("setClearAllData ->","success")
+                }
+            }
+            
+            break
+            
+        case "0x3f 绑定":
+            self.logView.clearString()
+            self.logView.writeString(string: "绑定")
+            
+            AntCommandModule.shareInstance.setBind { error in
+                
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                if error == .none {
+                    print("setBind ->","success")
+                }
+            }
+            
+            break
+            
+        case "0x41 解绑":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "解绑")
+            
+            AntCommandModule.shareInstance.setUnbind { error in
+                
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                if error == .none {
+                    print("setUnbind ->","success")
+                }
+            }
+            break
+
         case "0x00 获取消息提醒":
             
             self.logView.clearString()
@@ -2388,9 +2566,34 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
         case "0x0a 获取生理周期":
             
+            self.logView.clearString()
+            self.logView.writeString(string: "获取生理周期")
+            
             AntCommandModule.shareInstance.getMenstrualCycle { success, error in
-                print("GetMenstrualCycle ->",success)
-                self.navigationController?.pushViewController(vc, animated: true)
+                
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                if error == .none {
+                    if let model = success {
+                        
+                        let isOpen = model.isOpen
+                        let cycleCount = model.cycleCount
+                        let menstrualCount = model.menstrualCount
+                        let year = model.year
+                        let month = model.month
+                        let day = model.day
+                        let advanceDay = model.advanceDay
+                        let remindHour = model.remindHour
+                        let remindMinute = model.remindMinute
+                        
+                        self.logView.writeString(string: isOpen ? "开启":"关闭")
+                        self.logView.writeString(string: "周期天数: \(cycleCount)")
+                        self.logView.writeString(string: "经期天数: \(menstrualCount)")
+                        self.logView.writeString(string: String.init(format: "上一次月经开始日期: %04d-%02d-%02d", year,month,day))
+                        self.logView.writeString(string: "提前提醒天数: \(advanceDay)")
+                        self.logView.writeString(string: String.init(format: "提醒时间: %02d:%02d", remindHour,remindMinute))
+                    }
+                }
             }
             
             break
@@ -2398,11 +2601,13 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
         case "0x0b 设置生理周期":
             
             let array = [
-                "0-月经开始,1-排卵开始,2-排卵高峰,3-排卵结束",
+                "开关",
                 "周期天数",
                 "月经天数",
-                "上次经期的月份",
+                "上次经期的年",
+                "上次经期的月",
                 "上次经期的日",
+                "提前提醒的天数",
                 "提醒小时",
                 "提醒分钟"
             ]
@@ -2410,17 +2615,42 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置生理周期", holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
-                let type = textArray[0]
-                let cycleCount = textArray[1]
-                let menstrualCount = textArray[2]
-                let lastMonth = textArray[3]
-                let lastDay = textArray[4]
-                let remindHour = textArray[5]
-                let remindMinute = textArray[6]
                 
-                AntCommandModule.shareInstance.setMenstrualCycle(type: type, cycleCount: cycleCount, menstrualCount: menstrualCount, lastMonth: lastMonth, lastDay: lastDay, remindHour: remindHour, remindMinute: remindMinute) { success in
-                    print("SetMenstrualCycle ->",success)
-                    self.navigationController?.pushViewController(vc, animated: true)
+                let isOpen:Bool = (Int(textArray[0]) ?? 0) == 0 ? false : true
+                let cycleCount:Int = Int(textArray[1]) ?? 0
+                let menstrualCount:Int = Int(textArray[2]) ?? 0
+                let year:Int = Int(textArray[3]) ?? 0
+                let month:Int = Int(textArray[4]) ?? 0
+                let day:Int = Int(textArray[5]) ?? 0
+                let advanceDay:Int = Int(textArray[6]) ?? 0
+                let remindHour:Int = Int(textArray[7]) ?? 0
+                let remindMinute:Int = Int(textArray[8]) ?? 0
+                
+                let model = AntMenstrualModel.init()
+                model.isOpen = isOpen
+                model.cycleCount = cycleCount
+                model.menstrualCount = menstrualCount
+                model.year = year
+                model.month = month
+                model.day = day
+                model.advanceDay = advanceDay
+                model.remindHour = remindHour
+                model.remindMinute = remindMinute
+                
+                self.logView.writeString(string: isOpen ? "开启":"关闭")
+                self.logView.writeString(string: "周期天数: \(cycleCount)")
+                self.logView.writeString(string: "经期天数: \(menstrualCount)")
+                self.logView.writeString(string: String.init(format: "上一次月经开始日期: %04d-%02d-%02d", year,month,day))
+                self.logView.writeString(string: "提前提醒天数: \(advanceDay)")
+                self.logView.writeString(string: String.init(format: "提醒时间: %02d:%02d", remindHour,remindMinute))
+                
+                AntCommandModule.shareInstance.setMenstrualCycle(model: model) { error in
+                    
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        
+                    }
                 }
             }
             
@@ -3052,6 +3282,21 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                     self.logView.writeString(string: "心率:\(hr)")
                     self.logView.writeString(string: "血氧:\(bo)")
                     self.logView.writeString(string: "血压:\(sbp)/\(dbp)")
+                }
+            }
+            
+            break
+            
+        case "上报运动交互数据":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "上报运动交互数据")
+            
+            AntCommandModule.shareInstance.reportExerciseInteractionData { timestamp, step, hr, error in
+                if error == .none {
+                    self.logView.writeString(string: "时间戳:\(timestamp)")
+                    self.logView.writeString(string: "总步数:\(step)")
+                    self.logView.writeString(string: "心率:\(hr)\n")
                 }
             }
             

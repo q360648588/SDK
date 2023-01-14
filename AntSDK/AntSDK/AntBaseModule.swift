@@ -45,7 +45,7 @@ import zlib
     
     var connectCompleteBlock:((Bool)->())?
     var reconnectComplete:(()->())?
-    var isSyncOtaData = false
+    @objc dynamic public internal(set) var isSyncOtaData = false
     var syncOtaReconnectComplete:(()->())?
     var peripheralStateChange:((CBPeripheralState)->())?
         
@@ -97,8 +97,10 @@ import zlib
         AntBleManager.shareInstance.getBlePowerDidUpdateState { bleState in
             state(bleState)
             if bleState == .poweredOn {
+                AntSDKLog.writeStringToSDKLog(string: "系统蓝牙状态:poweredOn")
                 self.ant_ReconnectTimer?.fireDate = .distantPast
             }else if bleState == .poweredOff {
+                AntSDKLog.writeStringToSDKLog(string: "系统蓝牙状态:poweredOff")
                 //命令信号量重置
                 AntCommandModule.shareInstance.resetCommandSemaphore()
                 //同步健康数据相关方法重置
@@ -111,6 +113,14 @@ import zlib
                     NSObject.cancelPreviousPerformRequests(withTarget: AntCommandModule.shareInstance, selector: #selector(AntCommandModule.shareInstance.receiveHealthDataTimeOut), object: nil)
                     AntCommandModule.shareInstance.receiveHealthDataTimeOut()
                 }
+            }else if bleState == .unknown {
+                AntSDKLog.writeStringToSDKLog(string: "系统蓝牙状态:unknown")
+            }else if bleState == .resetting {
+                AntSDKLog.writeStringToSDKLog(string: "系统蓝牙状态:resetting")
+            }else if bleState == .unsupported {
+                AntSDKLog.writeStringToSDKLog(string: "系统蓝牙状态:unsupported")
+            }else if bleState == .unauthorized {
+                AntSDKLog.writeStringToSDKLog(string: "系统蓝牙状态:unauthorized")
             }
         }
     }
@@ -128,20 +138,43 @@ import zlib
         let isNeedReconnect = userDefault.bool(forKey: "Ant_ReconnectKey")
         let reconeectString = userDefault.string(forKey: "Ant_ReconnectIdentifierKey") ?? ""
         printLog("isNeedReconnect = ",isNeedReconnect,"reconeectString =",reconeectString,"state =",AntBleManager.shareInstance.getBlePowerState().rawValue)
+        
+        var blePower = ""
+        let bleState = AntBleManager.shareInstance.getBlePowerState()
+        if bleState == .poweredOn {
+            blePower = "系统蓝牙状态:poweredOn"
+        }else if bleState == .poweredOff {
+            blePower = "系统蓝牙状态:poweredOff"
+        }else if bleState == .unknown {
+            blePower = "系统蓝牙状态:unknown"
+        }else if bleState == .resetting {
+            blePower = "系统蓝牙状态:resetting"
+        }else if bleState == .unsupported {
+            blePower = "系统蓝牙状态:unsupported"
+        }else if bleState == .unauthorized {
+            blePower = "系统蓝牙状态:unauthorized"
+        }
+        AntSDKLog.writeStringToSDKLog(string: "重连 blePower = \(blePower)")
+        AntSDKLog.writeStringToSDKLog(string: "重连 reconeectString = \(reconeectString)")
+        AntSDKLog.writeStringToSDKLog(string: "重连 isNeedReconnect = \(isNeedReconnect)")
+        
         if AntBleManager.shareInstance.getBlePowerState() == .poweredOn && isNeedReconnect && reconeectString.count > 0 {
             if self.peripheral?.state == .connected {
                 printLog("已连接、重连定时器关闭")
+                AntSDKLog.writeStringToSDKLog(string: "重连 已连接关闭重连定时器")
                 self.ant_ReconnectTimer?.fireDate = .distantFuture
             }else{
                 self.connectDevice(peripheral: reconeectString) { result in
                     if result {
                         if !self.isSyncOtaData {
                             if let block = self.reconnectComplete {
+                                AntSDKLog.writeStringToSDKLog(string: "重连 reconnectComplete")
                                 block()
                             }
                         }else {
                             //在AntCommandModule类调用服务器升级接口之后会通过此回调重连继续升级
                             if let block = self.syncOtaReconnectComplete {
+                                AntSDKLog.writeStringToSDKLog(string: "重连 syncOtaReconnectComplete")
                                 block()
                             }
                         }
@@ -432,39 +465,62 @@ import zlib
                 userDefault.synchronize()
                 
                 if let block = self.connectCompleteBlock {
-                    //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
-                    AntCommandModule.shareInstance.getDeviceSupportList { model, error in
-                        if error == .none {
-                            printLog("连接成功")
-                            self.functionListModel = model
-                            block(true)
-                            if let _ = model?.functionList_addressBook {
-                                AntCommandModule.shareInstance.setDeviceUUID { _ in
-                                }
-                            }
-                            AntCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
-                            }
-                            AntCommandModule.shareInstance.getDeviceOtaVersionInfo { _, _ in
-                            }
-                            AntCommandModule.shareInstance.getMac { _, _ in
-                            }
-                            //这里是升级过程中异常断开还保存未发完的ota数据，那么检测升级，拿到回调之后会继续升级
-                            if AntCommandModule.shareInstance.otaData != nil {
-                                AntCommandModule.shareInstance.checkUpgradeState { _, _ in
+                    //这里是升级过程中异常断开还保存未发完的ota数据，那么检测升级，拿到回调之后会继续升级
+                    if AntCommandModule.shareInstance.otaData != nil {
+                        AntCommandModule.shareInstance.checkUpgradeState { success, error in
+                            if error == .none {
+                                if success.keys.count > 0 {
                                     
+                                }else{
+                                    printLog("没有升级")
+                                    AntCommandModule.shareInstance.otaData = nil
+                                    //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
+                                    AntCommandModule.shareInstance.getDeviceSupportList { model, error in
+                                        if error == .none {
+                                            printLog("连接成功")
+                                            self.functionListModel = model
+                                            block(true)
+                                            if let _ = model?.functionList_addressBook {
+                                                AntCommandModule.shareInstance.setDeviceUUID { _ in
+                                                }
+                                            }
+                                            AntCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
+                                            }
+                                            AntCommandModule.shareInstance.getDeviceOtaVersionInfo { _, _ in
+                                            }
+                                            AntCommandModule.shareInstance.getMac { _, _ in
+                                            }
+                                        }else{
+                                            printLog("连接成功")
+                                            block(false)
+                                        }
+                                    }
                                 }
                             }
-                        }else{
-                            printLog("连接成功")
-                            block(false)
+                        }
+                    }else{
+                        //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
+                        AntCommandModule.shareInstance.getDeviceSupportList { model, error in
+                            if error == .none {
+                                printLog("连接成功")
+                                self.functionListModel = model
+                                block(true)
+                                if let _ = model?.functionList_addressBook {
+                                    AntCommandModule.shareInstance.setDeviceUUID { _ in
+                                    }
+                                }
+                                AntCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
+                                }
+                                AntCommandModule.shareInstance.getDeviceOtaVersionInfo { _, _ in
+                                }
+                                AntCommandModule.shareInstance.getMac { _, _ in
+                                }
+                            }else{
+                                printLog("连接失败")
+                                block(false)
+                            }
                         }
                     }
-                    
-                    let uuidString:String = peripheral.identifier.uuidString.replacingOccurrences(of: "-", with: "")
-                    let mac = uuidString.substring(to: uuidString.index(uuidString.startIndex, offsetBy: 30))
-                    printLog("uuidString =\(peripheral.identifier.uuidString)")
-                    printLog("mac =\(mac)")
-                    
                 }
             }
         }
