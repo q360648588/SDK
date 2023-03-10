@@ -11,7 +11,7 @@ import Alamofire
 
 class AntNetworkManager: NSObject {
     
-    let basicUrl = "http://www.antjuyi.com"
+    let basicUrl = "http://www.zhenyiwulian.com"
 //    let basicUrl = "http://192.168.1.21:8080"
     
     public static let shareInstance = AntNetworkManager()
@@ -40,6 +40,25 @@ class AntNetworkManager: NSObject {
 
     func post(url:String,parameter:Dictionary<String,Any>?,isNeedToken:Bool?,complete:@escaping(Dictionary<String,Any>) -> Void,fail:@escaping(Error?)-> Void) {
         
+        let date:Date = Date()
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "yyyy/MM/dd hh:mm:ss SSS"
+        let strNowTime = timeFormatter.string(from: date)
+        
+        let savePath = NSHomeDirectory() + "/Documents/saveFailUrlLog"
+        let fileManager = FileManager.default
+        let exit:Bool = fileManager.fileExists(atPath: savePath)
+        if exit == false {
+            do{
+                //                创建指定位置上的文件夹
+                try fileManager.createDirectory(atPath: savePath, withIntermediateDirectories: true, attributes: nil)
+                print("Succes to create folder")
+            }
+            catch{
+                print("Error to create folder")
+            }
+        }
+
         //printLog("url:",url)
         //printLog("parameter:",parameter as Any)
         
@@ -55,6 +74,17 @@ class AntNetworkManager: NSObject {
                 
 //                if Int(dic["code"] as! Int) == 200 || Int(dic["code"] as! Int) < 1 {
                     complete(dic)
+                if let code = dic["code"] as? Int , code == 200 {
+                    printLog("code = \(code)")
+                }else{
+                    let saveString = String.init(format: "请求方式:post\n请求参数:\n%@\n请求链接:%@\n服务器返回:\n%@\n", parameter!,url,dic)
+                    let onceUrl:String = String.init(format: "\n请求时间:%@\n\n\n\n\n%@",strNowTime,saveString)
+                    do{
+                        try onceUrl.write(toFile: String.init(format: "%@/%@_onceLog.txt",savePath,Date.init().conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss SSS")), atomically: true, encoding: .utf8)
+                    }catch {
+                        print("信息保存失败")
+                    }
+                }
 //                }else{
 //                    fail(NSError.init(domain: "\(dic["code"] ?? 0)", code: 0, userInfo: nil))
 //                }
@@ -63,6 +93,13 @@ class AntNetworkManager: NSObject {
                 break
             case .failure(_):
                 fail(response.error)
+                let saveString = String.init(format: "请求方式:get\n请求链接:%@\n服务器返回:\n%@\n",url,response.error?.localizedDescription ?? "error")
+                let onceUrl:String = String.init(format: "\n请求时间:%@\n\n\n\n\n%@",strNowTime,saveString)
+                do{
+                    try onceUrl.write(toFile: String.init(format: "%@/%@_onceLog.txt",savePath,Date.init().conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss SSS")), atomically: true, encoding: .utf8)
+                }catch {
+                    print("信息保存失败")
+                }
                 //printLog("response.error = ",response.error!)
                 //printLog("response.error.errorDescription = ",response.error?.errorDescription)
                 break
@@ -71,6 +108,25 @@ class AntNetworkManager: NSObject {
     }
     
     func get(url:String,isNeedToken:Bool?,complete:@escaping(Dictionary<String,Any>) -> Void,fail:@escaping(Error?)-> Void) {
+        
+        let date:Date = Date()
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "yyyy/MM/dd hh:mm:ss SSS"
+        let strNowTime = timeFormatter.string(from: date)
+        
+        let savePath = NSHomeDirectory() + "/Documents/saveFailUrlLog"
+        let fileManager = FileManager.default
+        let exit:Bool = fileManager.fileExists(atPath: savePath)
+        if exit == false {
+            do{
+                //                创建指定位置上的文件夹
+                try fileManager.createDirectory(atPath: savePath, withIntermediateDirectories: true, attributes: nil)
+                print("Succes to create folder")
+            }
+            catch{
+                print("Error to create folder")
+            }
+        }
         
         printLog("url:",url)
         
@@ -86,6 +142,17 @@ class AntNetworkManager: NSObject {
                 
 //                if Int(dic["code"] as! Int) == 200 || Int(dic["code"] as! Int) < 1 {
                     complete(dic)
+                if let code = dic["code"] as? Int , code == 200 {
+                    printLog("code = \(code)")
+                }else{
+                    let saveString = String.init(format: "请求方式:get\n请求链接:\n%@\n服务器返回:\n%@\n",url,dic)
+                    let onceUrl:String = String.init(format: "\n请求时间:%@\n\n\n\n\n%@",strNowTime,saveString)
+                    do{
+                        try onceUrl.write(toFile: String.init(format: "%@/%@_onceLog.txt",savePath,Date.init().conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss SSS")), atomically: true, encoding: .utf8)
+                    }catch {
+                        print("信息保存失败")
+                    }
+                }
 //                }else{
 //                    fail(NSError.init(domain: "\(dic["code"] ?? 0)", code: 0, userInfo: nil))
 //                }
@@ -93,6 +160,13 @@ class AntNetworkManager: NSObject {
                 break
             case .failure(_):
                 fail(response.error)
+                let saveString = String.init(format: "请求方式:get\n请求链接:%@\n服务器返回:\n%@\n",url,response.error?.localizedDescription ?? "error")
+                let onceUrl:String = String.init(format: "\n请求时间:%@\n\n\n\n\n%@",strNowTime,saveString)
+                do{
+                    try onceUrl.write(toFile: String.init(format: "%@/%@_onceLog.txt",savePath,Date.init().conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss SSS")), atomically: true, encoding: .utf8)
+                }catch {
+                    print("信息保存失败")
+                }
                 //printLog("response.error = ",response.error!)
                 //printLog("response.error.errorDescription = ",response.error?.errorDescription)
                 break

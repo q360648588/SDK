@@ -28,32 +28,96 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "1C8C7E46-7CC6-4D9E-B3E1-BD68A5783B78"
-            shouldBeEnabled = "Yes"
+            uuid = "80166638-76D7-412F-8BB2-D57D623DCB30"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../AntSDK/AntSDK/AntCommandModule.swift"
+            filePath = "../AntSDK/AntSDK/AntBaseModule.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "7574"
-            endingLineNumber = "7574"
-            landmarkName = "serverOtaMethod(indexCount:dataArray:progress:success:)"
+            startingLineNumber = "85"
+            endingLineNumber = "85"
+            landmarkName = "observeValue(forKeyPath:of:change:context:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "45169CE7-86FA-474E-B210-C8980CE90954"
-            shouldBeEnabled = "Yes"
+            uuid = "8E8DB854-DD66-42EE-A624-DC8ABEB2650A"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../AntSDK/AntSDK/AntModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "157"
-            endingLineNumber = "157"
-            landmarkName = "dealDetailFunction(index:val:)"
+            startingLineNumber = "141"
+            endingLineNumber = "141"
+            landmarkName = "init(val:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "F333DB9F-7ABF-49A0-94F7-EBB29D0E8493"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../AntSDK/AntSDK/AntCommandModule.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "7569"
+            endingLineNumber = "7569"
+            landmarkName = "parseSetLowBatteryRemind(val:success:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "7D7FDC04-A8C9-4918-A7A1-4378437C0A18"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../AntSDK/AntSDK/AntCommandModule.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "9263"
+            endingLineNumber = "9263"
+            landmarkName = "getNewAlarmArray(success:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "F3012230-9CE2-413D-A366-010FA5DD8A99"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../AntSDK/AntSDK/AntCommandModule.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "2924"
+            endingLineNumber = "2924"
+            landmarkName = "deviceReceivedData()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "DEA3B987-18C0-40AA-8A94-F7821E93EAB6"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../AntSDK/AntSDK/AntCommandModule.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "2751"
+            endingLineNumber = "2751"
+            landmarkName = "deviceReceivedData()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

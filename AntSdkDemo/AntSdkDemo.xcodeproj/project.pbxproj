@@ -10,7 +10,7 @@
 		07BCA61C658C624E651C9D40 /* Pods_AntSdkDemo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EB83018861CB65B11FDF775 /* Pods_AntSdkDemo.framework */; };
 		0A76FC50810ED4BF30678E66 /* Pods_AntSdkDemo_AntSdkDemoUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 478719A83DFD58F5FBD697A0 /* Pods_AntSdkDemo_AntSdkDemoUITests.framework */; };
 		671F9CB026D778B700AB415A /* ScanVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671F9CAF26D778B700AB415A /* ScanVC.swift */; };
-		6764BFE8283F214E0070DD81 /* AntSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6764BFE7283F214E0070DD81 /* AntSDK.framework */; };
+		6746B8F829A4AA2100204DEC /* JL_BLEKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6746B8F729A4AA2100204DEC /* JL_BLEKit.framework */; };
 		67661CF826292A8E0004B197 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661CF726292A8E0004B197 /* AppDelegate.swift */; };
 		67661CFC26292A8E0004B197 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661CFB26292A8E0004B197 /* ViewController.swift */; };
 		67661CFF26292A8E0004B197 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 67661CFD26292A8E0004B197 /* Main.storyboard */; };
@@ -20,6 +20,7 @@
 		67661D1A26292A920004B197 /* AntSdkDemoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661D1926292A920004B197 /* AntSdkDemoUITests.swift */; };
 		676705B2269014D300CB048B /* AntVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 676705B1269014D300CB048B /* AntVC.swift */; };
 		677BF30326DDD5B900D1C10C /* ShowLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 677BF30226DDD5B900D1C10C /* ShowLogView.swift */; };
+		67883F0B28237A8500ADDE99 /* AntSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67883F0A28237A8500ADDE99 /* AntSDK.framework */; };
 		67CF37E826F589A90035C6B0 /* FileVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67CF37E726F589A90035C6B0 /* FileVC.swift */; };
 		D5B6E58968FDB933C6F1EB9E /* Pods_AntSdkDemoTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00A0834BF06076BE35E1F4A5 /* Pods_AntSdkDemoTests.framework */; };
 /* End PBXBuildFile section */
@@ -59,8 +60,8 @@
 		44400836A600C1F19BA07967 /* Pods-AntSdkDemoTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AntSdkDemoTests.release.xcconfig"; path = "Target Support Files/Pods-AntSdkDemoTests/Pods-AntSdkDemoTests.release.xcconfig"; sourceTree = "<group>"; };
 		478719A83DFD58F5FBD697A0 /* Pods_AntSdkDemo_AntSdkDemoUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AntSdkDemo_AntSdkDemoUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		671F9CAF26D778B700AB415A /* ScanVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanVC.swift; sourceTree = "<group>"; };
+		6746B8F729A4AA2100204DEC /* JL_BLEKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JL_BLEKit.framework; sourceTree = "<group>"; };
 		676003FB2698404400822E72 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
-		6764BFE7283F214E0070DD81 /* AntSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AntSDK.framework; sourceTree = "<group>"; };
 		67661CF426292A8E0004B197 /* AntSdkDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AntSdkDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		67661CF726292A8E0004B197 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		67661CFB26292A8E0004B197 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -76,6 +77,7 @@
 		67661D1B26292A920004B197 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		676705B1269014D300CB048B /* AntVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntVC.swift; sourceTree = "<group>"; };
 		677BF30226DDD5B900D1C10C /* ShowLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowLogView.swift; sourceTree = "<group>"; };
+		67883F0A28237A8500ADDE99 /* AntSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = AntSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		67CF37E726F589A90035C6B0 /* FileVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileVC.swift; sourceTree = "<group>"; };
 		709083BC5FF85A3A92F0F492 /* Pods-AntSdkDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AntSdkDemo.release.xcconfig"; path = "Target Support Files/Pods-AntSdkDemo/Pods-AntSdkDemo.release.xcconfig"; sourceTree = "<group>"; };
 		7E733D2CDCEA7FD78ED1AF43 /* Pods-AntSdkDemo-AntSdkDemoUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AntSdkDemo-AntSdkDemoUITests.release.xcconfig"; path = "Target Support Files/Pods-AntSdkDemo-AntSdkDemoUITests/Pods-AntSdkDemo-AntSdkDemoUITests.release.xcconfig"; sourceTree = "<group>"; };
@@ -90,6 +92,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6746B8F829A4AA2100204DEC /* JL_BLEKit.framework in Frameworks */,
+				67883F0B28237A8500ADDE99 /* AntSDK.framework in Frameworks */,
 				07BCA61C658C624E651C9D40 /* Pods_AntSdkDemo.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -99,7 +103,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D5B6E58968FDB933C6F1EB9E /* Pods_AntSdkDemoTests.framework in Frameworks */,
-				6764BFE8283F214E0070DD81 /* AntSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -158,6 +161,7 @@
 				676705B1269014D300CB048B /* AntVC.swift */,
 				67CF37E726F589A90035C6B0 /* FileVC.swift */,
 				677BF30226DDD5B900D1C10C /* ShowLogView.swift */,
+				6746B8F729A4AA2100204DEC /* JL_BLEKit.framework */,
 				67661CFD26292A8E0004B197 /* Main.storyboard */,
 				67661D0026292A920004B197 /* Assets.xcassets */,
 				67661D0226292A920004B197 /* LaunchScreen.storyboard */,
@@ -187,7 +191,7 @@
 		67661D59262980D50004B197 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				6764BFE7283F214E0070DD81 /* AntSDK.framework */,
+				67883F0A28237A8500ADDE99 /* AntSDK.framework */,
 				7EB83018861CB65B11FDF775 /* Pods_AntSdkDemo.framework */,
 				478719A83DFD58F5FBD697A0 /* Pods_AntSdkDemo_AntSdkDemoUITests.framework */,
 				00A0834BF06076BE35E1F4A5 /* Pods_AntSdkDemoTests.framework */,

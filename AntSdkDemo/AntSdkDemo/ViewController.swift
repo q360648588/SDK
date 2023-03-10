@@ -176,7 +176,7 @@ class ViewController: UIViewController {
         
         let dateLabel = UILabel.init(frame: .init(x: 0, y: 600, width: screenWidth, height: 44))
         dateLabel.backgroundColor = .green
-        dateLabel.text = "更新日期:2022-11-24"
+        dateLabel.text = "更新日期:2023-3-3"
         dateLabel.textColor = .red
         dateLabel.numberOfLines = 0
         dateLabel.textAlignment = .center
@@ -361,21 +361,21 @@ extension UIViewController {
             ok = NSLocalizedString("确定", comment: "")
         }
         
-        let cancelAC = UIAlertAction.init(title: cancel, style: .default) { (action) in
-            if let cancelAction = cancelAction{
+        if let cancelAction = cancelAction{
+            let cancelAC = UIAlertAction.init(title: cancel, style: .default) { (action) in
                 cancelAction()
             }
+            alertVC.addAction(cancelAC)
         }
+        
         //cancelAction.setValue(UIColor.red, forKey: "titleTextColor")
-        let okAC = UIAlertAction.init(title: ok, style: .default) { (action) in
-            if let okAction = okAction{
+        if let okAction = okAction{
+            let okAC = UIAlertAction.init(title: ok, style: .default) { (action) in
                 okAction()
             }
+            alertVC.addAction(okAC)
         }
-        
-        alertVC.addAction(cancelAC)
-        alertVC.addAction(okAC)
-        
+
         if UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiom.pad {
             
             alertVC.popoverPresentationController?.sourceView = self.view //要展示在哪里
