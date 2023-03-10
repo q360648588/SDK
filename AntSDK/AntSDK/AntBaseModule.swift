@@ -318,9 +318,9 @@ import zlib
                     self.peripheral = p!
                 }
                 if #available(iOS 13.0, *) {
-                    AntBleManager.shareInstance.connect(peripheral: p!, options: [CBConnectPeripheralOptionRequiresANCS:true])
+                    AntBleManager.shareInstance.connect(peripheral: p!, options: [CBConnectPeripheralOptionRequiresANCS:true,CBConnectPeripheralOptionNotifyOnDisconnectionKey:true,CBConnectPeripheralOptionEnableTransportBridgingKey:true])
                 } else {
-                    AntBleManager.shareInstance.connect(peripheral: p!, options: nil)
+                    AntBleManager.shareInstance.connect(peripheral: p!, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey:true])
                 }
             }else{
                 connectState(false)
@@ -330,18 +330,18 @@ import zlib
                 self.peripheral = peripheral as? CBPeripheral
             }
             if #available(iOS 13.0, *) {
-                AntBleManager.shareInstance.connect(peripheral: peripheral as! CBPeripheral, options: [CBConnectPeripheralOptionRequiresANCS:true])
+                AntBleManager.shareInstance.connect(peripheral: peripheral as! CBPeripheral, options: [CBConnectPeripheralOptionRequiresANCS:true,CBConnectPeripheralOptionNotifyOnDisconnectionKey:true,CBConnectPeripheralOptionEnableTransportBridgingKey:true])
             } else {
-                AntBleManager.shareInstance.connect(peripheral: peripheral as! CBPeripheral, options: nil)
+                AntBleManager.shareInstance.connect(peripheral: peripheral as! CBPeripheral, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey:true])
             }
         }else if peripheral is AntScanModel {
             if self.peripheral != (peripheral as! AntScanModel).peripheral {
                 self.peripheral = (peripheral as! AntScanModel).peripheral
             }
             if #available(iOS 13.0, *) {
-                AntBleManager.shareInstance.connect(peripheral: (peripheral as! AntScanModel).peripheral!, options: [CBConnectPeripheralOptionRequiresANCS:true])
+                AntBleManager.shareInstance.connect(peripheral: (peripheral as! AntScanModel).peripheral!, options: [CBConnectPeripheralOptionRequiresANCS:true,CBConnectPeripheralOptionNotifyOnDisconnectionKey:true,CBConnectPeripheralOptionEnableTransportBridgingKey:true])
             } else {
-                AntBleManager.shareInstance.connect(peripheral: (peripheral as! AntScanModel).peripheral!, options: nil)
+                AntBleManager.shareInstance.connect(peripheral: (peripheral as! AntScanModel).peripheral!, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey:true])
             }
             
         }else{
@@ -365,6 +365,10 @@ import zlib
     
     /// 断开连接
     @objc public func disconnect() {
+        if self.functionListModel?.functionList_bind == true {
+            AntCommandModule.shareInstance.setUnbind { _ in
+            }
+        }
         self.functionListModel = nil
         //此方法只能让外部调用，此方法会删除重连标识，如果SDK内部调用会影响重连，重连只调用一次就自动取消。内部调用断开连接用if的判断
         if self.peripheral != nil && self.peripheral?.state != .disconnected{
@@ -497,6 +501,10 @@ import zlib
                                             }
                                             AntCommandModule.shareInstance.getMac { _, _ in
                                             }
+                                            if model?.functionList_bind == true {
+                                                AntCommandModule.shareInstance.setBind { _ in
+                                                }
+                                            }
                                             block(true)
                                         }else{
                                             printLog("连接成功")
@@ -529,6 +537,10 @@ import zlib
                                 AntCommandModule.shareInstance.getDeviceOtaVersionInfo { _, _ in
                                 }
                                 AntCommandModule.shareInstance.getMac { _, _ in
+                                }
+                                if model?.functionList_bind == true {
+                                    AntCommandModule.shareInstance.setBind { _ in
+                                    }
                                 }
                                 block(true)
                             }else{
