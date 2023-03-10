@@ -36,6 +36,7 @@ class AntVC: UIViewController {
     var logView:ShowLogView!
     var dialArray = [AntOnlineDialModel].init()
     var autoTimer:Timer?
+    var timestamp:Int?
 
     func test() {
         return
@@ -245,7 +246,7 @@ class AntVC: UIViewController {
         self.logView.isHidden = true
         self.view.addSubview(self.logView)
         
-        self.titleArray = ["0x00 设备信息","0x01 设备设置","0x02 设备提醒","0x03 设备同步","0x04 测试命令","0x80 设备主动上报","测试多包","路径设置","测试升级","服务器相关命令,使用前确定网络正常","个性化定制"]
+        self.titleArray = ["0x00 设备信息","0x01 设备设置","0x02 设备提醒","0x03 设备同步","0xaa 新协议命令","0x04 测试命令","0x80 设备主动上报","测试多包","路径设置","测试升级","服务器相关命令,使用前确定网络正常","个性化定制"]
         self.dataSourceArray = [
             [
                 "0引导升级",
@@ -272,6 +273,7 @@ class AntVC: UIViewController {
                 "0x04 获取公英制",
                 "0x05 设置公英制",
                 "0x07 设置天气",
+                "设置天气(拓展参数)",
                 "0x09 设备进入拍照模式",
                 "0x0b 寻找手环",
                 "0x0c 获取抬腕亮屏",
@@ -305,6 +307,7 @@ class AntVC: UIViewController {
                 "0x2d 设置自定义表盘",
                 "自定义背景选择",
                 "设置自定义背景",
+                "设置自定义背景(JL)",
                 "0x2e 设置电话状态",
                 "0x30 获取自定义表盘尺寸",
                 "0x34 获取24小时心率监测",
@@ -343,6 +346,12 @@ class AntVC: UIViewController {
                 "0x00 同步计步数据",
                 "0x01",
                 "0x02 同步锻炼数据",
+            ],
+            [
+                "0x85 同步数据",
+                "0x83(4) 设置天气",
+                "0x83(5) 设置闹钟",
+                "0x84(5) 获取闹钟",
             ],
             [
                 "0x00 ",
@@ -977,6 +986,90 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                     //self.navigationController?.pushViewController(vc, animated: true)
                 }
             }
+            
+            break
+            
+        case "设置天气(拓展参数)":
+        
+            let array = [
+                "年",
+                "月",
+                "日",
+                "时",
+                "分",
+                "秒",
+                "未来天数",
+                "天气类型",
+                "温度",
+                "空气质量",
+                "最低温度",
+                "最高温度",
+                "明日最低温度",
+                "明日最高温度",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "设置天气")
+            
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置天气", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let year = textArray[0]
+                let month = textArray[1]
+                let day = textArray[2]
+                let hour = textArray[3]
+                let minute = textArray[4]
+                let second = textArray[5]
+                let dayCount = textArray[6]
+                let type = textArray[7]
+                let temp = textArray[8]
+                let airQuality = textArray[9]
+                let minTemp = textArray[10]
+                let maxTemp = textArray[11]
+                let tomorrowMinTemp = textArray[12]
+                let tomorrowMaxTemp = textArray[13]
+                
+                let date = Date()
+                let calendar = NSCalendar.current
+                let yearDate = calendar.component(.year, from: date)
+                let monthDate = calendar.component(.month, from: date)
+                let dayDate = calendar.component(.day, from: date)
+                let hourDate = calendar.component(.hour, from: date)
+                let minuteDate = calendar.component(.minute, from: date)
+                let secondDate = calendar.component(.second, from: date)
+                
+                let time = String.init(format: "%04d-%02d-%02d %02d:%02d:%02d", Int(year) ?? yearDate , Int(month) ?? monthDate , Int(day) ?? dayDate , Int(hour) ?? hourDate , Int(minute) ?? minuteDate , Int(second) ?? secondDate)
+                
+                self.logView.writeString(string: "显示时间:\(time)")
+                self.logView.writeString(string: "第\(dayCount.count>0 ? dayCount : "0")天")
+                self.logView.writeString(string: "天气类型:\(type)")
+                self.logView.writeString(string: "温度:\(temp)")
+                self.logView.writeString(string: "空气质量:\(airQuality)")
+                self.logView.writeString(string: "最低温度:\(minTemp)")
+                self.logView.writeString(string: "最高温度:\(maxTemp)")
+                self.logView.writeString(string: "明日最低温度:\(tomorrowMinTemp)")
+                self.logView.writeString(string: "明日最大温度:\(tomorrowMaxTemp)")
+                
+                let model = AntWeatherModel.init()
+                model.dayCount = Int(dayCount) ?? 0
+                model.type = AntWeatherType(rawValue:Int(type) ?? 0) ?? .sunny
+                model.temp = Int(temp) ?? 0
+                model.airQuality = Int(airQuality) ?? 0
+                model.minTemp = Int(minTemp) ?? 0
+                model.maxTemp = Int(maxTemp) ?? 0
+                model.tomorrowMinTemp = Int(tomorrowMinTemp) ?? 0
+                model.tomorrowMaxTemp = Int(tomorrowMaxTemp) ?? 0
+                
+                AntCommandModule.shareInstance.setWeather(model: model,updateTime: time) { error in
+
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+
+                    if error == .none {
+                        print("SetWeather ->","success")
+                    }
+                }
+            }
+            
             
             break
             
@@ -1640,8 +1733,11 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 var stateString = "退出"
                 if Int(isOpen) == 0 {
                     stateString = "退出"
+                    self.timestamp = nil
                 }else if Int(isOpen) == 1 {
                     stateString = "进入"
+                    let timestamp = Int(Date().timeIntervalSince1970)
+                    self.timestamp = timestamp
                 }else if Int(isOpen) == 2 {
                     stateString = "继续"
                 }else if Int(isOpen) == 3 {
@@ -1649,10 +1745,10 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 }
                 self.logView.writeString(string: stateString)
                 let state = AntExerciseState.init(rawValue: Int(isOpen) ?? 0) ?? .end
-                let timestamp = Int(Date().timeIntervalSince1970)
-                self.logView.writeString(string: "\(timestamp)")
-                print("timestamp = \(timestamp)")
-                AntCommandModule.shareInstance.setExerciseMode(type: AntExerciseType.init(rawValue: Int(type) ?? 0) ?? .runOutside, isOpen: state, timestamp: timestamp) { error in
+                
+                self.logView.writeString(string: "\(self.timestamp)")
+                print("timestamp = \(self.timestamp)")
+                AntCommandModule.shareInstance.setExerciseMode(type: AntExerciseType.init(rawValue: Int(type) ?? 0) ?? .runOutside, isOpen: state, timestamp: self.timestamp ?? 0) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
@@ -2961,6 +3057,309 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
+        case "0x85 同步数据":
+            
+            let array = [
+                "1:步数 2:心率 3:睡眠 4:锻炼",
+                "第x天(条) 10以内输入不间隔",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "同步数据")
+            
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "同步计步数据", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let type = textArray[0]
+                let dayCount = textArray[1]
+                
+                let dayNumber:String = dayCount.components(separatedBy: .decimalDigits.inverted).joined()
+                var dayArray = [Int]()
+                for i in dayNumber {
+                    dayArray.append(Int(String(i)) ?? 0)
+                }
+                print("dayArray = \(dayArray)")
+                
+                AntCommandModule.shareInstance.setNewSyncHealthData(type: Int(type) ?? 1, indexArray: dayArray) { success,error in
+                    
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        //print("SetSyncHealthData ->",success)
+                        
+                        if let successDic:[String:Any?] = success as? [String : Any?] {
+                            
+                            for key in successDic.keys {
+                                
+                                if let value = successDic[key] {
+                                    
+                                    if value is AntStepModel {
+                                        if let model:AntStepModel = value as? AntStepModel {
+                                            let detailArray = model.detailArray
+                                            let step = model.step
+                                            let calorie = model.calorie
+                                            let distance = model.distance
+                                            
+                                            print("detailArray ->",detailArray)
+                                            self.logView.writeString(string: "第\(key)天")
+                                            self.logView.writeString(string: "详情步数:\(detailArray)")
+                                            self.logView.writeString(string: "总步数:\(step)")
+                                            self.logView.writeString(string: "总卡路里:\(calorie)")
+                                            self.logView.writeString(string: "总距离:\(distance)\n")
+                                        }
+                                    }
+                                    
+                                    if value is AntSleepModel {
+                                        if let model:AntSleepModel = value as? AntSleepModel {
+                                            let deep = model.deep
+                                            let awake = model.awake
+                                            let light = model.light
+                                            let detailArray = model.detailArray
+                                            print("deep ->",deep,"awake ->",awake,"light ->",light,"detailArray ->",detailArray)
+                                            self.logView.writeString(string: "第\(key)天")
+                                            self.logView.writeString(string: "深睡时长:\(deep)")
+                                            self.logView.writeString(string: "浅睡时长:\(light)")
+                                            self.logView.writeString(string: "清醒时长:\(awake)")
+                                            self.logView.writeString(string: "详情睡眠:\(detailArray)\n")
+                                        }
+                                    }
+                                    
+                                    if value is AntHrModel {
+                                        if let model:AntHrModel = value as? AntHrModel {
+                                            let detailArray = model.detailArray
+                                            print("detailArray ->",detailArray)
+                                            self.logView.writeString(string: "第\(key)天")
+                                            self.logView.writeString(string: "详情心率:\(detailArray)\n")
+                                        }
+                                    }
+                                    
+                                    if value is AntExerciseModel {
+                                        if let model:AntExerciseModel = value as? AntExerciseModel {
+                                            let startTime = model.startTime
+                                            let type = model.type
+                                            let hr = model.heartrate
+                                            let validTimeLength = model.validTimeLength
+                                            let step = model.step
+                                            let endTime = model.endTime
+                                            let calorie = model.calorie
+                                            let distance = model.distance
+                                            self.logView.writeString(string: "第\(key)条")
+                                            self.logView.writeString(string: "开始时间:\(startTime)")
+                                            self.logView.writeString(string: "类型:\(type.rawValue)")
+                                            self.logView.writeString(string: "心率:\(hr)")
+                                            self.logView.writeString(string: "运动时长:\(validTimeLength)")
+                                            self.logView.writeString(string: "步数:\(step)")
+                                            self.logView.writeString(string: "结束时间:\(endTime)")
+                                            self.logView.writeString(string: "卡路里:\(calorie)")
+                                            self.logView.writeString(string: "距离:\(distance)\n")
+                                        }
+                                    }
+                                    if value is NSNull {
+                                        self.logView.writeString(string: "第\(key)天(条)数据为空")
+                                    }
+                                }else{
+                                    self.logView.writeString(string: "第\(key)天(条)数据为空")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            break
+            
+        case "0x83(4) 设置天气":
+            
+            let array = [
+                "年",
+                "月",
+                "日",
+                "时",
+                "分",
+                "秒",
+                "总条数，后续的所有温度递增+1",
+                "天气类型",
+                "温度",
+                "空气质量",
+                "最低温度",
+                "最高温度",
+                "明日最低温度",
+                "明日最高温度",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "设置天气")
+            
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置天气", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let year = textArray[0]
+                let month = textArray[1]
+                let day = textArray[2]
+                let hour = textArray[3]
+                let minute = textArray[4]
+                let second = textArray[5]
+                let dayCount = textArray[6]
+                let type = textArray[7]
+                let temp = textArray[8]
+                let airQuality = textArray[9]
+                let minTemp = textArray[10]
+                let maxTemp = textArray[11]
+                let tomorrowMinTemp = textArray[12]
+                let tomorrowMaxTemp = textArray[13]
+                
+                let date = Date()
+                let calendar = NSCalendar.current
+                let yearDate = calendar.component(.year, from: date)
+                let monthDate = calendar.component(.month, from: date)
+                let dayDate = calendar.component(.day, from: date)
+                let hourDate = calendar.component(.hour, from: date)
+                let minuteDate = calendar.component(.minute, from: date)
+                let secondDate = calendar.component(.second, from: date)
+                
+                let time = String.init(format: "%04d-%02d-%02d %02d:%02d:%02d", Int(year) ?? yearDate , Int(month) ?? monthDate , Int(day) ?? dayDate , Int(hour) ?? hourDate , Int(minute) ?? minuteDate , Int(second) ?? secondDate)
+                let format = DateFormatter()
+                format.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                let timeDate = format.date(from: time)
+                let timestamp:Int = Int(timeDate?.timeIntervalSince1970 ?? 0)
+                
+                self.logView.writeString(string: "显示时间:\(time),时间戳:\(timestamp)")
+                
+                var modelArray = [AntWeatherModel]()
+                
+                for i in stride(from: 0, to: Int(dayCount) ?? 0, by: 1) {
+                    self.logView.writeString(string: "第\(i)天")
+                    self.logView.writeString(string: "天气类型:\(type)")
+                    self.logView.writeString(string: "温度:\((Int(temp) ?? 0) + i)")
+                    self.logView.writeString(string: "空气质量:\(airQuality)")
+                    self.logView.writeString(string: "最低温度:\((Int(minTemp) ?? 0) + i)")
+                    self.logView.writeString(string: "最高温度:\((Int(maxTemp) ?? 0) + i)")
+                    self.logView.writeString(string: "明日最低温度:\((Int(tomorrowMinTemp) ?? 0) + i)")
+                    self.logView.writeString(string: "明日最大温度:\((Int(tomorrowMaxTemp) ?? 0) + i)")
+                    self.logView.writeString(string: "\n")
+                    
+                    let model = AntWeatherModel.init()
+                    model.dayCount = i
+                    model.type = AntWeatherType(rawValue:Int(type) ?? 0) ?? .sunny
+                    model.temp = (Int(temp) ?? 0) + i
+                    model.airQuality = Int(airQuality) ?? 0
+                    model.minTemp = (Int(minTemp) ?? 0) + i
+                    model.maxTemp = (Int(maxTemp) ?? 0) + i
+                    model.tomorrowMinTemp = (Int(tomorrowMinTemp) ?? 0) + i
+                    model.tomorrowMaxTemp = (Int(tomorrowMaxTemp) ?? 0) + i
+                    
+                    modelArray.append(model)
+                }
+                
+                AntCommandModule.shareInstance.setNewWeather(modelArray: modelArray, updateTime: time) { error in
+                    
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+
+                    if error == .none {
+                        print("SetWeather ->","success")
+                    }
+                }
+            }
+            
+            
+            break
+            
+        case "0x83(5) 设置闹钟":
+            
+            let array = [
+                "闹钟个数",
+                "重复",
+                "开始小时",
+                "开始分钟"
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "设置闹钟")
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置闹钟", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let totalCount = textArray[0]
+                let repeatCount = textArray[1]
+                let hour = textArray[2]
+                let minute = textArray[3]
+                
+                var alarmArray = [AntAlarmModel]()
+                
+                for i in stride(from: 0, to: Int(totalCount) ?? 0, by: 1) {
+                    let dic = ["repeatCount": "\(repeatCount)", "hour": "\(hour)", "index": "\(i)", "minute": "\(minute)"]
+                    let alarmModel = AntAlarmModel.init(dic: dic)
+                    
+                    self.logView.writeString(string: "闹钟序号:\(i)")
+                    self.logView.writeString(string: "闹钟时间:\(String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute))")
+                    self.logView.writeString(string: "repeatCount:\(repeatCount)")
+                    self.logView.writeString(string: "闹钟开关:\(alarmModel.alarmOpen)")
+                    if alarmModel.alarmOpen {
+                        self.logView.writeString(string: "闹钟重复类型:\(alarmModel.alarmType == .single ? "单次闹钟":"重复闹钟")")
+                        if alarmModel.alarmType == .cycle {
+                            if alarmModel.alarmRepeatArray != nil {
+                                let str = ((alarmModel.alarmRepeatArray![0] != 0 ? "星期天":"")+(alarmModel.alarmRepeatArray![1] != 0 ? "星期一":"")+(alarmModel.alarmRepeatArray![2] != 0 ? "星期二":"")+(alarmModel.alarmRepeatArray![3] != 0 ? "星期三":"")+(alarmModel.alarmRepeatArray![4] != 0 ? "星期四":"")+(alarmModel.alarmRepeatArray![5] != 0 ? "星期五":"")+(alarmModel.alarmRepeatArray![6] != 0 ? "星期六":""))
+                                self.logView.writeString(string: "闹钟重复星期:\(str)")
+                            }else{
+                                self.logView.writeString(string: "闹钟重复星期:重复星期未开启,默认单次闹钟")
+                            }
+                        }
+                    }
+                    self.logView.writeString(string: "\n")
+                    alarmArray.append(alarmModel)
+                    print("alarmModel",alarmModel.alarmIndex,"alarmOpen ->",alarmModel.alarmOpen,"alarmTime ->",String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute),"alarmType ->",alarmModel.alarmType.rawValue,"alarmRepeat ->",alarmModel.alarmRepeatArray)
+                }
+                
+                AntCommandModule.shareInstance.setNewAlarmArray(modelArray: alarmArray) { error in
+                    
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        print("SetAlarm ->","success")
+                    }
+                }
+                
+            }
+            
+            break
+            
+        case "0x84(5) 获取闹钟":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "获取闹钟")
+            
+            AntCommandModule.shareInstance.getNewAlarmArray { alarmArray, error in
+                
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                if error == .none {
+                    print("GetAlarm ->",alarmArray)
+
+                    for alarm in alarmArray {
+                        let alarmModel = alarm
+                        //print("alarmModel",alarmModel.alarmIndex,"alarmOpen ->",alarmModel.alarmOpen,"alarmTime ->",alarmModel.alarmTime,"alarmType ->",alarmModel.alarmType.rawValue,"alarmRepeat ->",alarmModel.alarmRepeatArray)
+
+                        self.logView.writeString(string: "闹钟序号:\(alarmModel.alarmIndex)")
+                        self.logView.writeString(string: "闹钟时间:\(alarmModel.alarmHour):\(alarmModel.alarmMinute)")
+                        self.logView.writeString(string: "repeatCount:\(alarmModel.alarmRepeatCount)")
+                        self.logView.writeString(string: "闹钟开关:\(alarmModel.alarmOpen)")
+                        if alarmModel.alarmOpen {
+                            self.logView.writeString(string: "闹钟重复类型:\(alarmModel.alarmType == .single ? "单次闹钟":"重复闹钟")")
+                            if alarmModel.alarmType == .cycle {
+                                if alarmModel.alarmRepeatArray != nil {
+                                    let str = ((alarmModel.alarmRepeatArray![0] != 0 ? "星期天":"")+(alarmModel.alarmRepeatArray![1] != 0 ? "星期一":"")+(alarmModel.alarmRepeatArray![2] != 0 ? "星期二":"")+(alarmModel.alarmRepeatArray![3] != 0 ? "星期三":"")+(alarmModel.alarmRepeatArray![4] != 0 ? "星期四":"")+(alarmModel.alarmRepeatArray![5] != 0 ? "星期五":"")+(alarmModel.alarmRepeatArray![6] != 0 ? "星期六":""))
+                                    self.logView.writeString(string: "闹钟重复星期:\(str)")
+                                }else{
+                                    self.logView.writeString(string: "闹钟重复星期:重复星期未开启,默认单次闹钟")
+                                }
+                            }
+                        }
+                        self.logView.writeString(string: "\n")
+                    }
+                }
+            }
+            
+            break
+            
         case "0x00 ":
             
             
@@ -3932,6 +4331,49 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 }
             }
                         
+            break
+            
+        case "设置自定义背景(JL)":
+            
+            if var image = self.customBgImage {
+                
+                AntCommandModule.shareInstance.getCustonDialFrameSize { success, error in
+
+                    if error == .none {
+
+                        if let model = success {
+                            let bigWidth = model.bigWidth
+                            let bigheight = model.bigHeight
+
+                            if bigWidth > 0 && bigheight > 0 {
+                                image = image.img_changeSize(size: .init(width: bigWidth, height: bigheight))
+                                
+                                AntCommandModule.shareInstance.setCustomDialEdit(image: image, progress: { progress in
+                                    self.logView.writeString(string: "进度:\(progress)")
+                                    print("progress ->",progress)
+                                }, isJL_Device: true) { error in
+                                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                                    print("SetCustomDialEdit -> error =",error.rawValue)
+                                }
+                                
+                            }else{
+                                print("GetCustonDialFrameSize 尺寸错误")
+                            }
+                        }
+                        
+                    }else{
+                        print("GetCustonDialFrameSize error")
+                    }
+                }
+      
+            }else{
+                self.presentSystemAlertVC(title: "警告:当前没有选择背景", message: "请选择自定义背景", cancel: nil, cancelAction: {
+
+                }, ok: nil) {
+
+                }
+            }
+            
             break
             
         case "获取服务器OTA信息":

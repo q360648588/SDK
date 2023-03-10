@@ -109,6 +109,9 @@ import UIKit
     @objc public private(set) var functionList_exerciseInteraction = false
     @objc public private(set) var functionList_clearData = false
     @objc public private(set) var functionList_bind = false
+    @objc public private(set) var functionList_weatherExtend = false
+    @objc public private(set) var functionList_newPortocol = false
+    @objc public private(set) var functionList_platformType = false
     
     @objc public private(set) var functionDetail_exercise:AntFunctionModel_exercise?
     @objc public private(set) var functionDetail_notification:AntFunctionModel_notification?
@@ -121,6 +124,9 @@ import UIKit
     @objc public private(set) var functionDetail_goal:AntFunctionModel_goal?
     @objc public private(set) var functionDetail_screenType:AntFunctionModel_scrrenType?
     @objc public private(set) var functionDetail_sportCountdown:AntFunctionModel_sportCountdown?
+    var functionDetail_newPortocol:AntFunctionModel_newPortocol?
+    @objc public private(set) var functionDetail_platformType:AntFunctionModel_platformType?
+    @objc public private(set) var functionDetail_customDial:AntFunctionModel_customDial?
     
     init(val:[UInt8]) {
         
@@ -228,6 +234,7 @@ import UIKit
             case 18:
                 break
             case 19:
+                self.functionDetail_customDial = AntFunctionModel_customDial.init(result: functionCount)
                 break
             case 20:
                 self.functionDetail_localDial = AntFunctionModel_localDial.init(result: functionCount)
@@ -269,6 +276,23 @@ import UIKit
             case 37:
                 self.functionDetail_sportCountdown = AntFunctionModel_sportCountdown.init(result: functionCount)
                 break
+            case 38:
+                break
+            case 39:
+                break
+            case 40:
+                break
+            case 41:
+                break
+            case 42:
+                break
+            case 43:
+                self.functionDetail_newPortocol = AntFunctionModel_newPortocol.init(result: functionCount)
+                break
+            case 44:
+                self.functionDetail_platformType = AntFunctionModel_platformType.init(result: functionCount)
+                break
+                
             default:
                 break
             }
@@ -367,6 +391,12 @@ import UIKit
             case 40:self.functionList_clearData = state == 0 ? false:true
                 break
             case 41:self.functionList_bind = state == 0 ? false:true
+                break
+            case 42:self.functionList_weatherExtend = state == 0 ? false:true
+                break
+            case 43:self.functionList_newPortocol = state == 0 ? false:true
+                break
+            case 44:self.functionList_platformType = state == 0 ? false:true
                 break
             default:
                 break
@@ -642,6 +672,9 @@ import UIKit
         }
         if self.functionList_customDial {
             log += "\n自定义表盘"
+            if let model = self.functionDetail_customDial {
+                log += "\n\(model.isSupportfontColor ? "支持":"不支持")字体颜色设置"
+            }
         }
         if self.functionList_localDial {
             log += "\n本地表盘"
@@ -718,6 +751,18 @@ import UIKit
         }
         if self.functionList_bind {
             log += "\n绑定/解绑"
+        }
+        if self.functionList_weatherExtend {
+            log += "\n天气扩展"
+        }
+        if self.functionList_newPortocol {
+            log += "\n新协议"
+        }
+        if self.functionList_platformType {
+            log += "\n手表平台类型"
+            if let model = self.functionDetail_platformType {
+                log += "\n平台类型:\(model.platform)"
+            }
         }
         return log
     }
@@ -1066,6 +1111,37 @@ import UIKit
         super.init()
     }
 }
+
+class AntFunctionModel_newPortocol:NSObject {
+    
+    @objc public private(set) var maxMtuCount = 0                 //最大mtu能发送的数量
+    
+    init(result:Int) {
+        self.maxMtuCount = result
+        super.init()
+    }
+}
+
+@objc public class AntFunctionModel_platformType:NSObject {
+    
+    @objc public private(set) var platform = 0                 //0:瑞昱,1:杰理,2:Nordic
+    
+    init(result:Int) {
+        self.platform = result
+        super.init()
+    }
+}
+
+@objc public class AntFunctionModel_customDial:NSObject {
+    
+    @objc public private(set) var isSupportfontColor = true       //0:不支持,1:支持
+    
+    init(result:Int) {
+        self.isSupportfontColor = result == 0 ? false:true
+        super.init()
+    }
+}
+
 
 @objc public class AntPersonalModel:NSObject {
     @objc public var age:Int = 0 {

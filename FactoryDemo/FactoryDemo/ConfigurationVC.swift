@@ -16,6 +16,10 @@ class ConfigurationVC: UIViewController {
     var dataSourceArray:[String] = Array.init()
     
     var scanNameString = ""
+    var appVersion = ""
+    var imageVersion = ""
+    var fontVersion = ""
+    var powerOffString = ""
     var bootString = ""
     var applicationString = ""
     var libraryString = ""
@@ -58,6 +62,26 @@ class ConfigurationVC: UIViewController {
             scanNameString = "设置扫描设备名"
         }
         self.scanNameString = scanNameString
+        
+        if let appVersion = userDefault.string(forKey: AppVersionKey) {
+            self.appVersion = "过滤固件版本:"+appVersion
+        }else{
+            self.appVersion = "过滤固件版本:无"
+        }
+        
+        if let imageVersion = userDefault.string(forKey: ImageVersionKey) {
+            self.imageVersion = "过滤图库版本:"+imageVersion
+        }else{
+            self.imageVersion = "过滤图库版本:无"
+        }
+        
+        if let fontVersion = userDefault.string(forKey: FontVersionKey) {
+            self.fontVersion = "过滤字体版本:"+fontVersion
+        }else{
+            self.fontVersion = "过滤字体版本:无"
+        }
+        
+        self.powerOffString = "关机"+(userDefault.bool(forKey: PowerOffKey) == true ? ":开" : ":关")
         
         var bootString = ""
         let bootPath = userDefault.string(forKey: BootKey)
@@ -104,12 +128,12 @@ class ConfigurationVC: UIViewController {
         }
         self.dialString = dialString
         
-        self.dataSourceArray = [scanNameString,self.bootString,self.applicationString,self.libraryString,self.fontString,self.dialString,"关机"]
+        self.dataSourceArray = [scanNameString,self.bootString,self.applicationString,self.libraryString,self.fontString,self.dialString,self.powerOffString]
         
         let sortArray = userDefault.array(forKey: OtaSortKey)
         
         if let sortArray:[Int] = sortArray as? [Int] {
-            self.dataSourceArray = [scanNameString,"关机"]
+            self.dataSourceArray = [scanNameString,self.appVersion,self.imageVersion,self.fontVersion,self.powerOffString]
             for item in sortArray {
                 if item == 0 {
                     self.dataSourceArray.insert(self.bootString, at: self.dataSourceArray.count-1)
@@ -210,6 +234,82 @@ extension ConfigurationVC:UITableViewDataSource,UITableViewDelegate {
                 DispatchQueue.main.async {
                     tableView.reloadData()
                 }
+            }
+        }
+        
+        if self.appVersion == selectString {
+            let array = [
+                "不输入则不过滤"
+            ]
+            self.presentTextFieldAlertVC(title: "设置需要过滤的应用版本号", message: "版本号小数点之后需要两位(不可以输入其他字符及空格),如1.00", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { textArray in
+                let appString = textArray[0]
+                if appString.count > 0 {
+                    userDefault.set(appString, forKey: AppVersionKey)
+                }else{
+                    userDefault.removeObject(forKey: AppVersionKey)
+                }
+                
+                userDefault.synchronize()
+                self.loadData()
+                DispatchQueue.main.async {
+                    tableView.reloadData()
+                }
+            }
+        }
+        
+        if self.imageVersion == selectString {
+            let array = [
+                "不输入则不过滤"
+            ]
+            self.presentTextFieldAlertVC(title: "设置需要过滤的图库版本号", message: "版本号小数点之后需要两位(不可以输入其他字符及空格),如1.00", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { textArray in
+                let imageString = textArray[0]
+                if imageString.count > 0 {
+                    userDefault.set(imageString, forKey: ImageVersionKey)
+                }else{
+                    userDefault.removeObject(forKey: ImageVersionKey)
+                }
+                
+                userDefault.synchronize()
+                self.loadData()
+                DispatchQueue.main.async {
+                    tableView.reloadData()
+                }
+            }
+        }
+        
+        if self.fontVersion == selectString {
+            let array = [
+                "不输入则不过滤"
+            ]
+            self.presentTextFieldAlertVC(title: "设置需要过滤的字库版本号", message: "版本号小数点之后需要两位(不可以输入其他字符及空格),如1.00", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { textArray in
+                let fontString = textArray[0]
+                if fontString.count > 0 {
+                    userDefault.set(fontString, forKey: FontVersionKey)
+                }else{
+                    userDefault.removeObject(forKey: FontVersionKey)
+                }
+                
+                userDefault.synchronize()
+                self.loadData()
+                DispatchQueue.main.async {
+                    tableView.reloadData()
+                }
+            }
+        }
+        
+        if selectString.contains("关机") {
+            let result = userDefault.bool(forKey: PowerOffKey)
+            userDefault.set(!result, forKey: PowerOffKey)
+            userDefault.synchronize()
+            self.loadData()
+            DispatchQueue.main.async {
+                tableView.reloadData()
             }
         }
         

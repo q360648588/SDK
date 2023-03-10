@@ -8,6 +8,7 @@
 import UIKit
 import CoreBluetooth
 import Alamofire
+import JL_BLEKit
 
 @objc public enum AntError : Int {
     case none
@@ -28,6 +29,9 @@ import Alamofire
     private var semaphoreCount = 1
     private var signalValue = 1
     private var commandSemaphore = DispatchSemaphore(value: 1)
+    private var commandListArray:Array<Data> = .init()
+    private var isCommandSendState = false
+    private var lastSendData:Data?
     private var commandDetectionTimer:Timer?//检测发送的是否有命令回复的定时器
     private var commandDetectionCount = 0
     
@@ -149,9 +153,10 @@ import Alamofire
     var receiveSetStartUpgradeProgressBlock:((Float) -> Void)?
     var receiveSetStopUpgradeBlock:((AntError) -> Void)?
     var receiveCheckUpgradeStateBlock:(([String:Any],AntError) -> Void)?
-    //    var receive:((String) -> Void)?
-    //    var receive:((String) -> Void)?
-    //    var receive:((String) -> Void)?
+    var receiveNewSetSyncHealthDataBlock:((Any?,AntError) -> Void)?
+    var receiveNewSetWeatherBlock:((AntError) -> Void)?
+    var receiveNewSetAlarmArrayBlock:((AntError) -> Void)?
+    var receiveNewGetAlarmArrayBlock:(([AntAlarmModel],AntError) -> Void)?
     //    var receive:((String) -> Void)?
     //    var receive:((String) -> Void)?
     //    var receive:((String) -> Void)?
@@ -180,6 +185,12 @@ import Alamofire
     var exerciseMaxIndex = 0
     var exerciseDataLength = 0
     var exerciseCRC16 = 0
+    
+    var newProtocalData:Data?
+    var isNewProtocalData = false
+    var newProtocalMaxIndex = 0
+    var newProtocalLength = 0
+    var newProtocalCRC16 = 0
     
     var deviceSupportMaxData:Data?
     var isDeviceSupportData = false
@@ -542,7 +553,7 @@ import Alamofire
                 }
                 
                 //设置天气
-                if val[0] == 0x01 && val[1] == 0x87 {
+                if val[0] == 0x01 && (val[1] == 0x87 || val[1] == 0xc3)  {
                     if self.checkLength(val: [UInt8](val)) {
                         
                         if let block = self.receiveSetWeatherBlock {
@@ -2701,6 +2712,258 @@ import Alamofire
                     }
                     //printLog("第\(#line)行" , "\(#function)")
                 }
+                
+                if val[0] == 0xaa && self.functionListModel?.functionList_newPortocol == true {
+                    
+                    let firstBit = Int(val[3])
+                    var maxMtuCount = 0
+                    if let model = self.functionListModel?.functionDetail_newPortocol {
+                        maxMtuCount = model.maxMtuCount
+                    }
+
+                    let crc16 = (Int(val[val.count-2]) | Int(val[val.count-1]) << 8)
+                    
+                    if firstBit > 0 {
+
+                        let totalCount = (Int(val[4]) | Int(val[5]) << 8 )
+                        let currentCount = (Int(val[6]) | Int(val[7]) << 8 )
+
+                        let newData = val.withUnsafeBufferPointer({ (bytes) -> Data in
+                            let byte = bytes.baseAddress! + 8
+                            return Data.init(bytes: byte, count: val.count-10)
+                        })
+                        
+                        if self.CRC16(val: Array(val[0..<val.count-2])) == crc16 {
+                            if self.newProtocalData == nil {
+                                self.newProtocalData = Data()
+                            }
+                            self.newProtocalData?.append(newData)
+                        }else{
+
+                            let errorString = String.init(format: "第%d包crc16校验出错,app计算的:%02x,设备返回的:%02x", currentCount,self.CRC16(val: val),crc16)
+                            print("errorString")
+                            AntSDKLog.writeStringToSDKLog(string: String.init(format: errorString))
+                        }
+
+                        if totalCount == currentCount + 0 {
+                            let totalLength = (Int(val[2]) | (firstBit-128) << 8)
+                            guard self.newProtocalData != nil else {
+                                print("self.newProtocalData 数据错误")
+                                return
+                            }
+                            if self.newProtocalData!.count == totalLength {
+
+                                let newVal = self.newProtocalData!.withUnsafeBytes({ (bytes) -> [UInt8] in
+                                    let b = (bytes.baseAddress?.bindMemory(to: UInt8.self, capacity: 4))!
+                                    return [UInt8](UnsafeBufferPointer.init(start: b, count: (self.newProtocalData?.count ?? 0)))
+                                })
+
+                                if val[1] == 0x05 { //同步数据id 0x05
+                                    if let block = self.receiveNewSetSyncHealthDataBlock {
+                                        self.parseSetNewSyncHealthData(val: newVal, success: block)
+                                    }
+                                }
+                                
+                                if val[1] == 0x04 {
+                                    var currentIndex = 5
+                                    while currentIndex < val.count - 2 {
+                                        let cmd_id = (Int(val[currentIndex]) | Int(val[currentIndex+1]) << 8)
+                                        let cmd_length = (Int(val[currentIndex+2]) | Int(val[currentIndex+3]) << 8)
+                                        
+                                        switch cmd_id {
+                                        case 5:
+                                            let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            if let block = self.receiveNewGetAlarmArrayBlock {
+                                                self.parseGetNewAlarmArray(val: newVal, success: block)
+                                            }
+                                            
+                                            break
+                                        default:
+                                            break
+                                        }
+                                        
+                                        currentIndex += (4+cmd_length)
+                                    }
+                                }
+                                
+                                if val[1] == 0x03 {
+
+                                    let resultArray = Array(val[4..<val.count-2])
+                                    var currentIndex = 1
+                                    while currentIndex < resultArray.count {
+                                        let cmd_id = (Int(resultArray[currentIndex]) | Int(resultArray[currentIndex+1]) << 8)
+                                        let result = resultArray[currentIndex+2]
+
+                                        switch cmd_id {
+                                        case 0:
+                                            break
+                                        case 4:
+                                            if let block = self.receiveNewSetWeatherBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 5:
+                                            if let block = self.receiveNewSetAlarmArrayBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        default:
+                                            break
+                                        }
+                                        currentIndex += 3
+                                    }
+                                }
+
+                            }else{
+                                if val[1] == 0x05 { //同步数据id 0x05
+                                    if let block = self.receiveNewSetSyncHealthDataBlock {
+                                        block(nil,.invalidLength)
+                                    }
+                                }
+                                
+                                if val[1] == 0x04 {
+                                    if let block = self.receiveNewGetAlarmArrayBlock {
+                                        block([],.invalidLength)
+                                    }
+                                }
+                                
+                                if val[1] == 0x03 {
+                                    
+                                    let resultArray = Array(val[4..<val.count-2])
+                                    var currentIndex = 1
+                                    while currentIndex < resultArray.count {
+                                        let cmd_id = (Int(resultArray[currentIndex]) | Int(resultArray[currentIndex+1]) << 8)
+                                        let result = resultArray[currentIndex+2]
+
+                                        switch cmd_id {
+                                        case 0:
+                                            break
+                                        case 4:
+                                            if let block = self.receiveNewSetWeatherBlock {
+                                                block(.invalidLength)
+                                            }
+                                            break
+                                        case 5:
+                                            if let block = self.receiveNewSetAlarmArrayBlock {
+                                                block(.invalidLength)
+                                            }
+                                            break
+                                        default:
+                                            break
+                                        }
+                                        currentIndex += 3
+                                    }
+                                }
+
+                                AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "新协议0xaa长度校验出错"))
+                            }
+                            self.newProtocalData = nil
+                        }
+
+                    }else{
+
+                        let totalLength = (Int(val[2]) | Int(val[3]) << 8 )
+                        if totalLength == val.count - 6 {
+                            if val[1] == 0x05 { //同步数据id 0x05
+                                if let block = self.receiveNewSetSyncHealthDataBlock {
+                                    self.parseSetNewSyncHealthData(val: Array(val[4..<(val.count-2)]), success: block)
+                                }
+                            }
+                            
+                            if val[1] == 0x04 {
+                                var currentIndex = 5
+                                while currentIndex < val.count - 2 {
+                                    let cmd_id = (Int(val[currentIndex]) | Int(val[currentIndex+1]) << 8)
+                                    let cmd_length = (Int(val[currentIndex+2]) | Int(val[currentIndex+3]) << 8)
+                                    
+                                    switch cmd_id {
+                                    case 5:
+                                        let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                        if let block = self.receiveNewGetAlarmArrayBlock {
+                                            self.parseGetNewAlarmArray(val: newVal, success: block)
+                                        }
+                                        
+                                        break
+                                    default:
+                                        break
+                                    }
+                                    
+                                    currentIndex += (4+cmd_length)
+                                }
+                            }
+                            
+                            if val[1] == 0x03 {
+                                
+                                let resultArray = Array(val[4..<val.count-2])
+                                var currentIndex = 1
+                                while currentIndex < resultArray.count {
+                                    let cmd_id = (Int(resultArray[currentIndex]) | Int(resultArray[currentIndex+1]) << 8)
+                                    let result = resultArray[currentIndex+2]
+
+                                    switch cmd_id {
+                                    case 0:
+                                        break
+                                    case 4:
+                                        if let block = self.receiveNewSetWeatherBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 5:
+                                        if let block = self.receiveNewSetAlarmArrayBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    default:
+                                        break
+                                    }
+                                    currentIndex += 3
+                                }
+                            }
+                            
+                        }else{
+                            if val[1] == 0x05 { //同步数据id 0x05
+                                if let block = self.receiveNewSetSyncHealthDataBlock {
+                                    block(nil,.invalidLength)
+                                }
+                            }
+                            
+                            if val[1] == 0x04 {
+                                if let block = self.receiveNewGetAlarmArrayBlock {
+                                    block([],.invalidLength)
+                                }
+                            }
+                            
+                            if val[1] == 0x01 {
+                                
+                                let resultArray = Array(val[4..<val.count-2])
+                                var currentIndex = 1
+                                while currentIndex < resultArray.count {
+                                    let cmd_id = (Int(resultArray[currentIndex]) | Int(resultArray[currentIndex+1]) << 8)
+                                    let result = resultArray[currentIndex+2]
+
+                                    switch cmd_id {
+                                    case 0:
+                                        break
+                                    case 4:
+                                        if let block = self.receiveNewSetWeatherBlock {
+                                            block(.invalidLength)
+                                        }
+                                        break
+                                    case 5:
+                                        if let block = self.receiveNewSetAlarmArrayBlock {
+                                            block(.invalidLength)
+                                        }
+                                        break
+                                    default:
+                                        break
+                                    }
+                                    currentIndex += 3
+                                }
+                            }
+                            AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "新协议0xaa长度校验出错"))
+                        }
+                    }
+                }
             }
         }
     }
@@ -2732,11 +2995,11 @@ import Alamofire
     
     @objc public func checkCurrentCommamdIsNeedWait() -> Bool {
         printLog("self.semaphoreCount =",self.semaphoreCount)
-        return self.semaphoreCount >= 0 ? false : true
+        printLog("self.commandListArray.count =",self.commandListArray.count)
+        return self.commandListArray.count <= 0 ? false : true
     }
     
     func writeDataAndBackError(data:Data) -> AntError {
-        self.sendFailState = false
         if self.peripheral?.state != .connected {
             
             return .disconnected
@@ -2745,37 +3008,12 @@ import Alamofire
             
             if self.writeCharacteristic != nil && self.peripheral != nil {
 
-                DispatchQueue.global().async {
-
-                    printLog("send dataString -> wait 之前 sendData = \(self.convertDataToSpaceHexStr(data: data,isSend: true)) self.semaphoreCount = \(self.semaphoreCount) self.signalValue = \(self.signalValue)")
-                    self.semaphoreCount -= 1
-                    let result = self.commandSemaphore.wait(wallTimeout: DispatchWallTime.now()+5)//.wait(timeout: DispatchTime.now()+5)//
-                    if result == .timedOut {
-                        self.semaphoreCount += 1
-                    }
-                    printLog("result = \(result)")
-                    
-                    let dataString = String.init(format: "%@", self.convertDataToSpaceHexStr(data: data,isSend: true))
-                    AntSDKLog.writeStringToSDKLog(string: "发送:"+dataString)
-                                        
-                    DispatchQueue.main.async {
-
-                        printLog("send",dataString)
-                        printLog("发送命令 -> self.semaphoreCount =",self.semaphoreCount)
-                        if self.sendFailState {
-                            printLog("重置信号量状态true，取消此命令发送")
-                            AntSDKLog.writeStringToSDKLog(string: "重置信号量状态true，取消此命令发送 \n\(dataString)")
-                        }else{
-                            self.peripheral?.writeValue(data, for: self.writeCharacteristic!, type: ((self.writeCharacteristic!.properties.rawValue & CBCharacteristicProperties.writeWithoutResponse.rawValue) != 0) ? .withoutResponse : .withResponse)
-                        }
-                        //定时器计数重置
-//                        self.commandDetectionCount = 0
-//                        if self.commandDetectionTimer == nil {
-//                            //检测命令发送之后是否有回复，在deviceReceivedData方法内有数据则把此定时器销毁。如果没有回复，那么5s之后把信号量回复默认值
-//                            self.commandDetectionTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.commandDetectionTimerMethod), userInfo: nil, repeats: true)
-//                        }
-                    }
+                self.commandListArray.append(data)
+                if !self.isCommandSendState {
+                    self.isCommandSendState = true
+                    self.sendListArrayData()
                 }
+                
                 return .none
             }else{
                 
@@ -2786,6 +3024,121 @@ import Alamofire
             }
         }
     }
+    
+    func sendListArrayData() {
+        
+        if self.commandListArray.count > 0 {
+            //取出数组第一条data
+            if let data = self.commandListArray.first {
+                if self.peripheral?.state == .connected && self.writeCharacteristic != nil && self.peripheral != nil {
+                    DispatchQueue.global().async {
+
+                        self.semaphoreCount -= 1
+                        let result = self.commandSemaphore.wait(timeout: DispatchTime.now()+5)
+                        if result == .timedOut {
+                            self.semaphoreCount += 1
+                            let lastString = String.init(format: "%@", self.convertDataToSpaceHexStr(data: self.lastSendData ?? .init(),isSend: true))
+                            printLog("result = \(result) , self.lastSendData = \(lastString)")
+                            AntSDKLog.writeStringToSDKLog(string: "发送超时的命令:"+lastString)
+                            printLog("timedOut -> self.semaphoreCount =",self.semaphoreCount)
+                        }
+                        
+                        let dataString = String.init(format: "%@", self.convertDataToSpaceHexStr(data: data,isSend: true))
+                        AntSDKLog.writeStringToSDKLog(string: "发送:"+dataString)
+                                            
+                        DispatchQueue.main.async {
+
+                            printLog("send",dataString)
+                            printLog("发送命令 -> self.semaphoreCount =",self.semaphoreCount)
+                            self.peripheral?.writeValue(data, for: self.writeCharacteristic!, type: ((self.writeCharacteristic!.properties.rawValue & CBCharacteristicProperties.writeWithoutResponse.rawValue) != 0) ? .withoutResponse : .withResponse)
+                            self.lastSendData = data
+                            
+                            //定时器计数重置
+                            self.commandDetectionCount = 0
+                            if self.commandDetectionTimer == nil {
+                                //检测命令发送之后是否有回复，在deviceReceivedData方法内有数据则把此定时器销毁。如果没有回复，那么5s之后把信号量回复默认值
+                                self.commandDetectionTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.commandDetectionTimerMethod), userInfo: nil, repeats: true)
+                            }
+                            
+                            //移除发送的第一条data
+                            if self.commandListArray.count > 0 {
+                                self.commandListArray.remove(at: 0)
+                                self.sendListArrayData()
+                            }
+                        }
+                    }
+                }
+            }
+        }else{
+            self.isCommandSendState = false
+        }
+    }
+    
+//    func writeDataAndBackError(data:Data) -> AntError {
+//
+//        return self.writeDataAndBackErrorTest(data: data)
+//
+//        self.sendFailState = false
+//        if self.peripheral?.state != .connected {
+//
+//            return .disconnected
+//
+//        }else{
+//
+//            if self.writeCharacteristic != nil && self.peripheral != nil {
+//
+//                DispatchQueue.global().async {
+//
+//                    printLog("send dataString -> wait 之前 sendData = \(self.convertDataToSpaceHexStr(data: data,isSend: true)) self.semaphoreCount = \(self.semaphoreCount) self.signalValue = \(self.signalValue)")
+////                    if self.semaphoreCount != 1 && self.signalValue != 1 {
+////                        //定时器计数重置
+////                        self.commandDetectionCount = 0
+////                        if self.commandDetectionTimer == nil {
+////                            //检测命令发送之后是否有回复，在deviceReceivedData方法内有数据则把此定时器销毁。如果没有回复，那么5s之后把信号量回复默认值
+////                            DispatchQueue.main.async {
+////                                self.commandDetectionTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.commandDetectionTimerMethod), userInfo: nil, repeats: true)
+////                            }
+////                        }
+////                    }
+//                    self.semaphoreCount -= 1
+////                    self.commandSemaphore.wait()
+//                    let result = self.commandSemaphore.wait(wallTimeout: DispatchWallTime.now()+Double(5))//.wait(timeout: DispatchTime.now()+5)//
+//                    if result == .timedOut {
+//                        self.semaphoreCount += 1
+//                    }
+//                    printLog("result = \(result)")
+//
+//                    let dataString = String.init(format: "%@", self.convertDataToSpaceHexStr(data: data,isSend: true))
+//                    AntSDKLog.writeStringToSDKLog(string: "发送:"+dataString)
+//
+//                    DispatchQueue.main.async {
+//
+//                        printLog("send",dataString)
+//                        printLog("发送命令 -> self.semaphoreCount =",self.semaphoreCount)
+//                        if self.sendFailState {
+//                            printLog("重置信号量状态true，取消此命令发送")
+//                            AntSDKLog.writeStringToSDKLog(string: "重置信号量状态true，取消此命令发送 \n\(dataString)")
+//                        }else{
+//                            self.peripheral?.writeValue(data, for: self.writeCharacteristic!, type: ((self.writeCharacteristic!.properties.rawValue & CBCharacteristicProperties.writeWithoutResponse.rawValue) != 0) ? .withoutResponse : .withResponse)
+//                        }
+//                        //定时器计数重置
+//                        self.commandDetectionCount = 0
+//                        if self.commandDetectionTimer == nil {
+//                            //检测命令发送之后是否有回复，在deviceReceivedData方法内有数据则把此定时器销毁。如果没有回复，那么5s之后把信号量回复默认值
+//                            self.commandDetectionTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.commandDetectionTimerMethod), userInfo: nil, repeats: true)
+//                        }
+//                    }
+//                }
+//                return .none
+//            }else{
+//
+//                AntSDKLog.writeStringToSDKLog(string: "发送失败:写特征为空")
+//                printLog("写特征为空")
+//
+//                return .invalidCharacteristic
+//            }
+//        }
+//    }
     
     func deviceDisconnectedFail() {
         
@@ -3161,7 +3514,7 @@ import Alamofire
     
     // MARK: - 检测命令定时器方法
     @objc func commandDetectionTimerMethod() {
-        printLog("commandDetectionTimerMethod commandDetectionCount \(commandDetectionCount)")
+        //printLog("commandDetectionTimerMethod commandDetectionCount \(commandDetectionCount)")
         if self.commandDetectionCount >= 50 {
             //用信号量+1，只放一条命令过。如果用重置信号量会导致后续的命令全部怼出去，如果还有丢的命令也无法发现
             self.signalCommandSemaphore()
@@ -3177,7 +3530,7 @@ import Alamofire
         if self.commandDetectionTimer != nil {
             self.commandDetectionTimer?.invalidate()
             self.commandDetectionTimer = nil
-            printLog("commandDetectionTimerInvalid 定时器销毁 \(self.commandDetectionTimer)")
+            //printLog("commandDetectionTimerInvalid 定时器销毁 \(self.commandDetectionTimer)")
         }
     }
     
@@ -3248,9 +3601,9 @@ import Alamofire
             self.signalValue = self.commandSemaphore.signal()
             self.semaphoreCount += 1
         }
-        AntSDKLog.writeStringToSDKLog(string: "signalCommandSemaphore 自定义值:\(self.semaphoreCount)")
-        AntSDKLog.writeStringToSDKLog(string: "signalCommandSemaphore signal值:\(self.signalValue)")
-        printLog("signalCommandSemaphore signalValue = \(self.signalValue)")
+        //AntSDKLog.writeStringToSDKLog(string: "signalCommandSemaphore 自定义值:\(self.semaphoreCount)")
+        //AntSDKLog.writeStringToSDKLog(string: "signalCommandSemaphore signal值:\(self.signalValue)")
+        //printLog("signalCommandSemaphore signalValue = \(self.signalValue)")
         printLog("signalCommandSemaphore -> self.semaphoreCount =",self.semaphoreCount)
     }
     
@@ -3267,22 +3620,25 @@ import Alamofire
             AntSDKLog.writeStringToSDKLog(string: "重连、断开连接、关闭蓝牙，取消后续命令发送")
         }
         
-        AntSDKLog.writeStringToSDKLog(string: "resetCommandSemaphore 恢复之前值:\(self.semaphoreCount)")
-        AntSDKLog.writeStringToSDKLog(string: "resetCommandSemaphore signal值:\(self.signalValue)")
+        //AntSDKLog.writeStringToSDKLog(string: "resetCommandSemaphore 恢复之前值:\(self.semaphoreCount)")
+        //AntSDKLog.writeStringToSDKLog(string: "resetCommandSemaphore signal值:\(self.signalValue)")
         printLog("resetCommandSemaphore resetCount->",resetCount)
         for _ in 0..<resetCount {
             self.signalCommandSemaphore()
         }
-        AntSDKLog.writeStringToSDKLog(string: "resetCommandSemaphore 恢复之后值:\(self.semaphoreCount)")
-        AntSDKLog.writeStringToSDKLog(string: "resetCommandSemaphore signal值:\(self.signalValue)")
+        //AntSDKLog.writeStringToSDKLog(string: "resetCommandSemaphore 恢复之后值:\(self.semaphoreCount)")
+        //AntSDKLog.writeStringToSDKLog(string: "resetCommandSemaphore signal值:\(self.signalValue)")
         
-        if self.semaphoreCount < 1 || self.signalValue < 1 {
+        if self.semaphoreCount < 1 {
             for _ in 0..<1-self.semaphoreCount {
                 self.signalCommandSemaphore()
             }
         }
         //重置之后网络请求的isRequesting置为false
         self.isRequesting = false
+        self.isCommandSendState = false
+        self.lastSendData = nil
+        self.commandListArray.removeAll()
     }
     
     // MARK: - 重置命令等待，待发命令全部移除不发送
@@ -3820,7 +4176,7 @@ import Alamofire
     }
     
     // MARK: - 设置天气 0x07
-    @objc public func setWeather(model:AntWeatherModel,success:@escaping((AntError) -> Void)) {
+    @objc public func setWeather(model:AntWeatherModel,updateTime:String? = nil,success:@escaping((AntError) -> Void)) {
         
         var val:[Int8] = [
             0x01,
@@ -3836,6 +4192,67 @@ import Alamofire
             Int8(model.tomorrowMinTemp),
             Int8(model.tomorrowMaxTemp),
         ]
+        if self.functionListModel?.functionList_weatherExtend == true {
+
+            var date = Date.init()
+
+            let timeFormatter = DateFormatter()
+            timeFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            
+//            let formatRegex = "(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2})"
+//            let pre = NSPredicate.init(format: "SELF MATCHES %@", formatRegex)
+//            let result = pre.evaluate(with: time)
+//            if !result {
+//                let currentTime = Date().conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss")
+//                self.logView.writeString(string: "\(time)格式显示输入错误,更改为当前时间:\(currentTime)")
+//                print("\(time)格式显示输入错误,更改为当前时间:\(currentTime)")
+//                time = currentTime
+//            }
+            
+            if let time = updateTime {
+                date = timeFormatter.date(from: time) ?? .init()
+            }
+
+            let calendar = NSCalendar.current
+            let year = calendar.component(.year, from: date)
+            let month = calendar.component(.month, from: date)
+            let day = calendar.component(.day, from: date)
+            let hour = calendar.component(.hour, from: date)
+            let minute = calendar.component(.minute, from: date)
+            let second = calendar.component(.second, from: date)
+
+            let year_0 = ((year) & 0xff)
+            let year_1 = ((year >> 8) & 0xff)
+            print("year_0 = \(year_0),year_1 =\(year_1)",String.init(format: "%02x,%02x", year_0,year_1))
+            
+            let year_2:Int8 = Int8(bitPattern: UInt8(year_0))
+            let year_3:Int8 = Int8(bitPattern: UInt8(year_1))
+            print("year_2 = \(year_2),year_3 =\(year_3)",String.init(format: "%02x,%02x", year_2,year_3))
+            
+            val = [
+                0x01,
+                0x43,
+                0x13,
+                0x00,
+                Int8(bitPattern: UInt8((year) & 0xff)),
+                Int8(bitPattern: UInt8((year >> 8) & 0xff)),
+                Int8(month),
+                Int8(day),
+                Int8(hour),
+                Int8(minute),
+                Int8(second),
+                Int8(model.dayCount),
+                Int8(model.type.rawValue),
+                Int8(model.temp),
+                Int8(model.airQuality),
+                Int8(model.minTemp),
+                Int8(model.maxTemp),
+                Int8(model.tomorrowMinTemp),
+                Int8(model.tomorrowMaxTemp),
+            ]
+        }
+        
+        
         let data = Data.init(bytes: &val, count: val.count)
         
         let state = self.writeDataAndBackError(data: data)
@@ -4769,7 +5186,7 @@ import Alamofire
             UInt8(type),
             UInt8(isOpen)
         ]
-        if /*let _ = self.functionListModel?.functionList_sportInteraction*/true {
+        if self.functionListModel?.functionList_exerciseInteraction == true {
             let arr = [
                 UInt8((timestamp ) & 0xff),
                 UInt8((timestamp >> 8) & 0xff),
@@ -5174,7 +5591,17 @@ import Alamofire
                     self.screenSmallWidth = smallWidth
                     self.screenSmallHeight = smallHeight
                     
-                    let sendData = self.createSendDialOtaFile(image: image)
+                    var sendData:Data //= self.createSendDialOtaFile(image: image)
+                    if let model = self.functionListModel?.functionDetail_platformType {
+                        if model.platform == 1 {
+                            sendData = self.createSendJLdeviceDialOtaFile(image: image)
+                        }else{
+                            sendData = self.createSendDialOtaFile(image: image)
+                        }
+                    }else{
+                        sendData = self.createSendDialOtaFile(image: image)
+                    }
+                    
                     printLog("sendData.count =",sendData.count)
                     
 //                    测试代码
@@ -5195,6 +5622,172 @@ import Alamofire
                 success(.fail)
             }
         }
+    }
+    
+    @objc public func setCustomDialEdit(image:UIImage,progress:@escaping((Float) -> Void),isJL_Device:Bool,success:@escaping((AntError) -> Void)) {
+        
+        self.getCustonDialFrameSize { frameSuccess, error in
+            if error == .none {
+                let bigWidth = frameSuccess?.bigWidth ?? 0
+                let bigheight = frameSuccess?.bigHeight ?? 0
+                let smallWidth = frameSuccess?.smallWidth ?? 0
+                let smallHeight = frameSuccess?.smallHeight ?? 0
+                
+                if CGFloat(bigWidth) == image.size.width && CGFloat(bigheight) == image.size.height {
+                    self.screenBigWidth = bigWidth
+                    self.screenBigHeight = bigheight
+                    self.screenSmallWidth = smallWidth
+                    self.screenSmallHeight = smallHeight
+                    
+                    var sendData:Data = Data()
+                    if isJL_Device {
+                        sendData = self.createSendJLdeviceDialOtaFile(image: image)
+                    }else{
+                        sendData = self.createSendDialOtaFile(image: image)
+                    }
+                    printLog("sendData.count =",sendData.count)
+                    
+//                    测试代码
+//                    let path = NSHomeDirectory() + "/Documents/test.bin"
+//                    if FileManager.createFile(filePath: path).isSuccess {
+//
+//                        FileManager.default.createFile(atPath: path, contents: sendData, attributes: nil)
+//                    }
+                    
+                    self.setOtaStartUpgrade(type: 5, localFile: sendData, isContinue: false, progress: progress, success: success)
+                }else{
+                    printLog("图片尺寸跟设备尺寸不一致。请检查图片是否正确 image.size =",image.size)
+                    success(.fail)
+                }
+
+            }else{
+                printLog("获取设备尺寸失败")
+                success(.fail)
+            }
+        }
+    }
+    
+    func createSendJLdeviceDialOtaFile(image:UIImage) -> Data {
+        
+        var smallImage = image.changeSize(size: .init(width: self.screenSmallWidth, height: self.screenSmallHeight))
+        //smallImage = smallImage.addShadowLayer(shadowWidth: 10)
+        var bigImage = image//.changeSize(size: .init(width: 240, height: 240))
+        
+        if let screenType = self.functionListModel?.functionDetail_screenType {
+            if screenType.supportType == 1 {
+                smallImage = smallImage.changeCircle(fillColor: .black)
+                bigImage = bigImage.changeCircle(fillColor: .black)
+            }
+        }
+        
+        let data_80Val = smallImage.toByteArray(rgba: "bgra")
+        let data_80_80:Data = Data.init(bytes: data_80Val, count: data_80Val.count)
+        let data_240Val = bigImage.toByteArray(rgba: "bgra")
+        let data_240_240:Data = Data.init(bytes: data_240Val, count: data_240Val.count)
+        
+        let bigBmpPath = NSTemporaryDirectory() + "test_big.bmp"
+        let bigBinPath = NSTemporaryDirectory() + "test_bigBin"
+        let smallBmpPath = NSTemporaryDirectory() + "test_small.bmp"
+        let smallBinPath = NSTemporaryDirectory() + "test_smallBin"
+        
+        if FileManager.createFile(filePath: bigBmpPath).isSuccess {
+            FileManager.default.createFile(atPath: bigBmpPath, contents: data_240_240, attributes: nil)
+        }
+        if FileManager.createFile(filePath: smallBmpPath).isSuccess {
+            FileManager.default.createFile(atPath: smallBmpPath, contents: data_80_80, attributes: nil)
+        }
+        if FileManager.createFile(filePath: bigBinPath).isSuccess {
+            var input: [CChar] = bigBmpPath.cString(using: .utf8)!
+            var output : [CChar] = bigBinPath.cString(using: .utf8)!
+            let result = br28_btm_to_res_path(&input, Int32(self.screenBigWidth), Int32(self.screenBigHeight),&output)
+            print("result big = \(result)")
+        }
+        if FileManager.createFile(filePath: smallBinPath).isSuccess {
+            var input: [CChar] = smallBmpPath.cString(using: .utf8)!
+            var output : [CChar] = smallBinPath.cString(using: .utf8)!
+            let result = br28_btm_to_res_path(&input, Int32(self.screenSmallWidth), Int32(self.screenSmallHeight),&output)
+            print("result small = \(result)")
+        }
+
+        var imageFileData = Data()
+
+        let bigUrl = URL.init(fileURLWithPath: bigBinPath)
+        let smallUrl = URL.init(fileURLWithPath: smallBinPath)
+        if let bigFileData = try? Data.init(contentsOf: bigUrl) {
+            if let smallFileData = try? Data.init(contentsOf: smallUrl) {
+                let bigFileLength = [UInt8((bigFileData.count ) & 0xff),UInt8((bigFileData.count >> 8) & 0xff),UInt8((bigFileData.count >> 16) & 0xff),UInt8((bigFileData.count >> 24) & 0xff)]
+                imageFileData.append(Data.init(bytes: bigFileLength, count: 4))
+                let smallFileLength = [UInt8((smallFileData.count ) & 0xff),UInt8((smallFileData.count >> 8) & 0xff),UInt8((smallFileData.count >> 16) & 0xff),UInt8((smallFileData.count >> 24) & 0xff)]
+                imageFileData.append(Data.init(bytes: smallFileLength, count: 4))
+                imageFileData.append(bigFileData)
+                imageFileData.append(smallFileData)
+            }
+        }
+
+        printLog("imageFileData.count =",imageFileData.count)
+
+        let data = imageFileData//self.createSendImageFile(image: image)
+        
+        let date = Date.init()
+        let calendar = NSCalendar.current
+        let year = calendar.component(.year, from: date)
+        let month = calendar.component(.month, from: date)
+        let day = calendar.component(.day, from: date)
+        let hour = calendar.component(.hour, from: date)
+        let minute = calendar.component(.minute, from: date)
+        let second = calendar.component(.second, from: date)
+        
+        var otaFileHeadData:[UInt8] = Array.init()
+        
+        let oldCount = AntCommandModule.shareInstance.CRC32(data: data)
+        let newCount = AntCommandModule.shareInstance.CRC32(data: data)
+        
+        //固定数据  0xAA,0x55,0x01,0x05
+        let otaHead:[UInt8] = [0xAA,0x55,0x01,0x05]
+        //日期/时间  6字节；格式YY-MM-DD HH:MM:SS(BCD码)
+        let time:[UInt8] = [0x22,UInt8(month),UInt8(day),UInt8(hour),UInt8(minute),UInt8(second)]
+        //压缩方式  1字节；0-无压缩 1-fastlz
+        let type:UInt8 = 0
+        //文件长度    4字节；未经过处理的原始文件长度
+        let fileLength_old = [UInt8((data.count ) & 0xff),UInt8((data.count >> 8) & 0xff),UInt8((data.count >> 16) & 0xff),UInt8((data.count >> 24) & 0xff)]
+        //文件完整性校验    4字节；对整个原始文件进行校验；CRC-32 多项式：0x104C11DB7、初始值：0xFFFFFFFF、结果异或值：0xFFFFFFFF、输入反转：true、输出反转：true
+        let fileCrc32_old = [UInt8((oldCount) & 0xff),UInt8((oldCount >> 8) & 0xff),UInt8((oldCount >> 16) & 0xff),UInt8((oldCount >> 24) & 0xff)]
+        //文件长度    4字节；处理完之后的文件长度
+        let fileLength_new = [UInt8((data.count ) & 0xff),UInt8((data.count >> 8) & 0xff),UInt8((data.count >> 16) & 0xff),UInt8((data.count >> 24) & 0xff)]
+        //文件完整性校验    4字节；对整个处理完之后的文件进行校验；CRC-32 多项式：0x104C11DB7、初始值：0xFFFFFFFF、结果异或值：0xFFFFFFFF、输入反转：true、输出反转：true
+        let fileCrc32_new = [UInt8((newCount) & 0xff),UInt8((newCount >> 8) & 0xff),UInt8((newCount >> 16) & 0xff),UInt8((newCount >> 24) & 0xff)]
+        //固定数据    固定33个0xFF;
+        var arrLength_33:[UInt8] = Array.init()
+        for _ in 0..<33 {
+            arrLength_33.append(0xff)
+        }
+        //文件头完整性校验    4字节； CRC-32 多项式：0x104C11DB7、初始值：0xFFFFFFFF、结果异或值：0xFFFFFFFF、输入反转：true、输出反转：true
+        otaFileHeadData.append(contentsOf: otaHead)
+        otaFileHeadData.append(contentsOf: time)
+        otaFileHeadData.append(type)
+        otaFileHeadData.append(contentsOf: fileLength_old)
+        otaFileHeadData.append(contentsOf: fileCrc32_old)
+        otaFileHeadData.append(contentsOf: fileLength_new)
+        otaFileHeadData.append(contentsOf: fileCrc32_new)
+        otaFileHeadData.append(contentsOf: arrLength_33)
+        
+        let headCrc32 = AntCommandModule.shareInstance.CRC32(val: otaFileHeadData)
+        let fileCrc32 = [UInt8((headCrc32) & 0xff),UInt8((headCrc32 >> 8) & 0xff),UInt8((headCrc32 >> 16) & 0xff),UInt8((headCrc32 >> 24) & 0xff)]
+        
+        otaFileHeadData.append(contentsOf: fileCrc32)
+        
+        var finalData = Data.init(bytes: &otaFileHeadData, count: otaFileHeadData.count)
+        finalData.append(data)
+        
+        let count = finalData.count/1024+((finalData.count%1024) != 0 ? 1:0)
+        var startCount = 0
+        for i in stride(from: 0, to: count, by: 1) {
+            let endCount = (i+1)*1024 < finalData.count ? (i+1)*1024 : finalData.count
+            let subData = finalData[startCount..<endCount]
+            //printLog("otaFile =",self.convertDataToHexStr(data: subData))
+            startCount = endCount
+        }
+        return finalData
     }
 
     func createSendDialOtaFile(image:UIImage) -> Data {
@@ -5265,9 +5858,23 @@ import Alamofire
     
     func createSendImageFile(image:UIImage) -> Data {
                 
-        var smallImage = image.changeSize(size: .init(width: self.screenSmallWidth, height: self.screenSmallHeight))
-        var bigImage = image//.changeSize(size: .init(width: 240, height: 240))
+//        let smallImagePath = NSHomeDirectory() + "/Documents/smallImage.png"
+//        let smallImageShadowPath = NSHomeDirectory() + "/Documents/smallImageShadow.png"
+//        let bigImagePath = NSHomeDirectory() + "/Documents/bigImage.png"
         
+        var smallImage = image.changeSize(size: .init(width: self.screenSmallWidth, height: self.screenSmallHeight))
+//        if FileManager.createFile(filePath: smallImagePath).isSuccess {
+//            FileManager.default.createFile(atPath: smallImagePath, contents: smallImage.pngData(), attributes: nil)
+//        }
+//        smallImage = smallImage.addCornerRadius(radiusWidth: 20)
+//        smallImage = smallImage.addShadowLayer(shadowWidth: 15)
+//        if FileManager.createFile(filePath: smallImageShadowPath).isSuccess {
+//            FileManager.default.createFile(atPath: smallImageShadowPath, contents: smallImage.pngData(), attributes: nil)
+//        }
+        var bigImage = image//.changeSize(size: .init(width: 240, height: 240))
+//        if FileManager.createFile(filePath: bigImagePath).isSuccess {
+//            FileManager.default.createFile(atPath: bigImagePath, contents: bigImage.pngData(), attributes: nil)
+//        }
         if let screenType = self.functionListModel?.functionDetail_screenType {
             if screenType.supportType == 1 {
                 smallImage = smallImage.changeCircle(fillColor: .black)
@@ -7136,14 +7743,14 @@ import Alamofire
                         //跟下一个状态不一致时保存开始到当前的序号
                         isAwakeSameState = false
                         if startIndex > 720 {
-                            start = String.init(format: "%02d:%02d", (startIndex-720)/60,(startIndex-720)%60)
+                            start = String.init(format: "%02d:%02d", (startIndex-720)/60 == 24 ? 0 : ((startIndex-720)/60) ,(startIndex-720)%60)
                         }else{
-                            start = String.init(format: "%02d:%02d", (startIndex+720)/60,(startIndex+720)%60)
+                            start = String.init(format: "%02d:%02d", (startIndex+720)/60 == 24 ? 0 : ((startIndex+720)/60) ,(startIndex+720)%60)
                         }
                         if i > 720 {
-                            end = String.init(format: "%02d:%02d", (i-720)/60,(i-720)%60)
+                            end = String.init(format: "%02d:%02d", (i-720)/60 == 24 ? 0 : ((i-720)/60),(i-720)%60)
                         }else{
-                            end = String.init(format: "%02d:%02d", (i+720)/60,(i+720)%60)
+                            end = String.init(format: "%02d:%02d", (i+720)/60 == 24 ? 0 : ((i+720)/60),(i+720)%60)
                         }
                         
                         let total = String.init(format: "%d", i - startIndex + 1)
@@ -7164,14 +7771,14 @@ import Alamofire
                         //跟下一个状态不一致时保存开始到当前的序号
                         islightSameState = false
                         if startIndex > 720 {
-                            start = String.init(format: "%02d:%02d", (startIndex-720)/60,(startIndex-720)%60)
+                            start = String.init(format: "%02d:%02d", (startIndex-720)/60 == 24 ? 0 : ((startIndex-720)/60) ,(startIndex-720)%60)
                         }else{
-                            start = String.init(format: "%02d:%02d", (startIndex+720)/60,(startIndex+720)%60)
+                            start = String.init(format: "%02d:%02d", (startIndex+720)/60 == 24 ? 0 : ((startIndex+720)/60) ,(startIndex+720)%60)
                         }
                         if i > 720 {
-                            end = String.init(format: "%02d:%02d", (i-720)/60,(i-720)%60)
+                            end = String.init(format: "%02d:%02d", (i-720)/60 == 24 ? 0 : ((i-720)/60),(i-720)%60)
                         }else{
-                            end = String.init(format: "%02d:%02d", (i+720)/60,(i+720)%60)
+                            end = String.init(format: "%02d:%02d", (i+720)/60 == 24 ? 0 : ((i+720)/60),(i+720)%60)
                         }
                         let total = String.init(format: "%d", i - startIndex + 1)
                         let type = String.init(format: "%d", state)
@@ -7192,14 +7799,14 @@ import Alamofire
                         //跟下一个状态不一致时保存开始到当前的序号
                         isDeepSameState = false
                         if startIndex > 720 {
-                            start = String.init(format: "%02d:%02d", (startIndex-720)/60,(startIndex-720)%60)
+                            start = String.init(format: "%02d:%02d", (startIndex-720)/60 == 24 ? 0 : ((startIndex-720)/60) ,(startIndex-720)%60)
                         }else{
-                            start = String.init(format: "%02d:%02d", (startIndex+720)/60,(startIndex+720)%60)
+                            start = String.init(format: "%02d:%02d", (startIndex+720)/60 == 24 ? 0 : ((startIndex+720)/60) ,(startIndex+720)%60)
                         }
                         if i > 720 {
-                            end = String.init(format: "%02d:%02d", (i-720)/60,(i-720)%60)
+                            end = String.init(format: "%02d:%02d", (i-720)/60 == 24 ? 0 : ((i-720)/60),(i-720)%60)
                         }else{
-                            end = String.init(format: "%02d:%02d", (i+720)/60,(i+720)%60)
+                            end = String.init(format: "%02d:%02d", (i+720)/60 == 24 ? 0 : ((i+720)/60),(i+720)%60)
                         }
                         let total = String.init(format: "%d", i - startIndex + 1)
                         let type = String.init(format: "%d", state)
@@ -7219,14 +7826,14 @@ import Alamofire
                         //跟下一个状态不一致时保存开始到当前的序号
                         isInvalidSameState = false
                         if startIndex > 720 {
-                            start = String.init(format: "%02d:%02d", (startIndex-720)/60,(startIndex-720)%60)
+                            start = String.init(format: "%02d:%02d", (startIndex-720)/60 == 24 ? 0 : ((startIndex-720)/60) ,(startIndex-720)%60)
                         }else{
-                            start = String.init(format: "%02d:%02d", (startIndex+720)/60,(startIndex+720)%60)
+                            start = String.init(format: "%02d:%02d", (startIndex+720)/60 == 24 ? 0 : ((startIndex+720)/60) ,(startIndex+720)%60)
                         }
                         if i > 720 {
-                            end = String.init(format: "%02d:%02d", (i-720)/60,(i-720)%60)
+                            end = String.init(format: "%02d:%02d", (i-720)/60 == 24 ? 0 : ((i-720)/60),(i-720)%60)
                         }else{
-                            end = String.init(format: "%02d:%02d", (i+720)/60,(i+720)%60)
+                            end = String.init(format: "%02d:%02d", (i+720)/60 == 24 ? 0 : ((i+720)/60),(i+720)%60)
                         }
                         let total = String.init(format: "%d", i - startIndex + 1)
                         let type = String.init(format: "%d", state)
@@ -7246,14 +7853,14 @@ import Alamofire
                         //一致把最后一个状态加入最后一组数据
                         isAwakeSameState = false
                         if startIndex > 720 {
-                            start = String.init(format: "%02d:%02d", (startIndex-720)/60,(startIndex-720)%60)
+                            start = String.init(format: "%02d:%02d", (startIndex-720)/60 == 24 ? 0 : ((startIndex-720)/60) ,(startIndex-720)%60)
                         }else{
-                            start = String.init(format: "%02d:%02d", (startIndex+720)/60,(startIndex+720)%60)
+                            start = String.init(format: "%02d:%02d", (startIndex+720)/60 == 24 ? 0 : ((startIndex+720)/60) ,(startIndex+720)%60)
                         }
                         if i > 720 {
-                            end = String.init(format: "%02d:%02d", (i-720+1)/60,(i-720+1)%60)
+                            end = String.init(format: "%02d:%02d", (i-720+1)/60 == 24 ? 0 : ((i-720+1)/60),(i-720+1)%60)
                         }else{
-                            end = String.init(format: "%02d:%02d", (i+720+1)/60,(i+720+1)%60)
+                            end = String.init(format: "%02d:%02d", (i+720+1)/60 == 24 ? 0 : ((i+720+1)/60),(i+720+1)%60)
                         }
                         let total = String.init(format: "%d", (i+1) - startIndex + 1)
                         let type = String.init(format: "%d", state)
@@ -7263,8 +7870,8 @@ import Alamofire
                         }
                     }else{
                         //不一致的，最后一个状态为单独一组
-                        let start = String.init(format: "%02d:%02d", i/60,i%60)
-                        let end = String.init(format: "%02d:%02d", (i+1)/60,(i+1)%60)
+                        let start = String.init(format: "%02d:%02d", i/60 == 24 ? 0 : (i/60) ,i%60)
+                        let end = String.init(format: "%02d:%02d", (i+1)/60 == 24 ? 0 : ((i+1)/60) ,(i+1)%60)
                         let total = String.init(format: "%d", 1)
                         let type = String.init(format: "%d", nextState)
                         if type != "3" {
@@ -7626,7 +8233,7 @@ import Alamofire
         //printLog("第\(#line)行" , "\(#function)")
         self.signalCommandSemaphore()
     }
-    
+    // MARK: - 数据主动上报 0x80
     // MARK: - 实时步数
     @objc public func reportRealTimeStep(success:@escaping((AntStepModel?,AntError) -> Void)) {
         self.receiveReportRealTiemStepBlock = success
@@ -7942,7 +8549,778 @@ import Alamofire
         
     }
     
+    // MARK: - 新协议部分0xaa
+    // MARK: - 新协议通用发送数据部分
+    func dealNewProtocolData(headVal:[UInt8],contentVal:[UInt8],backBlock:@escaping((AntError)->())) {
+        var headVal = headVal
+        var dataArray:[Data] = []
+        var firstBit:UInt8 = 0
+        var maxMtuCount = 0
+        if let model = self.functionListModel?.functionDetail_newPortocol {
+            if contentVal.count > model.maxMtuCount {
+                firstBit = 128
+            }
+            maxMtuCount = model.maxMtuCount
+            headVal.append(UInt8((contentVal.count ) & 0xff))
+            headVal.append(UInt8((contentVal.count >> 8) & 0xff)+firstBit)
+        }
+        //判断是否要分包，分包的要再加总包数跟报序号
+        if firstBit > 0 {
+            var contentIndex = 0
+            var packetCount = 0
+            while contentIndex < contentVal.count {
+                //分包添加总包数跟包序号
+                let maxCount =  contentVal.count / (maxMtuCount - 10)
+                let packetVal:[UInt8] = [
+                    UInt8((maxCount ) & 0xff),
+                    UInt8((maxCount >> 8) & 0xff),
+                    UInt8((packetCount ) & 0xff),
+                    UInt8((packetCount >> 8) & 0xff)
+                ]
+                
+                let startIndex = packetCount*(maxMtuCount - 10)
+                let endIndex = (packetCount+1)*(maxMtuCount - 10) <= contentVal.count ? (packetCount+1)*(maxMtuCount - 10) : (contentVal.count - packetCount*(maxMtuCount - 10))
+                let subContentVal =  Array(contentVal[startIndex..<endIndex])
+                                
+                var val = headVal + packetVal + subContentVal
+                
+                let check = CRC16(val: val)
+                let checkVal = [UInt8((check ) & 0xff),UInt8((check >> 8) & 0xff)]
+                
+                val += checkVal
+                
+                let data = Data.init(bytes: &val, count: val.count)
+                dataArray.append(data)
+                
+                packetCount += 1
+                contentIndex = endIndex
+            }
+            
+        }else{
+            var val = headVal + contentVal
+            let check = CRC16(val: val)
+            let checkVal = [UInt8((check ) & 0xff),UInt8((check >> 8) & 0xff)]
+            
+            val += checkVal
+            
+            let data = Data.init(bytes: &val, count: val.count)
+            dataArray.append(data)
+        }
+        
+        if dataArray.count > 1 {
+            
+            if self.peripheral?.state != .connected {
+                
+                backBlock(.disconnected)
+                return
+            }
+            
+            if self.writeCharacteristic == nil || self.peripheral == nil {
+                
+                backBlock(.invalidCharacteristic)
+                return
+            }
+
+            
+            DispatchQueue.global().async {
+
+                self.semaphoreCount -= 1
+                let result = self.commandSemaphore.wait(wallTimeout: DispatchWallTime.now()+5)
+                if result == .timedOut {
+                    self.semaphoreCount += 1
+                }
+                
+                DispatchQueue.main.async {
+
+                    printLog("发送命令 -> self.semaphoreCount =",self.semaphoreCount)
+                    backBlock(.none)
+                    
+                    var delayCount = 0
+                    for item in dataArray {
+                        let dataString = String.init(format: "%@", self.convertDataToSpaceHexStr(data: item,isSend: true))
+                        printLog("setNewSyncHealthData send =",dataString)
+                        self.writeData(data: item)
+                        if delayCount > 5 {
+                            printLog("通讯录延时0.1s")
+                            delayCount = 0
+                            Thread.sleep(forTimeInterval: 0.1)
+                        }else{
+                            delayCount += 1
+                        }
+                    }
+                }
+            }
+
+        }else{
+            if let data = dataArray.first {
+                let state = self.writeDataAndBackError(data: data)
+                backBlock(state)
+            }
+        }
+    }
     
+    // MARK: - 新协议通用回复
+    func parseNewProtocolUniversalResponse(result:UInt8,success:@escaping((AntError) -> Void)) {
+        
+        let state = String.init(format: "%02x",result)
+        
+        switch result {
+        case 0:
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@", state))
+            success(.none)
+            break
+        case 1:
+            success(.fail)
+            break
+        case 3:
+            success(.notSupport)
+            break
+        default:
+            success(.invalidState)
+            break
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+        
+    // MARK: - 同步数据
+    /// 同步数据
+    /// - Parameters:
+    ///   - type: 1：步数，2：心率，3：睡眠，4、锻炼数据
+    ///   - indexArray: <#indexArray description#>
+    ///   - success: <#success description#>
+    @objc public func setNewSyncHealthData(type:Int,indexArray:[Int],success:@escaping((Any?,AntError) -> Void)) {
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。请使用setSyncHealthData或setSyncExerciseData")
+            return
+        }
+        
+        if type < 1 || type > 4 {
+            print("输入参数超过范围,返回失败")
+            success(nil,.fail)
+            return
+        }
+        var headVal:[UInt8] = [
+            0xaa,
+            0x85
+        ]
+        var contentVal:[UInt8] = [
+            UInt8(type),
+            UInt8(indexArray.count)
+        ]
+        for item in indexArray {
+            contentVal.append(UInt8(item))
+        }
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none{
+                self?.receiveNewSetSyncHealthDataBlock = success
+            }else{
+                success(nil,error)
+            }
+        }
+    }
+    
+    private func parseSetNewSyncHealthData(val:[UInt8],success:@escaping((Any?,AntError) -> Void)) {
+
+        let valData = val.withUnsafeBufferPointer { (v) -> Data in
+            return Data.init(buffer: v)
+        }
+
+        AntSDKLog.writeStringToSDKLog(string: String.init(format: "parseSetNewSyncHealthData待解析数据:\nlength = %d, bytes = %@",valData.count, self.convertDataToHexStr(data: valData)))
+        var syncDic = [String:Any?]()
+        
+        let type = val[0]
+        var count:Int = Int(val[1])
+        var valIndex = 2
+
+        while valIndex < val.count {
+            let number = val[valIndex]
+            var length:Int = Int(val[valIndex+1])
+            var countLength = 2
+            if type == 2 || type == 3 {
+                length = (Int(val[valIndex+1]) | Int(val[valIndex+2]) << 8)
+                countLength = 3
+            }
+            syncDic["\(number)"] = NSNull()
+            if length > 0 {
+                let modelVal:[UInt8] = Array(val[valIndex+countLength..<(valIndex+countLength+Int(length))])
+                syncDic["\(number)"] = self.getNewProtocalHealthModel(type: Int(type), day: Int(number), val: modelVal)
+            }
+            valIndex = (valIndex+countLength+Int(length))
+        }
+        if syncDic.keys.count != count {
+            AntSDKLog.writeStringToSDKLog(string: "数据获取条数不一致: 总数:\(count),实际接收:\(syncDic.keys.count)")
+        }
+        success(syncDic,.none)
+        self.signalCommandSemaphore()
+    }
+    
+    func getNewProtocalHealthModel(type:Int,day:Int,val:[UInt8]) -> Any? {
+        var typeString = ""
+        if type == 1 {
+            
+            typeString = "步数"
+            
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "第%d天,类型:%@", day,typeString))
+            var totalStep = 0
+            var detailArray = [Int].init()
+            for i in stride(from: 0, to: (val.count-12)/4, by: 1) {
+                
+                var stepTotalCount = 0
+                var stepArray = [Int].init()
+                
+                for j in stride(from: 0, to: 2, by: 1) {
+                    let step = (Int(val[i*4+j*2]) | Int(val[i*4+j*2+1]) << 8)
+                    //printLog("step ->",step)
+                    stepTotalCount += step
+                    stepArray.append(step)
+                    
+                    totalStep += step
+                    detailArray.append(step)
+                }
+                
+                let str = String.init(format: "开始小时:%d,步数:%d", i,stepTotalCount)
+                AntSDKLog.writeStringToSDKLog(string: str)
+                AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", stepArray))
+            }
+            
+            var step = 0
+            var calorie = 0
+            var distance = 0
+            if val.count >= 108 {
+                printLog(val)
+                
+                step = (Int(val[96]) | Int(val[97]) << 8 | Int(val[98]) << 16 | Int(val[99]) << 24)
+                calorie = (Int(val[100]) | Int(val[101]) << 8 | Int(val[102]) << 16 | Int(val[103]) << 24)
+                distance = (Int(val[104]) | Int(val[105]) << 8 | Int(val[106]) << 16 | Int(val[107]) << 24)
+            }
+            
+            let model = AntStepModel.init(dic: ["type":type,"totalStep":"\(totalStep)","detailArray":detailArray,"step":"\(step)","calorie":"\(calorie)","distance":"\(distance)"])
+            return model
+        }else if type == 2 {
+            
+            typeString = "心率"
+            
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "第%d天,类型:%@", day,typeString))
+            
+            var hrArray = [Int].init()
+            for i in stride(from: 0, to: val.count, by: 1) {
+                hrArray.append(Int(val[i]))
+            }
+            //printLog("hrArray =",hrArray)
+            AntSDKLog.writeStringToSDKLog(string: "心率数据")
+            AntSDKLog.writeStringToSDKLog(string: "\(hrArray)")
+            
+            let model = AntHrModel.init(dic: ["type":type,"detailArray":hrArray])
+            return model
+        }else if type == 3 {
+            
+            typeString = "睡眠"
+            
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "第%d天,类型:%@", day,typeString))
+            
+            var sleepArray = [Int].init()
+            var originalArray:[Dictionary<String,Array<Int>>] = [[String:Array<Int>]].init()
+            for i in stride(from: 0, to: val.count, by: 1) {
+                let sleepCount = val[i]
+                
+                let state_1 = (sleepCount >> 7 & 0x1) << 1 | (sleepCount >> 6 & 0x1)
+                let state_2 = (sleepCount >> 5 & 0x1) << 1 | (sleepCount >> 4 & 0x1)
+                let state_3 = (sleepCount >> 3 & 0x1) << 1 | (sleepCount >> 2 & 0x1)
+                let state_4 = (sleepCount >> 1 & 0x1) << 1 | (sleepCount >> 0 & 0x1)
+                
+                sleepArray.append(Int(state_1))
+                sleepArray.append(Int(state_2))
+                sleepArray.append(Int(state_3))
+                sleepArray.append(Int(state_4))
+                
+                let string = String.init(format: "index_%d:0x%02x", i,sleepCount)
+                let dic:Dictionary<String,Array<Int>> = [string:[Int(state_1),Int(state_2),Int(state_3),Int(state_4)]]
+                originalArray.append(dic)
+            }
+            
+            //{"end":"20:45","start":"20:09","total":"36","type":"1"}
+            var modelArray = [[String:String]].init()
+            var modelArray_filter = [[String:String]].init()
+            var startIndex = 0
+            var isAwakeSameState = false
+            var islightSameState = false
+            var isDeepSameState = false
+            var isInvalidSameState = false
+            var totalDeep = 0
+            var totalLight = 0
+            var totalAwake = 0
+            var totalInvalid = 0
+            for i in stride(from: 0, to: sleepArray.count-1, by: 1) {
+                
+                let state = sleepArray[i]
+                let nextState = sleepArray[i+1]
+                
+                var start = ""
+                var end = ""
+                
+                if state == 0 {//清醒
+                    if !isAwakeSameState {
+                        //开始记录第一个状态点
+                        isAwakeSameState = true
+                        startIndex = i
+                    }
+                    
+                    if state != nextState {
+                        //跟下一个状态不一致时保存开始到当前的序号
+                        isAwakeSameState = false
+                        if startIndex > 720 {
+                            start = String.init(format: "%02d:%02d", (startIndex-720)/60,(startIndex-720)%60)
+                        }else{
+                            start = String.init(format: "%02d:%02d", (startIndex+720)/60,(startIndex+720)%60)
+                        }
+                        if i > 720 {
+                            end = String.init(format: "%02d:%02d", (i-720)/60,(i-720)%60)
+                        }else{
+                            end = String.init(format: "%02d:%02d", (i+720)/60,(i+720)%60)
+                        }
+                        
+                        let total = String.init(format: "%d", i - startIndex + 1)
+                        let type = String.init(format: "%d", state)
+                        
+                        modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                        modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
+                    }
+                    totalAwake += 1
+                }else if state == 1 {//浅睡
+                    if !islightSameState {
+                        //开始记录第一个状态点
+                        islightSameState = true
+                        startIndex = i
+                    }
+                    
+                    if state != nextState {
+                        //跟下一个状态不一致时保存开始到当前的序号
+                        islightSameState = false
+                        if startIndex > 720 {
+                            start = String.init(format: "%02d:%02d", (startIndex-720)/60,(startIndex-720)%60)
+                        }else{
+                            start = String.init(format: "%02d:%02d", (startIndex+720)/60,(startIndex+720)%60)
+                        }
+                        if i > 720 {
+                            end = String.init(format: "%02d:%02d", (i-720)/60,(i-720)%60)
+                        }else{
+                            end = String.init(format: "%02d:%02d", (i+720)/60,(i+720)%60)
+                        }
+                        let total = String.init(format: "%d", i - startIndex + 1)
+                        let type = String.init(format: "%d", state)
+                        
+                        modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                        modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
+                    }
+                    totalLight += 1
+                    
+                }else if state == 2 {//深睡
+                    if !isDeepSameState {
+                        //开始记录第一个状态点
+                        isDeepSameState = true
+                        startIndex = i
+                    }
+                    
+                    if state != nextState {
+                        //跟下一个状态不一致时保存开始到当前的序号
+                        isDeepSameState = false
+                        if startIndex > 720 {
+                            start = String.init(format: "%02d:%02d", (startIndex-720)/60,(startIndex-720)%60)
+                        }else{
+                            start = String.init(format: "%02d:%02d", (startIndex+720)/60,(startIndex+720)%60)
+                        }
+                        if i > 720 {
+                            end = String.init(format: "%02d:%02d", (i-720)/60,(i-720)%60)
+                        }else{
+                            end = String.init(format: "%02d:%02d", (i+720)/60,(i+720)%60)
+                        }
+                        let total = String.init(format: "%d", i - startIndex + 1)
+                        let type = String.init(format: "%d", state)
+                        
+                        modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                        modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
+                    }
+                    totalDeep += 1
+                }else{//无效数据
+                    if !isInvalidSameState {
+                        //开始记录第一个状态点
+                        isInvalidSameState = true
+                        startIndex = i
+                    }
+                    
+                    if state != nextState {
+                        //跟下一个状态不一致时保存开始到当前的序号
+                        isInvalidSameState = false
+                        if startIndex > 720 {
+                            start = String.init(format: "%02d:%02d", (startIndex-720)/60,(startIndex-720)%60)
+                        }else{
+                            start = String.init(format: "%02d:%02d", (startIndex+720)/60,(startIndex+720)%60)
+                        }
+                        if i > 720 {
+                            end = String.init(format: "%02d:%02d", (i-720)/60,(i-720)%60)
+                        }else{
+                            end = String.init(format: "%02d:%02d", (i+720)/60,(i+720)%60)
+                        }
+                        let total = String.init(format: "%d", i - startIndex + 1)
+                        let type = String.init(format: "%d", state)
+                        
+                        if !modelArray.isEmpty {
+                            modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                        }
+                        //modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
+                    }
+                    totalInvalid += 1
+                }
+                
+                //循环到最后一个数据
+                if i == sleepArray.count-2 {
+                    //判断最后一个数据跟最后一个状态是否一致
+                    if state == nextState {
+                        //一致把最后一个状态加入最后一组数据
+                        isAwakeSameState = false
+                        if startIndex > 720 {
+                            start = String.init(format: "%02d:%02d", (startIndex-720)/60,(startIndex-720)%60)
+                        }else{
+                            start = String.init(format: "%02d:%02d", (startIndex+720)/60,(startIndex+720)%60)
+                        }
+                        if i > 720 {
+                            end = String.init(format: "%02d:%02d", (i-720+1)/60,(i-720+1)%60)
+                        }else{
+                            end = String.init(format: "%02d:%02d", (i+720+1)/60,(i+720+1)%60)
+                        }
+                        let total = String.init(format: "%d", (i+1) - startIndex + 1)
+                        let type = String.init(format: "%d", state)
+                        if type != "3" {
+                            modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                            modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
+                        }
+                    }else{
+                        //不一致的，最后一个状态为单独一组
+                        let start = String.init(format: "%02d:%02d", i/60,i%60)
+                        let end = String.init(format: "%02d:%02d", (i+1)/60,(i+1)%60)
+                        let total = String.init(format: "%d", 1)
+                        let type = String.init(format: "%d", nextState)
+                        if type != "3" {
+                            modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                            modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
+                        }
+                    }
+                    if nextState == 0 {
+                        totalAwake += 1
+                    }else if nextState == 1 {
+                        totalLight += 1
+                    }else if nextState == 2 {
+                        totalDeep += 1
+                    }else{
+                        totalInvalid += 1
+                    }
+                }
+            }
+            var newArray:[[String:String]] = []
+            var changeDic:[String:String] = [:]
+            for i in 0..<modelArray.count-1 {
+                
+                let currentDic:[String:String] = modelArray[i]
+                let nextDic:[String:String] = modelArray[i+1]
+                if changeDic.isEmpty {
+                    changeDic = currentDic
+                    if changeDic["type"] == "3" {
+                        changeDic["type"] = "0"
+                        totalAwake += Int(changeDic["total"] ?? "0") ?? 0
+                    }
+                }
+                
+                let currentType = currentDic["type"]
+                let nextType = nextDic["type"]
+                
+                
+                //nextType==0的数据在上面一个for里面已经添加过
+                if (currentType == "0" || currentType == "3") && (nextType == "3") {
+                    
+                    changeDic["end"] = nextDic["end"]
+                    changeDic["type"] = "0"
+                    let currentTotal = Int(changeDic["total"] ?? "0") ?? 0
+                    let nextTotal = Int(nextDic["total"] ?? "0") ?? 0
+                    changeDic["total"] = "\(currentTotal + nextTotal)"
+                    totalAwake += currentTotal + nextTotal
+                }else{
+                    newArray.append(changeDic)
+                    changeDic = [:]
+                }
+                
+                if i == modelArray.count-2 {
+                    if changeDic.isEmpty {
+                        newArray.append(nextDic)
+                    }else{
+                        newArray.append(changeDic)
+                    }
+                }
+            }
+            printLog("-------modelArray =",modelArray)
+            modelArray = newArray
+
+            //AntSDKLog.writeStringToSDKLog(string: "原始数据")
+            //AntSDKLog.writeStringToSDKLog(string: "\(originalArray)")
+            //AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@\n\n\n", originalArray))
+            
+            //AntSDKLog.writeStringToSDKLog(string: "1440未整合数据")
+            //AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@\n\n\n", sleepArray))
+            
+            //AntSDKLog.writeStringToSDKLog(string: "睡眠整合数据")
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@\n\n\n", modelArray))
+            
+//            printLog("originalArray =",originalArray)
+//            printLog("sleepArray =",sleepArray,sleepArray.count)
+            printLog("modelArray =",modelArray)
+            printLog("modelArray_filter =",modelArray_filter)
+            
+            let model = AntSleepModel.init(dic: ["type":type,"deep":"\(totalDeep)","light":"\(totalLight)","awake":"\(totalAwake)","originalArray":sleepArray,"detailArray":modelArray,"detailArray_filter":modelArray_filter])
+            return model
+        }else if type == 4 {
+            
+            let startTime = String.init(format: "%04d-%02d-%02d %02d:%02d:%02d", (Int(val[0]) | (Int(val[1]) << 8)),val[2],val[3],val[5],val[6],val[7])
+            let type = val[8]
+            let hr = val[9]
+            let validTimeLength = (Int(val[10]) | Int(val[11]) << 8)
+            let step = (Int(val[12]) | Int(val[13]) << 8 | Int(val[14]) << 16 | Int(val[15]) << 24)
+            let endTime = String.init(format: "%04d-%02d-%02d %02d:%02d:%02d", (Int(val[16]) | (Int(val[17]) << 8)),val[18],val[19],val[21],val[22],val[23])
+            var calorie = 0
+            var distance = 0
+            if val.count >= 31 {
+                calorie = (Int(val[24]) | Int(val[25]) << 8 | Int(val[26]) << 16 | Int(val[27]) << 24)
+                distance = (Int(val[28]) | Int(val[29]) << 8 | Int(val[30]) << 16 | Int(val[31]) << 24)
+            }
+            /*
+            let startTimestamp = (Int(val[0]) | Int(val[1]) << 8 | Int(val[2]) << 16 | Int(val[3]) << 24)//String.init(format: "%04d-%02d-%02d %02d:%02d:%02d", (Int(val[0]) | (Int(val[1]) << 8)),val[2],val[3],val[5],val[6],val[7])
+            let startTime = Date(timeIntervalSince1970: TimeInterval(startTimestamp)).conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss")
+            let type = val[4]
+            let hr = val[5]
+            let validTimeLength = (Int(val[6]) | Int(val[7]) << 8)
+            let step = (Int(val[8]) | Int(val[9]) << 8 | Int(val[10]) << 16 | Int(val[11]) << 24)
+            let endTimestamp = (Int(val[12]) | Int(val[13]) << 8 | Int(val[14]) << 16 | Int(val[15]) << 24)
+            let endTime = Date(timeIntervalSince1970: TimeInterval(endTimestamp)).conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss")
+            var calorie = 0
+            var distance = 0
+            if val.count >= 23 {
+                calorie = (Int(val[16]) | Int(val[17]) << 8 | Int(val[18]) << 16 | Int(val[19]) << 24)
+                distance = (Int(val[20]) | Int(val[21]) << 8 | Int(val[22]) << 16 | Int(val[23]) << 24)
+            }
+             */
+            let model = AntExerciseModel.init(dic: ["startTime":startTime,"type":"\(type)","hr":"\(hr)","validTimeLength":"\(validTimeLength)","step":"\(step)","endTime":"\(endTime)","calorie":"\(calorie)","distance":"\(distance)"])
+            return model
+        }
+        return nil
+        //printLog("第\(#line)行" , "\(#function)")
+    }
+    
+    // MARK: - 设置天气
+    @objc public func setNewWeather(modelArray:[AntWeatherModel],updateTime:String? = nil,success:@escaping((AntError) -> Void)) {
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。请使用setWeather")
+            return
+        }
+        if modelArray.count <= 0 {
+            print("输入参数超过范围,返回失败")
+            success(.fail)
+            return
+        }
+        
+        var date = Date.init()
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        
+        if let time = updateTime {
+            date = timeFormatter.date(from: time) ?? .init()
+        }
+
+        let calendar = NSCalendar.current
+        let year = calendar.component(.year, from: date)
+        let month = calendar.component(.month, from: date)
+        let day = calendar.component(.day, from: date)
+        let hour = calendar.component(.hour, from: date)
+        let minute = calendar.component(.minute, from: date)
+        let second = calendar.component(.second, from: date)
+        
+        var headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 4
+        //参数长度
+        let modelCount = modelArray.count * 9 + 8//时间戳+个数
+        
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
+            UInt8((year ) & 0xff),
+            UInt8((year >> 8) & 0xff),
+            UInt8(month),
+            UInt8(day),
+            UInt8(hour),
+            UInt8(minute),
+            UInt8(second),
+            UInt8(modelArray.count)
+        ]
+        for item in modelArray {
+            contentVal.append(UInt8(bitPattern: Int8(0x08)))
+            contentVal.append(UInt8(bitPattern: Int8(item.dayCount)))
+            contentVal.append(UInt8(bitPattern: Int8(item.type.rawValue)))
+            contentVal.append(UInt8(bitPattern: Int8(item.temp)))
+            contentVal.append(UInt8(bitPattern: Int8(item.airQuality)))
+            contentVal.append(UInt8(bitPattern: Int8(item.minTemp)))
+            contentVal.append(UInt8(bitPattern: Int8(item.maxTemp)))
+            contentVal.append(UInt8(bitPattern: Int8(item.tomorrowMinTemp)))
+            contentVal.append(UInt8(bitPattern: Int8(item.tomorrowMaxTemp)))
+        }
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveNewSetWeatherBlock = success
+            }else{
+                success(error)
+            }
+        }
+    }
+    
+    // MARK: - 设置闹钟
+    @objc public func setNewAlarmArray(modelArray:[AntAlarmModel],success:@escaping((AntError) -> Void)) {
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。请使用setWeather")
+            return
+        }
+        if modelArray.count <= 0 {
+            print("输入参数超过范围,返回失败")
+            success(.fail)
+            return
+        }
+        let headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 5
+        //参数长度
+        let modelCount = modelArray.count * 5 + 1//闹钟个数
+        
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
+            UInt8(modelArray.count)
+        ]
+
+        for model in modelArray {
+            let index = model.alarmIndex
+            var repeatCount = 0
+            if model.alarmOpen {
+                repeatCount += (1 << 7)
+            }
+            for i in stride(from: 0, to: model.alarmRepeatArray?.count ?? 0, by: 1) {
+                let value = model.alarmRepeatArray?[i] ?? 0
+                repeatCount += (value << i)
+            }
+            if model.alarmRepeatCount > 0 {
+                repeatCount = model.alarmRepeatCount
+            }
+            var hour = model.alarmHour
+            var minute = model.alarmMinute
+            if !model.isValid {
+                hour = 255
+                minute = 255
+            }
+            contentVal.append(UInt8(0x04))
+            contentVal.append(UInt8(index))
+            contentVal.append(UInt8(repeatCount))
+            contentVal.append(UInt8(hour))
+            contentVal.append(UInt8(minute))
+        }
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveNewSetAlarmArrayBlock = success
+            }else{
+                success(error)
+            }
+        }
+    }
+    
+    // MARK: - 获取闹钟
+    @objc public func getNewAlarmArray(success:@escaping(([AntAlarmModel],AntError) -> Void))  {
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。请使用setWeather")
+            return
+        }
+
+        let headVal:[UInt8] = [
+            0xaa,
+            0x84
+        ]
+        
+        //参数id
+        let cmd_id = 5
+        
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveNewGetAlarmArrayBlock = success
+            }else{
+                success([],error)
+            }
+        }
+    }
+    
+    func parseGetNewAlarmArray(val:[UInt8],success:@escaping(([AntAlarmModel],AntError) -> Void)) {
+        
+        let valData = val.withUnsafeBufferPointer { (v) -> Data in
+            return Data.init(buffer: v)
+        }
+
+        AntSDKLog.writeStringToSDKLog(string: String.init(format: "parseGetNewAlarmArray待解析数据:\nlength = %d, bytes = %@",valData.count, self.convertDataToHexStr(data: valData)))
+        var alarmArray = [AntAlarmModel]()
+
+        let alarmCount = val[0]
+        var valIndex = 1
+        while valIndex < val.count {
+            let length = val[valIndex]
+            if length >= 4 {
+                let index = val[valIndex+1]
+                let repeatCount = val[valIndex+2]
+                let hour = val[valIndex+3]
+                let minute = val[valIndex+4]
+                let string = String.init(format: "序号:%d,重复:%d,小时:%d,分钟:%d",index,repeatCount,hour,minute)
+                print("\(string)")
+                AntSDKLog.writeStringToSDKLog(string: string)
+                let model = AntAlarmModel.init(dic: ["index":"\(index)","repeatCount":"\(repeatCount)","hour":String.init(format: "%02d", hour),"minute":String.init(format: "%02d", minute)])
+                alarmArray.append(model)
+                valIndex += Int(length+1)
+            }
+        }
+        if alarmCount == alarmArray.count {
+            success(alarmArray,.none)
+        }else{
+            print("获取闹钟个数不一致,返回失败")
+            AntSDKLog.writeStringToSDKLog(string: "获取闹钟个数不一致,返回失败")
+            success([],.fail)
+        }
+        
+        self.signalCommandSemaphore()
+    }
+            
     // MARK: - ota升级
     @objc public func setOtaStartUpgrade(type:Int,localFile:Any,isContinue:Bool,progress:@escaping((Float) -> Void),success:@escaping((AntError) -> Void)) {
         var type = type

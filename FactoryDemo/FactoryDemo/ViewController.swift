@@ -13,6 +13,10 @@ let screenHeight = UIScreen.main.bounds.size.height
 let StatusBarHeight = UIApplication.shared.statusBarFrame.height
 
 let ScanNameKey = "hc_scanNameKey"
+let AppVersionKey = "hc_appVersionKey"
+let ImageVersionKey = "hc_imageVersionKey"
+let FontVersionKey = "hc_fontVersionKey"
+let PowerOffKey = "hc_powerOffKey"
 let BootKey = "0_BootFiles"
 let ApplicationKey = "1_ApplicationFiles"
 let LibraryKey = "2_LibraryFiles"
@@ -66,6 +70,7 @@ class ViewController: UIViewController {
             self.currentStateLabel.text = "当前操作状态:\(self.stateString)"
         }
     }
+    var filterUuidStringArray = [String]()
     
     var totalCountLabel:UILabel!
     var totalCount = 0 {
@@ -437,7 +442,13 @@ class ViewController: UIViewController {
                     let filterString = filterString as! String
                     return (model.name ?? "").lowercased().contains(filterString.lowercased())
                 }) {
-                    self.connectDevice(model: model)
+                    if let uuidString = model.uuidString {
+                        if self.filterUuidStringArray.contains(uuidString) {
+                            
+                        }else{
+                            self.connectDevice(model: model)
+                        }
+                    }
                 }
             }
             
@@ -466,6 +477,7 @@ class ViewController: UIViewController {
         self.perform(#selector(connectTimeout(model:)), with: model, afterDelay: 20)
         
         self.stateString = "正在连接\(model.name ?? "nil")"
+        var callBackResult = false
         AntCommandModule.shareInstance.connectDevice(peripheral: model) { result in
             
             NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(self.connectTimeout(model:)), object: model)
@@ -474,18 +486,60 @@ class ViewController: UIViewController {
                 self.stateString = "连接成功\(model.name ?? "nil")"
                 print("连接成功恢复出厂设置")
                 
-                AntCommandModule.shareInstance.SetFactoryDataReset { error in
+                let userDefault = UserDefaults.standard
+                let appVersion = userDefault.string(forKey: AppVersionKey)
+                let imageVersion = userDefault.string(forKey: ImageVersionKey)
+                let fontVersion = userDefault.string(forKey: FontVersionKey)
+                
+                AntCommandModule.shareInstance.getDeviceOtaVersionInfo { success, error in
+                    if callBackResult {
+                        return
+                    }
                     if error == .none {
-                        self.stateString = "恢复出厂设置成功"
-                        print("恢复出厂设置成功")
-                        self.sendNextOtaType()
-                        self.isNeedCheckOtaMethod = true
+                        callBackResult = true
+                        print("GetDeviceOtaVersionInfo ->",success)
                         
-                    }else{
-                        self.stateString = "恢复出厂设置失败"
-                        print("恢复出厂设置失败")
+                        let product = success["product"] as! String
+                        let project = success["project"] as! String
+                        let boot = success["boot"] as! String
+                        let firmware = success["firmware"] as! String
+                        let library = success["library"] as! String
+                        let font = success["font"] as! String
+                        
+                        print("product ->",product)
+                        print("project ->",project)
+                        print("boot ->",boot)
+                        print("firmware ->",firmware)
+                        print("library ->",library)
+                        print("font ->",font)
+                        
+                        if appVersion != nil || imageVersion != nil || fontVersion != nil {
+                            if (appVersion == firmware && appVersion != nil) || (imageVersion == library && imageVersion != nil) || (fontVersion == font && fontVersion != nil) {
+                                if let uuidString = AntCommandModule.shareInstance.peripheral?.identifier.uuidString {
+                                    self.filterUuidStringArray.append(uuidString)
+                                }
+                                self.powerOffMethod()
+                            }else{
+                                self.sendNextOtaType()
+                            }
+                        }else{
+                            self.sendNextOtaType()
+                        }
                     }
                 }
+                
+//                AntCommandModule.shareInstance.setFactoryDataReset { error in
+//                    if error == .none {
+//                        self.stateString = "恢复出厂设置成功"
+//                        print("恢复出厂设置成功")
+//                        self.sendNextOtaType()
+//                        self.isNeedCheckOtaMethod = true
+//
+//                    }else{
+//                        self.stateString = "恢复出厂设置失败"
+//                        print("恢复出厂设置失败")
+//                    }
+//                }
                 
             }else{
                 
@@ -680,7 +734,7 @@ class ViewController: UIViewController {
                 fileString = homePath + fileString!
                 
                 print("开始升级 type = \(type) , localFile = \(fileString)")
-                self.isNeedCheckOtaMethod = false
+                //self.isNeedCheckOtaMethod = false
                 AntCommandModule.shareInstance.setOtaStartUpgrade(type: type , localFile: fileString as Any, isContinue: false) { progress in
 
                     print("progress ->",progress)
@@ -698,7 +752,7 @@ class ViewController: UIViewController {
                             if currentIndex < sortArray.count - 1 {
                                 self.recordIndex = currentIndex+1
                                 self.setOtaMethod(type: sortArray[currentIndex+1],model: model)
-                                self.isNeedCheckOtaMethod = true
+                                //self.isNeedCheckOtaMethod = true
                             }else{
                                 self.powerOffMethod()
                             }
@@ -741,10 +795,23 @@ class ViewController: UIViewController {
     
     // MARK: - 关机
     func powerOffMethod() {
-        AntCommandModule.shareInstance.SetPowerTurnOff { error in
-            print("关机")
-            
-            self.stateString = "关机成功"
+        let userDefault = UserDefaults.standard
+        let result = userDefault.bool(forKey: PowerOffKey)
+        
+        if result {
+            AntCommandModule.shareInstance.setPowerTurnOff { error in
+                print("关机")
+                
+                self.stateString = "关机成功"
+                self.successCount += 1
+                self.totalCount += 1
+                self.singleProcessEndMethod()
+            }
+        }else{
+            if let uuidString = AntCommandModule.shareInstance.peripheral?.identifier.uuidString {
+                self.filterUuidStringArray.append(uuidString)
+            }
+            AntCommandModule.shareInstance.disconnect()
             self.successCount += 1
             self.totalCount += 1
             self.singleProcessEndMethod()

@@ -475,14 +475,21 @@ import zlib
                                     printLog("没有升级")
                                     AntCommandModule.shareInstance.otaData = nil
                                     //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
+                                    self.perform(#selector(self.functionListCommandNoSupport), with:nil, afterDelay: 10)
                                     AntCommandModule.shareInstance.getDeviceSupportList { model, error in
+                                        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(self.functionListCommandNoSupport), object: nil)
                                         if error == .none {
                                             printLog("连接成功")
                                             self.functionListModel = model
-                                            block(true)
                                             if let _ = model?.functionList_addressBook {
+                                                //固件需要设备类型在uuid的命令之后，否则会出现蓝牙bt(通讯录)连接异常
                                                 AntCommandModule.shareInstance.setDeviceUUID { _ in
+//                                                    AntCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
+//                                                    }
                                                 }
+                                            }else{
+//                                                AntCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
+//                                                }
                                             }
                                             AntCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
                                             }
@@ -490,6 +497,7 @@ import zlib
                                             }
                                             AntCommandModule.shareInstance.getMac { _, _ in
                                             }
+                                            block(true)
                                         }else{
                                             printLog("连接成功")
                                             block(false)
@@ -500,14 +508,21 @@ import zlib
                         }
                     }else{
                         //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
+                        self.perform(#selector(self.functionListCommandNoSupport), with: nil, afterDelay: 10)
                         AntCommandModule.shareInstance.getDeviceSupportList { model, error in
+                            NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(self.functionListCommandNoSupport), object: nil)
                             if error == .none {
                                 printLog("连接成功")
                                 self.functionListModel = model
-                                block(true)
                                 if let _ = model?.functionList_addressBook {
+                                    //固件需要设备类型在uuid的命令之后，否则会出现蓝牙bt(通讯录)连接异常
                                     AntCommandModule.shareInstance.setDeviceUUID { _ in
+//                                        AntCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
+//                                        }
                                     }
+                                }else{
+//                                    AntCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
+//                                    }
                                 }
                                 AntCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
                                 }
@@ -515,6 +530,7 @@ import zlib
                                 }
                                 AntCommandModule.shareInstance.getMac { _, _ in
                                 }
+                                block(true)
                             }else{
                                 printLog("连接失败")
                                 block(false)
@@ -524,7 +540,13 @@ import zlib
                 }
             }
         }
+    }
     
+    @objc func functionListCommandNoSupport() {
+        printLog("functionListCommandNoSupport,self.peripheral = \(self.peripheral)")
+        if let block = self.connectCompleteBlock {
+            block(self.peripheral?.state == .connected ? true:false)
+        }
     }
     
     func deviceReceivedData() {
@@ -794,7 +816,7 @@ extension UIImage{
     /**
      Converts the image into an array of RGBA bytes.
      */
-    @nonobjc func toByteArray() -> [UInt8] {
+    func toByteArray(rgba:String? = "rgba") -> [UInt8] {
         let width = Int(size.width)
         let height = Int(size.height)
         var bytes = [UInt8](repeating: 0, count: width * height * 4)
@@ -815,6 +837,17 @@ extension UIImage{
                 }
             }
         }
+        
+        if rgba == "rgba" {
+            return bytes
+        }else if rgba == "bgra" {
+            for i in stride(from: 0, to: bytes.count/4, by: 1) {
+                bytes.swapAt(i*4, i*4+3)
+                bytes.swapAt(i*4+1, i*4+2)
+            }
+            return bytes
+        }
+        
         return bytes
     }
     
@@ -866,6 +899,65 @@ extension UIImage{
         }
         return UIImage.init()
     }
+    
+    func addCornerRadius(radiusWidth:CGFloat) -> UIImage {
+        UIGraphicsBeginImageContextWithOptions(self.size, false, 1.0)
+        
+        let context : CGContext? = UIGraphicsGetCurrentContext()
+
+        let area:CGRect = .init(origin: .zero, size: .init(width: self.size.width, height: self.size.height))
+
+        context?.scaleBy(x: 1, y: -1)
+        context?.translateBy(x: 0, y: -area.height)
+        context?.setBlendMode(.multiply)
+        
+        context?.setFillColor(UIColor.clear.cgColor)
+        //context?.setStrokeColor(UIColor.white.cgColor)
+        context?.setShouldAntialias(true)
+        let rect = CGRect.init(x: 0, y: 0, width: self.size.width, height: self.size.height)
+        UIRectFill(rect)
+        let path = UIBezierPath.init(roundedRect: rect, cornerRadius: radiusWidth)//.init(roundedRect: rect, byRoundingCorners: .allCorners, cornerRadii: .init(width: shadowWidth, height: shadowWidth))
+        path.close()
+        path.addClip()
+        
+        if let cgImg = self.cgImage {
+            context?.draw(cgImg, in: rect)
+        }
+        
+        let newImage = UIGraphicsGetImageFromCurrentImageContext() ?? .init()
+        UIGraphicsEndImageContext()
+        
+        print("self.size = \(self.size)")
+        print("newImage = \(newImage)")
+        
+        return newImage
+    }
+    
+    func addShadowLayer(shadowWidth:CGFloat) -> UIImage {
+        UIGraphicsBeginImageContextWithOptions(self.size, false, 1.0)
+        
+        let context : CGContext? = UIGraphicsGetCurrentContext()
+
+        let area:CGRect = .init(origin: .zero, size: .init(width: self.size.width-shadowWidth, height: self.size.height-shadowWidth))
+
+        context?.scaleBy(x: 1, y: -1)
+        context?.translateBy(x: 0, y: -area.height)
+        context?.setBlendMode(.multiply)
+        context?.setShadow(offset: .init(width: 0, height: 0), blur: shadowWidth, color: UIColor.white.cgColor)
+        
+        if let cgImg = self.cgImage {
+            context?.draw(cgImg, in: .init(x: shadowWidth/2.0, y: -shadowWidth/2.0, width: self.size.width-shadowWidth, height: self.size.height-shadowWidth))
+        }
+        
+        let newImage = UIGraphicsGetImageFromCurrentImageContext() ?? .init()
+        UIGraphicsEndImageContext()
+        
+        print("self.size = \(self.size)")
+        print("newImage = \(newImage)")
+        
+        return newImage
+    }
+    
 }
 
 extension FileManager {

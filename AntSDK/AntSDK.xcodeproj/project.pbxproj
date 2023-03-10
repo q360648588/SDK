@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		6730B32D2797B48500979375 /* AntNetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6730B32C2797B48500979375 /* AntNetworkManager.swift */; };
+		6746B8F629A479C400204DEC /* JL_BLEKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6746B8F529A479C300204DEC /* JL_BLEKit.framework */; };
 		67493F8A2692EE0E006AA314 /* AntCommandModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67493F892692EE0E006AA314 /* AntCommandModule.swift */; };
 		67661CD526291D120004B197 /* AntSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67661CCB26291D110004B197 /* AntSDK.framework */; };
 		67661CDA26291D120004B197 /* AntSDKTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661CD926291D120004B197 /* AntSDKTests.swift */; };
@@ -33,6 +34,7 @@
 
 /* Begin PBXFileReference section */
 		6730B32C2797B48500979375 /* AntNetworkManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AntNetworkManager.swift; sourceTree = "<group>"; };
+		6746B8F529A479C300204DEC /* JL_BLEKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JL_BLEKit.framework; sourceTree = "<group>"; };
 		67493F892692EE0E006AA314 /* AntCommandModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntCommandModule.swift; sourceTree = "<group>"; };
 		67661CCB26291D110004B197 /* AntSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AntSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		67661CCE26291D110004B197 /* AntSDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AntSDK.h; sourceTree = "<group>"; };
@@ -59,6 +61,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E88332DB316E822A0ADEEF8C /* Pods_AntSDK.framework in Frameworks */,
+				6746B8F629A479C400204DEC /* JL_BLEKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -116,6 +119,7 @@
 				6730B32C2797B48500979375 /* AntNetworkManager.swift */,
 				67661D7A262A7D7A0004B197 /* AntSDKLog.swift */,
 				676D384426DE36C000471098 /* AntCrashHandler.swift */,
+				6746B8F529A479C300204DEC /* JL_BLEKit.framework */,
 				67661CCF26291D110004B197 /* Info.plist */,
 			);
 			path = AntSDK;
@@ -478,14 +482,20 @@
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
+				DEVELOPMENT_TEAM = 3QL3M4X778;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/AntSDK",
+				);
 				INFOPLIST_FILE = AntSDK/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -513,14 +523,20 @@
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
+				DEVELOPMENT_TEAM = 3QL3M4X778;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/AntSDK",
+				);
 				INFOPLIST_FILE = AntSDK/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
