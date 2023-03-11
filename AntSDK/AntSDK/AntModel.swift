@@ -1443,14 +1443,7 @@ class AntFunctionModel_newPortocol:NSObject {
 
 
 @objc public class AntOnlineDialModel:NSObject {
-    @objc public var dialId:Int = -1 {
-        didSet {
-            if self.dialId < UInt8.min || self.dialId > UInt8.max {
-                self.dialId = 0
-                print("输入参数超过范围,改为默认值0")
-            }
-        }
-    }
+    @objc public var dialId:Int = -1
     @objc public var dialImageUrl:String?
     @objc public var dialFileUrl:String?
     @objc public var dialName:String?
