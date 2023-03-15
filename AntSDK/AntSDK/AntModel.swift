@@ -112,6 +112,10 @@ import UIKit
     @objc public private(set) var functionList_weatherExtend = false
     @objc public private(set) var functionList_newPortocol = false
     @objc public private(set) var functionList_platformType = false
+    @objc public private(set) var functionList_bloodSugar = false
+    @objc public private(set) var functionList_pressure = false
+    @objc public private(set) var functionList_electrocardiogram = false
+    @objc public private(set) var functionList_bodyTemperature = false
     
     @objc public private(set) var functionDetail_exercise:AntFunctionModel_exercise?
     @objc public private(set) var functionDetail_notification:AntFunctionModel_notification?
@@ -127,6 +131,13 @@ import UIKit
     var functionDetail_newPortocol:AntFunctionModel_newPortocol?
     @objc public private(set) var functionDetail_platformType:AntFunctionModel_platformType?
     @objc public private(set) var functionDetail_customDial:AntFunctionModel_customDial?
+    @objc public private(set) var functionDetail_heartrate:AntFunctionModel_supportMeasurementDataTypeModel?
+    @objc public private(set) var functionDetail_bloodPressure:AntFunctionModel_supportMeasurementDataTypeModel?
+    @objc public private(set) var functionDetail_bloodOxygen:AntFunctionModel_supportMeasurementDataTypeModel?
+    @objc public private(set) var functionDetail_bloodSugar:AntFunctionModel_supportMeasurementDataTypeModel?
+    @objc public private(set) var functionDetail_pressure:AntFunctionModel_supportMeasurementDataTypeModel?
+    @objc public private(set) var functionDetail_electrocardiogram:AntFunctionModel_supportMeasurementDataTypeModel?
+    @objc public private(set) var functionDetail_bodyTemperature:AntFunctionModel_supportMeasurementDataTypeModel?
     
     init(val:[UInt8]) {
         
@@ -196,10 +207,13 @@ import UIKit
             case 2:
                 break
             case 3:
+                self.functionDetail_heartrate = AntFunctionModel_supportMeasurementDataTypeModel(val: functionVal)
                 break
             case 4:
+                self.functionDetail_bloodPressure = AntFunctionModel_supportMeasurementDataTypeModel(val: functionVal)
                 break
             case 5:
+                self.functionDetail_bloodOxygen = AntFunctionModel_supportMeasurementDataTypeModel(val: functionVal)
                 break
             case 6:
                 self.functionDetail_notification = AntFunctionModel_notification.init(result: functionCount)
@@ -292,7 +306,20 @@ import UIKit
             case 44:
                 self.functionDetail_platformType = AntFunctionModel_platformType.init(result: functionCount)
                 break
-                
+            case 45:
+                break
+            case 46:
+                self.functionDetail_bloodSugar = AntFunctionModel_supportMeasurementDataTypeModel(val: functionVal)
+                break
+            case 47:
+                self.functionDetail_pressure = AntFunctionModel_supportMeasurementDataTypeModel(val: functionVal)
+                break
+            case 48:
+                self.functionDetail_electrocardiogram = AntFunctionModel_supportMeasurementDataTypeModel(val: functionVal)
+                break
+            case 49:
+                self.functionDetail_bodyTemperature = AntFunctionModel_supportMeasurementDataTypeModel(val: functionVal)
+                break
             default:
                 break
             }
@@ -398,6 +425,16 @@ import UIKit
                 break
             case 44:self.functionList_platformType = state == 0 ? false:true
                 break
+            case 45:
+                break
+            case 46:self.functionList_bloodSugar = state == 0 ? false:true
+                break
+            case 47:self.functionList_pressure = state == 0 ? false:true
+                break
+            case 48:self.functionList_electrocardiogram = state == 0 ? false:true
+                break
+            case 49:self.functionList_bodyTemperature = state == 0 ? false:true
+                break
             default:
                 break
             }
@@ -495,12 +532,30 @@ import UIKit
         }
         if self.functionList_heartrate {
             log += "\n心率"
+            if let model = self.functionDetail_heartrate {
+                log += "\n      \(model.isSupportSingleClickData ? "":"不")支持点击测量数据存储"
+                log += "\n      \(model.isSupportAllDayData ? "":"不")支持全天测量数据存储"
+                log += "\n      一天点击测量存储总条数:\(model.singleClickDataCount)"
+                log += "\n      全天测量时间间隔:\(model.allDayDataTimeInterval)分钟"
+            }
         }
         if self.functionList_bloodPressure {
             log += "\n血压"
+            if let model = self.functionDetail_bloodPressure {
+                log += "\n      \(model.isSupportSingleClickData ? "":"不")支持点击测量数据存储"
+                log += "\n      \(model.isSupportAllDayData ? "":"不")支持全天测量数据存储"
+                log += "\n      一天点击测量存储总条数:\(model.singleClickDataCount)"
+                log += "\n      全天测量时间间隔:\(model.allDayDataTimeInterval)分钟"
+            }
         }
         if self.functionList_bloodOxygen {
             log += "\n血氧"
+            if let model = self.functionDetail_bloodOxygen {
+                log += "\n      \(model.isSupportSingleClickData ? "":"不")支持点击测量数据存储"
+                log += "\n      \(model.isSupportAllDayData ? "":"不")支持全天测量数据存储"
+                log += "\n      一天点击测量存储总条数:\(model.singleClickDataCount)"
+                log += "\n      全天测量时间间隔:\(model.allDayDataTimeInterval)分钟"
+            }
         }
         if self.functionList_notification {
             log += "\n消息推送"
@@ -762,6 +817,42 @@ import UIKit
             log += "\n手表平台类型"
             if let model = self.functionDetail_platformType {
                 log += "\n平台类型:\(model.platform)"
+            }
+        }
+        if self.functionList_bloodSugar {
+            log += "\n血糖检测"
+            if let model = self.functionDetail_bloodSugar {
+                log += "\n      \(model.isSupportSingleClickData ? "":"不")支持点击测量数据存储"
+                log += "\n      \(model.isSupportAllDayData ? "":"不")支持全天测量数据存储"
+                log += "\n      一天点击测量存储总条数:\(model.singleClickDataCount)"
+                log += "\n      全天测量时间间隔:\(model.allDayDataTimeInterval)分钟"
+            }
+        }
+        if self.functionList_pressure {
+            log += "\n压力检测"
+            if let model = self.functionDetail_pressure {
+                log += "\n      \(model.isSupportSingleClickData ? "":"不")支持点击测量数据存储"
+                log += "\n      \(model.isSupportAllDayData ? "":"不")支持全天测量数据存储"
+                log += "\n      一天点击测量存储总条数:\(model.singleClickDataCount)"
+                log += "\n      全天测量时间间隔:\(model.allDayDataTimeInterval)分钟"
+            }
+        }
+        if self.functionList_electrocardiogram {
+            log += "\n心电检测"
+            if let model = self.functionDetail_electrocardiogram {
+                log += "\n      \(model.isSupportSingleClickData ? "":"不")支持点击测量数据存储"
+                log += "\n      \(model.isSupportAllDayData ? "":"不")支持全天测量数据存储"
+                log += "\n      一天点击测量存储总条数:\(model.singleClickDataCount)"
+                log += "\n      全天测量时间间隔:\(model.allDayDataTimeInterval)分钟"
+            }
+        }
+        if self.functionList_bodyTemperature {
+            log += "\n体温检测"
+            if let model = self.functionDetail_bodyTemperature {
+                log += "\n      \(model.isSupportSingleClickData ? "":"不")支持点击测量数据存储"
+                log += "\n      \(model.isSupportAllDayData ? "":"不")支持全天测量数据存储"
+                log += "\n      一天点击测量存储总条数:\(model.singleClickDataCount)"
+                log += "\n      全天测量时间间隔:\(model.allDayDataTimeInterval)分钟"
             }
         }
         return log
@@ -1142,6 +1233,33 @@ class AntFunctionModel_newPortocol:NSObject {
     }
 }
 
+@objc public class AntFunctionModel_supportMeasurementDataTypeModel:NSObject {
+    
+    @objc public private(set) var isSupportSingleClickData = false      //0:不支持,1:支持
+    @objc public private(set) var isSupportAllDayData = false           //0:不支持,1:支持
+    
+    @objc public private(set) var singleClickDataCount = 0              //单次点击测量存储总条数
+    @objc public private(set) var allDayDataTimeInterval = 0            //全天数据时间间隔
+    
+    init(val:[UInt8]) {
+        
+        for i in 0..<8 {
+            let state = (val[0] >> i) & 0x01
+
+            switch i {
+            case 0:self.isSupportSingleClickData = state == 0 ? false:true
+                break
+            case 1:self.isSupportAllDayData = state == 0 ? false:true
+                break
+            default:
+                break
+            }
+        }
+        self.singleClickDataCount = Int(val[1])
+        self.allDayDataTimeInterval = Int(val[2])
+        super.init()
+    }
+}
 
 @objc public class AntPersonalModel:NSObject {
     @objc public var age:Int = 0 {

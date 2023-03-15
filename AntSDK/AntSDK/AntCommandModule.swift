@@ -9192,7 +9192,7 @@ import JL_BLEKit
     // MARK: - 设置闹钟
     @objc public func setNewAlarmArray(modelArray:[AntAlarmModel],success:@escaping((AntError) -> Void)) {
         if self.functionListModel?.functionList_newPortocol == false {
-            print("当前设备不支持此命令。请使用setWeather")
+            print("当前设备不支持此命令。请使用setAlarm")
             return
         }
         if modelArray.count <= 0 {
@@ -9257,7 +9257,7 @@ import JL_BLEKit
     // MARK: - 获取闹钟
     @objc public func getNewAlarmArray(success:@escaping(([AntAlarmModel],AntError) -> Void))  {
         if self.functionListModel?.functionList_newPortocol == false {
-            print("当前设备不支持此命令。请使用setWeather")
+            print("当前设备不支持此命令。请使用getAlarm")
             return
         }
 
