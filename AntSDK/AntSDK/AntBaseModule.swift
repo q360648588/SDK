@@ -318,7 +318,10 @@ import zlib
                     self.peripheral = p!
                 }
                 if #available(iOS 13.0, *) {
-                    AntBleManager.shareInstance.connect(peripheral: p!, options: [CBConnectPeripheralOptionRequiresANCS:true,CBConnectPeripheralOptionNotifyOnDisconnectionKey:true,CBConnectPeripheralOptionEnableTransportBridgingKey:true])
+                    AntBleManager.shareInstance.connect(peripheral: p!, options: [CBConnectPeripheralOptionRequiresANCS:true,
+                                                                      CBConnectPeripheralOptionNotifyOnDisconnectionKey:true,
+                                                                    CBConnectPeripheralOptionEnableTransportBridgingKey:true,
+                                                                                 ])
                 } else {
                     AntBleManager.shareInstance.connect(peripheral: p!, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey:true])
                 }
@@ -339,7 +342,10 @@ import zlib
                 self.peripheral = (peripheral as! AntScanModel).peripheral
             }
             if #available(iOS 13.0, *) {
-                AntBleManager.shareInstance.connect(peripheral: (peripheral as! AntScanModel).peripheral!, options: [CBConnectPeripheralOptionRequiresANCS:true,CBConnectPeripheralOptionNotifyOnDisconnectionKey:true,CBConnectPeripheralOptionEnableTransportBridgingKey:true])
+                AntBleManager.shareInstance.connect(peripheral: (peripheral as! AntScanModel).peripheral!, options: [CBConnectPeripheralOptionRequiresANCS:true,
+                                                                                                         CBConnectPeripheralOptionNotifyOnDisconnectionKey:true,
+                                                                                                       CBConnectPeripheralOptionEnableTransportBridgingKey:true,
+                                                                                                                    ])
             } else {
                 AntBleManager.shareInstance.connect(peripheral: (peripheral as! AntScanModel).peripheral!, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey:true])
             }
