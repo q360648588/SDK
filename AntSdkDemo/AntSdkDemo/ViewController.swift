@@ -237,7 +237,7 @@ class ViewController: UIViewController {
         
         let dateLabel = UILabel.init(frame: .init(x: 0, y: 600, width: screenWidth, height: 44))
         dateLabel.backgroundColor = .green
-        dateLabel.text = "更新日期:2023-3-3"
+        dateLabel.text = "更新日期:2023-4-20"
         dateLabel.textColor = .red
         dateLabel.numberOfLines = 0
         dateLabel.textAlignment = .center

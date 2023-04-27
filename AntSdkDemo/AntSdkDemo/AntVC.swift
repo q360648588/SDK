@@ -351,7 +351,9 @@ class AntVC: UIViewController {
                 "0x85 同步数据",
                 "0x83(4) 设置天气",
                 "0x83(5) 设置闹钟",
+                "0x83(0x19) 设置睡眠目标",
                 "0x84(5) 获取闹钟",
+                "0x84(0x19) 获取睡眠目标",
             ],
             [
                 "0x00 ",
@@ -361,6 +363,7 @@ class AntVC: UIViewController {
                 "0x04",
                 "0x05 马达震动",
                 "0x07 重新启动",
+                "恢复出厂并关机"
             ],
             [
                 "0x80 实时步数",
@@ -378,6 +381,8 @@ class AntVC: UIViewController {
                 "上报设备振动",
                 "上报实时数据",
                 "上报运动交互数据",
+                "上报进入或退出拍照模式",
+                "上报勿扰设置",
             ],
             [
                 "多包测试命令",
@@ -3152,6 +3157,16 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                                             self.logView.writeString(string: "结束时间:\(endTime)")
                                             self.logView.writeString(string: "卡路里:\(calorie)")
                                             self.logView.writeString(string: "距离:\(distance)\n")
+                                            let gpsArray = model.gpsArray
+                                            if gpsArray.count > 0 {
+                                                var logArray = [String]()
+                                                for locationArray in gpsArray {
+                                                    for item in locationArray {
+                                                        logArray.append("时间:\(item.timestamp.conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss")),latitude:\(item.coordinate.latitude),longitude:\(item.coordinate.longitude)")
+                                                    }
+                                                }
+                                                self.logView.writeString(string: "距离:\(logArray)\n")
+                                            }
                                         }
                                     }
                                     if value is NSNull {
@@ -3360,6 +3375,47 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
+        case "0x83(0x19) 设置睡眠目标":
+            
+            let array = [
+                "睡眠目标(分钟)",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "设置睡眠目标")
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置睡眠目标", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let targetCount = Int(textArray[0]) ?? 0
+                
+                AntCommandModule.shareInstance.setSleepGoal(target: targetCount) { error in
+                    
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        print("setSleepGoal ->","success")
+                    }
+                }                
+            }
+            
+            break
+            
+        case "0x84(0x19) 获取睡眠目标":
+            self.logView.clearString()
+            self.logView.writeString(string: "获取睡眠目标")
+            
+            AntCommandModule.shareInstance.getSleepGoal { targetCount, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                if error == .none {
+                    
+                    self.logView.writeString(string: "睡眠目标(分钟):\(targetCount)   \(targetCount/60):\(targetCount%60)")
+                    
+                }
+            }
+            
+            break
+            
         case "0x00 ":
             
             
@@ -3445,6 +3501,18 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.writeString(string: "重新启动")
             
             AntCommandModule.shareInstance.setRestart { error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                if error == .none {
+                    print("SetFactoryDataReset ->","success")
+                }
+            }
+            break
+        case "恢复出厂并关机":
+            self.logView.clearString()
+            self.logView.writeString(string: "重新启动")
+            
+            AntCommandModule.shareInstance.setFactoryAndPowerOff { error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
                 if error == .none {
@@ -3696,6 +3764,43 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                     self.logView.writeString(string: "时间戳:\(timestamp)")
                     self.logView.writeString(string: "总步数:\(step)")
                     self.logView.writeString(string: "心率:\(hr)\n")
+                }
+            }
+            
+            break
+            
+        case "上报进入或退出拍照模式":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "上报进入或退出拍照模式")
+            
+            AntCommandModule.shareInstance.reportEnterOrExitCamera { result, error in
+                if error == .none {
+                    self.logView.writeString(string: "\(result == 0 ? "进入":"退出")拍照模式")
+                }
+            }
+            
+            break
+            
+        case "上报勿扰设置":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "上报勿扰设置")
+            
+            AntCommandModule.shareInstance.reportDoNotDisturb { model, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                if error == .none {
+                    if let model = model {
+                        let isOpen = model.isOpen
+                        let startHour = model.timeModel.startHour
+                        let startMinute = model.timeModel.startMinute
+                        let endHour = model.timeModel.endHour
+                        let endMinute = model.timeModel.endMinute
+                        
+                        self.logView.writeString(string: isOpen ? "开启":"关闭")
+                        self.logView.writeString(string: "开始时间:\(startHour):\(startMinute)")
+                        self.logView.writeString(string: "结束时间:\(endHour):\(endMinute)")
+                    }
                 }
             }
             

@@ -81,7 +81,7 @@ class ConfigurationVC: UIViewController {
             self.fontVersion = "过滤字体版本:无"
         }
         
-        self.powerOffString = "关机"+(userDefault.bool(forKey: PowerOffKey) == true ? ":开" : ":关")
+        self.powerOffString = "恢复出厂并关机(不支持则只关机)"+(userDefault.bool(forKey: PowerOffKey) == true ? ":开" : ":关")
         
         var bootString = ""
         let bootPath = userDefault.string(forKey: BootKey)
@@ -303,7 +303,7 @@ extension ConfigurationVC:UITableViewDataSource,UITableViewDelegate {
             }
         }
         
-        if selectString.contains("关机") {
+        if selectString.contains("恢复出厂并关机(不支持则只关机)") {
             let result = userDefault.bool(forKey: PowerOffKey)
             userDefault.set(!result, forKey: PowerOffKey)
             userDefault.synchronize()

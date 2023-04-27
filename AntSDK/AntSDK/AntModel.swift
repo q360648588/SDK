@@ -8,6 +8,7 @@
 import Foundation
 import CoreBluetooth
 import UIKit
+import CoreLocation
 
 //public struct AntScanModel {
 //    public var name:String?
@@ -714,6 +715,7 @@ import UIKit
                 log += "\n      屏幕亮度最大等级 \(model.screenLevelCount)"
                 log += "\n      亮屏时长最大值 \(model.screenTimeLong_max)"
                 log += "\n      亮屏时长最小值 \(model.screenTimeLong_min)"
+                log += "\n      亮屏时长间隔 \(model.screenTimeLong_interval)"
             }
         }
         if self.functionList_addressBook {
@@ -1108,13 +1110,17 @@ import UIKit
 
 @objc public class AntFunctionModel_screenControl:NSObject {
     @objc public private(set) var screenLevelCount = 0           //支持的亮度等级
-    @objc public private(set) var screenTimeLong_max = 0    //亮屏时长最大值
-    @objc public private(set) var screenTimeLong_min = 0    //亮屏时长最小值
+    @objc public private(set) var screenTimeLong_max = 0         //亮屏时长最大值
+    @objc public private(set) var screenTimeLong_min = 0         //亮屏时长最小值
+    @objc public private(set) var screenTimeLong_interval = 1    //亮屏时长间隔
     
     init(val:[UInt8]) {
         self.screenLevelCount = Int(val[0])
         self.screenTimeLong_max = Int(val[1])
         self.screenTimeLong_min = Int(val[2])
+        if val.count > 3 {
+            self.screenTimeLong_interval = Int(val[3])
+        }
         super.init()
     }
 }
@@ -1565,6 +1571,7 @@ class AntFunctionModel_newPortocol:NSObject {
     @objc public var dialImageUrl:String?
     @objc public var dialFileUrl:String?
     @objc public var dialName:String?
+    @objc public var dialPreviewUrl:String?
     
     public override init() {
         super.init()
@@ -1937,6 +1944,7 @@ class AntFunctionModel_newPortocol:NSObject {
     @objc public var step:Int = 0
     @objc public var calorie:Int = 0
     @objc public var distance:Int = 0
+    @objc public var gpsArray:[[CLLocation]] = .init()
     
     public override init() {
         super.init()
@@ -1952,10 +1960,37 @@ class AntFunctionModel_newPortocol:NSObject {
         self.step = Int(dic["step"] as! String) ?? 0
         self.calorie = Int(dic["calorie"] as! String) ?? 0
         self.distance = Int(dic["distance"] as! String) ?? 0
-
+        if let array = dic["gpsArray"] as? [[CLLocation]] {
+            self.gpsArray = array
+        }
     }
 }
 
+@objc public enum AntMeasurementType : Int {
+    case heartrate = 1                      //心率
+    case bloodOxygen                        //血氧
+    case bloodPressure                      //血压
+    case bloodSugar                         //血糖
+    case pressure                           //压力
+    case bodyTemperature                    //体温
+    case electrocardiogram                  //心电
+}
+
+@objc public class AntMeasurementModel:NSObject {
+    @objc public var type:AntMeasurementType = .heartrate
+    @objc public var timeInterval:Int = 0
+    @objc public var listArray:[AntMeasurementValueModel] = .init()
+    
+    public override init() {
+        super.init()
+    }
+}
+
+@objc public class AntMeasurementValueModel:NSObject {
+    @objc public var time:String = "00:00"
+    @objc public var value_1:Int = 0
+    @objc public var value_2:Int = 0
+}
 
 @objc public class AntStartEndTimeModel:NSObject {
     @objc public var startHour:Int = -1 {

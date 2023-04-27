@@ -9,6 +9,7 @@ import UIKit
 import CoreBluetooth
 import Alamofire
 import JL_BLEKit
+import CoreLocation
 
 @objc public enum AntError : Int {
     case none
@@ -148,17 +149,21 @@ import JL_BLEKit
     var receiveReportDeviceVibrationBlock:((Int,AntError) -> Void)?
     var receiveReportNewRealtimeDataBlock:((AntStepModel?,Int,Int,Int,Int,AntError) -> Void)?
     var receiveReportExerciseInteractionDataBlock:((Int,Int,Int,AntError) -> Void)?
+    var receiveReportDoNotDisturb:((AntDoNotDisturbModel?,AntError) -> Void)?
     var receiveSetSubpackageInformationInteractionBlock:(([String:Any],AntError) -> Void)?
     var receiveSetStartUpgradeBlock:((AntError) -> Void)?
     var receiveSetStartUpgradeProgressBlock:((Float) -> Void)?
     var receiveSetStopUpgradeBlock:((AntError) -> Void)?
     var receiveCheckUpgradeStateBlock:(([String:Any],AntError) -> Void)?
     var receiveNewSetSyncHealthDataBlock:((Any?,AntError) -> Void)?
+    var receiveSetSyncMeasurementDataBlock:((Any?,AntError) -> Void)?
     var receiveNewSetWeatherBlock:((AntError) -> Void)?
     var receiveNewSetAlarmArrayBlock:((AntError) -> Void)?
     var receiveNewGetAlarmArrayBlock:(([AntAlarmModel],AntError) -> Void)?
-    //    var receive:((String) -> Void)?
-    //    var receive:((String) -> Void)?
+    var receiveSetSleepGoalBlock:((AntError) -> Void)?
+    var receiveGetSleepGoalBlock:((Int,AntError) -> Void)?
+    var receiveSetFactoryAndPowerOffBlock:((AntError) -> Void)?
+    var reportEnterOrExitCameraBlock:((Int,AntError) -> Void)?
     //    var receive:((String) -> Void)?
     
     
@@ -2776,7 +2781,18 @@ import JL_BLEKit
                                             if let block = self.receiveNewGetAlarmArrayBlock {
                                                 self.parseGetNewAlarmArray(val: newVal, success: block)
                                             }
-                                            
+                                            break
+                                        case 0x18:
+                                            let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            if let block = self.receiveGetDoNotDisturbBlock {
+                                                self.parseGetDoNotDisturb(val: newVal, success: block)
+                                            }
+                                            break
+                                        case 0x19:
+                                            let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            if let block = self.receiveGetSleepGoalBlock {
+                                                self.parseGetSleepGoal(val: newVal, success: block)
+                                            }
                                             break
                                         default:
                                             break
@@ -2807,10 +2823,100 @@ import JL_BLEKit
                                                 self.parseNewProtocolUniversalResponse(result: result, success: block)
                                             }
                                             break
+                                        case 0x18:
+                                            if let block = self.receiveSetDoNotDisturbBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x19:
+                                            if let block = self.receiveSetSleepGoalBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
                                         default:
                                             break
                                         }
                                         currentIndex += 3
+                                    }
+                                }
+                                
+                                if val[1] == 0x07 {
+                                    
+                                    let resultArray = Array(val[4..<val.count-2])
+                                    var currentIndex = 0
+                                    while currentIndex < resultArray.count {
+                                        let cmd_id = Int(resultArray[currentIndex])
+                                        let result = resultArray[currentIndex+1]
+
+                                        switch cmd_id {
+                                        case 0:
+                                            break
+                                        case 4:
+                                            
+                                            break
+                                            
+                                        case 0x0e:
+                                            if let block = self.receiveSetFactoryAndPowerOffBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        default:
+                                            break
+                                        }
+                                        currentIndex += 2
+                                    }
+                                }
+                                
+                                if val[1] == 0x08 {
+
+                                    let resultArray = Array(val[4..<val.count-2])
+                                    var currentIndex = 0
+                                    while currentIndex < resultArray.count {
+                                        let cmd_id = Int(resultArray[currentIndex])
+                                        let result = resultArray[currentIndex+1]
+
+                                        switch cmd_id {
+                                        case 0:
+                                            break
+                                        case 5:
+
+                                            if let block = self.reportEnterOrExitCameraBlock {
+                                                self.parseReportEnterOrExitCameraData(val: [result], success: block)
+                                            }
+
+                                            break
+
+                                        default:
+                                            break
+                                        }
+                                        currentIndex += 2
+                                    }
+                                }
+                                
+                                if val[1] == 0x09 {
+
+                                    var count:Int = Int(newVal[0])
+                                    var valIndex:Int = 1
+
+                                    while valIndex < newVal.count {
+                                        let cmd_id:Int = (Int(newVal[valIndex]) | Int(newVal[valIndex+1]) << 8)
+                                        let cmd_length:Int = (Int(newVal[valIndex+2]) | Int(newVal[valIndex+3]) << 8)
+                                        let countLength:Int = 4
+                                        if cmd_length > 0 {
+                                            switch cmd_id {
+                                            case 0x18:
+                                                let startIndex = Int(valIndex+countLength)
+                                                let endIndex = Int(valIndex+countLength+cmd_length)
+                                                let doNotDisturbVal = Array(newVal[startIndex..<endIndex])
+                                                if let block = self.receiveReportDoNotDisturb {
+                                                    self.parseReportDoNotDisturb(val: doNotDisturbVal, success: block)
+                                                }
+                                                break
+                                            default:
+                                                break
+                                            }
+                                        }
+                                        valIndex = (valIndex+countLength+Int(cmd_length))
                                     }
                                 }
 
@@ -2824,6 +2930,12 @@ import JL_BLEKit
                                 if val[1] == 0x04 {
                                     if let block = self.receiveNewGetAlarmArrayBlock {
                                         block([],.invalidLength)
+                                    }
+                                    if let block = self.receiveGetDoNotDisturbBlock {
+                                        block(nil,.invalidLength)
+                                    }
+                                    if let block = self.receiveGetSleepGoalBlock {
+                                        block(-1,.invalidLength)
                                     }
                                 }
                                 
@@ -2848,10 +2960,96 @@ import JL_BLEKit
                                                 block(.invalidLength)
                                             }
                                             break
+                                        case 0x18:
+                                            if let block = self.receiveSetDoNotDisturbBlock {
+                                                block(.invalidLength)
+                                            }
+                                            break
+                                        case 0x19:
+                                            if let block = self.receiveSetSleepGoalBlock {
+                                                block(.invalidLength)
+                                            }
+                                            break
                                         default:
                                             break
                                         }
                                         currentIndex += 3
+                                    }
+                                }
+                                
+                                if val[1] == 0x07 {
+                                    
+                                    let resultArray = Array(val[4..<val.count-2])
+                                    var currentIndex = 0
+                                    while currentIndex < resultArray.count {
+                                        let cmd_id = Int(resultArray[currentIndex])
+                                        let result = resultArray[currentIndex+1]
+
+                                        switch cmd_id {
+                                        case 0:
+                                            break
+                                        case 4:
+                                            
+                                            break
+                                        case 0x0e:
+                                            if let block = self.receiveSetFactoryAndPowerOffBlock {
+                                                block(.invalidLength)
+                                            }
+                                            break
+                                        default:
+                                            break
+                                        }
+                                        currentIndex += 2
+                                    }
+                                }
+                                
+                                if val[1] == 0x08 {
+
+                                    let resultArray = Array(val[4..<val.count-2])
+                                    var currentIndex = 0
+                                    while currentIndex < resultArray.count {
+                                        let cmd_id = Int(resultArray[currentIndex])
+                                        let result = resultArray[currentIndex+1]
+
+                                        switch cmd_id {
+                                        case 0:
+                                            break
+                                        case 5:
+
+                                            if let block = self.reportEnterOrExitCameraBlock {
+                                                block(-1,.invalidLength)
+                                            }
+
+                                            break
+
+                                        default:
+                                            break
+                                        }
+                                        currentIndex += 2
+                                    }
+                                }
+                                
+                                if val[1] == 0x09 {
+                                    let newVal = Array(val[4..<val.count-2])
+                                    var count:Int = Int(newVal[0])
+                                    var valIndex = 1
+
+                                    while valIndex < newVal.count {
+                                        let cmd_id = (Int(newVal[valIndex]) | Int(newVal[valIndex+1]) << 8)
+                                        var cmd_length:Int = (Int(newVal[valIndex+2]) | Int(newVal[valIndex+3]) << 8)
+                                        let countLength = 4
+                                        if cmd_length > 0 {
+                                            switch cmd_id {
+                                            case 0x18:
+                                                if let block = self.receiveReportDoNotDisturb {
+                                                    block(nil,.invalidLength)
+                                                }
+                                                break
+                                            default:
+                                                break
+                                            }
+                                        }
+                                        valIndex = (valIndex+countLength+Int(cmd_length))
                                     }
                                 }
 
@@ -2882,7 +3080,18 @@ import JL_BLEKit
                                         if let block = self.receiveNewGetAlarmArrayBlock {
                                             self.parseGetNewAlarmArray(val: newVal, success: block)
                                         }
-                                        
+                                        break
+                                    case 0x18:
+                                        let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                        if let block = self.receiveGetDoNotDisturbBlock {
+                                            self.parseGetDoNotDisturb(val: newVal, success: block)
+                                        }
+                                        break
+                                    case 0x19:
+                                        let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                        if let block = self.receiveGetSleepGoalBlock {
+                                            self.parseGetSleepGoal(val: newVal, success: block)
+                                        }
                                         break
                                     default:
                                         break
@@ -2913,10 +3122,100 @@ import JL_BLEKit
                                             self.parseNewProtocolUniversalResponse(result: result, success: block)
                                         }
                                         break
+                                    case 0x18:
+                                        if let block = self.receiveSetDoNotDisturbBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x19:
+                                        if let block = self.receiveSetSleepGoalBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
                                     default:
                                         break
                                     }
                                     currentIndex += 3
+                                }
+                            }
+                            
+                            if val[1] == 0x07 {
+                                
+                                let resultArray = Array(val[4..<val.count-2])
+                                var currentIndex = 0
+                                while currentIndex < resultArray.count {
+                                    let cmd_id = Int(resultArray[currentIndex])
+                                    let result = resultArray[currentIndex+1]
+
+                                    switch cmd_id {
+                                    case 0:
+                                        break
+                                    case 4:
+                                        
+                                        break
+                                        
+                                    case 0x0e:
+                                        if let block = self.receiveSetFactoryAndPowerOffBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    default:
+                                        break
+                                    }
+                                    currentIndex += 2
+                                }
+                            }
+                            
+                            if val[1] == 0x08 {
+
+                                let resultArray = Array(val[4..<val.count-2])
+                                var currentIndex = 0
+                                while currentIndex < resultArray.count {
+                                    let cmd_id = Int(resultArray[currentIndex])
+                                    let result = resultArray[currentIndex+1]
+
+                                    switch cmd_id {
+                                    case 0:
+                                        break
+                                    case 5:
+
+                                        if let block = self.reportEnterOrExitCameraBlock {
+                                            self.parseReportEnterOrExitCameraData(val: [result], success: block)
+                                        }
+
+                                        break
+
+                                    default:
+                                        break
+                                    }
+                                    currentIndex += 2
+                                }
+                            }
+                            
+                            if val[1] == 0x09 {
+                                let newVal = Array(val[4..<val.count-2])
+                                var count:Int = Int(newVal[0])
+                                var valIndex = 1
+
+                                while valIndex < newVal.count {
+                                    let cmd_id = (Int(newVal[valIndex]) | Int(newVal[valIndex+1]) << 8)
+                                    var cmd_length:Int = (Int(newVal[valIndex+2]) | Int(newVal[valIndex+3]) << 8)
+                                    let countLength = 4
+                                    if cmd_length > 0 {
+                                        switch cmd_id {
+                                        case 0x18:
+                                            let startIndex = Int(valIndex+countLength)
+                                            let endIndex = Int(valIndex+countLength+cmd_length)
+                                            let doNotDisturbVal = Array(newVal[startIndex..<endIndex])
+                                            if let block = self.receiveReportDoNotDisturb {
+                                                self.parseReportDoNotDisturb(val: doNotDisturbVal, success: block)
+                                            }
+                                            break
+                                        default:
+                                            break
+                                        }
+                                    }
+                                    valIndex = (valIndex+countLength+Int(cmd_length))
                                 }
                             }
                             
@@ -2930,6 +3229,12 @@ import JL_BLEKit
                             if val[1] == 0x04 {
                                 if let block = self.receiveNewGetAlarmArrayBlock {
                                     block([],.invalidLength)
+                                }
+                                if let block = self.receiveGetDoNotDisturbBlock {
+                                    block(nil,.invalidLength)
+                                }
+                                if let block = self.receiveGetSleepGoalBlock {
+                                    block(-1,.invalidLength)
                                 }
                             }
                             
@@ -2954,12 +3259,96 @@ import JL_BLEKit
                                             block(.invalidLength)
                                         }
                                         break
+                                    case 0x18:
+                                        if let block = self.receiveSetDoNotDisturbBlock {
+                                            block(.invalidLength)
+                                        }
+                                        break
+                                    case 0x19:
+                                        if let block = self.receiveSetSleepGoalBlock {
+                                            block(.invalidLength)
+                                        }
+                                        break
                                     default:
                                         break
                                     }
                                     currentIndex += 3
                                 }
                             }
+                            
+                            if val[1] == 0x07 {
+                                
+                                let resultArray = Array(val[4..<val.count-2])
+                                var currentIndex = 0
+                                while currentIndex < resultArray.count {
+                                    let cmd_id = Int(resultArray[currentIndex])
+                                    let result = resultArray[currentIndex+1]
+
+                                    switch cmd_id {
+                                    case 0:
+                                        break
+                                    case 4:
+                                        
+                                        break
+                                    case 0x0e:
+                                        if let block = self.receiveSetFactoryAndPowerOffBlock {
+                                            block(.invalidLength)
+                                        }
+                                        break
+                                    default:
+                                        break
+                                    }
+                                    currentIndex += 2
+                                }
+                            }
+                            
+                            if val[1] == 0x08 {
+                                
+                                let resultArray = Array(val[4..<val.count-2])
+                                var currentIndex = 0
+                                while currentIndex < resultArray.count {
+                                    let cmd_id = Int(resultArray[currentIndex])
+                                    let result = resultArray[currentIndex+1]
+
+                                    switch cmd_id {
+                                    case 0:
+                                        break
+                                    case 5:
+                                        if let block = self.reportEnterOrExitCameraBlock {
+                                            block(-1,.invalidLength)
+                                        }
+                                        break
+                                    default:
+                                        break
+                                    }
+                                    currentIndex += 2
+                                }
+                            }
+                            
+                            if val[1] == 0x09 {
+                                let newVal = Array(val[4..<val.count-2])
+                                var count:Int = Int(newVal[0])
+                                var valIndex = 1
+
+                                while valIndex < newVal.count {
+                                    let cmd_id = (Int(newVal[valIndex]) | Int(newVal[valIndex+1]) << 8)
+                                    var cmd_length:Int = (Int(newVal[valIndex+2]) | Int(newVal[valIndex+3]) << 8)
+                                    let countLength = 4
+                                    if cmd_length > 0 {
+                                        switch cmd_id {
+                                        case 0x18:
+                                            if let block = self.receiveReportDoNotDisturb {
+                                                block(nil,.invalidLength)
+                                            }
+                                            break
+                                        default:
+                                            break
+                                        }
+                                    }
+                                    valIndex = (valIndex+countLength+Int(cmd_length))
+                                }
+                            }
+                            
                             AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "新协议0xaa长度校验出错"))
                         }
                     }
@@ -6745,93 +7134,211 @@ import JL_BLEKit
     // MARK: - 获取勿扰 0x06
     @objc public func getDoNotDisturb(_ success:@escaping((AntDoNotDisturbModel?,AntError) -> Void)) {
         
-        var val:[UInt8] = [
-            0x02,
-            0x06,
-            0x04,
-            0x00,
-        ]
-        let data = Data.init(bytes: &val, count: val.count)
-        
-        let state = self.writeDataAndBackError(data: data)
-        if state == .none {
-            self.receiveGetDoNotDisturbBlock = success
-        }else{
-            success(nil,state)
-        }
-        
+//        if self.functionListModel?.functionList_newPortocol == true {
+//            
+//            let headVal:[UInt8] = [
+//                0xaa,
+//                0x84
+//            ]
+//            
+//            //参数id
+//            let cmd_id = 0x18
+//            
+//            let contentVal:[UInt8] = [
+//                0x01,
+//                UInt8((cmd_id ) & 0xff),
+//                UInt8((cmd_id >> 8) & 0xff),
+//            ]
+//            
+//            self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+//                if error == .none {
+//                    self?.receiveGetDoNotDisturbBlock = success
+//                }else{
+//                    success(nil,error)
+//                }
+//            }
+//            
+//        }else{
+            var val:[UInt8] = [
+                0x02,
+                0x06,
+                0x04,
+                0x00,
+            ]
+            let data = Data.init(bytes: &val, count: val.count)
+            
+            let state = self.writeDataAndBackError(data: data)
+            if state == .none {
+                self.receiveGetDoNotDisturbBlock = success
+            }else{
+                success(nil,state)
+            }
+//        }
     }
     
     private func parseGetDoNotDisturb(val:[UInt8],success:@escaping((AntDoNotDisturbModel?,AntError) -> Void)) {
-        let state = String.init(format: "%02x", val[4])
         
-        if val[4] == 1 {
+//        if self.functionListModel?.functionList_newPortocol == true {
+//
+//            if val.count == 5 {
+//
+//                let isOpen = val[0]
+//                let startHour = val[1]
+//                let startMinute = val[2]
+//                let endHour = val[3]
+//                let endMinute = val[4]
+//
+//                let string = String.init(format: "开关:%d,开始时间：%d:%d,结束时间：%d:%d",isOpen,startHour,startMinute,endHour,endMinute)
+//                AntSDKLog.writeStringToSDKLog(string: String.init(format: "解析:%@",string))
+//
+//                let model = AntDoNotDisturbModel.init(dic: ["isOpen":"\(isOpen)","startHour":String.init(format: "%02d", startHour),"startMinute":String.init(format: "%02d", startMinute),"endHour":String.init(format: "%02d", endHour),"endMinute":String.init(format: "%02d", endMinute)])
+//
+//                success(model,.none)
+//
+//            }else{
+//                success(nil,.invalidLength)
+//            }
+//
+//
+//        }else{
+            let state = String.init(format: "%02x", val[4])
             
-            let isOpen = val[5]
-            let startHour = val[6]
-            let startMinute = val[7]
-            let endHour = val[8]
-            let endMinute = val[9]
-            let string = String.init(format: "开关:%d,开始时间：%d:%d,结束时间：%d:%d",isOpen,startHour,startMinute,endHour,endMinute)
-            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
-            
-            let model = AntDoNotDisturbModel.init(dic: ["isOpen":"\(isOpen)","startHour":String.init(format: "%02d", startHour),"startMinute":String.init(format: "%02d", startMinute),"endHour":String.init(format: "%02d", endHour),"endMinute":String.init(format: "%02d", endMinute)])
-            
-            success(model,.none)
-            
-        }else{
-            success(nil,.invalidState)
-        }
-        //printLog("第\(#line)行" , "\(#function)")
+            if val[4] == 1 {
+                
+                let isOpen = val[5]
+                let startHour = val[6]
+                let startMinute = val[7]
+                let endHour = val[8]
+                let endMinute = val[9]
+                let string = String.init(format: "开关:%d,开始时间：%d:%d,结束时间：%d:%d",isOpen,startHour,startMinute,endHour,endMinute)
+                AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
+                
+                let model = AntDoNotDisturbModel.init(dic: ["isOpen":"\(isOpen)","startHour":String.init(format: "%02d", startHour),"startMinute":String.init(format: "%02d", startMinute),"endHour":String.init(format: "%02d", endHour),"endMinute":String.init(format: "%02d", endMinute)])
+                
+                success(model,.none)
+                
+            }else{
+                success(nil,.invalidState)
+            }
+            //printLog("第\(#line)行" , "\(#function)")
+//        }
         self.signalCommandSemaphore()
     }
     
     // MARK: - 设置勿扰 0x07
     @objc public func setDoNotDisturb(isOpen:String,startHour:String,startMinute:String,endHour:String,endMinute:String,success:@escaping((AntError) -> Void)) {
         
-        var val:[UInt8] = [
-            0x02,
-            0x07,
-            0x09,
-            0x00,
-            (UInt8(isOpen) ?? 0),
-            (UInt8(startHour) ?? 0),
-            (UInt8(startMinute) ?? 0),
-            (UInt8(endHour) ?? 0),
-            (UInt8(endMinute) ?? 0)
-        ]
-        let data = Data.init(bytes: &val, count: val.count)
-        
-        let state = self.writeDataAndBackError(data: data)
-        if state == .none {
-            self.receiveSetDoNotDisturbBlock = success
-        }else{
-            success(state)
-        }
+//        if self.functionListModel?.functionList_newPortocol == true {
+//
+//            var headVal:[UInt8] = [
+//                0xaa,
+//                0x83
+//            ]
+//
+//            //参数id
+//            let cmd_id = 0x18
+//            //参数长度
+//            let modelCount = 5
+//
+//            var contentVal:[UInt8] = [
+//                0x01,
+//                UInt8((cmd_id ) & 0xff),
+//                UInt8((cmd_id >> 8) & 0xff),
+//                UInt8((modelCount ) & 0xff),
+//                UInt8((modelCount >> 8) & 0xff),
+//                (UInt8(isOpen) ?? 0),
+//                (UInt8(startHour) ?? 0),
+//                (UInt8(startMinute) ?? 0),
+//                (UInt8(endHour) ?? 0),
+//                (UInt8(endMinute) ?? 0),
+//            ]
+//
+//            self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+//                if error == .none {
+//                    self?.receiveSetDoNotDisturbBlock = success
+//                }else{
+//                    success(error)
+//                }
+//            }
+//        }else{
+            var val:[UInt8] = [
+                0x02,
+                0x07,
+                0x09,
+                0x00,
+                (UInt8(isOpen) ?? 0),
+                (UInt8(startHour) ?? 0),
+                (UInt8(startMinute) ?? 0),
+                (UInt8(endHour) ?? 0),
+                (UInt8(endMinute) ?? 0)
+            ]
+            let data = Data.init(bytes: &val, count: val.count)
+            
+            let state = self.writeDataAndBackError(data: data)
+            if state == .none {
+                self.receiveSetDoNotDisturbBlock = success
+            }else{
+                success(state)
+            }
+//        }
     }
     
     @objc public func setDoNotDisturb(model:AntDoNotDisturbModel,success:@escaping((AntError) -> Void)) {
         
-        let isOpen = model.isOpen
-        var val:[UInt8] = [
-            0x02,
-            0x07,
-            0x09,
-            0x00,
-            isOpen == false ? 0:1,
-            UInt8(model.timeModel.startHour),
-            UInt8(model.timeModel.startMinute),
-            UInt8(model.timeModel.endHour),
-            UInt8(model.timeModel.endMinute)
-        ]
-        let data = Data.init(bytes: &val, count: val.count)
-        
-        let state = self.writeDataAndBackError(data: data)
-        if state == .none {
-            self.receiveSetDoNotDisturbBlock = success
-        }else{
-            success(state)
-        }
+//        if self.functionListModel?.functionList_newPortocol == true {
+//            let isOpen = model.isOpen
+//            var headVal:[UInt8] = [
+//                0xaa,
+//                0x83
+//            ]
+//
+//            //参数id
+//            let cmd_id = 0x18
+//            //参数长度
+//            let modelCount = 5
+//
+//            var contentVal:[UInt8] = [
+//                0x01,
+//                UInt8((cmd_id ) & 0xff),
+//                UInt8((cmd_id >> 8) & 0xff),
+//                UInt8((modelCount ) & 0xff),
+//                UInt8((modelCount >> 8) & 0xff),
+//                isOpen == false ? 0:1,
+//                UInt8(model.timeModel.startHour),
+//                UInt8(model.timeModel.startMinute),
+//                UInt8(model.timeModel.endHour),
+//                UInt8(model.timeModel.endMinute)
+//            ]
+//
+//            self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+//                if error == .none {
+//                    self?.receiveSetDoNotDisturbBlock = success
+//                }else{
+//                    success(error)
+//                }
+//            }
+//        }else{
+            let isOpen = model.isOpen
+            var val:[UInt8] = [
+                0x02,
+                0x07,
+                0x09,
+                0x00,
+                isOpen == false ? 0:1,
+                UInt8(model.timeModel.startHour),
+                UInt8(model.timeModel.startMinute),
+                UInt8(model.timeModel.endHour),
+                UInt8(model.timeModel.endMinute)
+            ]
+            let data = Data.init(bytes: &val, count: val.count)
+            
+            let state = self.writeDataAndBackError(data: data)
+            if state == .none {
+                self.receiveSetDoNotDisturbBlock = success
+            }else{
+                success(state)
+            }
+//        }
     }
     
     private func parseSetDoNotDisturb(val:[UInt8],success:@escaping((AntError) -> Void)) {
@@ -7870,8 +8377,8 @@ import JL_BLEKit
                         }
                     }else{
                         //不一致的，最后一个状态为单独一组
-                        let start = String.init(format: "%02d:%02d", i/60 == 24 ? 0 : (i/60) ,i%60)
-                        let end = String.init(format: "%02d:%02d", (i+1)/60 == 24 ? 0 : ((i+1)/60) ,(i+1)%60)
+                        let start = String.init(format: "%02d:%02d", (i-720)/60 == 24 ? 0 : ((i-720)/60) ,(i-720)%60)
+                        let end = String.init(format: "%02d:%02d", (i-720+1)/60 == 24 ? 0 : ((i-720+1)/60) ,(i-720+1)%60)
                         let total = String.init(format: "%d", 1)
                         let type = String.init(format: "%d", nextState)
                         if type != "3" {
@@ -8233,6 +8740,34 @@ import JL_BLEKit
         //printLog("第\(#line)行" , "\(#function)")
         self.signalCommandSemaphore()
     }
+    
+    // MARK: - 设备恢复出厂设置并关机
+    @objc public func setFactoryAndPowerOff(success:@escaping((AntError) -> Void)) {
+        
+        if self.functionListModel?.functionList_newPortocol == false {
+            success(.notSupport)
+            print("不支持此命令")
+            return
+        }
+        
+        var headVal:[UInt8] = [
+            0xaa,
+            0x87
+        ]
+        
+        var contentVal:[UInt8] = [
+            0x0e,
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetFactoryAndPowerOffBlock = success
+            }else{
+                success(error)
+            }
+        }
+    }
+        
     // MARK: - 数据主动上报 0x80
     // MARK: - 实时步数
     @objc public func reportRealTimeStep(success:@escaping((AntStepModel?,AntError) -> Void)) {
@@ -8296,8 +8831,12 @@ import JL_BLEKit
         AntSDKLog.writeStringToSDKLog(string: String.init(format: "单次测量结果 类型:%d,测量值1:%d,测量值2:%d",type,value1,value2))
         
         if val[4] == 2 {
-
-            success(["type":"\(type)","value1":"\(value1)","value2":"\(value2)"],.none)
+            if type == 6 {
+                success(["type":"\(type)","value1":"\(0)","value2":"\((Int(value2) | Int(value1) << 8))"],.none)
+            }else{
+                success(["type":"\(type)","value1":"\(value1)","value2":"\(value2)"],.none)
+            }
+            
             
         }else if val[4] != 1{
             success(["type":"\(type)","value1":"\(value1)","value2":"\(value2)"],.fail)
@@ -8358,6 +8897,20 @@ import JL_BLEKit
         
         success(.none)
         AntSDKLog.writeStringToSDKLog(string: String.init(format: "拍照"))
+    }
+    
+    // MARK: - 设备上报进入/退出拍照 0进1退
+    @objc public func reportEnterOrExitCamera(success:@escaping((Int,AntError) -> Void)) {
+        self.reportEnterOrExitCameraBlock = success
+    }
+    
+    private func parseReportEnterOrExitCameraData(val:[UInt8],success:@escaping((Int,AntError) -> Void)) {
+
+        if let result = val.first {
+            success(Int(result),.none)
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "\(result == 0 ? "进入":"退出")拍照"))
+        }
+        
         
     }
     
@@ -8547,6 +9100,30 @@ import JL_BLEKit
             success(-1,-1,-1,.invalidState)
         }
         
+    }
+    
+    // MARK: - 勿扰提醒上报
+    @objc public func reportDoNotDisturb(success:@escaping((AntDoNotDisturbModel?,AntError) -> Void)) {
+        self.receiveReportDoNotDisturb = success
+    }
+    
+    private func parseReportDoNotDisturb(val:[UInt8],success:@escaping((AntDoNotDisturbModel?,AntError) -> Void)) {
+        
+        if val.count >= 5 {
+            let isOpen = val[0]
+            let startHour = val[1]
+            let startMinute = val[2]
+            let endHour = val[3]
+            let endMinute = val[4]
+            let string = String.init(format: "开关:%d,开始时间：%d:%d,结束时间：%d:%d",isOpen,startHour,startMinute,endHour,endMinute)
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "解析:%@",string))
+            
+            let model = AntDoNotDisturbModel.init(dic: ["isOpen":"\(isOpen)","startHour":String.init(format: "%02d", startHour),"startMinute":String.init(format: "%02d", startMinute),"endHour":String.init(format: "%02d", endHour),"endMinute":String.init(format: "%02d", endMinute)])
+            
+            success(model,.none)
+        }else{
+            success(nil,.invalidLength)
+        }
     }
     
     // MARK: - 新协议部分0xaa
@@ -9086,33 +9663,227 @@ import JL_BLEKit
             let validTimeLength = (Int(val[10]) | Int(val[11]) << 8)
             let step = (Int(val[12]) | Int(val[13]) << 8 | Int(val[14]) << 16 | Int(val[15]) << 24)
             let endTime = String.init(format: "%04d-%02d-%02d %02d:%02d:%02d", (Int(val[16]) | (Int(val[17]) << 8)),val[18],val[19],val[21],val[22],val[23])
-            var calorie = 0
-            var distance = 0
-            if val.count >= 31 {
-                calorie = (Int(val[24]) | Int(val[25]) << 8 | Int(val[26]) << 16 | Int(val[27]) << 24)
-                distance = (Int(val[28]) | Int(val[29]) << 8 | Int(val[30]) << 16 | Int(val[31]) << 24)
+            let calorie = (Int(val[24]) | Int(val[25]) << 8 | Int(val[26]) << 16 | Int(val[27]) << 24)
+            let distance = (Int(val[28]) | Int(val[29]) << 8 | Int(val[30]) << 16 | Int(val[31]) << 24)
+            
+            let timeformat = DateFormatter.init()
+            timeformat.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            var gpsArray = [[CLLocation]]()
+            if val.count >= 33 {
+                let gpsStartIndex = 32
+                let gpsLength = (Int(val[gpsStartIndex]) | Int(val[gpsStartIndex+1]) << 8)
+                if 34+gpsLength == val.count {
+                    let gpsInterval = Int(val[gpsStartIndex+2])
+                    let gpsCount = (Int(val[gpsStartIndex+3]) | Int(val[gpsStartIndex+4]) << 8)
+                    
+                    var locationStartIndex = 32+5
+                    let firstBasicBit = (0x01 << 31)
+                    let firstBit = (0x01 << 15)
+                    for i in 0..<gpsCount {
+                        let timeOffsetInterval = (Int(val[locationStartIndex]) | Int(val[locationStartIndex+1]) << 8)
+                        let timestamp = (timeformat.date(from: startTime)?.timeIntervalSince1970 ?? 0) + TimeInterval(timeOffsetInterval)
+                        let timeDate = Date.init(timeIntervalSince1970:timestamp)
+                        print("gps timeDate = \(timeDate.timeIntervalSince1970),timeString = \(timeDate.conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss"))")
+                        var basicLatitude = (Int(val[locationStartIndex+2]) | Int(val[locationStartIndex+3]) << 8 | Int(val[locationStartIndex+4]) << 16 | Int(val[locationStartIndex+5]) << 24)
+                        if basicLatitude > firstBasicBit {
+                            basicLatitude = -(basicLatitude - firstBasicBit)
+                        }
+                        var basicLongitude = (Int(val[locationStartIndex+6]) | Int(val[locationStartIndex+7]) << 8 | Int(val[locationStartIndex+8]) << 16 | Int(val[locationStartIndex+9]) << 24)
+                        if basicLongitude > firstBasicBit {
+                            basicLongitude = -(basicLongitude - firstBasicBit)
+                        }
+                        let locationCount = (Int(val[locationStartIndex+10]) | Int(val[locationStartIndex+11]) << 8)
+                        var singleGpsArray = [CLLocation]()
+                        for j in 0..<locationCount {
+                            var latitudeOffset = (Int(val[locationStartIndex+12+j*4+0]) | Int(val[locationStartIndex+12+j*4+1]) << 8)
+                            if latitudeOffset > firstBit {
+                                latitudeOffset = -(latitudeOffset - firstBit)
+                            }
+                            var longitudeOffset = (Int(val[locationStartIndex+12+j*4+2]) | Int(val[locationStartIndex+12+j*4+3]) << 8)
+                            if longitudeOffset > firstBit {
+                                longitudeOffset = -(longitudeOffset - firstBit)
+                            }
+                            
+                            var latitude = 0
+                            var longitude = 0
+                            if basicLatitude > 0 {
+                                latitude = basicLatitude + latitudeOffset
+                            }else{
+                                latitude = -(abs(basicLatitude) + latitudeOffset)
+                            }
+                            if basicLongitude > 0 {
+                                longitude = basicLongitude + latitudeOffset
+                            }else{
+                                longitude = -(abs(basicLongitude) + latitudeOffset)
+                            }
+                            let locationModel = CLLocation.init(coordinate: CLLocationCoordinate2D.init(latitude: Double(latitude)/1000000.0, longitude: Double(longitude)/1000000.0), altitude: 0, horizontalAccuracy: kCLLocationAccuracyBest, verticalAccuracy: kCLLocationAccuracyBest, timestamp: timeDate)
+                            singleGpsArray.append(locationModel)
+                        }
+                        gpsArray.append(singleGpsArray)
+                        locationStartIndex = locationStartIndex+12+locationCount*4
+                    }
+                    
+                }else{
+                    print("gps数据跟总长度异常，不做解析")
+                    AntSDKLog.writeStringToSDKLog(string: String.init(format: "gps数据跟总长度异常，不做解析"))
+                    return nil
+                }
             }
-            /*
-            let startTimestamp = (Int(val[0]) | Int(val[1]) << 8 | Int(val[2]) << 16 | Int(val[3]) << 24)//String.init(format: "%04d-%02d-%02d %02d:%02d:%02d", (Int(val[0]) | (Int(val[1]) << 8)),val[2],val[3],val[5],val[6],val[7])
-            let startTime = Date(timeIntervalSince1970: TimeInterval(startTimestamp)).conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss")
-            let type = val[4]
-            let hr = val[5]
-            let validTimeLength = (Int(val[6]) | Int(val[7]) << 8)
-            let step = (Int(val[8]) | Int(val[9]) << 8 | Int(val[10]) << 16 | Int(val[11]) << 24)
-            let endTimestamp = (Int(val[12]) | Int(val[13]) << 8 | Int(val[14]) << 16 | Int(val[15]) << 24)
-            let endTime = Date(timeIntervalSince1970: TimeInterval(endTimestamp)).conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss")
-            var calorie = 0
-            var distance = 0
-            if val.count >= 23 {
-                calorie = (Int(val[16]) | Int(val[17]) << 8 | Int(val[18]) << 16 | Int(val[19]) << 24)
-                distance = (Int(val[20]) | Int(val[21]) << 8 | Int(val[22]) << 16 | Int(val[23]) << 24)
-            }
-             */
-            let model = AntExerciseModel.init(dic: ["startTime":startTime,"type":"\(type)","hr":"\(hr)","validTimeLength":"\(validTimeLength)","step":"\(step)","endTime":"\(endTime)","calorie":"\(calorie)","distance":"\(distance)"])
+            
+            let model = AntExerciseModel.init(dic: ["startTime":startTime,"type":"\(type)","hr":"\(hr)","validTimeLength":"\(validTimeLength)","step":"\(step)","endTime":"\(endTime)","calorie":"\(calorie)","distance":"\(distance)","gpsArray":gpsArray])
             return model
         }
         return nil
         //printLog("第\(#line)行" , "\(#function)")
+    }
+    
+    // MARK: - 同步测量数据
+    /// 同步数据
+    /// - Parameters:
+    ///   - dataType: 1：心率，2：血氧，3：血压，4：血糖，5：压力，6.体温，7：心电，
+    ///   - measureType: 1：点击测量 ，2：全天测量
+    ///   - indexArray: <#indexArray description#>
+    ///   - success: <#success description#>
+    @objc public func setSyncMeasurementData(dataType:Int,measureType:Int,indexArray:[Int],success:@escaping((Any?,AntError) -> Void)) {
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。")
+            return
+        }
+        
+        if dataType < 1 || dataType > 7 {
+            print("输入参数超过范围,返回失败")
+            success(nil,.fail)
+            return
+        }
+        var headVal:[UInt8] = [
+            0xaa,
+            0x86
+        ]
+        var contentVal:[UInt8] = [
+            UInt8(dataType),
+            UInt8(measureType),
+            UInt8(indexArray.count)
+        ]
+        for item in indexArray {
+            contentVal.append(UInt8(item))
+        }
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none{
+                self?.receiveSetSyncMeasurementDataBlock = success
+            }else{
+                success(nil,error)
+            }
+        }
+    }
+    
+    private func parseSyncMeasurementData(val:[UInt8],success:@escaping((Any?,AntError) -> Void)) {
+
+        let valData = val.withUnsafeBufferPointer { (v) -> Data in
+            return Data.init(buffer: v)
+        }
+
+        AntSDKLog.writeStringToSDKLog(string: String.init(format: "parseSyncMeasurementData待解析数据:\nlength = %d, bytes = %@",valData.count, self.convertDataToHexStr(data: valData)))
+        var syncDic = [String:Any?]()
+        
+        let type = val[0]
+        let measureType = val[1]
+        var count:Int = Int(val[2])
+        var allDayInterval = val[3]
+        var valIndex = 4
+        let model = AntMeasurementModel()
+        model.type = AntMeasurementType.init(rawValue: Int(type)) ?? .heartrate
+        model.timeInterval = Int(allDayInterval)
+        while valIndex < val.count {
+            let number = val[valIndex]
+            var length:Int = (Int(val[valIndex+1]) | Int(val[valIndex+2]) << 8)
+            let countLength = 3
+            
+            if length > 0 {
+                var valueModelArray:[AntMeasurementValueModel] = .init()
+                let modelVal:[UInt8] = Array(val[valIndex+countLength..<(valIndex+countLength+Int(length))])
+                
+                if type == 1 || type == 2 || type == 3 || type == 4 || type == 7 {
+                    if measureType == 1 {
+                        if modelVal.count % 3 == 0 {
+                            for i in 0..<modelVal.count/3 {
+                                let valueModel = AntMeasurementValueModel()
+                                valueModel.time = String.init(format: "%02d:%02d", val[i*3],val[i*3+1])
+                                valueModel.value_2 = Int(val[i*3+2])
+                                valueModelArray.append(valueModel)
+                            }
+                        }else{
+                            success(nil,.fail)
+                            self.signalCommandSemaphore()
+                            return
+                        }
+                    }else if measureType == 2 {
+                        for i in 0..<modelVal.count {
+                            let valueModel = AntMeasurementValueModel()
+                            valueModel.time = String.init(format: "%02d:%02d", i * Int(allDayInterval) / 60 , i * Int(allDayInterval) % 60)
+                            valueModel.value_2 = Int(val[i])
+                            valueModelArray.append(valueModel)
+                        }
+                    }
+                    
+                }else if type == 5 {
+                    if measureType == 1 {
+                        if modelVal.count % 4 == 0 {
+                            for i in 0..<modelVal.count/4 {
+                                let valueModel = AntMeasurementValueModel()
+                                valueModel.time = String.init(format: "%02d:%02d", val[i*4],val[i*4+1])
+                                valueModel.value_1 = Int(val[i*4+2])
+                                valueModel.value_2 = Int(val[i*4+3])
+                                valueModelArray.append(valueModel)
+                            }
+                        }else{
+                            success(nil,.fail)
+                            self.signalCommandSemaphore()
+                            return
+                        }
+                    }else if measureType == 2 {
+                        for i in 0..<modelVal.count/2 {
+                            let valueModel = AntMeasurementValueModel()
+                            valueModel.time = String.init(format: "%02d:%02d", i * Int(allDayInterval) / 60 , i * Int(allDayInterval) % 60)
+                            valueModel.value_1 = Int(val[i])
+                            valueModel.value_2 = Int(val[i+1])
+                            valueModelArray.append(valueModel)
+                        }
+                    }
+                    
+                }else if type == 6 {
+                    if measureType == 1 {
+                        if modelVal.count % 6 == 0 {
+                            for i in 0..<modelVal.count/6 {
+                                let valueModel = AntMeasurementValueModel()
+                                valueModel.time = String.init(format: "%02d:%02d", val[i*6],val[i*6+1])
+                                valueModel.value_1 = (Int(val[i*6+2]) | Int(val[i*6+3]) << 8)
+                                valueModel.value_2 = (Int(val[i*6+4]) | Int(val[i*6+5]) << 8)
+                                valueModelArray.append(valueModel)
+                            }
+                        }else{
+                            success(nil,.fail)
+                            self.signalCommandSemaphore()
+                            return
+                        }
+                    }else if measureType == 2 {
+                        for i in 0..<modelVal.count/2 {
+                            let valueModel = AntMeasurementValueModel()
+                            valueModel.time = String.init(format: "%02d:%02d", i * Int(allDayInterval) / 60 , i * Int(allDayInterval) % 60)
+                            valueModel.value_2 = (Int(val[i*2]) | Int(val[i*2+1]) << 8)
+                            valueModelArray.append(valueModel)
+                        }
+                    }
+                }
+                model.listArray = valueModelArray
+            }
+            valIndex = (valIndex+countLength+Int(length))
+        }
+        if syncDic.keys.count != count {
+            AntSDKLog.writeStringToSDKLog(string: "数据获取条数不一致: 总数:\(count),实际接收:\(syncDic.keys.count)")
+        }
+        success(model,.none)
+        self.signalCommandSemaphore()
     }
     
     // MARK: - 设置天气
@@ -9318,6 +10089,91 @@ import JL_BLEKit
             success([],.fail)
         }
         
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 设置睡眠目标
+    @objc public func setSleepGoal(target:Int,success:@escaping((AntError) -> Void)) {
+
+        if target <= 0 || target > 1440{
+            print("输入参数超过范围,返回失败")
+            success(.fail)
+            return
+        }
+
+        var headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 0x19
+        //参数长度
+        let modelCount = 2
+        
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
+            UInt8((target ) & 0xff),
+            UInt8((target >> 8) & 0xff),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetSleepGoalBlock = success
+            }else{
+                success(error)
+            }
+        }
+    }
+    
+    // MARK: - 获取睡眠目标
+    @objc public func getSleepGoal(_ success:@escaping((Int,AntError) -> Void)) {
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。")
+            return
+        }
+
+        let headVal:[UInt8] = [
+            0xaa,
+            0x84
+        ]
+        
+        //参数id
+        let cmd_id = 0x19
+        
+        let contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveGetSleepGoalBlock = success
+            }else{
+                success(-1,error)
+            }
+        }
+    }
+    
+    private func parseGetSleepGoal(val:[UInt8],success:@escaping((Int,AntError) -> Void)) {
+        
+        if val.count == 2 {
+            
+            let goalCount = (Int(val[0]) | Int(val[1]) << 8 )
+            let string = String.init(format: "%d",goalCount)
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "解析:%@",string))
+            success(Int(goalCount),.none)
+            
+        }else{
+            success(-1,.invalidState)
+        }
+
+        //printLog("第\(#line)行" , "\(#function)")
         self.signalCommandSemaphore()
     }
             
@@ -9810,8 +10666,6 @@ import JL_BLEKit
         
         printLog("getServerOtaDeviceInfo 调用成功")
         
-        self.isRequesting = true
-        //此处如果在等待的时候把设备断开连接或者是解绑，命令不会再进入回调，而isRequesting是true下次请求永远都不会往下调用。断开连接之后把isRequesting置位false
         self.privateGetOtaVersionInfo { versionSuccess, error in
             if error == .none {
                 printLog("GetDeviceOtaVersionInfo ->\(versionSuccess)")
@@ -9826,6 +10680,8 @@ import JL_BLEKit
                     if error == .none {
                         if let string = macSuccess {
                             printLog("macSuccess =\(string)")
+                            self.isRequesting = true
+                            //此处如果在等待的时候把设备断开连接或者是解绑，命令不会再进入回调，而isRequesting是true下次请求永远都不会往下调用。断开连接之后把isRequesting置位false
                             let url = AntNetworkManager.shareInstance.basicUrl+"/api/ota/getNewVersionByAddress?"+String.init(format: "productId=%@&projectId=%@&firmwareId=%@&imageId=%@&fontId=%@&address=%@",product,project,firmware,library,font,string)
                             AntNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
                                 self.isRequesting = false
@@ -9916,206 +10772,227 @@ import JL_BLEKit
     // MARK: - 自动获取OTA版本信息及下载升级
     var currentSyncOtaIndex = 0
     var lastCompleteOtaIndex = -1
-    @objc public func setAutoServerOtaDeviceInfo(progress:@escaping((Float) -> Void),success:@escaping((AntError) -> Void)) {
+    @objc public func setAutoServerOtaDeviceInfo(url:String? = nil,progress:@escaping((Float) -> Void),success:@escaping((AntError) -> Void)) {
         self.currentSyncOtaIndex = 0
         
-        self.getServerOtaDeviceInfo { dic, error in
-            //printLog("dic =",dic,"error =",dic)
-            if error == .none {
-                //["data": Optional([["version": Optional(0.2), "urlx080": Optional(http://oss.antjuyi.com/ota/firmware/P22pro_v0.2.bin), "type": Optional(1)], ["type": Optional(2), "url": Optional(http://oss.antjuyi.com/ota/image/P22pro_v0.2.bin), "version": Optional(0.2)], ["version": Optional(0.2), "url": Optional(http://oss.antjuyi.com/ota/font/P22pro_v0.2.bin), "type": Optional(3)]]), "message": Optional(当前有新版本), "code": Optional(200)]
-                
-                if let code = dic["code"] as? Int {
-                    if code == 200 {
-
-                        if var dataArray = dic["data"] as? Array<Dictionary<String,Any>> {
-
-                            //固件最先升级
-                            if let index = dataArray.firstIndex(where: { dic in
-                                if let type = dic["type"] as? Int {
-                                    return type == 1
-                                }
-                                return false
-                            }) {
-                                let model = dataArray[index]
-                                dataArray.remove(at: index)
-                                dataArray.insert(model, at: 0)
-                            }
-                            
-                            let versionArray = dataArray.map { versionDic in
-                                versionDic["version"]
-                            }
-                            printLog("versionArray =",versionArray)
-
-                            //ota过程中单个类型升级完之后断开的重连方法
-                            self.syncOtaReconnectDevice {
-                                printLog("--->>>  syncOtaReconnectDevice  ->isSyncOtaData =",self.isSyncOtaData,"self.currentSyncOtaIndex =",self.currentSyncOtaIndex,"self.lastCompleteOtaIndex =",self.lastCompleteOtaIndex)
-
-                                do{
-                                    if self.lastCompleteOtaIndex >= 0 {
-                                        let completeVersionDic = dataArray[self.lastCompleteOtaIndex]
-                                        //上一个升级完成的类型
-                                        let completeType = completeVersionDic["type"] as! Int
-                                        //获取到上一个完成的版本号
-                                        let completeVersion = completeVersionDic["version"] as! String
-
-                                        printLog("completeVersionDic =",completeVersionDic)
-                                        printLog("上一个升级完成的类型 completeType=",completeType,"上一个完成的版本号 completeVersion =",completeVersion)
-
-                                        if self.lastCompleteOtaIndex < dataArray.count-1 {
-                                            self.serverOtaMethod(indexCount: self.lastCompleteOtaIndex+1, dataArray: dataArray, progress: progress, success: success)
-                                            //升级过程中异常断开的走正常断开重连检测升级的流程。只有升级单个文件完成设备主动断开连接之后再从此ota重连方法发送下一个升级类型
-                                            self.isSyncOtaData = false
-                                        }
-                                    }else{
-                                        self.serverOtaMethod(indexCount: 0, dataArray: dataArray, progress: progress, success: success)
-                                    }
-                                }
-                                
-                                /*
-                                self.privateGetOtaVersionInfo { versionSuccess, error in
-                                    if error == .none {
-
-                                        let firmware = versionSuccess["firmware"] as! String
-                                        let library = versionSuccess["library"] as! String
-                                        let font = versionSuccess["font"] as! String
-
-                                        printLog("firmware ->",firmware)
-                                        printLog("library ->",library)
-                                        printLog("font ->",font)
-
-                                        let completeVersionDic = dataArray[self.lastCompleteOtaIndex]
-                                        //上一个升级完成的类型
-                                        let completeType = completeVersionDic["type"] as! Int
-                                        //获取到上一个完成的版本号
-                                        let completeVersion = completeVersionDic["version"] as! String
-
-                                        printLog("completeVersionDic =",completeVersionDic)
-                                        printLog("上一个升级完成的类型 completeType=",completeType,"上一个完成的版本号 completeVersion =",completeVersion)
-
-                                        //上一个升级完成之后如果版本号没有改变直接报错返回
-                                        if completeType == 1 {
-
-                                            if completeVersion != firmware {
-                                                //关闭OTA重连
-                                                self.isSyncOtaData = false
-                                                //断开连接并打开正常的重连方法
-                                                if let peripheral = self.peripheral {
-                                                    AntBleManager.shareInstance.disconnect(peripheral: peripheral)
-                                                }
-                                                self.ant_ReconnectTimer?.fireDate = .distantPast
-                                                success(.fail)
-                                                return
-                                            }
-
-                                        }else if completeType == 2 {
-
-                                            if completeVersion != library {
-                                                //关闭OTA重连
-                                                self.isSyncOtaData = false
-                                                //断开连接并打开正常的重连方法
-                                                if let peripheral = self.peripheral {
-                                                    AntBleManager.shareInstance.disconnect(peripheral: peripheral)
-                                                }
-                                                self.ant_ReconnectTimer?.fireDate = .distantPast
-                                                success(.fail)
-                                                return
-                                            }
-
-                                        }else if completeType == 3 {
-
-                                            if completeVersion != firmware {
-                                                //关闭OTA重连
-                                                self.isSyncOtaData = false
-                                                //断开连接并打开正常的重连方法
-                                                if let peripheral = self.peripheral {
-                                                    AntBleManager.shareInstance.disconnect(peripheral: peripheral)
-                                                }
-                                                self.ant_ReconnectTimer?.fireDate = .distantPast
-                                                success(.fail)
-                                                return
-                                            }
-
-                                        }
-
-                                        for i in 0..<dataArray.count {
-                                            let dataDic = dataArray[i]
-                                            let versionString = dataDic["version"] as! String
-                                            let type_int = dataDic["type"] as! Int
-
-                                            if type_int == 1 {
-
-                                                if firmware != versionString {
-                                                    if let index = dataArray.firstIndex(where: { dic in
-                                                        if let type = dic["type"] as? Int {
-                                                            return type == 1
-                                                        }
-                                                        return false
-                                                    }) {
-                                                        self.currentSyncOtaIndex = index
-                                                    }
-                                                    break
-                                                }
-
-                                            }
-                                            if type_int == 2 {
-                                                if library != versionString {
-                                                    if let index = dataArray.firstIndex(where: { dic in
-                                                        if let type = dic["type"] as? Int {
-                                                            return type == 2
-                                                        }
-                                                        return false
-                                                    }) {
-                                                        self.currentSyncOtaIndex = index
-                                                    }
-                                                    break
-                                                }
-                                            }
-                                            if type_int == 3 {
-                                                if font != versionString {
-                                                    if let index = dataArray.firstIndex(where: { dic in
-                                                        if let type = dic["type"] as? Int {
-                                                            return type == 3
-                                                        }
-                                                        return false
-                                                    }) {
-                                                        self.currentSyncOtaIndex = index
-                                                    }
-                                                    break
-                                                }
-                                            }
-                                        }
-                                        //只能放此处赋值，下面的方法会循环调用。如果下面方法优先调用了再断开重连，上一次成功的序号会改变导致获取错误
-                                        self.lastCompleteOtaIndex = self.currentSyncOtaIndex
-                                        self.serverOtaMethod(indexCount: self.currentSyncOtaIndex, dataArray: dataArray, progress: progress, success: success)
-                                    }
-                                }
-                                 */
-                            }
-                            //只能放此处赋值，下面的方法会循环调用。如果下面方法优先调用了再断开重连，上一次成功的序号会改变导致获取错误
-                            self.lastCompleteOtaIndex = -1
-                            self.serverOtaMethod(indexCount: 0, dataArray: dataArray, progress: progress, success: success)
-                            
-                        }else{
-                            printLog("data错误 ->",dic["data"] as Any)
-                            success(.fail)
-                        }
-
-                    }else{
-                        printLog("code != 200",dic["code"] as Any)
-                        if code == 217 {
-                            success(.none)
-                        }else{
-                            success(.fail)
-                        }
-                    }
-                }else{
-                    printLog("code错误 ->",dic["code"] as Any)
-                    success(.fail)
-                }
-            }else{
-                printLog("getServerOtaDeviceInfo error")
+        if url != nil {
+            if self.isRequesting {
+                printLog("正在获取,请勿重复点击")
+                return
+            }
+            self.isRequesting = true
+            AntNetworkManager.shareInstance.get(url: url!, isNeedToken: false) { info in
+                self.isRequesting = false
+                printLog("setAutoServerOtaDeviceInfo info =",info)
+                self.dealServerFile(With: info, progress: progress, success: success)
+            } fail: { error in
+                self.isRequesting = false
+                printLog("error =",error)
                 success(.fail)
             }
+        }else{
+            self.getServerOtaDeviceInfo { dic, error in
+                //printLog("dic =",dic,"error =",dic)
+                if error == .none {
+                    self.dealServerFile(With: dic, progress: progress, success: success)
+                }else{
+                    printLog("getServerOtaDeviceInfo error")
+                    success(.fail)
+                }
+            }
+        }
+    }
+    
+    func dealServerFile(With dic:[String:Any],progress:@escaping((Float) -> Void),success:@escaping((AntError) -> Void)){
+        //["data": Optional([["version": Optional(0.2), "urlx080": Optional(http://oss.antjuyi.com/ota/firmware/P22pro_v0.2.bin), "type": Optional(1)], ["type": Optional(2), "url": Optional(http://oss.antjuyi.com/ota/image/P22pro_v0.2.bin), "version": Optional(0.2)], ["version": Optional(0.2), "url": Optional(http://oss.antjuyi.com/ota/font/P22pro_v0.2.bin), "type": Optional(3)]]), "message": Optional(当前有新版本), "code": Optional(200)]
+        
+        if let code = dic["code"] as? Int {
+            if code == 200 {
+
+                if var dataArray = dic["data"] as? Array<Dictionary<String,Any>> {
+
+                    //固件最先升级
+                    if let index = dataArray.firstIndex(where: { dic in
+                        if let type = dic["type"] as? Int {
+                            return type == 1
+                        }
+                        return false
+                    }) {
+                        let model = dataArray[index]
+                        dataArray.remove(at: index)
+                        dataArray.insert(model, at: 0)
+                    }
+                    
+                    let versionArray = dataArray.map { versionDic in
+                        versionDic["version"]
+                    }
+                    printLog("versionArray =",versionArray)
+
+                    //ota过程中单个类型升级完之后断开的重连方法
+                    self.syncOtaReconnectDevice {
+                        printLog("--->>>  syncOtaReconnectDevice  ->isSyncOtaData =",self.isSyncOtaData,"self.currentSyncOtaIndex =",self.currentSyncOtaIndex,"self.lastCompleteOtaIndex =",self.lastCompleteOtaIndex)
+
+                        do{
+                            if self.lastCompleteOtaIndex >= 0 {
+                                let completeVersionDic = dataArray[self.lastCompleteOtaIndex]
+                                //上一个升级完成的类型
+                                let completeType = completeVersionDic["type"] as! Int
+                                //获取到上一个完成的版本号
+                                let completeVersion = completeVersionDic["version"] as! String
+
+                                printLog("completeVersionDic =",completeVersionDic)
+                                printLog("上一个升级完成的类型 completeType=",completeType,"上一个完成的版本号 completeVersion =",completeVersion)
+
+                                if self.lastCompleteOtaIndex < dataArray.count-1 {
+                                    self.serverOtaMethod(indexCount: self.lastCompleteOtaIndex+1, dataArray: dataArray, progress: progress, success: success)
+                                    //升级过程中异常断开的走正常断开重连检测升级的流程。只有升级单个文件完成设备主动断开连接之后再从此ota重连方法发送下一个升级类型
+                                    self.isSyncOtaData = false
+                                }
+                            }else{
+                                self.serverOtaMethod(indexCount: 0, dataArray: dataArray, progress: progress, success: success)
+                            }
+                        }
+                        
+                        /*
+                        self.privateGetOtaVersionInfo { versionSuccess, error in
+                            if error == .none {
+
+                                let firmware = versionSuccess["firmware"] as! String
+                                let library = versionSuccess["library"] as! String
+                                let font = versionSuccess["font"] as! String
+
+                                printLog("firmware ->",firmware)
+                                printLog("library ->",library)
+                                printLog("font ->",font)
+
+                                let completeVersionDic = dataArray[self.lastCompleteOtaIndex]
+                                //上一个升级完成的类型
+                                let completeType = completeVersionDic["type"] as! Int
+                                //获取到上一个完成的版本号
+                                let completeVersion = completeVersionDic["version"] as! String
+
+                                printLog("completeVersionDic =",completeVersionDic)
+                                printLog("上一个升级完成的类型 completeType=",completeType,"上一个完成的版本号 completeVersion =",completeVersion)
+
+                                //上一个升级完成之后如果版本号没有改变直接报错返回
+                                if completeType == 1 {
+
+                                    if completeVersion != firmware {
+                                        //关闭OTA重连
+                                        self.isSyncOtaData = false
+                                        //断开连接并打开正常的重连方法
+                                        if let peripheral = self.peripheral {
+                                            AntBleManager.shareInstance.disconnect(peripheral: peripheral)
+                                        }
+                                        self.ant_ReconnectTimer?.fireDate = .distantPast
+                                        success(.fail)
+                                        return
+                                    }
+
+                                }else if completeType == 2 {
+
+                                    if completeVersion != library {
+                                        //关闭OTA重连
+                                        self.isSyncOtaData = false
+                                        //断开连接并打开正常的重连方法
+                                        if let peripheral = self.peripheral {
+                                            AntBleManager.shareInstance.disconnect(peripheral: peripheral)
+                                        }
+                                        self.ant_ReconnectTimer?.fireDate = .distantPast
+                                        success(.fail)
+                                        return
+                                    }
+
+                                }else if completeType == 3 {
+
+                                    if completeVersion != firmware {
+                                        //关闭OTA重连
+                                        self.isSyncOtaData = false
+                                        //断开连接并打开正常的重连方法
+                                        if let peripheral = self.peripheral {
+                                            AntBleManager.shareInstance.disconnect(peripheral: peripheral)
+                                        }
+                                        self.ant_ReconnectTimer?.fireDate = .distantPast
+                                        success(.fail)
+                                        return
+                                    }
+
+                                }
+
+                                for i in 0..<dataArray.count {
+                                    let dataDic = dataArray[i]
+                                    let versionString = dataDic["version"] as! String
+                                    let type_int = dataDic["type"] as! Int
+
+                                    if type_int == 1 {
+
+                                        if firmware != versionString {
+                                            if let index = dataArray.firstIndex(where: { dic in
+                                                if let type = dic["type"] as? Int {
+                                                    return type == 1
+                                                }
+                                                return false
+                                            }) {
+                                                self.currentSyncOtaIndex = index
+                                            }
+                                            break
+                                        }
+
+                                    }
+                                    if type_int == 2 {
+                                        if library != versionString {
+                                            if let index = dataArray.firstIndex(where: { dic in
+                                                if let type = dic["type"] as? Int {
+                                                    return type == 2
+                                                }
+                                                return false
+                                            }) {
+                                                self.currentSyncOtaIndex = index
+                                            }
+                                            break
+                                        }
+                                    }
+                                    if type_int == 3 {
+                                        if font != versionString {
+                                            if let index = dataArray.firstIndex(where: { dic in
+                                                if let type = dic["type"] as? Int {
+                                                    return type == 3
+                                                }
+                                                return false
+                                            }) {
+                                                self.currentSyncOtaIndex = index
+                                            }
+                                            break
+                                        }
+                                    }
+                                }
+                                //只能放此处赋值，下面的方法会循环调用。如果下面方法优先调用了再断开重连，上一次成功的序号会改变导致获取错误
+                                self.lastCompleteOtaIndex = self.currentSyncOtaIndex
+                                self.serverOtaMethod(indexCount: self.currentSyncOtaIndex, dataArray: dataArray, progress: progress, success: success)
+                            }
+                        }
+                         */
+                    }
+                    //只能放此处赋值，下面的方法会循环调用。如果下面方法优先调用了再断开重连，上一次成功的序号会改变导致获取错误
+                    self.lastCompleteOtaIndex = -1
+                    self.serverOtaMethod(indexCount: 0, dataArray: dataArray, progress: progress, success: success)
+                    
+                }else{
+                    printLog("data错误 ->",dic["data"] as Any)
+                    success(.fail)
+                }
+
+            }else{
+                printLog("code != 200",dic["code"] as Any)
+                if code == 217 {
+                    success(.none)
+                }else{
+                    success(.fail)
+                }
+            }
+        }else{
+            printLog("code错误 ->",dic["code"] as Any)
+            success(.fail)
         }
     }
     
@@ -10398,6 +11275,9 @@ import JL_BLEKit
                                         if let imageUrl = item["imageUrl"] as? String {
                                             dialModel.dialImageUrl = imageUrl
                                         }
+                                        if let imageUrl = item["previewUrl"] as? String {
+                                            dialModel.dialPreviewUrl = imageUrl
+                                        }
                                         if let binUrl = item["binUrl"] as? String {
                                             dialModel.dialFileUrl = binUrl
                                         }
@@ -10483,6 +11363,9 @@ import JL_BLEKit
                                         }
                                         if let imageUrl = item["imageUrl"] as? String {
                                             dialModel.dialImageUrl = imageUrl
+                                        }
+                                        if let imageUrl = item["previewUrl"] as? String {
+                                            dialModel.dialPreviewUrl = imageUrl
                                         }
                                         if let binUrl = item["binUrl"] as? String {
                                             dialModel.dialFileUrl = binUrl

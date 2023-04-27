@@ -286,9 +286,8 @@ import zlib
             modelArray(peripheralArray)
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now()+DispatchTimeInterval.seconds(scanInterval)) {
-            self.stopScan()
-        }
+        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(stopScan), object: nil)
+        self.perform(#selector(stopScan), with: nil, afterDelay: TimeInterval(scanInterval))
         
     }
     
@@ -476,50 +475,48 @@ import zlib
                 
                 if let block = self.connectCompleteBlock {
                     //这里是升级过程中异常断开还保存未发完的ota数据，那么检测升级，拿到回调之后会继续升级
+                    //有升级也要优先发设备的uuid命令。不发会导致设备端bt连不上
                     if AntCommandModule.shareInstance.otaData != nil {
-                        AntCommandModule.shareInstance.checkUpgradeState { success, error in
+                        //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
+                        self.perform(#selector(self.functionListCommandNoSupport), with:nil, afterDelay: 10)
+                        AntCommandModule.shareInstance.getDeviceSupportList { model, error in
+                            NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(self.functionListCommandNoSupport), object: nil)
                             if error == .none {
-                                if success.keys.count > 0 {
-                                    
+                                printLog("连接成功")
+                                self.functionListModel = model
+                                if let _ = model?.functionList_addressBook {
+                                    //固件需要设备类型在uuid的命令之后，否则会出现蓝牙bt(通讯录)连接异常
+                                    AntCommandModule.shareInstance.setDeviceUUID { _ in
+                                    }
                                 }else{
-                                    printLog("没有升级")
-                                    AntCommandModule.shareInstance.otaData = nil
-                                    //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
-                                    self.perform(#selector(self.functionListCommandNoSupport), with:nil, afterDelay: 10)
-                                    AntCommandModule.shareInstance.getDeviceSupportList { model, error in
-                                        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(self.functionListCommandNoSupport), object: nil)
-                                        if error == .none {
-                                            printLog("连接成功")
-                                            self.functionListModel = model
-                                            if let _ = model?.functionList_addressBook {
-                                                //固件需要设备类型在uuid的命令之后，否则会出现蓝牙bt(通讯录)连接异常
-                                                AntCommandModule.shareInstance.setDeviceUUID { _ in
-//                                                    AntCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
-//                                                    }
-                                                }
-                                            }else{
-//                                                AntCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
-//                                                }
-                                            }
-                                            AntCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
-                                            }
-                                            AntCommandModule.shareInstance.getDeviceOtaVersionInfo { _, _ in
-                                            }
-                                            AntCommandModule.shareInstance.getMac { _, _ in
-                                            }
-                                            if model?.functionList_bind == true {
-                                                AntCommandModule.shareInstance.setBind { _ in
-                                                }
-                                            }
-                                            block(true)
-                                        }else{
-                                            printLog("连接成功")
-                                            block(false)
-                                        }
+                                }
+                                AntCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
+                                }
+                                AntCommandModule.shareInstance.getDeviceOtaVersionInfo { _, _ in
+                                }
+                                AntCommandModule.shareInstance.getMac { _, _ in
+                                }
+                                if model?.functionList_bind == true {
+                                    AntCommandModule.shareInstance.setBind { _ in
                                     }
                                 }
+                                AntCommandModule.shareInstance.checkUpgradeState { success, error in
+                                    if error == .none {
+                                        if success.keys.count > 0 {
+                                            
+                                        }else{
+                                            printLog("没有升级")
+                                            AntCommandModule.shareInstance.otaData = nil
+                                        }
+                                    }
+                                    block(true)
+                                }
+                            }else{
+                                printLog("连接成功")
+                                block(false)
                             }
                         }
+                        
                     }else{
                         //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
                         self.perform(#selector(self.functionListCommandNoSupport), with: nil, afterDelay: 10)
