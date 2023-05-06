@@ -3155,7 +3155,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             break
         case "恢复出厂并关机":
             self.logView.clearString()
-            self.logView.writeString(string: "重新启动")
+            self.logView.writeString(string: "恢复出厂并关机")
             
             AntCommandModule.shareInstance.setFactoryAndPowerOff { error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
