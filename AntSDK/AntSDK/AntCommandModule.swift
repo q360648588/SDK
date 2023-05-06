@@ -10466,6 +10466,9 @@ import CoreLocation
                     let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
                     return [UInt8](UnsafeBufferPointer.init(start: b, count: self.otaData!.count))
                 }
+                //只要是有过升级，就需要重新获取固件的升级版本信息。此处把之前获取的清除掉
+                self.otaVersionInfo = nil
+                self.receiveGetDeviceOtaVersionInfo = nil
                 self.dealUpgradeData(maxSingleCount: maxSingleCount, packageCount: packageCount, packageIndex: 0, val: otaVal,progress: progress, success: success)
             }
             
