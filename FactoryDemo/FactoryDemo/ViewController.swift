@@ -799,13 +799,34 @@ class ViewController: UIViewController {
         let result = userDefault.bool(forKey: PowerOffKey)
         
         if result {
-            AntCommandModule.shareInstance.setPowerTurnOff { error in
-                print("关机")
-                
-                self.stateString = "关机成功"
-                self.successCount += 1
-                self.totalCount += 1
-                self.singleProcessEndMethod()
+            if AntCommandModule.shareInstance.functionListModel?.functionList_newPortocol == true {
+                AntCommandModule.shareInstance.setFactoryAndPowerOff { error in
+                    
+                    if error == .none {
+                        self.stateString = "恢复出厂并关机成功"
+                        self.successCount += 1
+                        self.totalCount += 1
+                        self.singleProcessEndMethod()
+                    }else{
+                        AntCommandModule.shareInstance.setPowerTurnOff { error in
+                            print("关机")
+                            
+                            self.stateString = "关机成功"
+                            self.successCount += 1
+                            self.totalCount += 1
+                            self.singleProcessEndMethod()
+                        }
+                    }
+                }
+            }else{
+                AntCommandModule.shareInstance.setPowerTurnOff { error in
+                    print("关机")
+                    
+                    self.stateString = "关机成功"
+                    self.successCount += 1
+                    self.totalCount += 1
+                    self.singleProcessEndMethod()
+                }
             }
         }else{
             if let uuidString = AntCommandModule.shareInstance.peripheral?.identifier.uuidString {

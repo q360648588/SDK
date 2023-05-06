@@ -139,9 +139,9 @@ extension AntBleManager:CBCentralManagerDelegate {
     
     // MARK: - 扫描到蓝牙设备
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        printLog("\n--------------------------------------------------------------------------\n")
-        printLog("peripheral ->",peripheral,"\nadvertisementData ->",advertisementData)
-        printLog("\n--------------------------------------------------------------------------\n")
+//        printLog("\n--------------------------------------------------------------------------\n")
+//        printLog("peripheral ->",peripheral,"\nadvertisementData ->",advertisementData)
+//        printLog("\n--------------------------------------------------------------------------\n")
         if let block = self.bleCentralDiscoverBlock {
             block(central,peripheral,advertisementData,RSSI)
         }
