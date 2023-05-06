@@ -2769,6 +2769,12 @@ import CoreLocation
                                     }
                                 }
                                 
+                                if val[1] == 0x06 { //同步测量数据 0x06
+                                    if let block = self.receiveSetSyncMeasurementDataBlock {
+                                        self.parseSyncMeasurementData(val: newVal, success: block)
+                                    }
+                                }
+                                
                                 if val[1] == 0x04 {
                                     var currentIndex = 5
                                     while currentIndex < val.count - 2 {
@@ -2927,6 +2933,12 @@ import CoreLocation
                                     }
                                 }
                                 
+                                if val[1] == 0x06 { //同步测量数据 0x06
+                                    if let block = self.receiveSetSyncMeasurementDataBlock {
+                                        block(nil,.invalidLength)
+                                    }
+                                }
+                                
                                 if val[1] == 0x04 {
                                     if let block = self.receiveNewGetAlarmArrayBlock {
                                         block([],.invalidLength)
@@ -3065,6 +3077,12 @@ import CoreLocation
                             if val[1] == 0x05 { //同步数据id 0x05
                                 if let block = self.receiveNewSetSyncHealthDataBlock {
                                     self.parseSetNewSyncHealthData(val: Array(val[4..<(val.count-2)]), success: block)
+                                }
+                            }
+                            
+                            if val[1] == 0x06 { //同步测量数据 0x06
+                                if let block = self.receiveSetSyncMeasurementDataBlock {
+                                    self.parseSyncMeasurementData(val: Array(val[4..<(val.count-2)]), success: block)
                                 }
                             }
                             
@@ -3222,6 +3240,12 @@ import CoreLocation
                         }else{
                             if val[1] == 0x05 { //同步数据id 0x05
                                 if let block = self.receiveNewSetSyncHealthDataBlock {
+                                    block(nil,.invalidLength)
+                                }
+                            }
+                            
+                            if val[1] == 0x06 { //同步测量数据 0x06
+                                if let block = self.receiveSetSyncMeasurementDataBlock {
                                     block(nil,.invalidLength)
                                 }
                             }
@@ -4329,10 +4353,10 @@ import CoreLocation
             
             let product = (Int(val[5]) | Int(val[6]) << 8 )
             let project = (Int(val[7]) | Int(val[8]) << 8 )
-            let boot = String.init(format: "%d.%02d", val[9],val[10])
-            let firmware = String.init(format: "%d.%02d", val[11],val[12])
-            let library = String.init(format: "%d.%02d", val[13],val[14])
-            let font = String.init(format: "%d.%02d", val[15],val[16])
+            let boot = String.init(format: "%d.%d", val[9],val[10])
+            let firmware = String.init(format: "%d.%d", val[11],val[12])
+            let library = String.init(format: "%d.%d", val[13],val[14])
+            let font = String.init(format: "%d.%d", val[15],val[16])
             
             let string = String.init(format: "\nproduct:%d\nproject:%d\nfirmware:%@\nlibrary:%@\nfont:%@", product,project,firmware,library,font)
             AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
@@ -9741,7 +9765,7 @@ import CoreLocation
     /// 同步数据
     /// - Parameters:
     ///   - dataType: 1：心率，2：血氧，3：血压，4：血糖，5：压力，6.体温，7：心电，
-    ///   - measureType: 1：点击测量 ，2：全天测量
+    ///   - measureType: 1：全天测量 ，2：点击测量
     ///   - indexArray: <#indexArray description#>
     ///   - success: <#success description#>
     @objc public func setSyncMeasurementData(dataType:Int,measureType:Int,indexArray:[Int],success:@escaping((Any?,AntError) -> Void)) {
@@ -9803,13 +9827,13 @@ import CoreLocation
                 var valueModelArray:[AntMeasurementValueModel] = .init()
                 let modelVal:[UInt8] = Array(val[valIndex+countLength..<(valIndex+countLength+Int(length))])
                 
-                if type == 1 || type == 2 || type == 3 || type == 4 || type == 7 {
-                    if measureType == 1 {
+                if type == 1 || type == 2 || type == 5 || type == 4 || type == 7 {
+                    if measureType == 2 {
                         if modelVal.count % 3 == 0 {
                             for i in 0..<modelVal.count/3 {
                                 let valueModel = AntMeasurementValueModel()
-                                valueModel.time = String.init(format: "%02d:%02d", val[i*3],val[i*3+1])
-                                valueModel.value_2 = Int(val[i*3+2])
+                                valueModel.time = String.init(format: "%02d:%02d", val[valIndex+countLength+i*3],val[valIndex+countLength+i*3+1])
+                                valueModel.value_2 = Int(val[valIndex+countLength+i*3+2])
                                 valueModelArray.append(valueModel)
                             }
                         }else{
@@ -9817,23 +9841,23 @@ import CoreLocation
                             self.signalCommandSemaphore()
                             return
                         }
-                    }else if measureType == 2 {
+                    }else if measureType == 1 {
                         for i in 0..<modelVal.count {
                             let valueModel = AntMeasurementValueModel()
                             valueModel.time = String.init(format: "%02d:%02d", i * Int(allDayInterval) / 60 , i * Int(allDayInterval) % 60)
-                            valueModel.value_2 = Int(val[i])
+                            valueModel.value_2 = Int(val[valIndex+countLength+i])
                             valueModelArray.append(valueModel)
                         }
                     }
                     
-                }else if type == 5 {
-                    if measureType == 1 {
+                }else if type == 3 {
+                    if measureType == 2 {
                         if modelVal.count % 4 == 0 {
                             for i in 0..<modelVal.count/4 {
                                 let valueModel = AntMeasurementValueModel()
-                                valueModel.time = String.init(format: "%02d:%02d", val[i*4],val[i*4+1])
-                                valueModel.value_1 = Int(val[i*4+2])
-                                valueModel.value_2 = Int(val[i*4+3])
+                                valueModel.time = String.init(format: "%02d:%02d", val[valIndex+countLength+i*4],val[valIndex+countLength+i*4+1])
+                                valueModel.value_1 = Int(val[valIndex+countLength+i*4+2])
+                                valueModel.value_2 = Int(val[valIndex+countLength+i*4+3])
                                 valueModelArray.append(valueModel)
                             }
                         }else{
@@ -9841,24 +9865,24 @@ import CoreLocation
                             self.signalCommandSemaphore()
                             return
                         }
-                    }else if measureType == 2 {
+                    }else if measureType == 1 {
                         for i in 0..<modelVal.count/2 {
                             let valueModel = AntMeasurementValueModel()
                             valueModel.time = String.init(format: "%02d:%02d", i * Int(allDayInterval) / 60 , i * Int(allDayInterval) % 60)
-                            valueModel.value_1 = Int(val[i])
-                            valueModel.value_2 = Int(val[i+1])
+                            valueModel.value_1 = Int(val[valIndex+countLength+i])
+                            valueModel.value_2 = Int(val[valIndex+countLength+i+1])
                             valueModelArray.append(valueModel)
                         }
                     }
                     
                 }else if type == 6 {
-                    if measureType == 1 {
+                    if measureType == 2 {
                         if modelVal.count % 6 == 0 {
                             for i in 0..<modelVal.count/6 {
                                 let valueModel = AntMeasurementValueModel()
-                                valueModel.time = String.init(format: "%02d:%02d", val[i*6],val[i*6+1])
-                                valueModel.value_1 = (Int(val[i*6+2]) | Int(val[i*6+3]) << 8)
-                                valueModel.value_2 = (Int(val[i*6+4]) | Int(val[i*6+5]) << 8)
+                                valueModel.time = String.init(format: "%02d:%02d", val[valIndex+i*6],val[valIndex+countLength+i*6+1])
+                                valueModel.value_1 = (Int(val[valIndex+countLength+i*6+2]) | Int(val[valIndex+countLength+i*6+3]) << 8)
+                                valueModel.value_2 = (Int(val[valIndex+countLength+i*6+4]) | Int(val[valIndex+countLength+i*6+5]) << 8)
                                 valueModelArray.append(valueModel)
                             }
                         }else{
@@ -9866,11 +9890,11 @@ import CoreLocation
                             self.signalCommandSemaphore()
                             return
                         }
-                    }else if measureType == 2 {
+                    }else if measureType == 1 {
                         for i in 0..<modelVal.count/2 {
                             let valueModel = AntMeasurementValueModel()
                             valueModel.time = String.init(format: "%02d:%02d", i * Int(allDayInterval) / 60 , i * Int(allDayInterval) % 60)
-                            valueModel.value_2 = (Int(val[i*2]) | Int(val[i*2+1]) << 8)
+                            valueModel.value_2 = (Int(val[valIndex+countLength+i*2]) | Int(val[valIndex+countLength+i*2+1]) << 8)
                             valueModelArray.append(valueModel)
                         }
                     }

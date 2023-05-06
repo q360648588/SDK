@@ -346,6 +346,7 @@ class AntVC: UIViewController {
                 "0x00 同步计步数据",
                 "0x01",
                 "0x02 同步锻炼数据",
+                "同步测量数据",
             ],
             [
                 "0x85 同步数据",
@@ -3060,6 +3061,52 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 
             }
             
+            break
+            
+        case "同步测量数据":
+            let array = [
+                "1：心率，2：血氧，3：血压，4：血糖，5：压力，6.体温，7：心电",
+                "1：全天测量 ，2：点击测量",
+                "第x天(条) 10以内输入不间隔",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "同步数据")
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "同步计步数据", holderStringArray: array) {
+                
+            } okAction: { textArray in
+                let dataType = textArray[0]
+                let measureType = textArray[1]
+                let dayCount = textArray[2]
+                
+                let dayNumber:String = dayCount.components(separatedBy: .decimalDigits.inverted).joined()
+                var dayArray = [Int]()
+                for i in dayNumber {
+                    dayArray.append(Int(String(i)) ?? 0)
+                }
+                
+                AntCommandModule.shareInstance.setSyncMeasurementData(dataType: Int(dataType) ?? 1, measureType: Int(measureType) ?? 1, indexArray: dayArray) { success,error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        
+                        if let model:AntMeasurementModel = success as? AntMeasurementModel {
+                            let type = model.type
+                            let timeInterval = model.timeInterval
+                            let listModelArray = model.listArray
+                            
+                            print("listModelArray ->",listModelArray)
+                            self.logView.writeString(string: "类型:\(type)")
+                            self.logView.writeString(string: "间隔时长:\(timeInterval)")
+                            for item in listModelArray {
+                                let item:AntMeasurementValueModel = item
+                                self.logView.writeString(string: "历史数据 时间:\(item.time) value1:\(item.value_1),value2:\(item.value_2)\n")
+                            }
+                        }
+                        
+                    }
+                }
+            }
             break
             
         case "0x85 同步数据":
