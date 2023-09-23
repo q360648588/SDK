@@ -11420,16 +11420,16 @@ import CoreLocation
         var modelArray = [AntLedFunctionModel]()
 
         let modelCount = val[0]
-        var valIndex = 1
-        while valIndex < val.count {
+        var valIndex = 0
+        while valIndex+1 < val.count {
             let ledType = val[valIndex+1]
-            let colorType = val[valIndex+2]
+            let ledColor = val[valIndex+2]
             let timeLength = val[valIndex+3]
             let frequency = val[valIndex+4]
-            let string = String.init(format: "类型:%d,颜色:%d,持续时长:%d,闪烁频次:%d",ledType,colorType,timeLength,frequency)
+            let string = String.init(format: "类型:%d,颜色:%d,持续时长:%d,闪烁频次:%d",ledType,ledColor,timeLength,frequency)
             print("\(string)")
             AntSDKLog.writeStringToSDKLog(string: string)
-            let model = AntLedFunctionModel.init(dic: ["ledType":"\(ledType)","colorType":"\(colorType)","timeLength":timeLength,"frequency":frequency])
+            let model = AntLedFunctionModel.init(dic: ["ledType":Int(ledType),"ledColor":Int(ledColor),"timeLength":Int(timeLength),"frequency":Int(frequency)])
             modelArray.append(model)
             valIndex += 4
         }
@@ -11515,8 +11515,8 @@ import CoreLocation
         var modelArray = [AntMotorFunctionModel]()
 
         let modelCount = val[0]
-        var valIndex = 1
-        while valIndex < val.count {
+        var valIndex = 0
+        while valIndex+1 < val.count {
             let ledType = val[valIndex+1]
             let timeLength = val[valIndex+2]
             let frequency = val[valIndex+3]
@@ -11524,7 +11524,7 @@ import CoreLocation
             let string = String.init(format: "类型:%d,震动时长:%d,震动频次:%d,震动强度:%d",ledType,timeLength,frequency,level)
             print("\(string)")
             AntSDKLog.writeStringToSDKLog(string: string)
-            let model = AntMotorFunctionModel.init(dic: ["ledType":"\(ledType)","timeLength":timeLength,"frequency":frequency,"level":level])
+            let model = AntMotorFunctionModel.init(dic: ["ledType":Int(ledType),"timeLength":Int(timeLength),"frequency":Int(frequency),"level":Int(level)])
             modelArray.append(model)
             valIndex += 4
         }
