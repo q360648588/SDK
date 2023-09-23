@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		6730B32D2797B48500979375 /* AntNetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6730B32C2797B48500979375 /* AntNetworkManager.swift */; };
 		6746B8F629A479C400204DEC /* JL_BLEKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6746B8F529A479C300204DEC /* JL_BLEKit.framework */; };
-		67493F8A2692EE0E006AA314 /* AntCommandModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67493F892692EE0E006AA314 /* AntCommandModule.swift */; };
 		67661CD526291D120004B197 /* AntSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67661CCB26291D110004B197 /* AntSDK.framework */; };
 		67661CDA26291D120004B197 /* AntSDKTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661CD926291D120004B197 /* AntSDKTests.swift */; };
 		67661CDC26291D120004B197 /* AntSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 67661CCE26291D110004B197 /* AntSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -18,6 +17,7 @@
 		67661D7B262A7D7A0004B197 /* AntSDKLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661D7A262A7D7A0004B197 /* AntSDKLog.swift */; };
 		676D384526DE36C000471098 /* AntCrashHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 676D384426DE36C000471098 /* AntCrashHandler.swift */; };
 		67883F152826127800ADDE99 /* AntModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67883F142826127800ADDE99 /* AntModel.swift */; };
+		679FD5532A41525F00A32A54 /* AntCommandModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 679FD5522A41525F00A32A54 /* AntCommandModule.swift */; };
 		B24534B743CBAACD85D77CF5 /* Pods_AntSDK_AntSDKTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F452F712DD1771993F1A574C /* Pods_AntSDK_AntSDKTests.framework */; };
 		E88332DB316E822A0ADEEF8C /* Pods_AntSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 73083166F1E49523ED9D13D0 /* Pods_AntSDK.framework */; };
 /* End PBXBuildFile section */
@@ -35,7 +35,6 @@
 /* Begin PBXFileReference section */
 		6730B32C2797B48500979375 /* AntNetworkManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AntNetworkManager.swift; sourceTree = "<group>"; };
 		6746B8F529A479C300204DEC /* JL_BLEKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JL_BLEKit.framework; sourceTree = "<group>"; };
-		67493F892692EE0E006AA314 /* AntCommandModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntCommandModule.swift; sourceTree = "<group>"; };
 		67661CCB26291D110004B197 /* AntSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AntSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		67661CCE26291D110004B197 /* AntSDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AntSDK.h; sourceTree = "<group>"; };
 		67661CCF26291D110004B197 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -47,6 +46,7 @@
 		67661D7A262A7D7A0004B197 /* AntSDKLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntSDKLog.swift; sourceTree = "<group>"; };
 		676D384426DE36C000471098 /* AntCrashHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AntCrashHandler.swift; sourceTree = "<group>"; };
 		67883F142826127800ADDE99 /* AntModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntModel.swift; sourceTree = "<group>"; };
+		679FD5522A41525F00A32A54 /* AntCommandModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AntCommandModule.swift; sourceTree = "<group>"; };
 		73083166F1E49523ED9D13D0 /* Pods_AntSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AntSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		822D62160AB6F3E2B24B05B0 /* Pods-AntSDK.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AntSDK.debug.xcconfig"; path = "Target Support Files/Pods-AntSDK/Pods-AntSDK.debug.xcconfig"; sourceTree = "<group>"; };
 		863A6B1A307E4C8F99D2F103 /* Pods-AntSDK-AntSDKTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AntSDK-AntSDKTests.debug.xcconfig"; path = "Target Support Files/Pods-AntSDK-AntSDKTests/Pods-AntSDK-AntSDKTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -115,7 +115,7 @@
 				67661CE72629209A0004B197 /* AntBleManager.swift */,
 				67883F142826127800ADDE99 /* AntModel.swift */,
 				67661D4226296C700004B197 /* AntBaseModule.swift */,
-				67493F892692EE0E006AA314 /* AntCommandModule.swift */,
+				679FD5522A41525F00A32A54 /* AntCommandModule.swift */,
 				6730B32C2797B48500979375 /* AntNetworkManager.swift */,
 				67661D7A262A7D7A0004B197 /* AntSDKLog.swift */,
 				676D384426DE36C000471098 /* AntCrashHandler.swift */,
@@ -322,9 +322,9 @@
 				6730B32D2797B48500979375 /* AntNetworkManager.swift in Sources */,
 				67883F152826127800ADDE99 /* AntModel.swift in Sources */,
 				676D384526DE36C000471098 /* AntCrashHandler.swift in Sources */,
-				67493F8A2692EE0E006AA314 /* AntCommandModule.swift in Sources */,
 				67661D7B262A7D7A0004B197 /* AntSDKLog.swift in Sources */,
 				67661D4326296C700004B197 /* AntBaseModule.swift in Sources */,
+				679FD5532A41525F00A32A54 /* AntCommandModule.swift in Sources */,
 				67661CE82629209A0004B197 /* AntBleManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

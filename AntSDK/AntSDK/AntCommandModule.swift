@@ -106,7 +106,7 @@ import CoreLocation
     var receiveSetBindBlock:((AntError) -> Void)?
     var receiveSetUnbindBlock:((AntError) -> Void)?
     
-    var receiveGetNotificationRemindBlock:(([Int],AntError) -> Void)?
+    var receiveGetNotificationRemindBlock:(([Int],[Int],AntError) -> Void)?
     var receiveSetNotificationRemindBlock:((AntError) -> Void)?
     var receiveGetSedentaryBlock:((AntSedentaryModel?,AntError) -> Void)?
     var receiveSetSedentaryBlock:((AntError) -> Void)?
@@ -163,8 +163,19 @@ import CoreLocation
     var receiveSetSleepGoalBlock:((AntError) -> Void)?
     var receiveGetSleepGoalBlock:((Int,AntError) -> Void)?
     var receiveSetFactoryAndPowerOffBlock:((AntError) -> Void)?
-    var reportEnterOrExitCameraBlock:((Int,AntError) -> Void)?
-    //    var receive:((String) -> Void)?
+    var receiveReportEnterOrExitCameraBlock:((Int,AntError) -> Void)?
+    var receiveSetSosContactPersonBlock:((AntError) -> Void)?
+    var receiveGetSosContactPersonBlock:((AntAddressBookModel?,AntError) -> Void)?
+    var receiveCycleMeasurementParameters:((AntError) -> Void)?
+    var receiveGetWorshipStartTimeBlock:((String?,Int,AntError) -> Void)?
+    var receiveReportWorshipStartTime:((String?,Int,AntError) -> Void)?
+    var receiveSetTimeZoneBlock:((AntError) -> Void)?
+    var receiveGetAssistedPositioningStateBlock:((Int,AntError) -> Void)?
+    var receiveReportLocationInfo:((AntError) -> Void)?
+    var receiveSetLedSetupBlock:((AntError) -> Void)?
+    var receiveSetMotorShakeFunctionBlock:((AntError) -> Void)?
+    var receiveGetLedSetupBlock:(([AntLedFunctionModel],AntError) -> Void)?
+    var receiveGetMotorShakeFunctionBlock:(([AntMotorFunctionModel],AntError) -> Void)?
     
     
     var stepMaxData:Data?
@@ -1211,7 +1222,7 @@ import CoreLocation
                         }
                         //printLog("第\(#line)行" , "\(#function)")
                         self.signalCommandSemaphore()
-                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetNotificationRemind长度校验出错"))
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetCustonDialFrameSize长度校验出错"))
                     }
                 }
                 
@@ -1369,7 +1380,7 @@ import CoreLocation
                         
                     }else{
                         if let block = self.receiveGetNotificationRemindBlock {
-                            block([],.invalidLength)
+                            block([],[],.invalidLength)
                         }
                         //printLog("第\(#line)行" , "\(#function)")
                         self.signalCommandSemaphore()
@@ -2738,13 +2749,14 @@ import CoreLocation
                             return Data.init(bytes: byte, count: val.count-10)
                         })
                         
-                        if self.CRC16(val: Array(val[0..<val.count-2])) == crc16 {
+                        let testArray = Array(val[0..<val.count-2])
+                        if self.CRC16(val: testArray) == crc16 {
                             if self.newProtocalData == nil {
                                 self.newProtocalData = Data()
                             }
                             self.newProtocalData?.append(newData)
                         }else{
-
+                            print("testArray = \(testArray),count = \(testArray.count),crc16 = \(self.CRC16(val: testArray)),\(String.init(format: "%04x", self.CRC16(val: testArray)))")
                             let errorString = String.init(format: "第%d包crc16校验出错,app计算的:%02x,设备返回的:%02x", currentCount,self.CRC16(val: val),crc16)
                             print("errorString")
                             AntSDKLog.writeStringToSDKLog(string: String.init(format: errorString))
@@ -2800,6 +2812,31 @@ import CoreLocation
                                                 self.parseGetSleepGoal(val: newVal, success: block)
                                             }
                                             break
+                                        case 0x1a:
+                                            let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            if let block = self.receiveGetSosContactPersonBlock {
+                                                self.parseGetSosContactPerson(val: newVal, success: block)
+                                            }
+                                            break
+                                        case 0x1d:
+                                            let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            if let block = self.receiveGetWorshipStartTimeBlock {
+                                                self.parseGetWorshipStartTime(val: newVal, success: block)
+                                            }
+                                            break
+                                        case 0x1e:
+                                            let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            if let block = self.receiveGetLedSetupBlock {
+                                                self.parseGetLedSetup(val: newVal, success: block)
+                                            }
+                                            break
+                                        case 0x1f:
+                                            let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            if let block = self.receiveGetMotorShakeFunctionBlock {
+                                                self.parseGetMotorShakeFunction(val: newVal, success: block)
+                                            }
+                                            break
+                                            
                                         default:
                                             break
                                         }
@@ -2829,6 +2866,11 @@ import CoreLocation
                                                 self.parseNewProtocolUniversalResponse(result: result, success: block)
                                             }
                                             break
+                                        case 0x0f:
+                                            if let block = self.receiveSetTimeZoneBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
                                         case 0x18:
                                             if let block = self.receiveSetDoNotDisturbBlock {
                                                 self.parseNewProtocolUniversalResponse(result: result, success: block)
@@ -2839,6 +2881,27 @@ import CoreLocation
                                                 self.parseNewProtocolUniversalResponse(result: result, success: block)
                                             }
                                             break
+                                        case 0x1a:
+                                            if let block = self.receiveSetSosContactPersonBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x1b:
+                                            if let block = self.receiveCycleMeasurementParameters {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x1e:
+                                            if let block = self.receiveSetLedSetupBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x1f:
+                                            if let block = self.receiveSetMotorShakeFunctionBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                            
                                         default:
                                             break
                                         }
@@ -2886,7 +2949,7 @@ import CoreLocation
                                             break
                                         case 5:
 
-                                            if let block = self.reportEnterOrExitCameraBlock {
+                                            if let block = self.receiveReportEnterOrExitCameraBlock {
                                                 self.parseReportEnterOrExitCameraData(val: [result], success: block)
                                             }
 
@@ -2918,11 +2981,66 @@ import CoreLocation
                                                     self.parseReportDoNotDisturb(val: doNotDisturbVal, success: block)
                                                 }
                                                 break
+                                            case 0x1d:
+                                                let startIndex = Int(valIndex+countLength)
+                                                let endIndex = Int(valIndex+countLength+cmd_length)
+                                                let worshipVal = Array(newVal[startIndex..<endIndex])
+                                                if let block = self.receiveReportWorshipStartTime {
+                                                    self.parseReportWorshipStartTime(val: worshipVal, success: block)
+                                                }
+                                                break
                                             default:
                                                 break
                                             }
                                         }
                                         valIndex = (valIndex+countLength+Int(cmd_length))
+                                    }
+                                }
+                                
+                                if val[1] == 0x0b {
+                                    var count:Int = Int(newVal[0])
+                                    var valIndex:Int = 1
+                                    
+                                    while valIndex < newVal.count {
+                                        let cmd_id:Int = Int(newVal[valIndex])
+                                        let cmd_length:Int = 0
+                                        let countLength:Int = 1
+                                        if cmd_length > 0 {
+                                            switch cmd_id {
+                                            case 0x01:
+                                                if let block = self.receiveReportLocationInfo {
+                                                    self.parseReportLocationInfo(val: [], success: block)
+                                                }
+                                                break
+                                            
+                                            default:
+                                                break
+                                            }
+                                        }
+                                        valIndex = (valIndex+countLength+Int(cmd_length))
+                                    }
+                                }
+                                
+                                if val[1] == 0x0c {
+                                    
+                                    let resultArray = Array(val[4..<val.count-2])
+                                    var currentIndex = 1
+                                    while currentIndex < resultArray.count {
+                                        let cmd_id = Int(resultArray[currentIndex])
+                                        let result = resultArray[currentIndex+1]
+
+                                        switch cmd_id {
+                                        case 0x01:
+                                            
+                                            if let block = self.receiveGetAssistedPositioningStateBlock {
+                                                self.parseGetAssistedPositioningState(val: result, success: block)
+                                            }
+                                            
+                                            break
+                                        default:
+                                            break
+                                        }
+                                        currentIndex += 2
                                     }
                                 }
 
@@ -2949,6 +3067,18 @@ import CoreLocation
                                     if let block = self.receiveGetSleepGoalBlock {
                                         block(-1,.invalidLength)
                                     }
+                                    if let block = self.receiveGetSosContactPersonBlock {
+                                        block(nil,.invalidLength)
+                                    }
+                                    if let block = self.receiveGetWorshipStartTimeBlock {
+                                        block(nil,0,.invalidLength)
+                                    }
+                                    if let block = self.receiveGetLedSetupBlock {
+                                        block([],.invalidLength)
+                                    }
+                                    if let block = self.receiveGetMotorShakeFunctionBlock {
+                                        block([],.invalidLength)
+                                    }
                                 }
                                 
                                 if val[1] == 0x03 {
@@ -2972,6 +3102,11 @@ import CoreLocation
                                                 block(.invalidLength)
                                             }
                                             break
+                                        case 0x0f:
+                                            if let block = self.receiveSetTimeZoneBlock {
+                                                block(.invalidLength)
+                                            }
+                                            break
                                         case 0x18:
                                             if let block = self.receiveSetDoNotDisturbBlock {
                                                 block(.invalidLength)
@@ -2982,6 +3117,27 @@ import CoreLocation
                                                 block(.invalidLength)
                                             }
                                             break
+                                        case 0x1a:
+                                            if let block = self.receiveSetSosContactPersonBlock {
+                                                block(.invalidLength)
+                                            }
+                                            break
+                                        case 0x1b:
+                                            if let block = self.receiveCycleMeasurementParameters {
+                                                block(.invalidLength)
+                                            }
+                                            break
+                                        case 0x1e:
+                                            if let block = self.receiveSetLedSetupBlock {
+                                                block(.invalidLength)
+                                            }
+                                            break
+                                        case 0x1f:
+                                            if let block = self.receiveSetMotorShakeFunctionBlock {
+                                                block(.invalidLength)
+                                            }
+                                            break
+                                            
                                         default:
                                             break
                                         }
@@ -3028,7 +3184,7 @@ import CoreLocation
                                             break
                                         case 5:
 
-                                            if let block = self.reportEnterOrExitCameraBlock {
+                                            if let block = self.receiveReportEnterOrExitCameraBlock {
                                                 block(-1,.invalidLength)
                                             }
 
@@ -3057,11 +3213,39 @@ import CoreLocation
                                                     block(nil,.invalidLength)
                                                 }
                                                 break
+                                            case 0x1d:
+                                                if let block = self.receiveReportWorshipStartTime {
+                                                    block(nil,0,.invalidLength)
+                                                }
+                                                break
                                             default:
                                                 break
                                             }
                                         }
                                         valIndex = (valIndex+countLength+Int(cmd_length))
+                                    }
+                                }
+                                
+                                if val[1] == 0x0c {
+                                    
+                                    let resultArray = Array(val[4..<val.count-2])
+                                    var currentIndex = 1
+                                    while currentIndex < resultArray.count {
+                                        let cmd_id = Int(resultArray[currentIndex])
+                                        let result = resultArray[currentIndex+1]
+
+                                        switch cmd_id {
+                                        case 0x01:
+                                            
+                                            if let block = self.receiveGetAssistedPositioningStateBlock {
+                                                block(-1,.invalidLength)
+                                            }
+
+                                            break
+                                        default:
+                                            break
+                                        }
+                                        currentIndex += 2
                                     }
                                 }
 
@@ -3111,6 +3295,31 @@ import CoreLocation
                                             self.parseGetSleepGoal(val: newVal, success: block)
                                         }
                                         break
+                                    case 0x1a:
+                                        let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                        if let block = self.receiveGetSosContactPersonBlock {
+                                            self.parseGetSosContactPerson(val: newVal, success: block)
+                                        }
+                                        break
+                                    case 0x1d:
+                                        let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                        if let block = self.receiveGetWorshipStartTimeBlock {
+                                            self.parseGetWorshipStartTime(val: newVal, success: block)
+                                        }
+                                        break
+                                    case 0x1e:
+                                        let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                        if let block = self.receiveGetLedSetupBlock {
+                                            self.parseGetLedSetup(val: newVal, success: block)
+                                        }
+                                        break
+                                    case 0x1f:
+                                        let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                        if let block = self.receiveGetMotorShakeFunctionBlock {
+                                            self.parseGetMotorShakeFunction(val: newVal, success: block)
+                                        }
+                                        break
+                                        
                                     default:
                                         break
                                     }
@@ -3140,6 +3349,11 @@ import CoreLocation
                                             self.parseNewProtocolUniversalResponse(result: result, success: block)
                                         }
                                         break
+                                    case 0x0f:
+                                        if let block = self.receiveSetTimeZoneBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
                                     case 0x18:
                                         if let block = self.receiveSetDoNotDisturbBlock {
                                             self.parseNewProtocolUniversalResponse(result: result, success: block)
@@ -3150,6 +3364,27 @@ import CoreLocation
                                             self.parseNewProtocolUniversalResponse(result: result, success: block)
                                         }
                                         break
+                                    case 0x1a:
+                                        if let block = self.receiveSetSosContactPersonBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x1b:
+                                        if let block = self.receiveCycleMeasurementParameters {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x1e:
+                                        if let block = self.receiveSetLedSetupBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x1f:
+                                        if let block = self.receiveSetMotorShakeFunctionBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                        
                                     default:
                                         break
                                     }
@@ -3197,7 +3432,7 @@ import CoreLocation
                                         break
                                     case 5:
 
-                                        if let block = self.reportEnterOrExitCameraBlock {
+                                        if let block = self.receiveReportEnterOrExitCameraBlock {
                                             self.parseReportEnterOrExitCameraData(val: [result], success: block)
                                         }
 
@@ -3229,11 +3464,67 @@ import CoreLocation
                                                 self.parseReportDoNotDisturb(val: doNotDisturbVal, success: block)
                                             }
                                             break
+                                        case 0x1d:
+                                            let startIndex = Int(valIndex+countLength)
+                                            let endIndex = Int(valIndex+countLength+cmd_length)
+                                            let worshipVal = Array(newVal[startIndex..<endIndex])
+                                            if let block = self.receiveReportWorshipStartTime {
+                                                self.parseReportWorshipStartTime(val: worshipVal, success: block)
+                                            }
+                                            break
                                         default:
                                             break
                                         }
                                     }
                                     valIndex = (valIndex+countLength+Int(cmd_length))
+                                }
+                            }
+                            
+                            if val[1] == 0x0b {
+                                let newVal = Array(val[4..<val.count-2])
+                                var count:Int = Int(newVal[0])
+                                var valIndex:Int = 1
+                                
+                                while valIndex < newVal.count {
+                                    let cmd_id:Int = Int(newVal[valIndex])
+                                    let cmd_length:Int = 0
+                                    let countLength:Int = 1
+                                    if cmd_length > 0 {
+                                        switch cmd_id {
+                                        case 0x01:
+                                            if let block = self.receiveReportLocationInfo {
+                                                self.parseReportLocationInfo(val: [], success: block)
+                                            }
+                                            break
+                                        
+                                        default:
+                                            break
+                                        }
+                                    }
+                                    valIndex = (valIndex+countLength+Int(cmd_length))
+                                }
+                            }
+                            
+                            if val[1] == 0x0c {
+                                
+                                let resultArray = Array(val[4..<val.count-2])
+                                var currentIndex = 1
+                                while currentIndex < resultArray.count {
+                                    let cmd_id = Int(resultArray[currentIndex])
+                                    let result = resultArray[currentIndex+1]
+
+                                    switch cmd_id {
+                                    case 0x01:
+
+                                        if let block = self.receiveGetAssistedPositioningStateBlock {
+                                            self.parseGetAssistedPositioningState(val: result, success: block)
+                                        }
+                                        
+                                        break
+                                    default:
+                                        break
+                                    }
+                                    currentIndex += 2
                                 }
                             }
                             
@@ -3260,6 +3551,18 @@ import CoreLocation
                                 if let block = self.receiveGetSleepGoalBlock {
                                     block(-1,.invalidLength)
                                 }
+                                if let block = self.receiveGetSosContactPersonBlock {
+                                    block(nil,.invalidLength)
+                                }
+                                if let block = self.receiveGetWorshipStartTimeBlock {
+                                    block(nil,0,.invalidLength)
+                                }
+                                if let block = self.receiveGetLedSetupBlock {
+                                    block([],.invalidLength)
+                                }
+                                if let block = self.receiveGetMotorShakeFunctionBlock {
+                                    block([],.invalidLength)
+                                }
                             }
                             
                             if val[1] == 0x01 {
@@ -3283,6 +3586,11 @@ import CoreLocation
                                             block(.invalidLength)
                                         }
                                         break
+                                    case 0x0f:
+                                        if let block = self.receiveSetTimeZoneBlock {
+                                            block(.invalidLength)
+                                        }
+                                        break
                                     case 0x18:
                                         if let block = self.receiveSetDoNotDisturbBlock {
                                             block(.invalidLength)
@@ -3293,6 +3601,27 @@ import CoreLocation
                                             block(.invalidLength)
                                         }
                                         break
+                                    case 0x1a:
+                                        if let block = self.receiveSetSosContactPersonBlock {
+                                            block(.invalidLength)
+                                        }
+                                        break
+                                    case 0x1b:
+                                        if let block = self.receiveCycleMeasurementParameters {
+                                            block(.invalidLength)
+                                        }
+                                        break
+                                    case 0x1e:
+                                        if let block = self.receiveSetLedSetupBlock {
+                                            block(.invalidLength)
+                                        }
+                                        break
+                                    case 0x1f:
+                                        if let block = self.receiveSetMotorShakeFunctionBlock {
+                                            block(.invalidLength)
+                                        }
+                                        break
+                                        
                                     default:
                                         break
                                     }
@@ -3338,7 +3667,7 @@ import CoreLocation
                                     case 0:
                                         break
                                     case 5:
-                                        if let block = self.reportEnterOrExitCameraBlock {
+                                        if let block = self.receiveReportEnterOrExitCameraBlock {
                                             block(-1,.invalidLength)
                                         }
                                         break
@@ -3365,11 +3694,39 @@ import CoreLocation
                                                 block(nil,.invalidLength)
                                             }
                                             break
+                                        case 0x1d:
+                                            if let block = self.receiveReportWorshipStartTime {
+                                                block(nil,0,.invalidLength)
+                                            }
+                                            break
                                         default:
                                             break
                                         }
                                     }
                                     valIndex = (valIndex+countLength+Int(cmd_length))
+                                }
+                            }
+                            
+                            if val[1] == 0x0c {
+                                
+                                let resultArray = Array(val[4..<val.count-2])
+                                var currentIndex = 1
+                                while currentIndex < resultArray.count {
+                                    let cmd_id = Int(resultArray[currentIndex])
+                                    let result = resultArray[currentIndex+1]
+
+                                    switch cmd_id {
+                                    case 0x01:
+                                        
+                                        if let block = self.receiveGetAssistedPositioningStateBlock {
+                                            block(-1,.invalidLength)
+                                        }
+                                                                                
+                                        break
+                                    default:
+                                        break
+                                    }
+                                    currentIndex += 2
                                 }
                             }
                             
@@ -3805,7 +4162,7 @@ import CoreLocation
         }
         
         if let block = self.receiveGetNotificationRemindBlock {
-            block([],.disconnected)
+            block([],[],.disconnected)
             self.receiveGetNotificationRemindBlock = nil
         }
         
@@ -6139,7 +6496,7 @@ import CoreLocation
 
         printLog("imageFileData.count =",imageFileData.count)
 
-        let data = imageFileData//self.createSendImageFile(image: image)
+        let data = imageFileData
         
         let date = Date.init()
         let calendar = NSCalendar.current
@@ -6209,7 +6566,10 @@ import CoreLocation
         
         let date = Date.init()
         let calendar = NSCalendar.current
-        let year = calendar.component(.year, from: date)
+        var year = calendar.component(.year, from: date)
+        if year < 2000 {
+            year = 2022
+        }
         let month = calendar.component(.month, from: date)
         let day = calendar.component(.day, from: date)
         let hour = calendar.component(.hour, from: date)
@@ -6224,7 +6584,7 @@ import CoreLocation
         //固定数据  0xAA,0x55,0x01,0x05
         let otaHead:[UInt8] = [0xAA,0x55,0x01,0x05]
         //日期/时间  6字节；格式YY-MM-DD HH:MM:SS(BCD码)
-        let time:[UInt8] = [0x22,UInt8(month),UInt8(day),UInt8(hour),UInt8(minute),UInt8(second)]
+        let time:[UInt8] = [UInt8(year-2000),UInt8(month),UInt8(day),UInt8(hour),UInt8(minute),UInt8(second)]
         //压缩方式  1字节；0-无压缩 1-fastlz
         let type:UInt8 = 0
         //文件长度    4字节；未经过处理的原始文件长度
@@ -6815,7 +7175,7 @@ import CoreLocation
     
     // MARK: - 设备提醒 0x02
     // MARK: - 获取消息提醒 0x00
-    @objc public func getNotificationRemind(_ success:@escaping(([Int],AntError) -> Void)) {
+    @objc public func getNotificationRemind(_ success:@escaping(([Int],[Int],AntError) -> Void)) {
         
         var val:[UInt8] = [
             0x02,
@@ -6829,33 +7189,49 @@ import CoreLocation
         if state == .none {
             self.receiveGetNotificationRemindBlock = success
         }else{
-            success([],state)
+            success([],[],state)
         }
         
     }
     
-    private func parseGetNotificationRemind(val:[UInt8],success:@escaping(([Int],AntError) -> Void)) {
+    private func parseGetNotificationRemind(val:[UInt8],success:@escaping(([Int],[Int],AntError) -> Void)) {
         let state = String.init(format: "%02x", val[4])
         
         if val[4] == 1 {
             
-            let openSwitch = (Int(val[5]) | Int(val[6]) << 8)
-            let string = String.init(format: "%d",openSwitch)
-            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
-            let arr = self.getNotificationTypeArrayWithIntString(countString: "\(openSwitch)")
-            success(arr,.none)
-            
+            if val.count >= 11 {
+                let openSwitch = (Int(val[5]) | Int(val[6]) << 8)
+                let extensionSwitch = (Int(val[7]) | Int(val[8]) << 8 | Int(val[9]) << 16 | Int(val[10]) << 24)
+                let string = String.init(format: "默认推送:%d,拓展推送:%d",openSwitch,extensionSwitch)
+                AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
+                let arr = self.getNotificationTypeArrayWithIntString(countString: "\(openSwitch)")
+                let extensionArray = self.getNotificationExtensionTypeArrayWithIntString(countString: "\(extensionSwitch)")
+                success(arr,extensionArray,.none)
+            }else{
+                let openSwitch = (Int(val[5]) | Int(val[6]) << 8)
+                let string = String.init(format: "%d",openSwitch)
+                AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
+                let arr = self.getNotificationTypeArrayWithIntString(countString: "\(openSwitch)")
+                success(arr,[],.none)
+            }
+
         }else{
-            success([],.invalidState)
+            success([],[],.invalidState)
         }
         //printLog("第\(#line)行" , "\(#function)")
         self.signalCommandSemaphore()
     }
     
     // MARK: - 设置消息提醒 0x01
-    @objc public func setNotificationRemind(isOpen:String,success:@escaping((AntError) -> Void)) {
+    @objc public func setNotificationRemind(isOpen:String,extensionOpen:String,success:@escaping((AntError) -> Void)) {
         
-        let switchCount = UInt16(isOpen) ?? 0
+        var switchCount = UInt16(isOpen) ?? 0
+        if self.functionListModel?.functionDetail_notification?.isSupportExtensionNotification == true {
+            if switchCount >> 14 == 0 {
+                switchCount = switchCount + (1 << 14)
+            }
+        }
+        let extensionCount = UInt32(extensionOpen) ?? 0
         var val:[UInt8] = [
             0x02,
             0x01,
@@ -6864,6 +7240,25 @@ import CoreLocation
             UInt8(switchCount & 0xff),
             UInt8((switchCount >> 8) & 0xff)
         ]
+        
+        if extensionCount > 0 && self.functionListModel?.functionDetail_notification?.isSupportExtensionNotification == true {
+        val = [
+            0x02,
+            0x01,
+            0x06,
+            0x00,
+            UInt8(switchCount & 0xff),
+            UInt8((switchCount >> 8) & 0xff),
+            UInt8(extensionCount & 0xff),
+            UInt8((extensionCount >> 8) & 0xff),
+            UInt8((extensionCount >> 16) & 0xff),
+            UInt8((extensionCount >> 24) & 0xff),
+        ]
+        }else{
+            if self.functionListModel?.functionDetail_notification?.isSupportExtensionNotification == false {
+                print("功能列表不支持拓展消息开关")
+            }
+        }
         let data = Data.init(bytes: &val, count: val.count)
         
         let state = self.writeDataAndBackError(data: data)
@@ -6889,13 +7284,23 @@ import CoreLocation
         self.signalCommandSemaphore()
     }
     
-    @objc public func setNotificationRemindArray(array:[Int],success:@escaping((AntError) -> Void)) {
+    @objc public func setNotificationRemindArray(array:[Int],extensionArray:[Int],success:@escaping((AntError) -> Void)) {
         
         var switchCount = 0
         for i in stride(from: 0, to: array.count, by: 1) {
             switchCount += 1 << (array[i])
         }
+        if self.functionListModel?.functionDetail_notification?.isSupportExtensionNotification == true {
+            if switchCount >> 14 == 0 {
+                switchCount = switchCount + (1 << 14)
+            }
+        }
+        var extensionCount = 0
+        for i in stride(from: 0, to: extensionArray.count, by: 1) {
+            extensionCount += 1 << (extensionArray[i])
+        }
         printLog("switchCount =",switchCount)
+        printLog("extensionCount =",extensionCount)
         var val:[UInt8] = [
             0x02,
             0x01,
@@ -6904,6 +7309,24 @@ import CoreLocation
             UInt8(switchCount & 0xff),
             UInt8((switchCount >> 8) & 0xff)
         ]
+        if extensionCount > 0 && self.functionListModel?.functionDetail_notification?.isSupportExtensionNotification == true {
+        val = [
+            0x02,
+            0x01,
+            0x06,
+            0x00,
+            UInt8(switchCount & 0xff),
+            UInt8((switchCount >> 8) & 0xff),
+            UInt8(extensionCount & 0xff),
+            UInt8((extensionCount >> 8) & 0xff),
+            UInt8((extensionCount >> 16) & 0xff),
+            UInt8((extensionCount >> 24) & 0xff),
+        ]
+        }else{
+            if self.functionListModel?.functionDetail_notification?.isSupportExtensionNotification == false {
+                print("功能列表不支持拓展消息开关")
+            }
+        }
         let data = Data.init(bytes: &val, count: val.count)
         
         let state = self.writeDataAndBackError(data: data)
@@ -8110,6 +8533,229 @@ import CoreLocation
         self.signalCommandSemaphore()
     }
     
+    // MARK: - 设置朝拜闹钟
+    @objc public func setWorshipTime(_ modelArray:[AntWorshipTimeModel],progress:@escaping((Float) -> Void),success:@escaping((AntError) -> Void)){
+        
+        var worshipArray:[UInt8] = Array.init()
+        var headArray:[UInt8] = Array.init()
+         
+        let date = Date.init()
+        let calendar = NSCalendar.current
+        var year = calendar.component(.year, from: date)
+        if year < 2000 {
+            year = 2022
+        }
+        var month = calendar.component(.month, from: date)
+        var day = calendar.component(.day, from: date)
+        
+        //固定为 0xAA,0x55
+        let head:[UInt8] = [0xaa,0x55]
+        //日期/时间  6字节；格式YY-MM-DD HH:MM:SS(BCD码)  默认给的是此刻的时间，实际应该是发第一个model里面的时间
+        var time:[UInt8] = [UInt8(self.decimalToBcd(value: year-2000)),UInt8(self.decimalToBcd(value: month)),UInt8(self.decimalToBcd(value: day)),UInt8(0),UInt8(0),UInt8(0)]
+        //天总数 数组个数
+        let dayCount = [UInt8(modelArray.count & 0xff),UInt8((modelArray.count >> 8) & 0xff)]
+
+        var fileArray:[UInt8] = .init()
+        for i in 0..<modelArray.count {
+            let item = modelArray[i]
+            if i == 0 {
+                let formatter = DateFormatter.init()
+                formatter.dateFormat = "yyyy-MM-dd"
+                let firstDate = formatter.date(from: item.timeString) ?? Date()
+                year = calendar.component(.year, from: firstDate)
+                month = calendar.component(.month, from: firstDate)
+                day = calendar.component(.day, from: firstDate)
+                time[0] = UInt8(self.decimalToBcd(value: year-2000))
+                time[1] = UInt8(self.decimalToBcd(value: month))
+                time[2] = UInt8(self.decimalToBcd(value: day))
+            }
+            fileArray.append(UInt8(self.decimalToBcd(value: item.fajr/60)))
+            fileArray.append(UInt8(self.decimalToBcd(value: item.fajr%60)))
+            fileArray.append(UInt8(self.decimalToBcd(value: item.dhuhr/60)))
+            fileArray.append(UInt8(self.decimalToBcd(value: item.dhuhr%60)))
+            fileArray.append(UInt8(self.decimalToBcd(value: item.asr/60)))
+            fileArray.append(UInt8(self.decimalToBcd(value: item.asr%60)))
+            fileArray.append(UInt8(self.decimalToBcd(value: item.maghrib/60)))
+            fileArray.append(UInt8(self.decimalToBcd(value: item.maghrib%60)))
+            fileArray.append(UInt8(self.decimalToBcd(value: item.isha/60)))
+            fileArray.append(UInt8(self.decimalToBcd(value: item.isha%60)))
+        }
+        
+        // 文件长度 仅数据部分，不包含文件头
+        let fileLength = [UInt8(fileArray.count & 0xff),UInt8((fileArray.count >> 8) & 0xff),UInt8((fileArray.count >> 16) & 0xff),UInt8((fileArray.count >> 24) & 0xff)]
+        // 文件校验 仅数据部分，不包含文件头，CRC32 校验
+        let fileCrc32 = [UInt8(self.CRC32(val: fileArray) & 0xff),UInt8((self.CRC32(val: fileArray) >> 8) & 0xff),UInt8((self.CRC32(val: fileArray) >> 16) & 0xff),UInt8((self.CRC32(val: fileArray) >> 24) & 0xff)]
+        //预留 9byte
+        var arrLength_9:[UInt8] = Array.init()
+        for _ in 0..<9 {
+            arrLength_9.append(0)
+        }
+        //文件头校验 CRC32 校验
+        headArray.append(contentsOf: head)
+        headArray.append(0)//版本号，默认0 后续有需求再改此值
+        headArray.append(contentsOf: time)
+        headArray.append(contentsOf: dayCount)
+        headArray.append(contentsOf: fileLength)
+        headArray.append(contentsOf: fileCrc32)
+        headArray.append(contentsOf: arrLength_9)
+        
+        print("self.CRC32(val: headArray) = \(String.init(format: "%04x", self.CRC32(val: headArray)))")
+        print("headArray = \(headArray)")
+        let headArrayCrc32 = [UInt8(self.CRC32(val: headArray) & 0xff),UInt8((self.CRC32(val: headArray) >> 8) & 0xff),UInt8((self.CRC32(val: headArray) >> 16) & 0xff),UInt8((self.CRC32(val: headArray) >> 24) & 0xff)]
+        
+        worshipArray.append(contentsOf: headArray)
+        worshipArray.append(contentsOf: headArrayCrc32)
+        worshipArray.append(contentsOf: fileArray)
+        
+        let worshipData = Data.init(bytes: &worshipArray, count: worshipArray.count)
+        //print("worshipData = \(self.convertDataToHexStr(data: worshipData))")
+        self.setOtaStartUpgrade(type: 6, localFile: self.createSendOtaHead(type:6,data: worshipData), isContinue: false, progress: progress, success: success)
+    }
+    
+    // MARK: - 设置本地音乐文件
+    @objc public func setLocalMusicFile(_ fileNmae:String, localFile:Any,progress:@escaping((Float) -> Void),success:@escaping((AntError) -> Void)) {
+        var fileData:Data?
+        if localFile is String {
+            let file:String = localFile as! String
+            if file.hasPrefix("file://") {
+                guard let url = URL.init(string: file) else {
+                    //printLog("\(file) 格式错误")
+                    return
+                }
+                fileData = try? Data.init(contentsOf: url)
+            }else {
+                let url = URL.init(fileURLWithPath: file)
+                fileData = try? Data.init(contentsOf: url)
+            }
+        }
+        if localFile is URL {
+            let file:URL = localFile as! URL
+            fileData = try! Data.init(contentsOf: file)
+        }
+        if localFile is Data {
+            let file:Data = localFile as! Data
+            fileData = file
+        }
+        
+        if fileData == nil {
+            printLog("\(localFile) 获取的文件为空，请检查路径")
+            success(.notSupport)
+            return
+        }
+        guard let fileData = fileData else {return}
+        
+//        let val = data.withUnsafeBytes { (byte) -> [UInt8] in
+//            let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+//            return [UInt8](UnsafeBufferPointer.init(start: b, count: data.count))
+//        }
+        
+        var headArray:[UInt8] = Array.init()
+        
+        //固定为 0xAA,0x55
+        let head:[UInt8] = [0xaa,0x55]
+        //文件名
+        let fileNameData:Data = fileNmae.data(using: .utf8) ?? Data.init()
+        let fileNameArray:[UInt8] = fileNameData.withUnsafeBytes { (byte) -> [UInt8] in
+            let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+            return [UInt8](UnsafeBufferPointer.init(start: b, count: fileNameData.count))
+        }
+        //文件名长度
+        let fileNameLength:[UInt8] = [UInt8(fileNameArray.count)]
+        // 文件长度 仅数据部分，不包含文件头
+        let fileLength = [UInt8(fileData.count & 0xff),UInt8((fileData.count >> 8) & 0xff),UInt8((fileData.count >> 16) & 0xff),UInt8((fileData.count >> 24) & 0xff)]
+        // 文件校验 仅数据部分，不包含文件头，CRC32 校验
+        let fileCrc32 = [UInt8(self.CRC32(data: fileData) & 0xff),UInt8((self.CRC32(data: fileData) >> 8) & 0xff),UInt8((self.CRC32(data: fileData) >> 16) & 0xff),UInt8((self.CRC32(data: fileData) >> 24) & 0xff)]
+
+        //文件头校验 CRC32 校验
+        headArray.append(contentsOf: head)
+        headArray.append(0)//版本号，默认0 后续有需求再改此值
+        headArray.append(contentsOf: fileNameLength)
+        headArray.append(contentsOf: fileNameArray)
+        headArray.append(contentsOf: fileLength)
+        headArray.append(contentsOf: fileCrc32)
+        
+        let headArrayCrc32 = [UInt8(self.CRC32(val: headArray) & 0xff),UInt8((self.CRC32(val: headArray) >> 8) & 0xff),UInt8((self.CRC32(val: headArray) >> 16) & 0xff),UInt8((self.CRC32(val: headArray) >> 24) & 0xff)]
+        
+        let totalData = Data.init(bytes: &headArray, count: headArray.count) + Data.init(bytes: headArrayCrc32, count: headArrayCrc32.count) + fileData
+
+        let musicPath = NSHomeDirectory() + "/Documents/test_musicData.bin"
+        if FileManager.createFile(filePath: musicPath).isSuccess {
+            
+            FileManager.default.createFile(atPath: musicPath, contents: self.createSendOtaHead(type: 7 ,data: totalData), attributes: nil)
+        }
+        self.setOtaStartUpgrade(type: 7, localFile: self.createSendOtaHead(type: 7 ,data: totalData), isContinue: false, progress: progress, success: success)
+    }
+    
+    // MARK: - 拼接ota文件头部data
+    func createSendOtaHead(type:Int,data:Data) -> Data {
+        
+        let data = data
+        
+        let date = Date.init()
+        let calendar = NSCalendar.current
+        var year = calendar.component(.year, from: date)
+        if year < 2000 {
+            year = 2022
+        }
+        let month = calendar.component(.month, from: date)
+        let day = calendar.component(.day, from: date)
+        let hour = calendar.component(.hour, from: date)
+        let minute = calendar.component(.minute, from: date)
+        let second = calendar.component(.second, from: date)
+
+        var otaFileHeadData:[UInt8] = Array.init()
+        
+        let oldCount = AntCommandModule.shareInstance.CRC32(data: data)
+        let newCount = AntCommandModule.shareInstance.CRC32(data: data)
+        
+        //固定数据  0xAA,0x55,0x01,0x05
+        let otaHead:[UInt8] = [0xAA,0x55,0x01,UInt8(type)]
+        //日期/时间  6字节；格式YY-MM-DD HH:MM:SS(BCD码)
+        let time:[UInt8] = [UInt8(self.decimalToBcd(value: year-2000)),UInt8(self.decimalToBcd(value: month)),UInt8(self.decimalToBcd(value: day)),UInt8(self.decimalToBcd(value: hour)),UInt8(self.decimalToBcd(value: minute)),UInt8(self.decimalToBcd(value: second))]
+        //压缩方式  1字节；0-无压缩 1-fastlz
+        let type:UInt8 = 0
+        //文件长度    4字节；未经过处理的原始文件长度
+        let fileLength_old = [UInt8((data.count ) & 0xff),UInt8((data.count >> 8) & 0xff),UInt8((data.count >> 16) & 0xff),UInt8((data.count >> 24) & 0xff)]
+        //文件完整性校验    4字节；对整个原始文件进行校验；CRC-32 多项式：0x104C11DB7、初始值：0xFFFFFFFF、结果异或值：0xFFFFFFFF、输入反转：true、输出反转：true
+        let fileCrc32_old = [UInt8((oldCount) & 0xff),UInt8((oldCount >> 8) & 0xff),UInt8((oldCount >> 16) & 0xff),UInt8((oldCount >> 24) & 0xff)]
+        //文件长度    4字节；处理完之后的文件长度
+        let fileLength_new = [UInt8((data.count ) & 0xff),UInt8((data.count >> 8) & 0xff),UInt8((data.count >> 16) & 0xff),UInt8((data.count >> 24) & 0xff)]
+        //文件完整性校验    4字节；对整个处理完之后的文件进行校验；CRC-32 多项式：0x104C11DB7、初始值：0xFFFFFFFF、结果异或值：0xFFFFFFFF、输入反转：true、输出反转：true
+        let fileCrc32_new = [UInt8((newCount) & 0xff),UInt8((newCount >> 8) & 0xff),UInt8((newCount >> 16) & 0xff),UInt8((newCount >> 24) & 0xff)]
+        //固定数据    固定33个0xFF;
+        var arrLength_33:[UInt8] = Array.init()
+        for _ in 0..<33 {
+            arrLength_33.append(0xff)
+        }
+        //文件头完整性校验    4字节； CRC-32 多项式：0x104C11DB7、初始值：0xFFFFFFFF、结果异或值：0xFFFFFFFF、输入反转：true、输出反转：true
+        otaFileHeadData.append(contentsOf: otaHead)
+        otaFileHeadData.append(contentsOf: time)
+        otaFileHeadData.append(type)
+        otaFileHeadData.append(contentsOf: fileLength_old)
+        otaFileHeadData.append(contentsOf: fileCrc32_old)
+        otaFileHeadData.append(contentsOf: fileLength_new)
+        otaFileHeadData.append(contentsOf: fileCrc32_new)
+        otaFileHeadData.append(contentsOf: arrLength_33)
+
+        let headCrc32 = AntCommandModule.shareInstance.CRC32(val: otaFileHeadData)
+        let fileCrc32 = [UInt8((headCrc32) & 0xff),UInt8((headCrc32 >> 8) & 0xff),UInt8((headCrc32 >> 16) & 0xff),UInt8((headCrc32 >> 24) & 0xff)]
+        
+        otaFileHeadData.append(contentsOf: fileCrc32)
+        
+        var finalData = Data.init(bytes: &otaFileHeadData, count: otaFileHeadData.count)
+        finalData.append(data)
+        
+        let count = finalData.count/1024+((finalData.count%1024) != 0 ? 1:0)
+        var startCount = 0
+        for i in stride(from: 0, to: count, by: 1) {
+            let endCount = (i+1)*1024 < finalData.count ? (i+1)*1024 : finalData.count
+            let subData = finalData[startCount..<endCount]
+            //printLog("otaFile =",self.convertDataToHexStr(data: subData))
+            startCount = endCount
+        }
+        return finalData
+    }
+    
     // MARK: - 同步数据 0x03
     // MARK: - 同步健康数据 0x00
     @objc public func setSyncHealthData(type:String,dayCount:String,success:@escaping((Any?,AntError) -> Void)) {
@@ -8925,7 +9571,7 @@ import CoreLocation
     
     // MARK: - 设备上报进入/退出拍照 0进1退
     @objc public func reportEnterOrExitCamera(success:@escaping((Int,AntError) -> Void)) {
-        self.reportEnterOrExitCameraBlock = success
+        self.receiveReportEnterOrExitCameraBlock = success
     }
     
     private func parseReportEnterOrExitCameraData(val:[UInt8],success:@escaping((Int,AntError) -> Void)) {
@@ -9180,7 +9826,8 @@ import CoreLocation
                 ]
                 
                 let startIndex = packetCount*(maxMtuCount - 10)
-                let endIndex = (packetCount+1)*(maxMtuCount - 10) <= contentVal.count ? (packetCount+1)*(maxMtuCount - 10) : (contentVal.count - packetCount*(maxMtuCount - 10))
+                //print("(packetCount+1)*(maxMtuCount - 10) = \((packetCount+1)*(maxMtuCount - 10)),(startIndex + contentVal.count - packetCount*(maxMtuCount - 10)) = \((startIndex + contentVal.count - packetCount*(maxMtuCount - 10)))")
+                let endIndex = (packetCount+1)*(maxMtuCount - 10) <= contentVal.count ? (packetCount+1)*(maxMtuCount - 10) : (startIndex + contentVal.count - packetCount*(maxMtuCount - 10))
                 let subContentVal =  Array(contentVal[startIndex..<endIndex])
                                 
                 var val = headVal + packetVal + subContentVal
@@ -9301,6 +9948,10 @@ import CoreLocation
             success(nil,.fail)
             return
         }
+        var indexArray = indexArray
+        if indexArray.count == 0 {
+            indexArray = [0]
+        }
         var headVal:[UInt8] = [
             0xaa,
             0x85
@@ -9324,9 +9975,22 @@ import CoreLocation
     
     private func parseSetNewSyncHealthData(val:[UInt8],success:@escaping((Any?,AntError) -> Void)) {
 
+//        var str = "03020068 01ffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff  ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aa016801 ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff  ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff fd555555 55555555 555aa955 55555556 95555556 55555555 5555556a a5555555 95555555 55555555 55ffffff ffffffff  ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff"
+//        str = str.replacingOccurrences(of: " ", with: "")
+//
+//        var val = [UInt8]()
+//        for i in 0..<str.count/2 {
+//        let startIndex = str.index(str.startIndex,offsetBy: i*2)
+//        let endIndex = str.index(str.startIndex,offsetBy: (i+1)*2)
+//        let value = String.init(format: "%@", str.substring(with: (startIndex..<endIndex)))
+//        let intValue = self.hexStringToInt(from: value)
+//        val.append(UInt8(intValue))
+//        }
+        
         let valData = val.withUnsafeBufferPointer { (v) -> Data in
             return Data.init(buffer: v)
         }
+//        print("valArray = \(self.convertDataToHexStr(data: valData))")
 
         AntSDKLog.writeStringToSDKLog(string: String.init(format: "parseSetNewSyncHealthData待解析数据:\nlength = %d, bytes = %@",valData.count, self.convertDataToHexStr(data: valData)))
         var syncDic = [String:Any?]()
@@ -9343,10 +10007,16 @@ import CoreLocation
                 length = (Int(val[valIndex+1]) | Int(val[valIndex+2]) << 8)
                 countLength = 3
             }
+            if type == 4 {
+                if Int(val[valIndex+1]) == 255 {
+                    length = (Int(val[valIndex+2]) | Int(val[valIndex+3]) << 8 | Int(val[valIndex+4]) << 16 | Int(val[valIndex+5]) << 24)
+                    countLength = 6
+                }
+            }
             syncDic["\(number)"] = NSNull()
             if length > 0 {
                 let modelVal:[UInt8] = Array(val[valIndex+countLength..<(valIndex+countLength+Int(length))])
-                syncDic["\(number)"] = self.getNewProtocalHealthModel(type: Int(type), day: Int(number), val: modelVal)
+                syncDic["\(number)"] = self.getNewProtocalHealthModel(type: Int(type), day: Int(number), val: modelVal, isGpsLengthCheck: true)
             }
             valIndex = (valIndex+countLength+Int(length))
         }
@@ -9357,7 +10027,7 @@ import CoreLocation
         self.signalCommandSemaphore()
     }
     
-    func getNewProtocalHealthModel(type:Int,day:Int,val:[UInt8]) -> Any? {
+    func getNewProtocalHealthModel(type:Int,day:Int,val:[UInt8],isGpsLengthCheck:Bool? = false) -> Any? {
         var typeString = ""
         if type == 1 {
             
@@ -9660,7 +10330,9 @@ import CoreLocation
                 }
             }
             printLog("-------modelArray =",modelArray)
-            modelArray = newArray
+            if newArray.count > 0 {
+                modelArray = newArray
+            }
 
             //AntSDKLog.writeStringToSDKLog(string: "原始数据")
             //AntSDKLog.writeStringToSDKLog(string: "\(originalArray)")
@@ -9700,14 +10372,13 @@ import CoreLocation
                     let gpsInterval = Int(val[gpsStartIndex+2])
                     let gpsCount = (Int(val[gpsStartIndex+3]) | Int(val[gpsStartIndex+4]) << 8)
                     
-                    var locationStartIndex = 32+5
+                    var locationStartIndex = gpsStartIndex+5
                     let firstBasicBit = (0x01 << 31)
                     let firstBit = (0x01 << 15)
                     for i in 0..<gpsCount {
                         let timeOffsetInterval = (Int(val[locationStartIndex]) | Int(val[locationStartIndex+1]) << 8)
                         let timestamp = (timeformat.date(from: startTime)?.timeIntervalSince1970 ?? 0) + TimeInterval(timeOffsetInterval)
                         let timeDate = Date.init(timeIntervalSince1970:timestamp)
-                        print("gps timeDate = \(timeDate.timeIntervalSince1970),timeString = \(timeDate.conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss"))")
                         var basicLatitude = (Int(val[locationStartIndex+2]) | Int(val[locationStartIndex+3]) << 8 | Int(val[locationStartIndex+4]) << 16 | Int(val[locationStartIndex+5]) << 24)
                         if basicLatitude > firstBasicBit {
                             basicLatitude = -(basicLatitude - firstBasicBit)
@@ -9717,6 +10388,11 @@ import CoreLocation
                             basicLongitude = -(basicLongitude - firstBasicBit)
                         }
                         let locationCount = (Int(val[locationStartIndex+10]) | Int(val[locationStartIndex+11]) << 8)
+                        print("第\(i)组gps数据,个数为\(locationCount)")
+                        print("gps timeDate = \(timeDate.timeIntervalSince1970),timeString = \(timeDate.conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss"))")
+                        print("timeOffsetInterval = \(timeOffsetInterval)")
+                        print("basicLatitude = \(basicLatitude)")
+                        print("basicLongitude = \(basicLongitude)")
                         var singleGpsArray = [CLLocation]()
                         for j in 0..<locationCount {
                             var latitudeOffset = (Int(val[locationStartIndex+12+j*4+0]) | Int(val[locationStartIndex+12+j*4+1]) << 8)
@@ -9736,12 +10412,28 @@ import CoreLocation
                                 latitude = -(abs(basicLatitude) + latitudeOffset)
                             }
                             if basicLongitude > 0 {
-                                longitude = basicLongitude + latitudeOffset
+                                longitude = basicLongitude + longitudeOffset
                             }else{
-                                longitude = -(abs(basicLongitude) + latitudeOffset)
+                                longitude = -(abs(basicLongitude) + longitudeOffset)
                             }
-                            let locationModel = CLLocation.init(coordinate: CLLocationCoordinate2D.init(latitude: Double(latitude)/1000000.0, longitude: Double(longitude)/1000000.0), altitude: 0, horizontalAccuracy: kCLLocationAccuracyBest, verticalAccuracy: kCLLocationAccuracyBest, timestamp: timeDate)
-                            singleGpsArray.append(locationModel)
+                            let locationModel = CLLocation.init(coordinate: CLLocationCoordinate2D.init(latitude: Double(latitude)/1000000.0, longitude: Double(longitude)/1000000.0), altitude: 0, horizontalAccuracy: kCLLocationAccuracyBest, verticalAccuracy: kCLLocationAccuracyBest, timestamp: timeDate + TimeInterval(j*gpsInterval))
+                            //print("locationModel = \(locationModel)")
+//                            print("latitudeOffset = \(latitudeOffset)")
+//                            print("longitudeOffset = \(longitudeOffset)")
+                            print("latitude = \(latitude),longitude = \(longitude),timestamp = \((timeDate + TimeInterval(j*gpsInterval)).conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss"))")
+//                            if let lastModel:CLLocation = singleGpsArray.last {
+//                                if !(lastModel.coordinate.latitude == locationModel.coordinate.latitude && lastModel.coordinate.longitude == locationModel.coordinate.longitude) {
+////                                    print("latitudeOffset = \(latitudeOffset)")
+////                                    print("longitudeOffset = \(longitudeOffset)")
+////                                    print("latitude = \(latitude),longitude = \(longitude)")
+//                                    singleGpsArray.append(locationModel)
+//                                }
+//                            }else{
+//                                print("latitudeOffset = \(latitudeOffset)")
+//                                print("longitudeOffset = \(longitudeOffset)")
+//                                print("latitude = \(latitude),longitude = \(longitude)")
+                                singleGpsArray.append(locationModel)
+//                            }
                         }
                         gpsArray.append(singleGpsArray)
                         locationStartIndex = locationStartIndex+12+locationCount*4
@@ -9880,7 +10572,7 @@ import CoreLocation
                         if modelVal.count % 6 == 0 {
                             for i in 0..<modelVal.count/6 {
                                 let valueModel = AntMeasurementValueModel()
-                                valueModel.time = String.init(format: "%02d:%02d", val[valIndex+i*6],val[valIndex+countLength+i*6+1])
+                                valueModel.time = String.init(format: "%02d:%02d", val[valIndex+countLength+i*6],val[valIndex+countLength+i*6+1])
                                 valueModel.value_1 = (Int(val[valIndex+countLength+i*6+2]) | Int(val[valIndex+countLength+i*6+3]) << 8)
                                 valueModel.value_2 = (Int(val[valIndex+countLength+i*6+4]) | Int(val[valIndex+countLength+i*6+5]) << 8)
                                 valueModelArray.append(valueModel)
@@ -10200,7 +10892,653 @@ import CoreLocation
         //printLog("第\(#line)行" , "\(#function)")
         self.signalCommandSemaphore()
     }
+    
+    // MARK: - 设置sos联系人
+    @objc public func setSosContactPerson(model:AntAddressBookModel,success:@escaping((AntError) -> Void)) {
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。")
+            return
+        }
+
+        var headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 0x1a
+        
+        let nameData = model.name.data(using: .utf8) ?? .init()
+        let nameValArray = nameData.withUnsafeBytes { (byte) -> [UInt8] in
+            let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+            return [UInt8](UnsafeBufferPointer.init(start: b, count: nameData.count))
+        }
+        let phoneData = model.phoneNumber.data(using: .utf8) ?? .init()
+        let phoneValArray = phoneData.withUnsafeBytes { (byte) -> [UInt8] in
+            let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+            return [UInt8](UnsafeBufferPointer.init(start: b, count: phoneData.count))
+        }
+        //参数长度
+        let modelCount = 2 + nameValArray.count + phoneValArray.count
+        
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
+        ]
+        contentVal.append(UInt8(nameValArray.count))
+        contentVal.append(contentsOf: nameValArray)
+        contentVal.append(UInt8(phoneValArray.count))
+        contentVal.append(contentsOf: phoneValArray)
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetSosContactPersonBlock = success
+            }else{
+                success(error)
+            }
+        }
+    }
+    
+    // MARK: - 获取sos联系人
+    @objc public func getSosContactPerson(_ success:@escaping((AntAddressBookModel?,AntError) -> Void)) {
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。")
+            return
+        }
+
+        let headVal:[UInt8] = [
+            0xaa,
+            0x84
+        ]
+        
+        //参数id
+        let cmd_id = 0x1a
+        
+        let contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveGetSosContactPersonBlock = success
+            }else{
+                success(nil,error)
+            }
+        }
+    }
+    
+    private func parseGetSosContactPerson(val:[UInt8],success:@escaping((AntAddressBookModel?,AntError) -> Void)) {
+        
+        if true {
+            let currentIndex = 0
+            let nameLength = val[currentIndex]
+            let nameArray = Array(val[(currentIndex+1)..<(currentIndex+1+Int(nameLength))])
+            let numberLength = val[currentIndex+1+Int(nameLength)]
+            let numberArray = Array(val[(currentIndex+2+Int(nameLength))..<(currentIndex+2+Int(nameLength)+Int(numberLength))])
+
+            let model = AntAddressBookModel.init()
+            let nameData = nameArray.withUnsafeBufferPointer { (bytes) -> Data in
+                return Data.init(buffer: bytes)
+            }
+            if let str = String.init(data: nameData, encoding: .utf8) {
+                model.name = str
+            }
+
+            let numberData = numberArray.withUnsafeBufferPointer({ (bytes) -> Data in
+                return Data.init(buffer: bytes)
+            })
+
+            if let str = String.init(data: numberData, encoding: .utf8) {
+                model.phoneNumber = str
+            }
+
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "联系人:\(model.name),号码:\(model.phoneNumber)"))
+            success(model,.none)
             
+        }else{
+            success(nil,.invalidState)
+        }
+
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 设置周期测量参数
+    /// - Parameters:
+    ///   - type: 1：心率，2：血氧，3：血压，4：血糖，5：压力，6.体温，7：心电，
+    ///   - isOpen: 0：关 1：开
+    ///   - timeInterval: 开关为开必须>0
+    @objc public func setCycleMeasurementParameters(type:Int,isOpen:Int,timeInterval:Int,success:@escaping((AntError) -> Void)) {
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。")
+            return
+        }
+        var type = type
+        if type > UInt8.max || type < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            type = 0
+        }
+        var isOpen = isOpen
+        if isOpen > UInt8.max || isOpen < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            isOpen = 0
+        }
+        var timeInterval = timeInterval
+        if timeInterval > UInt16.max || timeInterval < UInt16.min {
+            print("输入参数超过范围,改为默认值0")
+            timeInterval = 0
+        }
+        var headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 0x1b
+        //参数长度
+        let modelCount = 4
+        
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
+            UInt8((type ) & 0xff),
+            UInt8((isOpen ) & 0xff),
+            UInt8((timeInterval ) & 0xff),
+            UInt8((timeInterval >> 8) & 0xff),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveCycleMeasurementParameters = success
+            }else{
+                success(error)
+            }
+        }
+    }
+            
+    // MARK: - 获取朝拜闹钟数据
+    @objc public func getWorshipStartTime(_ success:@escaping((_ timeString:String?,_ dayCount:Int,_ error:AntError) -> Void)) {
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。")
+            return
+        }
+
+        let headVal:[UInt8] = [
+            0xaa,
+            0x84
+        ]
+
+        //参数id
+        let cmd_id = 0x1d
+
+        let contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+        ]
+
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveGetWorshipStartTimeBlock = success
+            }else{
+                success(nil,0,error)
+            }
+        }
+    }
+
+    private func parseGetWorshipStartTime(val:[UInt8],success:@escaping((String?,Int,AntError) -> Void)) {
+
+        if val.count >= 8 {
+            let dayCount = (Int(val[0]) | Int(val[1]) << 8)
+            var timeString:String?
+
+            let year = val[2]
+            let month = val[3]
+            let day = val[4]
+            let hour = val[5]
+            let minute = val[6]
+            let second = val[7]
+
+            if year != 0xff && month != 0xff && day != 0xff && hour != 0xff && minute != 0xff && second != 0xff {
+                timeString = String.init(format: "%04d-%02d-%02d %02d:%02d:%02d", year,month,day,hour,minute,second)
+            }
+
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "朝拜天数:\(dayCount),开始时间:\(timeString ?? "无效时间")"))
+            success(timeString,dayCount,.none)
+
+        }else{
+            success(nil,0,.invalidState)
+        }
+
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 朝拜闹钟开始时间上报
+    @objc public func reportWorshipStartTime(success:@escaping((_ timeString:String?,_ dayCount:Int,_ error:AntError) -> Void)) {
+        self.receiveReportWorshipStartTime = success
+    }
+
+    private func parseReportWorshipStartTime(val:[UInt8],success:@escaping((String?,Int,AntError) -> Void)) {
+
+        if val.count >= 8 {
+            let dayCount = (Int(val[0]) | Int(val[1]) << 8)
+            var timeString:String?
+
+            let year = val[2]
+            let month = val[3]
+            let day = val[4]
+            let hour = val[5]
+            let minute = val[6]
+            let second = val[7]
+
+            if year != 0xff && month != 0xff && day != 0xff && hour != 0xff && minute != 0xff && second != 0xff {
+                timeString = String.init(format: "%04d-%02d-%02d %02d:%02d:%02d", year,month,day,hour,minute,second)
+            }
+
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "朝拜天数:\(dayCount),开始时间:\(timeString ?? "无效时间")"))
+            success(timeString,dayCount,.none)
+
+        }else{
+            success(nil,0,.invalidState)
+        }
+    }
+    
+    // MARK: - 设置时区
+    /// - Parameters:
+    ///   - timeZone: 0-12东区 13-24西区  （正数不变负数从13开始）
+    @objc public func setTimeZone(timeZone:Int = 0,success:@escaping((AntError) -> Void)) {
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。")
+            return
+        }
+        
+        var timeZone = timeZone
+        if timeZone < 0 || timeZone > 24{
+            print("输入参数超过范围,默认系统时区")
+            timeZone = 0
+        }
+        
+        if timeZone == 0 {
+            let systemZone = NSTimeZone.local.secondsFromGMT()
+            var deviceZone = systemZone / 3600
+            timeZone = deviceZone < 0 ? (-deviceZone + 12) : deviceZone
+            print("NSTimeZone = \(NSTimeZone.default),systemZone = \(systemZone)")
+            print("系统时区:\(deviceZone),参数时区:\(timeZone)")
+        }
+        
+        var headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 0x0F
+        //参数长度
+        let modelCount = 2
+        
+        var contentVal:[UInt8] = [
+            UInt8(timeZone)
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetTimeZoneBlock = success
+            }else{
+                success(error)
+            }
+        }
+        
+    }
+    
+    // MARK: - 设备状态查询
+    @objc public func getAssistedPositioningState(_ success:@escaping((Int,AntError) -> Void)) {
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。")
+            return
+        }
+
+        let headVal:[UInt8] = [
+            0xaa,
+            0x8c
+        ]
+        //参数个数
+        let idCount = 1
+        //设备状态ID 辅助定位
+        let stateId = 1
+        
+        let contentVal:[UInt8] = [
+            UInt8(idCount),
+            UInt8(stateId),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveGetAssistedPositioningStateBlock = success
+            }else{
+                success(-1,error)
+            }
+        }
+    }
+    
+    // MARK: - 上报请求定位信息
+    @objc public func reportLocationInfo(success:@escaping((_ error:AntError) -> Void)) {
+        self.receiveReportLocationInfo = success
+    }
+    
+    private func parseReportLocationInfo(val:[UInt8],success:@escaping((AntError) -> Void)) {
+        
+        success(.none)
+        AntSDKLog.writeStringToSDKLog(string: String.init(format: "请求定位信息"))
+        
+    }
+    
+    // MARK: - 设置定位信息
+    @objc public func setLocationInfo(localtion:CLLocation) {
+        
+        var headVal:[UInt8] = [
+            0xaa,
+            0x8B
+        ]
+        
+        //参数id
+        let cmd_id = 1
+        //参数长度
+        let modelCount = 12
+        
+        let latitude:Int = Int(localtion.coordinate.latitude * 1000000)
+        let longitude:Int = Int(localtion.coordinate.longitude * 1000000)
+        let direction:Int = Int(localtion.course)
+        let speed:Int = Int(localtion.speed * 100)
+        
+        var contentVal:[UInt8] = [
+            UInt8(cmd_id),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
+            UInt8((latitude ) & 0xff),
+            UInt8((latitude >> 8) & 0xff),
+            UInt8((latitude >> 16) & 0xff),
+            UInt8((latitude >> 24) & 0xff),
+            UInt8((longitude ) & 0xff),
+            UInt8((longitude >> 8) & 0xff),
+            UInt8((longitude >> 16) & 0xff),
+            UInt8((longitude >> 24) & 0xff),
+            UInt8((direction ) & 0xff),
+            UInt8((direction >> 8) & 0xff),
+            UInt8(speed / 100),
+            UInt8(speed % 100),
+        ]
+
+            var dataArray:[Data] = []
+            var firstBit:UInt8 = 0
+            var maxMtuCount = 0
+            if let model = self.functionListModel?.functionDetail_newPortocol {
+                if contentVal.count > model.maxMtuCount {
+                    firstBit = 128
+                }
+                maxMtuCount = model.maxMtuCount
+                headVal.append(UInt8((contentVal.count ) & 0xff))
+                headVal.append(UInt8((contentVal.count >> 8) & 0xff)+firstBit)
+            }
+            //判断是否要分包，分包的要再加总包数跟报序号
+            if firstBit > 0 {
+                var contentIndex = 0
+                var packetCount = 0
+                while contentIndex < contentVal.count {
+                    //分包添加总包数跟包序号
+                    let maxCount =  contentVal.count / (maxMtuCount - 10)
+                    let packetVal:[UInt8] = [
+                        UInt8((maxCount ) & 0xff),
+                        UInt8((maxCount >> 8) & 0xff),
+                        UInt8((packetCount ) & 0xff),
+                        UInt8((packetCount >> 8) & 0xff)
+                    ]
+                    
+                    let startIndex = packetCount*(maxMtuCount - 10)
+                    //print("(packetCount+1)*(maxMtuCount - 10) = \((packetCount+1)*(maxMtuCount - 10)),(startIndex + contentVal.count - packetCount*(maxMtuCount - 10)) = \((startIndex + contentVal.count - packetCount*(maxMtuCount - 10)))")
+                    let endIndex = (packetCount+1)*(maxMtuCount - 10) <= contentVal.count ? (packetCount+1)*(maxMtuCount - 10) : (startIndex + contentVal.count - packetCount*(maxMtuCount - 10))
+                    let subContentVal =  Array(contentVal[startIndex..<endIndex])
+                                    
+                    var val = headVal + packetVal + subContentVal
+                    
+                    let check = CRC16(val: val)
+                    let checkVal = [UInt8((check ) & 0xff),UInt8((check >> 8) & 0xff)]
+                    
+                    val += checkVal
+                    
+                    let data = Data.init(bytes: &val, count: val.count)
+                    dataArray.append(data)
+                    
+                    packetCount += 1
+                    contentIndex = endIndex
+                }
+                
+            }else{
+                var val = headVal + contentVal
+                let check = CRC16(val: val)
+                let checkVal = [UInt8((check ) & 0xff),UInt8((check >> 8) & 0xff)]
+                
+                val += checkVal
+                
+                let data = Data.init(bytes: &val, count: val.count)
+                dataArray.append(data)
+            }
+            
+            
+            if let data = dataArray.first {
+                self.writeData(data: data)
+            }
+
+    }
+    
+    private func parseGetAssistedPositioningState(val:UInt8,success:@escaping((Int,AntError) -> Void)) {
+        
+        let state = val
+
+        AntSDKLog.writeStringToSDKLog(string: String.init(format: "辅助定位:\(state == 0 ? "无效":"有效")"))
+        success(Int(state),.none)
+
+    }
+    
+    // MARK: - LED灯功能设置
+    @objc public func setLedSetup(modelArray:[AntLedFunctionModel],success:@escaping((AntError) -> Void)) {
+
+        var headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 0x1E
+        //参数长度
+        let modelCount = modelArray.count * 4 + 1//功能项列表+总数
+        
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
+            UInt8(modelArray.count)
+        ]
+        for item in modelArray {
+            contentVal.append(UInt8(bitPattern: Int8(item.ledType.rawValue)))
+            contentVal.append(UInt8(bitPattern: Int8(item.ledColor)))
+            contentVal.append(UInt8(bitPattern: Int8(item.timeLength)))
+            contentVal.append(UInt8(bitPattern: Int8(item.frequency)))
+        }
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetLedSetupBlock = success
+            }else{
+                success(error)
+            }
+        }
+    }
+    
+    // MARK: - 获取led功能灯
+    @objc public func getLedSetup(_ success:@escaping(([AntLedFunctionModel],AntError) -> Void)) {
+        let headVal:[UInt8] = [
+            0xaa,
+            0x84
+        ]
+        
+        //参数id
+        let cmd_id = 0x1e
+        
+        let contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveGetLedSetupBlock = success
+            }else{
+                success([],error)
+            }
+        }
+    }
+    
+    private func parseGetLedSetup(val:[UInt8],success:@escaping(([AntLedFunctionModel],AntError) -> Void)) {
+        
+        let valData = val.withUnsafeBufferPointer { (v) -> Data in
+            return Data.init(buffer: v)
+        }
+
+        AntSDKLog.writeStringToSDKLog(string: String.init(format: "parseGetLedSetup待解析数据:\nlength = %d, bytes = %@",valData.count, self.convertDataToHexStr(data: valData)))
+        var modelArray = [AntLedFunctionModel]()
+
+        let modelCount = val[0]
+        var valIndex = 1
+        while valIndex < val.count {
+            let ledType = val[valIndex+1]
+            let colorType = val[valIndex+2]
+            let timeLength = val[valIndex+3]
+            let frequency = val[valIndex+4]
+            let string = String.init(format: "类型:%d,颜色:%d,持续时长:%d,闪烁频次:%d",ledType,colorType,timeLength,frequency)
+            print("\(string)")
+            AntSDKLog.writeStringToSDKLog(string: string)
+            let model = AntLedFunctionModel.init(dic: ["ledType":"\(ledType)","colorType":"\(colorType)","timeLength":timeLength,"frequency":frequency])
+            modelArray.append(model)
+            valIndex += 4
+        }
+        if modelCount == modelArray.count {
+            success(modelArray,.none)
+        }else{
+            print("获取led灯功能个数不一致,返回失败")
+            AntSDKLog.writeStringToSDKLog(string: "获取led灯功能个数不一致,返回失败")
+            success([],.fail)
+        }
+        
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 马达震动功能设置
+    @objc public func setMotorShakeFunction(modelArray:[AntMotorFunctionModel],success:@escaping((AntError) -> Void)) {
+
+        var headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 0x1F
+        //参数长度
+        let modelCount = modelArray.count * 4 + 1//功能项列表+总数
+        
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
+            UInt8(modelArray.count)
+        ]
+        for item in modelArray {
+            contentVal.append(UInt8(bitPattern: Int8(item.ledType.rawValue)))
+            contentVal.append(UInt8(bitPattern: Int8(item.timeLength)))
+            contentVal.append(UInt8(bitPattern: Int8(item.frequency)))
+            contentVal.append(UInt8(bitPattern: Int8(item.level)))
+        }
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetMotorShakeFunctionBlock = success
+            }else{
+                success(error)
+            }
+        }
+    }
+    
+    // MARK: - 获取马达功能
+    @objc public func getMotorShakeFunction(_ success:@escaping(([AntMotorFunctionModel],AntError) -> Void)) {
+        let headVal:[UInt8] = [
+            0xaa,
+            0x84
+        ]
+        
+        //参数id
+        let cmd_id = 0x1f
+        
+        let contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveGetMotorShakeFunctionBlock = success
+            }else{
+                success([],error)
+            }
+        }
+    }
+    private func parseGetMotorShakeFunction(val:[UInt8],success:@escaping(([AntMotorFunctionModel],AntError) -> Void)) {
+        
+        let valData = val.withUnsafeBufferPointer { (v) -> Data in
+            return Data.init(buffer: v)
+        }
+
+        AntSDKLog.writeStringToSDKLog(string: String.init(format: "parseGetLedSetup待解析数据:\nlength = %d, bytes = %@",valData.count, self.convertDataToHexStr(data: valData)))
+        var modelArray = [AntMotorFunctionModel]()
+
+        let modelCount = val[0]
+        var valIndex = 1
+        while valIndex < val.count {
+            let ledType = val[valIndex+1]
+            let timeLength = val[valIndex+2]
+            let frequency = val[valIndex+3]
+            let level = val[valIndex+4]
+            let string = String.init(format: "类型:%d,震动时长:%d,震动频次:%d,震动强度:%d",ledType,timeLength,frequency,level)
+            print("\(string)")
+            AntSDKLog.writeStringToSDKLog(string: string)
+            let model = AntMotorFunctionModel.init(dic: ["ledType":"\(ledType)","timeLength":timeLength,"frequency":frequency,"level":level])
+            modelArray.append(model)
+            valIndex += 4
+        }
+        if modelCount == modelArray.count {
+            success(modelArray,.none)
+        }else{
+            print("获取马达震动功能个数不一致,返回失败")
+            AntSDKLog.writeStringToSDKLog(string: "获取马达震动功能个数不一致,返回失败")
+            success([],.fail)
+        }
+        
+        self.signalCommandSemaphore()
+    }
+
     // MARK: - ota升级
     @objc public func setOtaStartUpgrade(type:Int,localFile:Any,isContinue:Bool,progress:@escaping((Float) -> Void),success:@escaping((AntError) -> Void)) {
         var type = type
@@ -11228,6 +12566,8 @@ import CoreLocation
                             if let dataDic:[String:Any] = dic["data"] as? [String:Any] {
                                 success(dataDic,.none)
                             }else{
+                                print("\(type(of: dic["data"])),\(dic["data"] is [String:Any])")
+                                print("\(dic["data"])")
                                 printLog("data错误 ->",dic["data"] as Any)
                                 success(nil,.fail)
                             }

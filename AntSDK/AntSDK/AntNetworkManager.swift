@@ -1,6 +1,6 @@
 //
 //  NetworkManager.swift
-//  HeroFit
+//  RUMI
 //
 //  Created by 猜猜我是谁 on 2020/11/23.
 //  Copyright © 2020 猜猜我是谁. All rights reserved.
@@ -11,7 +11,7 @@ import Alamofire
 
 class AntNetworkManager: NSObject {
     
-    let basicUrl = "http://www.zhenyiwulian.com"
+    let basicUrl = "http://www.zhenyiwulian.com"//"https://zmoofit-api.zhenyiwulian.com"//
 //    let basicUrl = "http://192.168.1.21:8080"
     
     public static let shareInstance = AntNetworkManager()

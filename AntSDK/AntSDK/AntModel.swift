@@ -117,6 +117,9 @@ import CoreLocation
     @objc public private(set) var functionList_pressure = false
     @objc public private(set) var functionList_electrocardiogram = false
     @objc public private(set) var functionList_bodyTemperature = false
+    @objc public private(set) var functionList_sosContactPerson = false
+    @objc public private(set) var functionList_worshipAlarm = false
+    @objc public private(set) var functionList_localPlay = false
     
     @objc public private(set) var functionDetail_exercise:AntFunctionModel_exercise?
     @objc public private(set) var functionDetail_notification:AntFunctionModel_notification?
@@ -139,6 +142,7 @@ import CoreLocation
     @objc public private(set) var functionDetail_pressure:AntFunctionModel_supportMeasurementDataTypeModel?
     @objc public private(set) var functionDetail_electrocardiogram:AntFunctionModel_supportMeasurementDataTypeModel?
     @objc public private(set) var functionDetail_bodyTemperature:AntFunctionModel_supportMeasurementDataTypeModel?
+    @objc public private(set) var functionDetail_localPlay:AntFunctionModel_supportMusicFileTypeModel?
     
     init(val:[UInt8]) {
         
@@ -172,6 +176,7 @@ import CoreLocation
         printLog("dealDetailFunction index =\(index)")
         if index >= val.count {
             printLog("dealDetailFunction 已全部处理完毕")
+            printLog("\(self.showAllSupportFunctionLog())")
             AntSDKLog.writeStringToSDKLog(string: self.showAllSupportFunctionLog())
         }else{
             //一个子功能块至少有3个byte，少于就会异常，直接报错
@@ -321,6 +326,9 @@ import CoreLocation
             case 49:
                 self.functionDetail_bodyTemperature = AntFunctionModel_supportMeasurementDataTypeModel(val: functionVal)
                 break
+            case 52:
+                self.functionDetail_localPlay = AntFunctionModel_supportMusicFileTypeModel(val: functionVal)
+                break
             default:
                 break
             }
@@ -435,6 +443,12 @@ import CoreLocation
             case 48:self.functionList_electrocardiogram = state == 0 ? false:true
                 break
             case 49:self.functionList_bodyTemperature = state == 0 ? false:true
+                break
+            case 50:self.functionList_sosContactPerson = state == 0 ? false:true
+                break
+            case 51:self.functionList_worshipAlarm = state == 0 ? false:true
+                break
+            case 52:self.functionList_localPlay = state == 0 ? false:true
                 break
             default:
                 break
@@ -600,6 +614,66 @@ import CoreLocation
                 if model.isSupportSnapchat {
                     log += "\n      Snapchat / isSupportSnapchat"
                 }
+                if model.isSupportExtensionNotification {
+                    log += "\n      拓展推送 / isSupportExtensionNotification"
+                }
+                if model.isSupportAlipay {
+                    log += "\n      支付宝 / isSupportAlipay"
+                }
+                if model.isSupportTaoBao {
+                    log += "\n      淘宝 / isSupportTaoBao"
+                }
+                if model.isSupportDouYin {
+                    log += "\n      抖音 / isSupportDouYin"
+                }
+                if model.isSupportDingDing {
+                    log += "\n      钉钉 / isSupportDingDing"
+                }
+                if model.isSupportJingDong {
+                    log += "\n      京东 / isSupportJingDong"
+                }
+                if model.isSupportGmail {
+                    log += "\n      Gmail / isSupportGmail"
+                }
+                if model.isSupportViber {
+                    log += "\n      Viber / isSupportViber"
+                }
+                if model.isSupportYouTube {
+                    log += "\n      YouTube / isSupportYouTube"
+                }
+                if model.isSupportKakaoTalk {
+                    log += "\n      KakaoTalk / isSupportKakaoTalk"
+                }
+                if model.isSupportTelegram {
+                    log += "\n      Telegram / isSupportTelegram"
+                }
+                if model.isSupportHangouts {
+                    log += "\n      Hangouts / isSupportHangouts"
+                }
+                if model.isSupportVkontakte {
+                    log += "\n      Vkontakte / isSupportVkontakte"
+                }
+                if model.isSupportFlickr {
+                    log += "\n      Flickr / isSupportFlickr"
+                }
+                if model.isSupportTumblr {
+                    log += "\n      Tumblr / isSupportTumblr"
+                }
+                if model.isSupportPinterest {
+                    log += "\n      Pinterest / isSupportPinterest"
+                }
+                if model.isSupportTruecaller {
+                    log += "\n      Truecaller / isSupportTruecaller"
+                }
+                if model.isSupportPaytm {
+                    log += "\n      Paytm / isSupportPaytm"
+                }
+                if model.isSupportZalo {
+                    log += "\n      Zalo / isSupportZalo"
+                }
+                if model.isSupportMicrosoftTeams {
+                    log += "\n      MicrosoftTeams / isSupportMicrosoftTeams"
+                }
             }
         }
         if self.functionList_metricSystem {
@@ -707,6 +781,69 @@ import CoreLocation
                 if model.isSupportThai {
                     log += "\n      泰语 / isSupportThai"
                 }
+                if model.isSupportDutch {
+                    log += "\n      荷兰语 / isSupportDutch"
+                }
+                if model.isSupportTurkish {
+                    log += "\n      土耳其 / isSupportTurkish"
+                }
+                if model.isSupportRomanian {
+                    log += "\n      罗马尼亚 / isSupportRomanian"
+                }
+                if model.isSupportDanish {
+                    log += "\n      丹麦语 / isSupportDanish"
+                }
+                if model.isSupportSwedish {
+                    log += "\n      瑞典语 / isSupportSwedish"
+                }
+                if model.isSupportCzech {
+                    log += "\n      捷克语 / isSupportCzech"
+                }
+                if model.isSupportBengali {
+                    log += "\n      孟加拉语 / isSupportBengali"
+                }
+                if model.isSupportPersian {
+                    log += "\n      波斯语 / isSupportPersian"
+                }
+                if model.isSupportHebrew {
+                    log += "\n      希伯来语 / isSupportHebrew"
+                }
+                if model.isSupportMalay {
+                    log += "\n      马来语 / isSupportMalay"
+                }
+                if model.isSupportSlovak {
+                    log += "\n      斯洛伐克语 / isSupportSlovak"
+                }
+                if model.isSupportXhosa {
+                    log += "\n      科萨语 / isSupportXhosa"
+                }
+                if model.isSupportSlovenian {
+                    log += "\n      斯洛文尼亚语 / isSupportSlovenian"
+                }
+                if model.isSupportHungarian {
+                    log += "\n      匈牙利语 / isSupportHungarian"
+                }
+                if model.isSupportLithuanian {
+                    log += "\n      立陶宛语 / isSupportLithuanian"
+                }
+                if model.isSupportUrdu {
+                    log += "\n      乌尔都语 / isSupportUrdu"
+                }
+                if model.isSupportBulgarian {
+                    log += "\n      保加利亚语 / isSupportBulgarian"
+                }
+                if model.isSupportCroatian {
+                    log += "\n      克罗地亚语 / isSupportCroatian"
+                }
+                if model.isSupportLatvian {
+                    log += "\n      拉脱维亚语 / isSupportLatvian"
+                }
+                if model.isSupportEstonian {
+                    log += "\n      爱沙尼亚语 / isSupportEstonian"
+                }
+                if model.isSupportKhmer {
+                    log += "\n      高棉语 / isSupportKhmer"
+                }
             }
         }
         if self.functionList_screenConreol {
@@ -797,6 +934,12 @@ import CoreLocation
                 log += "\n      倒计时时长 \(model.countDownTime) 秒"
             }
         }
+        if self.functionList_newPortocol {
+            log += "\n支持新协议"
+            if let model = self.functionDetail_newPortocol {
+                log += "\n      最大mtu长度:\(model.maxMtuCount)"
+            }
+        }
         if self.functionList_lowBattery {
             log += "\n低电量提醒"
         }
@@ -855,6 +998,23 @@ import CoreLocation
                 log += "\n      \(model.isSupportAllDayData ? "":"不")支持全天测量数据存储"
                 log += "\n      一天点击测量存储总条数:\(model.singleClickDataCount)"
                 log += "\n      全天测量时间间隔:\(model.allDayDataTimeInterval)分钟"
+            }
+        }
+        if self.functionList_sosContactPerson {
+            log += "\nsos紧急联系人"
+        }
+        if self.functionList_worshipAlarm {
+            log += "\n朝拜闹钟"
+        }
+        if self.functionList_localPlay {
+            log += "\n本地播放"
+            if let model = self.functionDetail_localPlay {
+                if model.isSupportMp3 {
+                    log += "\n      支持MP3格式文件"
+                }
+                if model.isSupportWav {
+                    log += "\n      支持WAV格式文件"
+                }
             }
         }
         return log
@@ -974,7 +1134,27 @@ import CoreLocation
     @objc public private(set) var isSupportMessenger = false
     @objc public private(set) var isSupportSkype = false
     @objc public private(set) var isSupportSnapchat = false
-
+    @objc public private(set) var isSupportExtensionNotification = false
+    @objc public private(set) var isSupportAlipay = false
+    @objc public private(set) var isSupportTaoBao = false
+    @objc public private(set) var isSupportDouYin = false
+    @objc public private(set) var isSupportDingDing = false
+    @objc public private(set) var isSupportJingDong = false
+    @objc public private(set) var isSupportGmail = false
+    @objc public private(set) var isSupportViber = false
+    @objc public private(set) var isSupportYouTube = false
+    @objc public private(set) var isSupportKakaoTalk = false
+    @objc public private(set) var isSupportTelegram = false
+    @objc public private(set) var isSupportHangouts = false
+    @objc public private(set) var isSupportVkontakte = false
+    @objc public private(set) var isSupportFlickr = false
+    @objc public private(set) var isSupportTumblr = false
+    @objc public private(set) var isSupportPinterest = false
+    @objc public private(set) var isSupportTruecaller = false
+    @objc public private(set) var isSupportPaytm = false
+    @objc public private(set) var isSupportZalo = false
+    @objc public private(set) var isSupportMicrosoftTeams = false
+    
     init(result:Int) {
         self.supportCount = result
         
@@ -1010,7 +1190,51 @@ import CoreLocation
                 break
             case 12:self.isSupportSnapchat = state == 0 ? false:true
                 break
-            case 13:
+            case 13:self.isSupportExtensionNotification = state == 0 ? false:true
+                break
+            case 14:
+                break
+            case 15:
+                break
+            case 16:self.isSupportAlipay = state == 0 ? false:true
+                break
+            case 17:self.isSupportTaoBao = state == 0 ? false:true
+                break
+            case 18:self.isSupportDouYin = state == 0 ? false:true
+                break
+            case 19:self.isSupportDingDing = state == 0 ? false:true
+                break
+            case 20:self.isSupportJingDong = state == 0 ? false:true
+                break
+            case 21:self.isSupportGmail = state == 0 ? false:true
+                break
+            case 22:self.isSupportViber = state == 0 ? false:true
+                break
+            case 23:self.isSupportYouTube = state == 0 ? false:true
+                break
+            case 24:self.isSupportKakaoTalk = state == 0 ? false:true
+                break
+            case 25:self.isSupportTelegram = state == 0 ? false:true
+                break
+            case 26:self.isSupportHangouts = state == 0 ? false:true
+                break
+            case 27:self.isSupportVkontakte = state == 0 ? false:true
+                break
+            case 28:self.isSupportFlickr = state == 0 ? false:true
+                break
+            case 29:self.isSupportTumblr = state == 0 ? false:true
+                break
+            case 30:self.isSupportPinterest = state == 0 ? false:true
+                break
+            case 31:self.isSupportTruecaller = state == 0 ? false:true
+                break
+            case 32:self.isSupportPaytm = state == 0 ? false:true
+                break
+            case 33:self.isSupportZalo = state == 0 ? false:true
+                break
+            case 34:self.isSupportMicrosoftTeams = state == 0 ? false:true
+                break
+            case 35://self.isSupport = state == 0 ? false:true
                 break
             default:
                 break
@@ -1040,7 +1264,29 @@ import CoreLocation
     @objc public private(set) var isSupportVietnamese = false                   //越南语
     @objc public private(set) var isSupportIndonesian = false                   //印尼语
     @objc public private(set) var isSupportThai = false                         //泰语
-
+    @objc public private(set) var isSupportDutch = false                        //荷兰语
+    @objc public private(set) var isSupportTurkish = false                      //土耳其
+    @objc public private(set) var isSupportRomanian = false                     //罗马尼亚
+    @objc public private(set) var isSupportDanish = false                       //丹麦语
+    @objc public private(set) var isSupportSwedish = false                      //瑞典语
+    @objc public private(set) var isSupportCzech = false                        //捷克语
+    @objc public private(set) var isSupportBengali = false                      //孟加拉语
+    @objc public private(set) var isSupportPersian = false                      //波斯语
+    @objc public private(set) var isSupportHebrew = false                       //希伯来语
+    @objc public private(set) var isSupportMalay = false                        //马来语
+    @objc public private(set) var isSupportSlovak = false                       //斯洛伐克语
+    @objc public private(set) var isSupportXhosa = false                        //科萨语
+    @objc public private(set) var isSupportSlovenian = false                    //斯洛文尼亚语
+    @objc public private(set) var isSupportHungarian = false                    //匈牙利语
+    @objc public private(set) var isSupportLithuanian = false                   //立陶宛语
+    @objc public private(set) var isSupportUrdu = false                         //乌尔都语
+    @objc public private(set) var isSupportBulgarian = false                    //保加利亚语
+    @objc public private(set) var isSupportCroatian = false                     //克罗地亚语
+    @objc public private(set) var isSupportLatvian = false                      //拉脱维亚语
+    @objc public private(set) var isSupportEstonian = false                     //爱沙尼亚语
+    @objc public private(set) var isSupportKhmer = false                        //高棉语
+    //@objc public private(set) var isSupport = false
+    
     init(result:Int) {
         self.supportCount = result
         
@@ -1087,6 +1333,48 @@ import CoreLocation
             case 17:self.isSupportIndonesian = state == 0 ? false:true
                 break
             case 18:self.isSupportThai = state == 0 ? false:true
+                break
+            case 19:self.isSupportDutch = state == 0 ? false:true
+                break
+            case 20:self.isSupportTurkish = state == 0 ? false:true
+                break
+            case 21:self.isSupportRomanian = state == 0 ? false:true
+                break
+            case 22:self.isSupportDanish = state == 0 ? false:true
+                break
+            case 23:self.isSupportSwedish = state == 0 ? false:true
+                break
+            case 24:self.isSupportBengali = state == 0 ? false:true
+                break
+            case 25:self.isSupportCzech = state == 0 ? false:true
+                break
+            case 26:self.isSupportPersian = state == 0 ? false:true
+                break
+            case 27:self.isSupportHebrew = state == 0 ? false:true
+                break
+            case 28:self.isSupportMalay = state == 0 ? false:true
+                break
+            case 29:self.isSupportSlovak = state == 0 ? false:true
+                break
+            case 30:self.isSupportXhosa = state == 0 ? false:true
+                break
+            case 31:self.isSupportSlovenian = state == 0 ? false:true
+                break
+            case 32:self.isSupportHungarian = state == 0 ? false:true
+                break
+            case 33:self.isSupportLithuanian = state == 0 ? false:true
+                break
+            case 34:self.isSupportUrdu = state == 0 ? false:true
+                break
+            case 35:self.isSupportBulgarian = state == 0 ? false:true
+                break
+            case 36:self.isSupportCroatian = state == 0 ? false:true
+                break
+            case 37:self.isSupportLatvian = state == 0 ? false:true
+                break
+            case 38:self.isSupportEstonian = state == 0 ? false:true
+                break
+            case 39:self.isSupportKhmer = state == 0 ? false:true
                 break
             default:
                 break
@@ -1499,7 +1787,29 @@ class AntFunctionModel_newPortocol:NSObject {
     case Messenger
     case Skype
     case Snapchat
+    case ExtensionNotificationType
     case Other = 15
+}
+@objc public enum AntNotificationExtensionType : Int {
+    case Alipay
+    case TaoBao
+    case DouYin
+    case DingDing
+    case JingDong
+    case Gmail
+    case Viber
+    case YouTube
+    case KakaoTalk
+    case Telegram
+    case Hangouts
+    case Vkontakte
+    case Flickr
+    case Tumblr
+    case Pinterest
+    case Truecaller
+    case Paytm
+    case Zalo
+    case MicrosoftTeams
 }
 
 @objc public enum AntPositionType : Int {
@@ -2028,5 +2338,106 @@ class AntFunctionModel_newPortocol:NSObject {
     
     public override init() {
         super.init()
+    }
+}
+
+@objc public class AntWorshipTimeModel:NSObject {
+    @objc public var timeString = "2000-01-01"
+    @objc public var fajr = 0
+    @objc public var sunrise = 0
+    @objc public var dhuhr = 0
+    @objc public var asr = 0
+    @objc public var maghrib = 0
+    @objc public var isha = 0
+    
+    public override init() {
+        super.init()
+    }
+}
+
+@objc public class AntFunctionModel_supportMusicFileTypeModel:NSObject {
+    @objc public var isSupportMp3 = false
+    @objc public var isSupportWav = false
+    
+    init(val:[UInt8]) {
+        
+        for i in 0..<8 {
+            let state = (val[0] >> i) & 0x01
+
+            switch i {
+            case 0:self.isSupportMp3 = state == 0 ? false:true
+                break
+            case 1:self.isSupportWav = state == 0 ? false:true
+                break
+            default:
+                break
+            }
+        }
+        super.init()
+    }
+}
+
+@objc public enum AntLedFunctionType : Int {
+    case unknow = -1                           //未知状态
+    case powerIndicator = 0                    //电量提示
+    case informationReminder                   //信息提醒
+    case BtBind                                //BT绑定
+    case stepCountingStandardReminder          //计步达标提醒
+    case lowBatteryReminder                    //低电量提醒
+}
+
+@objc public class AntLedFunctionModel:NSObject {
+    @objc public var ledType:AntLedFunctionType = .unknow
+    @objc public var ledColor = 0   //bit0:红,bit1:绿,bit2:蓝,bit3:白
+    @objc public var timeLength = 0 //持续时间
+    @objc public var frequency = 0  //闪烁频次
+    
+    public override init() {
+        super.init()
+    }
+    
+    @objc public init(dic:[String:Any]) {
+        super.init()
+        
+        if dic.keys.contains("ledType") && dic.keys.contains("ledColor") && dic.keys.contains("timeLength") && dic.keys.contains("frequency") {
+            if let index = dic["ledType"] as? Int {
+                self.ledType = AntLedFunctionType.init(rawValue: index) ?? .unknow
+            }
+
+            self.ledColor = Int(UInt8(dic["ledColor"] as! Int) )
+            self.timeLength = Int(UInt8(dic["timeLength"] as! Int))
+            self.frequency = Int(UInt8(dic["frequency"] as! Int))
+            
+        }else{
+            printLog("AntLedFunctionModel dic初始化异常")
+        }
+    }
+}
+@objc public class AntMotorFunctionModel:NSObject {
+
+    @objc public var ledType:AntLedFunctionType = .powerIndicator   //范围[0,4]
+    @objc public var timeLength = 0 //震动时长 范围[0,20]
+    @objc public var frequency = 0  //震动频次 范围[0,5]
+    @objc public var level = 0      //震动强度 范围[0,10]
+    
+    public override init() {
+        super.init()
+    }
+    
+    @objc public init(dic:[String:Any]) {
+        super.init()
+        
+        if dic.keys.contains("ledType") && dic.keys.contains("level") && dic.keys.contains("timeLength") && dic.keys.contains("frequency") {
+            if let index = dic["ledType"] as? Int {
+                self.ledType = AntLedFunctionType.init(rawValue: index) ?? .unknow
+            }
+
+            self.level = Int(UInt8(dic["level"] as! Int))
+            self.timeLength = Int(UInt8(dic["timeLength"] as! Int))
+            self.frequency = Int(UInt8(dic["frequency"] as! Int))
+            
+        }else{
+            printLog("AntMotorFunctionModel dic初始化异常")
+        }
     }
 }

@@ -11,7 +11,6 @@
 		0A76FC50810ED4BF30678E66 /* Pods_AntSdkDemo_AntSdkDemoUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 478719A83DFD58F5FBD697A0 /* Pods_AntSdkDemo_AntSdkDemoUITests.framework */; };
 		6703B8A127B7A94100EF295F /* pic(2).bin in Resources */ = {isa = PBXBuildFile; fileRef = 6703B8A027B7A94100EF295F /* pic(2).bin */; };
 		671F9CB026D778B700AB415A /* ScanVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671F9CAF26D778B700AB415A /* ScanVC.swift */; };
-		673F330127C4A2830071F9F7 /* test.bin in Resources */ = {isa = PBXBuildFile; fileRef = 673F330027C4A2830071F9F7 /* test.bin */; };
 		6746B8F829A4AA2100204DEC /* JL_BLEKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6746B8F729A4AA2100204DEC /* JL_BLEKit.framework */; };
 		67661CF826292A8E0004B197 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661CF726292A8E0004B197 /* AppDelegate.swift */; };
 		67661CFC26292A8E0004B197 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661CFB26292A8E0004B197 /* ViewController.swift */; };
@@ -35,11 +34,13 @@
 		67A752B0278AE03400B7D6B2 /* 最新应用程序.bin in Resources */ = {isa = PBXBuildFile; fileRef = 67A752AD278AE03300B7D6B2 /* 最新应用程序.bin */; };
 		67A752B1278AE03400B7D6B2 /* bootLoader.bin in Resources */ = {isa = PBXBuildFile; fileRef = 67A752AE278AE03400B7D6B2 /* bootLoader.bin */; };
 		67A752B3278AE04900B7D6B2 /* 图库.bin in Resources */ = {isa = PBXBuildFile; fileRef = 67A752B2278AE04800B7D6B2 /* 图库.bin */; };
+		67B6EF3B2A31F0900087C786 /* test_small.bin in Resources */ = {isa = PBXBuildFile; fileRef = 67B6EF3A2A31F0900087C786 /* test_small.bin */; };
 		67B8A1C32768289C0007D3FC /* 数字表盘.bin in Resources */ = {isa = PBXBuildFile; fileRef = 67B8A1C22768289C0007D3FC /* 数字表盘.bin */; };
 		67CF37E826F589A90035C6B0 /* FileVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67CF37E726F589A90035C6B0 /* FileVC.swift */; };
 		67E74243298CFE32001AF780 /* ios_test.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 67E74240298CFE32001AF780 /* ios_test.bmp */; };
 		67E74244298CFE32001AF780 /* BGP_W000 in Resources */ = {isa = PBXBuildFile; fileRef = 67E74241298CFE32001AF780 /* BGP_W000 */; };
 		67E74245298CFE32001AF780 /* ios.png in Resources */ = {isa = PBXBuildFile; fileRef = 67E74242298CFE32001AF780 /* ios.png */; };
+		67E8914C2A8C7223007E8B9E /* 消愁.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 67E8914B2A8C7222007E8B9E /* 消愁.mp3 */; };
 		67EB7E9E27995861000CAE03 /* testPic(1).bin in Resources */ = {isa = PBXBuildFile; fileRef = 67EB7E9D27995861000CAE03 /* testPic(1).bin */; };
 		D5B6E58968FDB933C6F1EB9E /* Pods_AntSdkDemoTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00A0834BF06076BE35E1F4A5 /* Pods_AntSdkDemoTests.framework */; };
 /* End PBXBuildFile section */
@@ -80,7 +81,6 @@
 		478719A83DFD58F5FBD697A0 /* Pods_AntSdkDemo_AntSdkDemoUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AntSdkDemo_AntSdkDemoUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6703B8A027B7A94100EF295F /* pic(2).bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "pic(2).bin"; sourceTree = "<group>"; };
 		671F9CAF26D778B700AB415A /* ScanVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanVC.swift; sourceTree = "<group>"; };
-		673F330027C4A2830071F9F7 /* test.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = test.bin; sourceTree = "<group>"; };
 		6746B8F729A4AA2100204DEC /* JL_BLEKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JL_BLEKit.framework; sourceTree = "<group>"; };
 		676003FB2698404400822E72 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		67661CF426292A8E0004B197 /* AntSdkDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AntSdkDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -111,11 +111,13 @@
 		67A752AD278AE03300B7D6B2 /* 最新应用程序.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "最新应用程序.bin"; sourceTree = "<group>"; };
 		67A752AE278AE03400B7D6B2 /* bootLoader.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = bootLoader.bin; sourceTree = "<group>"; };
 		67A752B2278AE04800B7D6B2 /* 图库.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "图库.bin"; sourceTree = "<group>"; };
+		67B6EF3A2A31F0900087C786 /* test_small.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = test_small.bin; sourceTree = "<group>"; };
 		67B8A1C22768289C0007D3FC /* 数字表盘.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "数字表盘.bin"; sourceTree = "<group>"; };
 		67CF37E726F589A90035C6B0 /* FileVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileVC.swift; sourceTree = "<group>"; };
 		67E74240298CFE32001AF780 /* ios_test.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = ios_test.bmp; sourceTree = "<group>"; };
 		67E74241298CFE32001AF780 /* BGP_W000 */ = {isa = PBXFileReference; lastKnownFileType = file; path = BGP_W000; sourceTree = "<group>"; };
 		67E74242298CFE32001AF780 /* ios.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ios.png; sourceTree = "<group>"; };
+		67E8914B2A8C7222007E8B9E /* 消愁.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "消愁.mp3"; sourceTree = "<group>"; };
 		67EB7E9D27995861000CAE03 /* testPic(1).bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "testPic(1).bin"; sourceTree = "<group>"; };
 		709083BC5FF85A3A92F0F492 /* Pods-AntSdkDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AntSdkDemo.release.xcconfig"; path = "Target Support Files/Pods-AntSdkDemo/Pods-AntSdkDemo.release.xcconfig"; sourceTree = "<group>"; };
 		7E733D2CDCEA7FD78ED1AF43 /* Pods-AntSdkDemo-AntSdkDemoUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AntSdkDemo-AntSdkDemoUITests.release.xcconfig"; path = "Target Support Files/Pods-AntSdkDemo-AntSdkDemoUITests/Pods-AntSdkDemo-AntSdkDemoUITests.release.xcconfig"; sourceTree = "<group>"; };
@@ -193,6 +195,7 @@
 		67661CF626292A8E0004B197 /* AntSdkDemo */ = {
 			isa = PBXGroup;
 			children = (
+				67B6EF3A2A31F0900087C786 /* test_small.bin */,
 				67A752AE278AE03400B7D6B2 /* bootLoader.bin */,
 				67A752AC278AE03300B7D6B2 /* 字库.bin */,
 				67A752AD278AE03300B7D6B2 /* 最新应用程序.bin */,
@@ -200,10 +203,10 @@
 				678C6682279565DA00371BB5 /* pic_80_80.bin */,
 				678C6683279565DA00371BB5 /* pic_240_240.bin */,
 				67A752B2278AE04800B7D6B2 /* 图库.bin */,
+				67E8914B2A8C7222007E8B9E /* 消愁.mp3 */,
 				678C6686279571F600371BB5 /* 1.bmp */,
 				678C669C2795A3DD00371BB5 /* test@1x.png */,
 				678C66A427969F3700371BB5 /* IMG_4099.jpg */,
-				673F330027C4A2830071F9F7 /* test.bin */,
 				678C66912795982B00371BB5 /* pic.bin */,
 				678C66A22796925800371BB5 /* pic(1).bin */,
 				6703B8A027B7A94100EF295F /* pic(2).bin */,
@@ -368,13 +371,13 @@
 				6703B8A127B7A94100EF295F /* pic(2).bin in Resources */,
 				67EB7E9E27995861000CAE03 /* testPic(1).bin in Resources */,
 				67661D0426292A920004B197 /* LaunchScreen.storyboard in Resources */,
+				67E8914C2A8C7223007E8B9E /* 消愁.mp3 in Resources */,
 				67E74245298CFE32001AF780 /* ios.png in Resources */,
 				67E74244298CFE32001AF780 /* BGP_W000 in Resources */,
 				678C6685279565DB00371BB5 /* pic_240_240.bin in Resources */,
 				678C66932795982B00371BB5 /* pic.bin in Resources */,
 				67B8A1C32768289C0007D3FC /* 数字表盘.bin in Resources */,
 				67661D0126292A920004B197 /* Assets.xcassets in Resources */,
-				673F330127C4A2830071F9F7 /* test.bin in Resources */,
 				678C66A32796925A00371BB5 /* pic(1).bin in Resources */,
 				67A752AF278AE03400B7D6B2 /* 字库.bin in Resources */,
 				67E74243298CFE32001AF780 /* ios_test.bmp in Resources */,
@@ -384,6 +387,7 @@
 				678C6684279565DB00371BB5 /* pic_80_80.bin in Resources */,
 				67A752B0278AE03400B7D6B2 /* 最新应用程序.bin in Resources */,
 				678C669F2795A3DE00371BB5 /* test@1x.png in Resources */,
+				67B6EF3B2A31F0900087C786 /* test_small.bin in Resources */,
 				678C66A527969F3700371BB5 /* IMG_4099.jpg in Resources */,
 				67661CFF26292A8E0004B197 /* Main.storyboard in Resources */,
 			);
@@ -700,7 +704,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = 3QL3M4X778;
+				DEVELOPMENT_TEAM = QDV38ZSMUA;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -715,7 +719,7 @@
 				);
 				MARKETING_VERSION = 1.3;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.antjy.AntSdkDemo1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.antjy.AntSdkDemoZYG;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
@@ -732,7 +736,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = 3QL3M4X778;
+				DEVELOPMENT_TEAM = QDV38ZSMUA;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -746,7 +750,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.3;
-				PRODUCT_BUNDLE_IDENTIFIER = com.antjy.AntSdkDemo1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.antjy.AntSdkDemoZYG;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;

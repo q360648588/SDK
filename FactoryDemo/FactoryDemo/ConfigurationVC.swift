@@ -17,6 +17,8 @@ class ConfigurationVC: UIViewController {
     
     var scanNameString = ""
     var appVersion = ""
+    var productId = ""
+    var projectId = ""
     var imageVersion = ""
     var fontVersion = ""
     var powerOffString = ""
@@ -62,6 +64,18 @@ class ConfigurationVC: UIViewController {
             scanNameString = "设置扫描设备名"
         }
         self.scanNameString = scanNameString
+        
+        if let product = userDefault.string(forKey: ProductIdKey) {
+            self.productId = "升级指定产品版本:"+product
+        }else{
+            self.productId = "升级指定产品版本:无"
+        }
+        
+        if let project = userDefault.string(forKey: ProjectIdKey) {
+            self.projectId = "升级指定项目版本:"+project
+        }else{
+            self.projectId = "升级指定项目版本:无"
+        }
         
         if let appVersion = userDefault.string(forKey: AppVersionKey) {
             self.appVersion = "过滤固件版本:"+appVersion
@@ -128,12 +142,12 @@ class ConfigurationVC: UIViewController {
         }
         self.dialString = dialString
         
-        self.dataSourceArray = [scanNameString,self.bootString,self.applicationString,self.libraryString,self.fontString,self.dialString,self.powerOffString]
+        self.dataSourceArray = [scanNameString,self.productId,self.projectId,self.bootString,self.applicationString,self.libraryString,self.fontString,self.dialString,self.powerOffString]
         
         let sortArray = userDefault.array(forKey: OtaSortKey)
         
         if let sortArray:[Int] = sortArray as? [Int] {
-            self.dataSourceArray = [scanNameString,self.appVersion,self.imageVersion,self.fontVersion,self.powerOffString]
+            self.dataSourceArray = [scanNameString,self.productId,self.projectId,self.appVersion,self.imageVersion,self.fontVersion,self.powerOffString]
             for item in sortArray {
                 if item == 0 {
                     self.dataSourceArray.insert(self.bootString, at: self.dataSourceArray.count-1)
@@ -227,6 +241,50 @@ extension ConfigurationVC:UITableViewDataSource,UITableViewDelegate {
                     userDefault.set(self.filterArray, forKey: ScanNameKey)
                 }else{
                     userDefault.removeObject(forKey: ScanNameKey)
+                }
+                
+                userDefault.synchronize()
+                self.loadData()
+                DispatchQueue.main.async {
+                    tableView.reloadData()
+                }
+            }
+        }
+        
+        if self.productId == selectString {
+            let array = [
+                "不输入则无指定产品ID"
+            ]
+            self.presentTextFieldAlertVC(title: "设置需要升级的产品ID", message: "版本号为整数,如 1", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { textArray in
+                let appString = textArray[0]
+                if appString.count > 0 {
+                    userDefault.set(appString, forKey: ProductIdKey)
+                }else{
+                    userDefault.removeObject(forKey: ProductIdKey)
+                }
+                
+                userDefault.synchronize()
+                self.loadData()
+                DispatchQueue.main.async {
+                    tableView.reloadData()
+                }
+            }
+        }
+        
+        if self.projectId == selectString {
+            let array = [
+                "不输入则无指定项目ID"
+            ]
+            self.presentTextFieldAlertVC(title: "设置需要升级的项目ID", message: "版本号为整数,如 1", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { textArray in
+                let appString = textArray[0]
+                if appString.count > 0 {
+                    userDefault.set(appString, forKey: ProjectIdKey)
+                }else{
+                    userDefault.removeObject(forKey: ProjectIdKey)
                 }
                 
                 userDefault.synchronize()
