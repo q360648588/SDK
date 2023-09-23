@@ -653,6 +653,16 @@ import zlib
          return  sum
     }
     
+    // MARK: - 十进制转BDC码
+    func decimalToBcd(value:Int) -> Int {
+        return ((((value) / 10) << 4) + ((value) % 10))
+    }
+    
+    // MARK: - BCD码转十进制
+    func bcdToDecimal(value:Int) -> Int {
+        return ((((value) & 0xf0) >> 4) * 10 + ((value) & 0x0f))
+    }
+    
     public func CRC16(data:Data) -> UInt16 {
         
         let val = data.withUnsafeBytes { (byte) -> [UInt8] in
@@ -733,6 +743,59 @@ import zlib
         return [UInt8((newColor >> 8) & 0xff),UInt8(newColor & 0xff)]
     }
     
+    @objc public func getNotificationExtensionTypeArrayWithIntString(countString:String) -> [AntNotificationExtensionType.RawValue] {
+        var array = [Int].init()
+        let count = UInt32(countString) ?? 0
+        printLog("count =",count)
+        for i in stride(from: 0, to: 32, by: 1) {
+            if (((count >> i) & 0x01) != 0) {
+                switch i {
+                case 0:array.append(AntNotificationExtensionType.Alipay.rawValue)
+                    break
+                case 1:array.append(AntNotificationExtensionType.TaoBao.rawValue)
+                    break
+                case 2:array.append(AntNotificationExtensionType.DouYin.rawValue)
+                    break
+                case 3:array.append(AntNotificationExtensionType.DingDing.rawValue)
+                    break
+                case 4:array.append(AntNotificationExtensionType.JingDong.rawValue)
+                    break
+                case 5:array.append(AntNotificationExtensionType.Gmail.rawValue)
+                    break
+                case 6:array.append(AntNotificationExtensionType.Viber.rawValue)
+                    break
+                case 7:array.append(AntNotificationExtensionType.YouTube.rawValue)
+                    break
+                case 8:array.append(AntNotificationExtensionType.KakaoTalk.rawValue)
+                    break
+                case 9:array.append(AntNotificationExtensionType.Telegram.rawValue)
+                    break
+                case 10:array.append(AntNotificationExtensionType.Hangouts.rawValue)
+                    break
+                case 11:array.append(AntNotificationExtensionType.Vkontakte.rawValue)
+                    break
+                case 12:array.append(AntNotificationExtensionType.Flickr.rawValue)
+                    break
+                case 13:array.append(AntNotificationExtensionType.Tumblr.rawValue)
+                    break
+                case 14:array.append(AntNotificationExtensionType.Pinterest.rawValue)
+                    break
+                case 15:array.append(AntNotificationExtensionType.Truecaller.rawValue)
+                    break
+                case 16:array.append(AntNotificationExtensionType.Paytm.rawValue)
+                    break
+                case 17:array.append(AntNotificationExtensionType.Zalo.rawValue)
+                    break
+                case 18:array.append(AntNotificationExtensionType.MicrosoftTeams.rawValue)
+                    break
+                default:
+                    break
+                }
+            }
+        }
+        return array
+    }
+    
     @objc public func getNotificationTypeArrayWithIntString(countString:String) -> [AntNotificationType.RawValue] {
         var array = [Int].init()
         let count = UInt16(countString) ?? 0
@@ -773,7 +836,8 @@ import zlib
                     break
                 case 13:array.append(AntNotificationType.Snapchat.rawValue)
                     break
-
+                case 14:array.append(AntNotificationType.ExtensionNotificationType.rawValue)
+                    break
                 case 15:
                     array.append(AntNotificationType.Other.rawValue)
                     break

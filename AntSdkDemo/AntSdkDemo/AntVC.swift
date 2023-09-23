@@ -37,7 +37,6 @@ class AntVC: UIViewController {
     var dialArray = [AntOnlineDialModel].init()
     var autoTimer:Timer?
     var timestamp:Int?
-    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -74,10 +73,14 @@ class AntVC: UIViewController {
                         let type = success["type"] as! String
                         let fileString = self.getFilePathWithType(type: type)
 
+                        var showProgress = 0
                         AntCommandModule.shareInstance.setStartUpgrade(type: Int(type) ?? 0, localFile: fileString, maxCount: 20, isContinue: true) { progress in
 
                             print("progress =",progress)
-                            self.logView.writeString(string: "进度:\(progress)")
+                            if showProgress == Int(progress) {
+                                showProgress += 1
+                                self.logView.writeString(string: "进度:\(progress)")
+                            }
 
                         } success: { error in
 
@@ -196,6 +199,19 @@ class AntVC: UIViewController {
                 "新协议 获取闹钟",
                 "新协议 设置睡眠目标",
                 "新协议 获取睡眠目标",
+                "新协议 获取闹钟",
+                "新协议 获取睡眠目标",
+                "新协议 设置SOS联系人",
+                "新协议 获取SOS联系人",
+                "新协议 周期测量参数设置",
+                "新协议 获取朝拜闹钟天数及开始时间",
+                "新协议 设置时区",
+                "无响应 回应定位信息",
+                "新协议 设置LED灯功能",
+                "新协议 设置马达震动功能",
+                "新协议 获取LED灯功能",
+                "新协议 获取马达震动功能",
+
             ],
             [
                 "关机",
@@ -222,6 +238,8 @@ class AntVC: UIViewController {
                 "上报运动交互数据",
                 "上报进入或退出拍照模式",
                 "上报勿扰设置",
+                "上报朝拜闹钟天数及开始时间",
+                "上报请求定位信息",
             ],
             [
                 "0引导文件",
@@ -230,6 +248,7 @@ class AntVC: UIViewController {
                 "3字库文件",
                 "4表盘文件",
                 "5自定义表盘文件",
+                "7音乐文件",
             ],
             [
                 "OTA升级",
@@ -1269,7 +1288,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.writeString(string: "设置设备语言")
             
             //0英语1中文简体2日语3韩语4德语5法语6西班牙语7阿拉伯语8俄语9中文繁体10意大利11葡萄牙12乌克兰语13印地语
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置设备语言\n0英文1简体中文2日语3韩语4德语5法语6西班牙语7阿拉伯语8俄语9繁体中文10意大利语11葡萄牙语12乌克兰语13印地语", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置设备语言\n0英文1简体中文2日语3韩语4德语5法语6西班牙语7阿拉伯语8俄语9繁体中文10意大利语11葡萄牙语12乌克兰语13印地语14波兰语15希腊语16越南语17印度尼西亚语18泰语19荷兰语20土耳其语21罗马尼亚语22丹麦语23瑞典语24孟加拉语25捷克语26波斯语27希伯来语28马来语29斯洛伐克语30南非科萨语31斯洛文尼亚语32匈牙利语33立陶宛语34乌尔都语35保加利亚语36克罗地亚语37拉脱维亚语38爱沙尼亚语39高棉语", holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let index = textArray[0]
@@ -1860,7 +1879,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             self.logView.clearString()
             self.logView.writeString(string: "获取消息提醒")
-            AntCommandModule.shareInstance.getNotificationRemind { success, error in
+            AntCommandModule.shareInstance.getNotificationRemind { success,success1, error  in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
@@ -1870,7 +1889,10 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                     let array = success
                     print("GetMessageRemind ->",array)
                     
+                    let array1 = success1
+                    print("GetMessageRemind ->",array1)
                     self.logView.writeString(string: "\(array)")
+                    self.logView.writeString(string: "拓展推送:\(array1)")
                 }
                 
                 //self.navigationController?.pushViewController(vc, animated: true)
@@ -1881,7 +1903,8 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
         case "设置消息提醒":
             
             let array = [
-                "消息类型开关"
+                "消息类型开关",
+                "拓展消息开关",
             ]
             
             self.logView.clearString()
@@ -1891,6 +1914,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 
             }, ok: nil) { (textArray) in
                 let isOpen = textArray[0]
+                let extensionOpen = textArray[1]
                 
 //                AntCommandModule.shareInstance.SetNotificationRemind(isOpen: isOpen) { error in
 //
@@ -1908,9 +1932,12 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 }
                 let array = AntCommandModule.shareInstance.getNotificationTypeArrayWithIntString(countString: isOpen)
                 print("array ->",array)
-
+                let extensionArray = AntCommandModule.shareInstance.getNotificationExtensionTypeArrayWithIntString(countString: extensionOpen)
+                print("extensionArray ->",extensionArray)
+                
                 self.logView.writeString(string: "\(array)")
-                AntCommandModule.shareInstance.setNotificationRemindArray(array: array) { error in
+                self.logView.writeString(string: "拓展消息:\(extensionArray)")
+                AntCommandModule.shareInstance.setNotificationRemindArray(array: array, extensionArray: extensionArray) { error in
 
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
 
@@ -2705,7 +2732,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                             let listModelArray = model.listArray
                             
                             print("listModelArray ->",listModelArray)
-                            self.logView.writeString(string: "类型:\(type)")
+                            self.logView.writeString(string: "类型:\(type.rawValue)")
                             self.logView.writeString(string: "间隔时长:\(timeInterval)")
                             for item in listModelArray {
                                 let item:AntMeasurementValueModel = item
@@ -3074,7 +3101,277 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "关机":
+        case "新协议 设置SOS联系人":
+
+            let array = [
+                "姓名",
+                "号码",
+            ]
+
+            self.logView.clearString()
+            self.logView.writeString(string: "设置SOS联系人")
+            
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认为空)", message: "设置联系人", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                
+                let model = AntAddressBookModel.init()
+                model.name = textArray[0]
+                model.phoneNumber = textArray[1]
+                
+                self.logView.writeString(string: "联系人 姓名:\(model.name),号码:\(model.phoneNumber)")
+                
+                AntCommandModule.shareInstance.setSosContactPerson(model: model) { error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    if error == .none {
+                        print("setSosContactPerson -> success")
+                    }
+                }
+            }
+            break
+            
+        case "新协议 获取SOS联系人":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "获取SOS联系人")
+            
+            AntCommandModule.shareInstance.getSosContactPerson { model, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                if let model = model {
+                    self.logView.writeString(string: "联系人 姓名:\(model.name),号码:\(model.phoneNumber)")
+                    print("getSosContactPerson -> success")
+                }
+            }
+            
+            break
+            
+        case "新协议 周期测量参数设置":
+            
+            let array = [
+                "类型：1：心率，2：血氧，3：血压，4：血糖，5：压力，6.体温，7：心电，",
+                "开关：0：关 1：开",
+                "时长：>0"
+            ]
+
+            self.logView.clearString()
+            self.logView.writeString(string: "设置周期测量参数")
+            
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认为空)", message: "设置周期测量参数", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                
+                let type = textArray[0]
+                let isOpen = textArray[1]
+                let timeInterval = textArray[2]
+                
+                self.logView.writeString(string: "类型:\(type),开关:\(isOpen),时长:\(timeInterval)")
+                
+                AntCommandModule.shareInstance.setCycleMeasurementParameters(type: Int(type) ?? 0, isOpen: Int(isOpen) ?? 0, timeInterval: Int(timeInterval) ?? 0) { error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    if error == .none {
+                        print("setCycleMeasurementParameters -> success")
+                    }
+                }
+            }
+            
+            break
+        case "新协议 获取朝拜闹钟天数及开始时间":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "获取朝拜闹钟天数及开始时间")
+            
+            AntCommandModule.shareInstance.getWorshipStartTime { timeString, dayCount, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                self.logView.writeString(string: "朝拜闹钟 天数:\(dayCount),开始日期:\(timeString)")
+                print("getWorshipStartTime -> timeString = \(timeString),dayCount = \(dayCount)")
+            }
+            
+            break
+            
+        case "新协议 设置时区":
+            
+            let array = [
+                "0:零时区 1-12:东区 13-24:西区",
+            ]
+            
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认为手机系统时区)", message: "设置时区", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                
+                let timeZone = textArray[0]
+                self.logView.writeString(string: "设置时区: \(timeZone)")
+                            
+                AntCommandModule.shareInstance.setTimeZone(timeZone:  Int(timeZone) ?? 0) { error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    if error == .none {
+                        print("setTimeZone -> success")
+                    }
+                }
+            }
+            
+            break
+            
+        case "无响应 回应定位信息":
+            
+            let array = [
+                "纬度:xxx.xxxxxx",
+                "经度:xxx.xxxxxx",
+                "方向:xxx",
+                "速度:xx.xx"
+            ]
+            
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认为0)", message: "设置定位信息", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                
+                let latitude = Double(textArray[0]) ?? 0.0
+                let longitude = Double(textArray[1]) ?? 0.0
+                let course = Double(textArray[2]) ?? 0.0
+                let speed = Double(textArray[3]) ?? 0.0
+                
+                self.logView.writeString(string: "纬度: \(latitude)")
+                self.logView.writeString(string: "经度: \(longitude)")
+                self.logView.writeString(string: "方向: \(course)")
+                self.logView.writeString(string: "速度: \(speed)")
+                
+                let location = CLLocation.init(coordinate: CLLocationCoordinate2D.init(latitude: latitude, longitude: longitude), altitude: 0, horizontalAccuracy: CLLocationAccuracy(), verticalAccuracy: CLLocationAccuracy(), course: course, speed: speed, timestamp: Date())
+
+                AntCommandModule.shareInstance.setLocationInfo(localtion: location)
+                
+            }
+            
+            break
+            
+        case "新协议 设置LED灯功能":
+            
+            let array = [
+                "参数个数 1-5 设置类型 0:电量 1:信息 2:bt连接 3:计步达标 4:低电",
+                "颜色(0-15,bit0:红 bit1:绿 bit2:蓝 bit3:白)",
+                "持续时间 0-50",
+                "闪烁频次 0-5，0常亮",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "LED灯功能设置")
+            self.presentTextFieldAlertVC(title: "提示(参数个数默认1其他默认0)", message: "LED灯功能设置(后续参数递增)", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let modelCount = Int(textArray[0]) ?? 0
+                let colorType = Int(textArray[1]) ?? 0
+                let timeLength = Int(textArray[2]) ?? 0
+                let frequency = Int(textArray[3]) ?? 0
+                
+                var modelArray = [AntLedFunctionModel]()
+                for i in 0..<modelCount {
+                    let model = AntLedFunctionModel()
+                    model.ledType = AntLedFunctionType.init(rawValue: i) ?? .powerIndicator
+                    model.timeLength = timeLength + i
+                    model.frequency = frequency + i
+                    model.ledColor = colorType + i
+                    modelArray.append(model)
+                    self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
+                    self.logView.writeString(string: "颜色: \(model.ledColor)")
+                    self.logView.writeString(string: "持续时长: \(model.timeLength)")
+                    self.logView.writeString(string: "闪烁频次: \(model.frequency)\n\n")
+                }
+                
+                AntCommandModule.shareInstance.setLedSetup(modelArray: modelArray) { error in
+                    
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        print("setLedSetup ->","success")
+                    }
+                }
+            }
+            
+            break
+        case "新协议 设置马达震动功能":
+            
+            let array = [
+                "参数个数 1-5 设置类型 0:电量 1:信息 2:bt连接 3:计步达标 4:低电",
+                "震动时长 0-20",
+                "震动频次 0-5 ,0长震",
+                "震动强度 0-10",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "马达震动功能设置")
+            self.presentTextFieldAlertVC(title: "提示(参数个数默认1其他默认0)", message: "马达震动功能设置(后续参数递增)", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+
+                let modelCount = Int(textArray[0]) ?? 1
+                let timeLength = Int(textArray[1]) ?? 0
+                let frequency = Int(textArray[2]) ?? 0
+                let level = Int(textArray[3]) ?? 0
+                
+                var modelArray = [AntMotorFunctionModel]()
+                for i in 0..<modelCount {
+                    let model = AntMotorFunctionModel()
+                    model.ledType = AntLedFunctionType.init(rawValue: i) ?? .powerIndicator
+                    model.timeLength = timeLength + i
+                    model.frequency = frequency + i
+                    model.level = level + i
+                    modelArray.append(model)
+                    self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
+                    self.logView.writeString(string: "震动时长: \(model.timeLength)")
+                    self.logView.writeString(string: "震动频次: \(model.frequency)")
+                    self.logView.writeString(string: "震动强度: \(model.level)\n\n")
+                }
+                
+                AntCommandModule.shareInstance.setMotorShakeFunction(modelArray: modelArray, success: { error in
+                    
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        print("setMotorShakeFunction ->","success")
+                    }
+                })
+            }
+            
+            break
+            
+        case "新协议 获取LED灯功能":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "获取LED灯功能")
+            AntCommandModule.shareInstance.getLedSetup { modelArray, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                if error == .none {
+                    for model in modelArray {
+                        
+                        self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
+                        self.logView.writeString(string: "颜色: \(model.ledColor)")
+                        self.logView.writeString(string: "持续时长: \(model.timeLength)")
+                        self.logView.writeString(string: "闪烁频次: \(model.frequency)\n\n")
+                        
+                    }
+                }
+            }
+            
+            break
+        case "新协议 获取马达震动功能":
+            self.logView.clearString()
+            self.logView.writeString(string: "获取马达震动功能")
+            AntCommandModule.shareInstance.getMotorShakeFunction { modelArray, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                if error == .none {
+                    for model in modelArray {
+                        
+                        self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
+                        self.logView.writeString(string: "震动时长: \(model.timeLength)")
+                        self.logView.writeString(string: "震动频次: \(model.frequency)")
+                        self.logView.writeString(string: "震动强度: \(model.level)\n\n")
+                        
+                    }
+                }
+            }
+            
+            break
+            
+        case "0x01 关机":
             
             self.logView.clearString()
             self.logView.writeString(string: "关机")
@@ -3409,6 +3706,32 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
+        case "上报朝拜闹钟天数及开始时间":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "上报勿扰设置")
+            
+            AntCommandModule.shareInstance.reportWorshipStartTime { timeString, dayCount, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                self.logView.writeString(string: "朝拜闹钟 天数:\(dayCount),开始日期:\(timeString)")
+                print("reportWorshipStartTime -> timeString = \(timeString),dayCount = \(dayCount)")
+            }
+            
+            break
+        case "上报请求定位信息":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "设备端触发显示")
+            
+            AntCommandModule.shareInstance.reportLocationInfo { error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                self.logView.writeString(string: "上报请求定位信息")
+                print("reportLocationInfo")
+            }
+            
+            break
         case "0引导文件":
             
             let fileString = UserDefaults.standard.string(forKey: "0_BootFiles")
@@ -3643,6 +3966,90 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
+        case "7音乐文件":
+            
+            let fileString = UserDefaults.standard.string(forKey: "7_MusicFiles")
+            
+            var message = "未选择，默认项目内置工程文件路径"
+            if fileString?.count ?? 0 > 0 {
+                message = fileString!
+            }
+            
+            self.logView.clearString()
+            
+            self.presentSystemAlertVC(title: "当前音乐文件路径", message: message, cancel: "修改路径", cancelAction: {
+                
+                let path = NSHomeDirectory() + "/Documents"
+                //let exist = FileManager.default.fileExists(atPath: path)
+                let vc = FileVC.init(filePath: path)
+                self.navigationController?.pushViewController(vc, animated: true)
+                
+                vc.saveClickBlock = { (pathString) in
+                    
+                    if let fileName = URL.init(string: pathString)?.lastPathComponent {
+                        print("fileName = \(fileName)")
+                        var isSupport = false
+                        var supportString = "功能列表获取支持的音乐文件类型"
+                        if let musicTypeModel = AntCommandModule.shareInstance.functionListModel?.functionDetail_localPlay {
+                            supportString = ""
+                            if musicTypeModel.isSupportMp3 {
+                                supportString += ".mp3 "
+                                if fileName.lowercased().hasSuffix(".mp3") {
+                                    isSupport = true
+                                }
+                            }
+                            if musicTypeModel.isSupportWav {
+                                supportString += ".wav "
+                                if fileName.lowercased().hasSuffix(".wav") {
+                                    isSupport = true
+                                }
+                            }
+                        }else{
+                            isSupport = true
+                        }
+                        
+                        if isSupport {
+                            let homePath = NSHomeDirectory()
+                            let pathString = pathString.replacingOccurrences(of: homePath, with: "")
+                            print("选中的文件连接 pathString =",pathString)
+                            self.logView.writeString(string: "音乐文件路径")
+                            if pathString.count > 0 {
+                                UserDefaults.standard.setValue(pathString, forKey: "7_MusicFiles")
+                                self.logView.writeString(string: pathString)
+                            }else{
+                                UserDefaults.standard.removeObject(forKey: "7_MusicFiles")
+                                self.logView.writeString(string: "未选择，默认项目内置工程文件路径")
+                            }
+                            UserDefaults.standard.synchronize()
+                        }else{
+                            self.presentSystemAlertVC(title: "文件类型错误", message: "请选择设备支持的音乐文件(\(supportString)") {
+                                
+                            } okAction: {
+                                
+                            }
+                        }
+
+                    }else{
+                        let homePath = NSHomeDirectory()
+                        let pathString = pathString.replacingOccurrences(of: homePath, with: "")
+                        print("选中的文件连接 pathString =",pathString)
+                        self.logView.writeString(string: "音乐文件路径")
+                        if pathString.count > 0 {
+                            UserDefaults.standard.setValue(pathString, forKey: "7_MusicFiles")
+                            self.logView.writeString(string: pathString)
+                        }else{
+                            UserDefaults.standard.removeObject(forKey: "7_MusicFiles")
+                            self.logView.writeString(string: "未选择，默认项目内置工程文件路径")
+                        }
+                        UserDefaults.standard.synchronize()
+                    }
+                }
+                
+            }, ok: "确定") {
+                                
+            }
+            
+            break
         case "OTA升级":
             
             let array = [
@@ -3662,10 +4069,13 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 self.logView.writeString(string: "文件路径:\(fileString as! String)")
                 
                 print("fileString =",fileString)
-
+                var showProgress = 0
                 AntCommandModule.shareInstance.setOtaStartUpgrade(type: Int(type) ?? 0, localFile: fileString, isContinue: false) { progress in
 
-                    self.logView.writeString(string: "进度:\(progress)")
+                    if showProgress == Int(progress) {
+                        showProgress += 1
+                        self.logView.writeString(string: "进度:\(progress)")
+                    }
                     print("progress ->",progress)
 
                 } success: { error in
@@ -3679,7 +4089,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x03 停止升级":
+        case "停止升级":
             
             AntCommandModule.shareInstance.setStopUpgrade { error in
                 print("setStopUpgrade -> error =",error)
@@ -3695,10 +4105,13 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.writeString(string: "文件路径:\(fileString as! String)")
             
             print("fileString =",fileString)
-
+            var showProgress = 0
             AntCommandModule.shareInstance.setOtaStartUpgrade(type: 0, localFile: fileString, isContinue: false) { progress in
 
-                self.logView.writeString(string: "进度:\(progress)")
+                if showProgress == Int(progress) {
+                    showProgress += 1
+                    self.logView.writeString(string: "进度:\(progress)")
+                }
                 print("progress ->",progress)
 
             } success: { error in
@@ -3717,10 +4130,14 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.writeString(string: "文件路径:\(fileString as! String)")
             
             print("fileString =",fileString)
-
+            var showProgress = 0
             AntCommandModule.shareInstance.setOtaStartUpgrade(type: 1, localFile: fileString, isContinue: false) { progress in
 
-                self.logView.writeString(string: "进度:\(progress)")
+                if showProgress == Int(progress) {
+                    showProgress += 1
+                    self.logView.writeString(string: "进度:\(progress)")
+                }
+                
                 print("progress ->",progress)
 
             } success: { error in
@@ -3738,10 +4155,13 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.writeString(string: "文件路径:\(fileString as! String)")
             
             print("fileString =",fileString)
-
+            var showProgress = 0
             AntCommandModule.shareInstance.setOtaStartUpgrade(type: 2, localFile: fileString, isContinue: false) { progress in
 
-                self.logView.writeString(string: "进度:\(progress)")
+                if showProgress == Int(progress) {
+                    showProgress += 1
+                    self.logView.writeString(string: "进度:\(progress)")
+                }
                 print("progress ->",progress)
 
             } success: { error in
@@ -3759,10 +4179,13 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.writeString(string: "文件路径:\(fileString as! String)")
             
             print("fileString =",fileString)
-
+            var showProgress = 0
             AntCommandModule.shareInstance.setOtaStartUpgrade(type: 3, localFile: fileString, isContinue: false) { progress in
 
-                self.logView.writeString(string: "进度:\(progress)")
+                if showProgress == Int(progress) {
+                    showProgress += 1
+                    self.logView.writeString(string: "进度:\(progress)")
+                }
                 print("progress ->",progress)
 
             } success: { error in
@@ -3780,10 +4203,13 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.writeString(string: "文件路径:\(fileString as! String)")
             
             print("fileString =",fileString)
-
+            var showProgress = 0
             AntCommandModule.shareInstance.setOtaStartUpgrade(type: 4, localFile: fileString, isContinue: false) { progress in
 
-                self.logView.writeString(string: "进度:\(progress)")
+                if showProgress == Int(progress) {
+                    showProgress += 1
+                    self.logView.writeString(string: "进度:\(progress)")
+                }
                 print("progress ->",progress)
 
             } success: { error in
@@ -3802,10 +4228,13 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.writeString(string: "文件路径:\(fileString as! String)")
                  
             print("fileString =",fileString)
-
+            var showProgress = 0
             AntCommandModule.shareInstance.setOtaStartUpgrade(type: 5, localFile: fileString, isContinue: false) { progress in
 
-                self.logView.writeString(string: "进度:\(progress)")
+                if showProgress == Int(progress) {
+                    showProgress += 1
+                    self.logView.writeString(string: "进度:\(progress)")
+                }
                 print("progress ->",progress)
 
             } success: { error in
@@ -3817,6 +4246,86 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
+        case "6朝拜闹钟数据":
+            self.logView.clearString()
+            let array = [
+                "起始日期:yyyy-MM-dd(默认当天)",
+                "发送条数(时间按序号开始且递增+1,默认1条)",
+            ]
+
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置朝拜闹钟至设备", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM-dd"
+                
+                let timeString = textArray[0]
+                let arrayCount = textArray[1]
+
+                let startDate = formatter.date(from: timeString) ?? Date()
+                var modelArray = [AntWorshipTimeModel]()
+                
+                for i in 0..<(Int(arrayCount) ?? 1) {
+                    let model = AntWorshipTimeModel()
+                    model.timeString = "2020-01-01"//startDate.afterDay(dayCount: i).conversionDateToString(DateFormat: "yyyy-MM-dd")
+                    model.fajr = (0 + i) >= 1440 ? (0 + i - 1440) : (0 + i)
+                    model.dhuhr = (60 + i) >= 1440 ? (60 + i - 1440) : (60 + i)
+                    model.asr = (120 + i) >= 1440 ? (120 + i - 1440) : (120 + i)
+                    model.maghrib = (180 + i) >= 1440 ? (180 + i - 1440) : (180 + i)
+                    model.isha = (240 + i) >= 1440 ? (240 + i - 1440) : (240 + i)
+                    modelArray.append(model)
+                }
+                
+                var showProgress = 0
+                AntCommandModule.shareInstance.setWorshipTime(modelArray) { progress in
+                    
+                    if showProgress == Int(progress) {
+                        showProgress += 1
+                        self.logView.writeString(string: "进度:\(progress)")
+                    }
+                    print("progress ->",progress)
+
+                } success: { error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    print("setStartUpgrade -> error =",error.rawValue)
+                }
+            }
+            break
+        case "7本地音乐数据":
+            
+            let fileString = self.getFilePathWithType(type: "7")
+            print("fileString =",fileString)
+            self.logView.clearString()
+            
+            var fileName = ""
+            
+            let url = URL(string: fileString) ?? URL.init(fileURLWithPath: fileString)
+            fileName = url.lastPathComponent
+            
+            let array = [
+                "文件名:\(fileName)",
+            ]
+            var showProgress = 0
+            self.presentTextFieldAlertVC(title: "提示(默认文件名:\(fileName))", message: "发送音乐文件至设备", holderStringArray: array) {
+                
+            } okAction: { (textArray) in
+                let name = textArray[0].count == 0 ? fileName : textArray[0]
+                AntCommandModule.shareInstance.setLocalMusicFile(name, localFile: fileString) { progress in
+                    
+                    if showProgress == Int(progress) {
+                        showProgress += 1
+                        self.logView.writeString(string: "进度:\(progress)")
+                    }
+                    print("progress ->",progress)
+
+                } success: { error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    print("setStartUpgrade -> error =",error.rawValue)
+                }
+
+            }
+            break
         case "自定义背景选择":
             
             self.presentSystemAlertVC(title: "自定义背景选择", message: "", cancel: "相册", cancelAction: {
@@ -3841,9 +4350,12 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
                             if bigWidth > 0 && bigheight > 0 {
                                 image = image.img_changeSize(size: .init(width: bigWidth, height: bigheight))
-                                
+                                var showProgress = 0
                                 AntCommandModule.shareInstance.setCustomDialEdit(image: image) { progress in
-                                    self.logView.writeString(string: "进度:\(progress)")
+                                    if showProgress == Int(progress) {
+                                        showProgress += 1
+                                        self.logView.writeString(string: "进度:\(progress)")
+                                    }
                                     print("progress ->",progress)
                                 } success: { error in
                                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -3884,9 +4396,12 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
                             if bigWidth > 0 && bigheight > 0 {
                                 image = image.img_changeSize(size: .init(width: bigWidth, height: bigheight))
-                                
+                                var showProgress = 0
                                 AntCommandModule.shareInstance.setCustomDialEdit(image: image, progress: { progress in
-                                    self.logView.writeString(string: "进度:\(progress)")
+                                    if showProgress == Int(progress) {
+                                        showProgress += 1
+                                        self.logView.writeString(string: "进度:\(progress)")
+                                    }
                                     print("progress ->",progress)
                                 }, isJL_Device: true) { error in
                                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -3931,10 +4446,13 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             break
             
         case "自动OTA升级服务器最新设备相关版本":
-
+            var showProgress = 0
             AntCommandModule.shareInstance.setAutoServerOtaDeviceInfo { progress in
 
-                self.logView.writeString(string: "进度:\(progress)")
+                if showProgress == Int(progress) {
+                    showProgress += 1
+                    self.logView.writeString(string: "进度:\(progress)")
+                }
                 print("progress ->",progress)
 
             } success: { error in
@@ -4001,8 +4519,12 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                     return model.dialId == Int(id)
                 }) {
                     self.logView.writeString(string: "ID:\(id)")
+                    var showProgress = 0
                     AntCommandModule.shareInstance.setOnlienDialFile(model: self.dialArray[index]) { progress in
-                        self.logView.writeString(string: "进度:\(progress)")
+                        if showProgress == Int(progress) {
+                            showProgress += 1
+                            self.logView.writeString(string: "进度:\(progress)")
+                        }
                         print("progress ->",progress)
                     } success: { error in
                         self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -4141,6 +4663,20 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }else{
                 
                 fileString = Bundle.main.path(forResource: "数字表盘", ofType: "bin") ?? ""
+                
+            }
+            
+        }else if type == "7" {
+            
+            if UserDefaults.standard.string(forKey: "7_MusicFiles") != nil {
+                
+                fileString = UserDefaults.standard.string(forKey: "7_MusicFiles")!
+                let homePath = NSHomeDirectory()
+                fileString = homePath + fileString
+                
+            }else{
+                
+                fileString = Bundle.main.path(forResource: "消愁", ofType: "mp3") ?? ""
                 
             }
             

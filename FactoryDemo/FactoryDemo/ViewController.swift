@@ -16,6 +16,8 @@ let ScanNameKey = "hc_scanNameKey"
 let AppVersionKey = "hc_appVersionKey"
 let ImageVersionKey = "hc_imageVersionKey"
 let FontVersionKey = "hc_fontVersionKey"
+let ProductIdKey = "hc_ProductKey"
+let ProjectIdKey = "hc_ProjectKey"
 let PowerOffKey = "hc_powerOffKey"
 let BootKey = "0_BootFiles"
 let ApplicationKey = "1_ApplicationFiles"
@@ -121,7 +123,7 @@ class ViewController: UIViewController {
                 
                 if AntCommandModule.shareInstance.getReconnectIdentifier().count > 0 {
                     if self.reconnectTimer == nil {
-                        self.reconnectTimer = Timer.scheduledTimer(timeInterval: 20, target: self, selector: #selector(self.reconnectFailTimerMethod), userInfo: nil, repeats: true)
+                        self.reconnectTimer = Timer.scheduledTimer(timeInterval: 50, target: self, selector: #selector(self.reconnectFailTimerMethod), userInfo: nil, repeats: true)
                     }
                 }
                 
@@ -227,7 +229,9 @@ class ViewController: UIViewController {
                     if let path = dialPath {
                         processString = processString+"->4表盘文件:\(path.replacingOccurrences(of: "/Documents/", with: ""))"
                     }
-                    processString = processString+"->关机"
+                    if userDefault.bool(forKey: PowerOffKey) == true {
+                        processString = processString+"->关机"
+                    }
                 }
             }
         }
@@ -490,6 +494,8 @@ class ViewController: UIViewController {
                 let appVersion = userDefault.string(forKey: AppVersionKey)
                 let imageVersion = userDefault.string(forKey: ImageVersionKey)
                 let fontVersion = userDefault.string(forKey: FontVersionKey)
+                let projectId = userDefault.string(forKey: ProjectIdKey)
+                let productId = userDefault.string(forKey: ProductIdKey)
                 
                 AntCommandModule.shareInstance.getDeviceOtaVersionInfo { success, error in
                     if callBackResult {
@@ -512,6 +518,24 @@ class ViewController: UIViewController {
                         print("firmware ->",firmware)
                         print("library ->",library)
                         print("font ->",font)
+                        
+                        if productId != nil {
+                            if product != productId {
+                                if let uuidString = AntCommandModule.shareInstance.peripheral?.identifier.uuidString {
+                                    self.filterUuidStringArray.append(uuidString)
+                                }
+                                self.singleProcessEndMethod()
+                            }
+                        }
+                        
+                        if projectId != nil {
+                            if project != projectId {
+                                if let uuidString = AntCommandModule.shareInstance.peripheral?.identifier.uuidString {
+                                    self.filterUuidStringArray.append(uuidString)
+                                }
+                                self.singleProcessEndMethod()
+                            }
+                        }
                         
                         if appVersion != nil || imageVersion != nil || fontVersion != nil {
                             if (appVersion == firmware && appVersion != nil) || (imageVersion == library && imageVersion != nil) || (fontVersion == font && fontVersion != nil) {
@@ -679,12 +703,15 @@ class ViewController: UIViewController {
                         }
                     }
                 }else{
-                    if let recordIndex = self.recordIndex {
+                    if let recordIndex = self.recordIndex{
                         
                         if let sortArray:[Int] = sortArray as? [Int] {
-
-                            self.setOtaMethod(type: sortArray[recordIndex],model: model)
-
+                            
+                            if recordIndex < sortArray.count {
+                                self.setOtaMethod(type: sortArray[recordIndex],model: model)
+                            }else{
+                                self.powerOffMethod()
+                            }
                         }
                         
                     }else{
@@ -748,13 +775,18 @@ class ViewController: UIViewController {
                         self.stateString = "\(self.getOtaTypeString(type: Int(type) ?? 0))完成"
                         
                         if let sortArray:[Int] = sortArray as? [Int] {
-                            
                             if currentIndex < sortArray.count - 1 {
                                 self.recordIndex = currentIndex+1
                                 self.setOtaMethod(type: sortArray[currentIndex+1],model: model)
                                 //self.isNeedCheckOtaMethod = true
                             }else{
-                                self.powerOffMethod()
+                                DispatchQueue.main.asyncAfter(deadline: .now()+5) {
+                                    if AntCommandModule.shareInstance.peripheral?.state == .connected {
+                                        self.powerOffMethod()
+                                    }else{
+                                        self.isNeedCheckOtaMethod = true
+                                    }
+                                }
                             }
                         }
                         
@@ -776,11 +808,16 @@ class ViewController: UIViewController {
                 
                 if let sortArray:[Int] = sortArray as? [Int] {
                     self.recordIndex = currentIndex + 1
-                    
                     if currentIndex < sortArray.count - 1 {
                         self.setOtaMethod(type: sortArray[currentIndex+1],model: model)
                     }else{
-                        self.powerOffMethod()
+                        DispatchQueue.main.asyncAfter(deadline: .now()+5) {
+                            if AntCommandModule.shareInstance.peripheral?.state == .connected {
+                                self.powerOffMethod()
+                            }else{
+                                self.isNeedCheckOtaMethod = true
+                            }
+                        }
                     }
                 }
             }
