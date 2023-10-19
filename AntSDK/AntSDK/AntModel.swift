@@ -867,7 +867,7 @@ import CoreLocation
         if self.functionList_customDial {
             log += "\n自定义表盘"
             if let model = self.functionDetail_customDial {
-                log += "\n\(model.isSupportfontColor ? "支持":"不支持")字体颜色设置"
+                log += "\n      \(model.isSupportfontColor ? "支持":"不支持")字体颜色设置"
             }
         }
         if self.functionList_localDial {
@@ -2389,6 +2389,9 @@ class AntFunctionModel_newPortocol:NSObject {
 @objc public class AntLedFunctionModel:NSObject {
     @objc public var ledType:AntLedFunctionType = .unknow
     @objc public var ledColor = 0   //bit0:红,bit1:绿,bit2:蓝,bit3:白
+    @objc public var firstColor = 0
+    @objc public var secondColor = 0
+    @objc public var thirdColor = 0
     @objc public var timeLength = 0 //持续时间
     @objc public var frequency = 0  //闪烁频次
     
@@ -2407,6 +2410,12 @@ class AntFunctionModel_newPortocol:NSObject {
             self.ledColor = Int(UInt8(dic["ledColor"] as! Int) )
             self.timeLength = Int(UInt8(dic["timeLength"] as! Int))
             self.frequency = Int(UInt8(dic["frequency"] as! Int))
+            
+            if dic.keys.contains("firstColor") && dic.keys.contains("secondColor") && dic.keys.contains("thirdColor") {
+                self.firstColor = Int(UInt8(dic["firstColor"] as! Int) )
+                self.secondColor = Int(UInt8(dic["secondColor"] as! Int))
+                self.thirdColor = Int(UInt8(dic["thirdColor"] as! Int))
+            }
             
         }else{
             printLog("AntLedFunctionModel dic初始化异常")

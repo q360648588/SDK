@@ -176,7 +176,11 @@ import CoreLocation
     var receiveSetMotorShakeFunctionBlock:((AntError) -> Void)?
     var receiveGetLedSetupBlock:(([AntLedFunctionModel],AntError) -> Void)?
     var receiveGetMotorShakeFunctionBlock:(([AntMotorFunctionModel],AntError) -> Void)?
-    
+    var receiveReportAlarmArray:(([AntAlarmModel],AntError) -> Void)?
+    var receiveSetLedSetupSingleBlock:((AntError) -> Void)?
+    var receiveSetMotorShakeFunctionSingleBlock:((AntError) -> Void)?
+    var receiveGetLedSetupSingleBlock:((AntLedFunctionModel?,AntError) -> Void)?
+    var receiveGetMotorShakeFunctionSingleBlock:((AntMotorFunctionModel?,AntError) -> Void)?
     
     var stepMaxData:Data?
     var isStepDetailData = false
@@ -274,6 +278,7 @@ import CoreLocation
                 let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
                 return [UInt8](UnsafeBufferPointer.init(start: b, count: data.count))
             }
+//            let val:[UInt8] = [0xaa,0x09,0x15,0x00,0x01,0x05,0x00,0x10,0x00,0x03,0x04,0x00,0x80,0x14,0x1c,0x04,0x01,0x80,0x14,0x21,0x04,0x02,0x80,0x14,0x21,0xb2,0xa0,0xE]
             
             if val.count <= 0 {
                 printLog("characteristic数据为空")
@@ -1730,6 +1735,82 @@ import CoreLocation
                     }
                 }
                 
+                //获取LED单个设置
+                if val[0] == 0x02 && (val[1] == 0x96 || val[1] == 0x98) {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveGetLedSetupSingleBlock {
+                            self.parseGetLedSetupSingle(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveGetLedSetupSingleBlock {
+                            block(nil,.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetLedSetupSingle长度校验出错"))
+                    }
+                    
+                }
+                
+                //设置LED单个设置
+                if val[0] == 0x02 && (val[1] == 0x97 || val[1] == 0x99) {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveSetLedSetupSingleBlock {
+                            self.parseSetLedSetupSingle(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveSetLedSetupSingleBlock {
+                            block(.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetLedSetupSingle长度校验出错"))
+                    }
+                    
+                }
+                
+                //获取马达震动单个设置
+                if val[0] == 0x02 && val[1] == 0x9A {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveGetMotorShakeFunctionSingleBlock {
+                            self.parseGetMotorShakeFunctionSingle(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveGetMotorShakeFunctionSingleBlock {
+                            block(nil,.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetMotorShakeFunctionSingle长度校验出错"))
+                    }
+                    
+                }
+                
+                //设置马达震动单个设置
+                if val[0] == 0x02 && val[1] == 0x9B {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveSetMotorShakeFunctionSingleBlock {
+                            self.parseSetMotorShakeFunctionSingle(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveSetMotorShakeFunctionSingleBlock {
+                            block(.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        AntSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetMotorShakeFunctionSingle长度校验出错"))
+                    }
+                    
+                }
+                
                 //同步健康数据 0x00
                 if val[0] == 0x03 && val[1] == 0x80 {
                     
@@ -2989,6 +3070,14 @@ import CoreLocation
                                                     self.parseReportWorshipStartTime(val: worshipVal, success: block)
                                                 }
                                                 break
+                                            case 0x05:
+                                                let startIndex = Int(valIndex+countLength)
+                                                let endIndex = Int(valIndex+countLength+cmd_length)
+                                                let alarmVal = Array(newVal[startIndex..<endIndex])
+                                                if let block = self.receiveReportAlarmArray {
+                                                    self.parseReportAlarmArray(val: alarmVal, success: block)
+                                                }
+                                                break
                                             default:
                                                 break
                                             }
@@ -3001,23 +3090,16 @@ import CoreLocation
                                     var count:Int = Int(newVal[0])
                                     var valIndex:Int = 1
                                     
-                                    while valIndex < newVal.count {
-                                        let cmd_id:Int = Int(newVal[valIndex])
-                                        let cmd_length:Int = 0
-                                        let countLength:Int = 1
-                                        if cmd_length > 0 {
-                                            switch cmd_id {
-                                            case 0x01:
-                                                if let block = self.receiveReportLocationInfo {
-                                                    self.parseReportLocationInfo(val: [], success: block)
-                                                }
-                                                break
-                                            
-                                            default:
-                                                break
-                                            }
+                                    let cmd_id:Int = Int(newVal[valIndex])
+                                    switch cmd_id {
+                                    case 0x01:
+                                        if let block = self.receiveReportLocationInfo {
+                                            self.parseReportLocationInfo(val: [], success: block)
                                         }
-                                        valIndex = (valIndex+countLength+Int(cmd_length))
+                                        break
+                                    
+                                    default:
+                                        break
                                     }
                                 }
                                 
@@ -3216,6 +3298,11 @@ import CoreLocation
                                             case 0x1d:
                                                 if let block = self.receiveReportWorshipStartTime {
                                                     block(nil,0,.invalidLength)
+                                                }
+                                                break
+                                            case 0x05:
+                                                if let block = self.receiveReportAlarmArray {
+                                                    block([],.invalidLength)
                                                 }
                                                 break
                                             default:
@@ -3472,6 +3559,14 @@ import CoreLocation
                                                 self.parseReportWorshipStartTime(val: worshipVal, success: block)
                                             }
                                             break
+                                        case 0x05:
+                                            let startIndex = Int(valIndex+countLength)
+                                            let endIndex = Int(valIndex+countLength+cmd_length)
+                                            let alarmVal = Array(newVal[startIndex..<endIndex])
+                                            if let block = self.receiveReportAlarmArray {
+                                                self.parseReportAlarmArray(val: alarmVal, success: block)
+                                            }
+                                            break
                                         default:
                                             break
                                         }
@@ -3483,25 +3578,19 @@ import CoreLocation
                             if val[1] == 0x0b {
                                 let newVal = Array(val[4..<val.count-2])
                                 var count:Int = Int(newVal[0])
-                                var valIndex:Int = 1
-                                
-                                while valIndex < newVal.count {
+                                let valIndex = 1
+                                if valIndex < newVal.count {
                                     let cmd_id:Int = Int(newVal[valIndex])
-                                    let cmd_length:Int = 0
-                                    let countLength:Int = 1
-                                    if cmd_length > 0 {
-                                        switch cmd_id {
-                                        case 0x01:
-                                            if let block = self.receiveReportLocationInfo {
-                                                self.parseReportLocationInfo(val: [], success: block)
-                                            }
-                                            break
-                                        
-                                        default:
-                                            break
+                                    switch cmd_id {
+                                    case 0x01:
+                                        if let block = self.receiveReportLocationInfo {
+                                            self.parseReportLocationInfo(val: [], success: block)
                                         }
+                                        break
+                                    
+                                    default:
+                                        break
                                     }
-                                    valIndex = (valIndex+countLength+Int(cmd_length))
                                 }
                             }
                             
@@ -3697,6 +3786,11 @@ import CoreLocation
                                         case 0x1d:
                                             if let block = self.receiveReportWorshipStartTime {
                                                 block(nil,0,.invalidLength)
+                                            }
+                                            break
+                                        case 0x05:
+                                            if let block = self.receiveReportAlarmArray {
+                                                block([],.invalidLength)
                                             }
                                             break
                                         default:
@@ -8648,17 +8742,27 @@ import CoreLocation
 //            let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
 //            return [UInt8](UnsafeBufferPointer.init(start: b, count: data.count))
 //        }
-        
         var headArray:[UInt8] = Array.init()
         
         //固定为 0xAA,0x55
         let head:[UInt8] = [0xaa,0x55]
         //文件名
-        let fileNameData:Data = fileNmae.data(using: .utf8) ?? Data.init()
+        var fileNameData:Data = fileNmae.data(using: .utf8) ?? Data.init()
+        let maxLength = 45
+        if fileNameData.count > maxLength {
+            let componentArray = fileNmae.components(separatedBy: ".")
+            if let lastString = componentArray.last {
+                let typeString = "."+lastString
+                let typeData = typeString.data(using: .utf8) ?? Data.init()
+                fileNameData = fileNameData.subdata(in: 0..<(maxLength-typeString.count))+typeData
+            }
+        }
         let fileNameArray:[UInt8] = fileNameData.withUnsafeBytes { (byte) -> [UInt8] in
             let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
             return [UInt8](UnsafeBufferPointer.init(start: b, count: fileNameData.count))
         }
+        print("fileNmae = \(fileNmae)")
+        print("fileNameData = \(self.convertDataToHexStr(data: fileNameData))")
         //文件名长度
         let fileNameLength:[UInt8] = [UInt8(fileNameArray.count)]
         // 文件长度 仅数据部分，不包含文件头
@@ -11152,6 +11256,48 @@ import CoreLocation
         }
     }
     
+    // MARK: - 闹钟上报
+    @objc public func reportAlarmArray(success:@escaping((_ alarmArray:[AntAlarmModel],_ error:AntError) -> Void)) {
+        self.receiveReportAlarmArray = success
+    }
+    
+    private func parseReportAlarmArray(val:[UInt8],success:@escaping((_ alarmArray:[AntAlarmModel],_ error:AntError) -> Void)) {
+        
+        let valData = val.withUnsafeBufferPointer { (v) -> Data in
+            return Data.init(buffer: v)
+        }
+
+        AntSDKLog.writeStringToSDKLog(string: String.init(format: "parseGetNewAlarmArray待解析数据:\nlength = %d, bytes = %@",valData.count, self.convertDataToHexStr(data: valData)))
+        var alarmArray = [AntAlarmModel]()
+
+        let alarmCount = val[0]
+        var valIndex = 1
+        while valIndex < val.count {
+            let length = val[valIndex]
+            if length >= 4 {
+                let index = val[valIndex+1]
+                let repeatCount = val[valIndex+2]
+                let hour = val[valIndex+3]
+                let minute = val[valIndex+4]
+                let string = String.init(format: "序号:%d,重复:%d,小时:%d,分钟:%d",index,repeatCount,hour,minute)
+                print("\(string)")
+                AntSDKLog.writeStringToSDKLog(string: string)
+                let model = AntAlarmModel.init(dic: ["index":"\(index)","repeatCount":"\(repeatCount)","hour":String.init(format: "%02d", hour),"minute":String.init(format: "%02d", minute)])
+                alarmArray.append(model)
+                valIndex += Int(length+1)
+            }
+        }
+        if alarmCount == alarmArray.count {
+            success(alarmArray,.none)
+        }else{
+            print("获取闹钟个数不一致,返回失败")
+            AntSDKLog.writeStringToSDKLog(string: "获取闹钟个数不一致,返回失败")
+            success([],.fail)
+        }
+        
+    }
+    
+    
     // MARK: - 设置时区
     /// - Parameters:
     ///   - timeZone: 0-12东区 13-24西区  （正数不变负数从13开始）
@@ -11183,9 +11329,14 @@ import CoreLocation
         //参数id
         let cmd_id = 0x0F
         //参数长度
-        let modelCount = 2
+        let modelCount = 1
         
         var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
             UInt8(timeZone)
         ]
         
@@ -11254,12 +11405,20 @@ import CoreLocation
         //参数长度
         let modelCount = 12
         
-        let latitude:Int = Int(localtion.coordinate.latitude * 1000000)
-        let longitude:Int = Int(localtion.coordinate.longitude * 1000000)
-        let direction:Int = Int(localtion.course)
-        let speed:Int = Int(localtion.speed * 100)
+        var latitude:Int = Int(localtion.coordinate.latitude * 1000000)
+        var longitude:Int = Int(localtion.coordinate.longitude * 1000000)
+        if latitude < 0 {
+            latitude = abs(latitude) | 0x80000000
+        }
+        if longitude < 0 {
+            longitude = abs(longitude) | 0x80000000
+        }
+        //print("latitude = \(latitude),longitude = \(longitude)")
+        let direction:Int = Int(localtion.course) < 0 ? 0 : Int(localtion.course)
+        let speed:Int = Int(localtion.speed * 100) < 0 ? 0 : Int(localtion.speed * 100)
         
         var contentVal:[UInt8] = [
+            0x01,
             UInt8(cmd_id),
             UInt8((modelCount ) & 0xff),
             UInt8((modelCount >> 8) & 0xff),
@@ -11350,7 +11509,10 @@ import CoreLocation
     
     // MARK: - LED灯功能设置
     @objc public func setLedSetup(modelArray:[AntLedFunctionModel],success:@escaping((AntError) -> Void)) {
-
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。")
+            return
+        }
         var headVal:[UInt8] = [
             0xaa,
             0x83
@@ -11387,6 +11549,10 @@ import CoreLocation
     
     // MARK: - 获取led功能灯
     @objc public func getLedSetup(_ success:@escaping(([AntLedFunctionModel],AntError) -> Void)) {
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。")
+            return
+        }
         let headVal:[UInt8] = [
             0xaa,
             0x84
@@ -11444,9 +11610,234 @@ import CoreLocation
         self.signalCommandSemaphore()
     }
     
+    // MARK: - 获取单个LED灯功能
+    @objc public func getLedSetup(type:AntLedFunctionType,success:@escaping((AntLedFunctionModel?,AntError) -> Void)) {
+        
+        var val:[UInt8] = [
+            0x02,
+            0x16,
+            0x04,
+            0x00,
+        ]
+        if type == .powerIndicator {
+            val = [
+                0x02,
+                0x17,
+                0x04,
+                0x00,
+            ]
+        }
+        
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveGetLedSetupSingleBlock = success
+        }else{
+            success(nil,state)
+        }
+        
+    }
+    
+    private func parseGetLedSetupSingle(val:[UInt8],success:@escaping((AntLedFunctionModel?,AntError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+
+        if val[1] == 0x98 && val.count < 10 {
+            success(nil,.invalidLength)
+            self.signalCommandSemaphore()
+            return
+        }
+        
+        if val[1] == 0x96 && val.count < 9 {
+            success(nil,.invalidLength)
+            self.signalCommandSemaphore()
+            return
+        }
+        
+        if val[4] == 1 {
+            if val[1] == 0x98 {
+                
+                let ledType = 0
+                let ledColor = 0
+                let firstColor = val[5]
+                let secondColor = val[6]
+                let thirdColor = val[7]
+                let timeLength = val[8]
+                let frequency = val[9]
+                let string = String.init(format: "类型:%d,颜色:%d,75-100电量颜色:%d,21-74电量颜色:%d,0-20电量颜色:%d,持续时长:%d,闪烁频次:%d",ledType,ledColor,firstColor,secondColor,thirdColor,timeLength,frequency)
+                print("\(string)")
+                AntSDKLog.writeStringToSDKLog(string: string)
+                let model = AntLedFunctionModel.init(dic: ["ledType":Int(ledType),"ledColor":Int(ledColor),"firstColor":Int(firstColor),"secondColor":Int(secondColor),"thirdColor":Int(thirdColor),"timeLength":Int(timeLength),"frequency":Int(frequency)])
+                success(model,.none)
+                
+            }
+            
+            if val[1] == 0x96 {
+                let ledType = val[5]
+                let ledColor = val[6]
+                let timeLength = val[7]
+                let frequency = val[8]
+                let string = String.init(format: "类型:%d,颜色:%d,持续时长:%d,闪烁频次:%d",ledType,ledColor,timeLength,frequency)
+                print("\(string)")
+                AntSDKLog.writeStringToSDKLog(string: string)
+                let model = AntLedFunctionModel.init(dic: ["ledType":Int(ledType),"ledColor":Int(ledColor),"timeLength":Int(timeLength),"frequency":Int(frequency)])
+                success(model,.none)
+            }
+            
+        }else{
+            success(nil,.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 设置单个LED灯功能
+    @objc public func setLedSetup(model:AntLedFunctionModel,success:@escaping((AntError) -> Void)) {
+        
+        var val:[UInt8] = []
+        if model.ledType == .powerIndicator {
+            val = [
+                0x02,
+                0x19,
+                0x09,
+                0x00,
+                UInt8(model.firstColor),
+                UInt8(model.secondColor),
+                UInt8(model.thirdColor),
+                UInt8(model.timeLength),
+                UInt8(model.frequency),
+            ]
+            
+        }else{
+            val = [
+                0x02,
+                0x17,
+                0x08,
+                0x00,
+                (UInt8(model.ledType.rawValue) ?? 0),
+                UInt8(model.ledColor),
+                UInt8(model.timeLength),
+                UInt8(model.frequency),
+            ]
+        }
+        
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetLedSetupSingleBlock = success
+        }else{
+            success(state)
+        }
+    }
+    
+    private func parseSetLedSetupSingle(val:[UInt8],success:@escaping((AntError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val[4] == 1 {
+            
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@", state))
+            success(.none)
+            
+        }else{
+            success(.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 获取单个马达真的功能
+    @objc public func getMotorShakeFunction(type:AntLedFunctionType,success:@escaping((AntMotorFunctionModel?,AntError) -> Void)) {
+        
+        var val:[UInt8] = [
+            0x02,
+            0x1A,
+            0x04,
+            0x00,
+        ]
+        
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveGetMotorShakeFunctionSingleBlock = success
+        }else{
+            success(nil,state)
+        }
+    }
+    
+    private func parseGetMotorShakeFunctionSingle(val:[UInt8],success:@escaping((AntMotorFunctionModel?,AntError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+
+        if val.count < 9 {
+            success(nil,.invalidLength)
+            self.signalCommandSemaphore()
+            return
+        }
+        
+        if val[4] == 1 {
+            let ledType = val[5]
+            let timeLength = val[6]
+            let frequency = val[7]
+            let level = val[8]
+            let string = String.init(format: "类型:%d,震动时长:%d,震动频次:%d,震动强度:%d",ledType,timeLength,frequency,level)
+            print("\(string)")
+            AntSDKLog.writeStringToSDKLog(string: string)
+            let model = AntMotorFunctionModel.init(dic: ["ledType":Int(ledType),"timeLength":Int(timeLength),"frequency":Int(frequency),"level":Int(level)])
+            success(model,.none)
+            
+        }else{
+            success(nil,.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 设置单个马达真的功能
+    @objc public func setMotorShakeFunction(model:AntMotorFunctionModel,success:@escaping((AntError) -> Void)) {
+        
+        var val:[UInt8] = [
+            0x02,
+            0x1B,
+            0x08,
+            0x00,
+            UInt8(model.ledType.rawValue),
+            UInt8(model.timeLength),
+            UInt8(model.frequency),
+            UInt8(model.level),
+        ]
+        
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetMotorShakeFunctionSingleBlock = success
+        }else{
+            success(state)
+        }
+    }
+    
+    private func parseSetMotorShakeFunctionSingle(val:[UInt8],success:@escaping((AntError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val[4] == 1 {
+            
+            AntSDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@", state))
+            success(.none)
+            
+        }else{
+            success(.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
     // MARK: - 马达震动功能设置
     @objc public func setMotorShakeFunction(modelArray:[AntMotorFunctionModel],success:@escaping((AntError) -> Void)) {
-
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。")
+            return
+        }
         var headVal:[UInt8] = [
             0xaa,
             0x83
@@ -11483,6 +11874,10 @@ import CoreLocation
     
     // MARK: - 获取马达功能
     @objc public func getMotorShakeFunction(_ success:@escaping(([AntMotorFunctionModel],AntError) -> Void)) {
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。")
+            return
+        }
         let headVal:[UInt8] = [
             0xaa,
             0x84

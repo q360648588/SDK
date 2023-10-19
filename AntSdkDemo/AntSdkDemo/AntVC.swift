@@ -328,6 +328,7 @@ class AntVC: UIViewController {
                 "0x2c 获取自定义表盘",
                 "0x2d 设置自定义表盘",
                 "自定义背景选择",
+                "(直接选取无编辑)自定义背景选择",
                 "设置自定义背景",
                 "设置自定义背景(JL)",
                 "0x2e 设置电话状态",
@@ -363,6 +364,11 @@ class AntVC: UIViewController {
                 "同步N个联系人",
                 "0x14 获取低电提醒",
                 "0x15 设置低电提醒",
+                "0x16 获取单个LED灯功能",
+                "0x17 设置单个LED灯功能",
+                "0x19 设置单个LED灯电量显示",
+                "0x1A 获取马达震动功能",
+                "0x1B 设置马达震动功能",
             ],
             [
                 "0x00 同步计步数据",
@@ -418,6 +424,7 @@ class AntVC: UIViewController {
                 "上报勿扰设置",
                 "上报朝拜闹钟天数及开始时间",
                 "上报请求定位信息",
+                "上报闹钟",
             ],
             [
                 "多包测试命令",
@@ -2972,6 +2979,195 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
+        case "0x16 获取单个LED灯功能":
+            
+            let array = [
+                "0:电量 1:信息 2:bt连接 3:计步达标 4:低电",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "获取单个LED灯功能")
+            
+            self.presentTextFieldAlertVC(title: "提示(默认0)", message: "获取单个LED灯功能", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let type = Int(textArray[0]) ?? 0
+                                
+                AntCommandModule.shareInstance.getLedSetup(type: AntLedFunctionType.init(rawValue: type) ?? .powerIndicator) { model, error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    if error == .none {
+                        
+                        if let model = model {
+                            self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
+                            self.logView.writeString(string: "颜色: \(model.ledColor)")
+                            self.logView.writeString(string: "97-100颜色: \(model.firstColor)")
+                            self.logView.writeString(string: "21-74颜色: \(model.secondColor)")
+                            self.logView.writeString(string: "0-20颜色: \(model.thirdColor)")
+                            self.logView.writeString(string: "持续时长: \(model.timeLength)")
+                            self.logView.writeString(string: "闪烁频次: \(model.frequency)\n\n")
+                        }
+                    }
+                }
+            }
+
+            break
+        case "0x17 设置单个LED灯功能":
+            
+            let array = [
+                "参数类型 1:信息 2:bt连接 3:计步达标 4:低电",
+                "颜色(0-15,bit0:红 bit1:绿 bit2:蓝 bit3:白)",
+                "持续时间 0-50",
+                "闪烁频次 0-5，0常亮",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "LED灯功能设置")
+            self.presentTextFieldAlertVC(title: "提示(默认类型1其他0)", message: "LED灯功能设置(后续参数递增)", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let modelCount = Int(textArray[1]) ?? 1
+                let colorType = Int(textArray[1]) ?? 0
+                let timeLength = Int(textArray[2]) ?? 0
+                let frequency = Int(textArray[3]) ?? 0
+                
+                let model = AntLedFunctionModel()
+                model.ledType = AntLedFunctionType.init(rawValue: modelCount) ?? .informationReminder
+                model.timeLength = timeLength
+                model.frequency = frequency
+                model.ledColor = colorType
+                self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
+                self.logView.writeString(string: "颜色: \(model.ledColor)")
+                self.logView.writeString(string: "持续时长: \(model.timeLength)")
+                self.logView.writeString(string: "闪烁频次: \(model.frequency)\n\n")
+                
+                AntCommandModule.shareInstance.setLedSetup(model: model, success: { error in
+                    
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        print("setLedSetup ->","success")
+                    }
+                })
+            }
+            
+            break
+
+        case "0x19 设置单个LED灯电量显示":
+            
+            let array = [
+                "75-100颜色(0-15,bit0:红 bit1:绿 bit2:蓝 bit3:白)",
+                "21-74颜色(0-15,bit0:红 bit1:绿 bit2:蓝 bit3:白)",
+                "0-20颜色(0-15,bit0:红 bit1:绿 bit2:蓝 bit3:白)",
+                "持续时间 0-50",
+                "闪烁频次 0-5，0常亮",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "LED灯功能设置")
+            self.presentTextFieldAlertVC(title: "提示(默认类型1其他0)", message: "LED灯功能设置(后续参数递增)", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let firstColor = Int(textArray[0]) ?? 1
+                let secondColor = Int(textArray[1]) ?? 0
+                let thirdColor = Int(textArray[2]) ?? 0
+                let timeLength = Int(textArray[3]) ?? 0
+                let frequency = Int(textArray[4]) ?? 0
+                
+                let model = AntLedFunctionModel()
+                model.ledType = .powerIndicator
+                model.timeLength = timeLength
+                model.frequency = frequency
+                model.firstColor = firstColor
+                model.secondColor = secondColor
+                model.thirdColor = thirdColor
+
+                self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
+                self.logView.writeString(string: "75-100颜色: \(model.firstColor)")
+                self.logView.writeString(string: "21-74颜色: \(model.secondColor)")
+                self.logView.writeString(string: "0-20颜色: \(model.thirdColor)")
+                self.logView.writeString(string: "持续时长: \(model.timeLength)")
+                self.logView.writeString(string: "闪烁频次: \(model.frequency)\n\n")
+                
+                AntCommandModule.shareInstance.setLedSetup(model: model, success: { error in
+                    
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        print("setLedSetup ->","success")
+                    }
+                })
+            }
+            
+            break
+        case "0x1A 获取马达震动功能":
+            
+            let array = [
+                "0:电量 1:信息 2:bt连接 3:计步达标 4:低电",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "获取马达震动功能")
+            
+            self.presentTextFieldAlertVC(title: "提示(默认0)", message: "获取马达震动功能", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let type = Int(textArray[0]) ?? 0
+                                
+                AntCommandModule.shareInstance.getMotorShakeFunction(type: AntLedFunctionType.init(rawValue: type) ?? .powerIndicator) { model, error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    if error == .none {
+                        if let model = model {
+                            self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
+                            self.logView.writeString(string: "震动时长: \(model.timeLength)")
+                            self.logView.writeString(string: "震动频次: \(model.frequency)")
+                            self.logView.writeString(string: "震动强度: \(model.level)\n\n")
+                        }
+                    }
+                }
+            }
+            
+            break
+        case "0x1B 设置马达震动功能":
+            
+            let array = [
+                "参数类型 1:信息 2:bt连接 3:计步达标 4:低电",
+                "震动时长 0-20",
+                "震动频次 0-5 ,0长震",
+                "震动强度 0-10",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "马达震动功能设置")
+            self.presentTextFieldAlertVC(title: "提示(默认0)", message: "马达震动功能设置", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+
+                let ledType = Int(textArray[1]) ?? 0
+                let timeLength = Int(textArray[1]) ?? 0
+                let frequency = Int(textArray[2]) ?? 0
+                let level = Int(textArray[3]) ?? 0
+                
+                let model = AntMotorFunctionModel()
+                model.ledType = AntLedFunctionType.init(rawValue: ledType) ?? .powerIndicator
+                model.timeLength = timeLength
+                model.frequency = frequency
+                model.level = level
+                self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
+                self.logView.writeString(string: "震动时长: \(model.timeLength)")
+                self.logView.writeString(string: "震动频次: \(model.frequency)")
+                self.logView.writeString(string: "震动强度: \(model.level)\n\n")
+                
+                AntCommandModule.shareInstance.setMotorShakeFunction(model: model) { error in
+                    
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        print("setMotorShakeFunction ->","success")
+                    }
+                }
+            }
+            
+            break
         case "0x00 同步计步数据":
             
             let array = [
@@ -3651,7 +3847,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
         case "0x83(0x1e) 设置LED灯功能":
             
             let array = [
-                "参数个数 1-5 设置类型 0:电量 1:信息 2:bt连接 3:计步达标 4:低电",
+                "参数数组(设置类型输入不间隔) 0:电量 1:信息 2:bt连接 3:计步达标 4:低电",
                 "颜色(0-15,bit0:红 bit1:绿 bit2:蓝 bit3:白)",
                 "持续时间 0-50",
                 "闪烁频次 0-5，0常亮",
@@ -3662,18 +3858,25 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             self.presentTextFieldAlertVC(title: "提示(参数个数默认1其他默认0)", message: "LED灯功能设置(后续参数递增)", holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
-                let modelCount = Int(textArray[0]) ?? 0
+                let modelCount = textArray[0]
                 let colorType = Int(textArray[1]) ?? 0
                 let timeLength = Int(textArray[2]) ?? 0
                 let frequency = Int(textArray[3]) ?? 0
+                                
+                let dayNumber:String = modelCount.components(separatedBy: .decimalDigits.inverted).joined()
+                var dayArray = [Int]()
+                for i in dayNumber {
+                    dayArray.append(Int(String(i)) ?? 0)
+                }
+                print("dayArray = \(dayArray)")
                 
                 var modelArray = [AntLedFunctionModel]()
-                for i in 0..<modelCount {
+                for i in dayArray {
                     let model = AntLedFunctionModel()
                     model.ledType = AntLedFunctionType.init(rawValue: i) ?? .powerIndicator
-                    model.timeLength = timeLength + i
-                    model.frequency = frequency + i
-                    model.ledColor = colorType + i
+                    model.timeLength = timeLength
+                    model.frequency = frequency
+                    model.ledColor = colorType
                     modelArray.append(model)
                     self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
                     self.logView.writeString(string: "颜色: \(model.ledColor)")
@@ -3695,7 +3898,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
         case "0x83(0x1f) 设置马达震动功能":
             
             let array = [
-                "参数个数 1-5 设置类型 0:电量 1:信息 2:bt连接 3:计步达标 4:低电",
+                "参数数组(设置类型输入不间隔) 0:电量 1:信息 2:bt连接 3:计步达标 4:低电",
                 "震动时长 0-20",
                 "震动频次 0-5 ,0长震",
                 "震动强度 0-10",
@@ -3707,18 +3910,25 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 
             }, ok: nil) { (textArray) in
 
-                let modelCount = Int(textArray[0]) ?? 1
+                let modelCount = textArray[0]
                 let timeLength = Int(textArray[1]) ?? 0
                 let frequency = Int(textArray[2]) ?? 0
                 let level = Int(textArray[3]) ?? 0
                 
+                let dayNumber:String = modelCount.components(separatedBy: .decimalDigits.inverted).joined()
+                var dayArray = [Int]()
+                for i in dayNumber {
+                    dayArray.append(Int(String(i)) ?? 0)
+                }
+                print("dayArray = \(dayArray)")
+                
                 var modelArray = [AntMotorFunctionModel]()
-                for i in 0..<modelCount {
+                for i in dayArray {
                     let model = AntMotorFunctionModel()
                     model.ledType = AntLedFunctionType.init(rawValue: i) ?? .powerIndicator
-                    model.timeLength = timeLength + i
-                    model.frequency = frequency + i
-                    model.level = level + i
+                    model.timeLength = timeLength
+                    model.frequency = frequency
+                    model.level = level
                     modelArray.append(model)
                     self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
                     self.logView.writeString(string: "震动时长: \(model.timeLength)")
@@ -4187,6 +4397,43 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
                 
                 self.logView.writeString(string: "上报请求定位信息")
                 print("reportLocationInfo")
+            }
+            
+            break
+        case "上报闹钟":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "设备端触发显示")
+            
+            AntCommandModule.shareInstance.reportAlarmArray { alarmArray, error in
+                
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                if error == .none {
+                    print("GetAlarm ->",alarmArray)
+
+                    for alarm in alarmArray {
+                        let alarmModel = alarm
+                        //print("alarmModel",alarmModel.alarmIndex,"alarmOpen ->",alarmModel.alarmOpen,"alarmTime ->",alarmModel.alarmTime,"alarmType ->",alarmModel.alarmType.rawValue,"alarmRepeat ->",alarmModel.alarmRepeatArray)
+
+                        self.logView.writeString(string: "闹钟序号:\(alarmModel.alarmIndex)")
+                        self.logView.writeString(string: "闹钟时间:\(alarmModel.alarmHour):\(alarmModel.alarmMinute)")
+                        self.logView.writeString(string: "repeatCount:\(alarmModel.alarmRepeatCount)")
+                        self.logView.writeString(string: "闹钟开关:\(alarmModel.alarmOpen)")
+                        if alarmModel.alarmOpen {
+                            self.logView.writeString(string: "闹钟重复类型:\(alarmModel.alarmType == .single ? "单次闹钟":"重复闹钟")")
+                            if alarmModel.alarmType == .cycle {
+                                if alarmModel.alarmRepeatArray != nil {
+                                    let str = ((alarmModel.alarmRepeatArray![0] != 0 ? "星期天":"")+(alarmModel.alarmRepeatArray![1] != 0 ? "星期一":"")+(alarmModel.alarmRepeatArray![2] != 0 ? "星期二":"")+(alarmModel.alarmRepeatArray![3] != 0 ? "星期三":"")+(alarmModel.alarmRepeatArray![4] != 0 ? "星期四":"")+(alarmModel.alarmRepeatArray![5] != 0 ? "星期五":"")+(alarmModel.alarmRepeatArray![6] != 0 ? "星期六":""))
+                                    self.logView.writeString(string: "闹钟重复星期:\(str)")
+                                }else{
+                                    self.logView.writeString(string: "闹钟重复星期:重复星期未开启,默认单次闹钟")
+                                }
+                            }
+                        }
+                        self.logView.writeString(string: "\n")
+                    }
+                }
             }
             
             break
@@ -4949,6 +5196,15 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
+        case "(直接选取无编辑)自定义背景选择":
+            
+            self.presentSystemAlertVC(title: "(直接选取无编辑)自定义背景选择", message: "", cancel: "相册", cancelAction: {
+                self.initPhotoPicker(allowsEditing: false)
+            }, ok: "拍照") {
+                self.initCameraPicker()
+            }
+            
+            break
             
         case "设置自定义背景":
             
@@ -4971,7 +5227,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 //            }
 
             if var image = self.customBgImage {
-                
+                print("image = \(image)")
                 AntCommandModule.shareInstance.getCustonDialFrameSize { success, error in
 
                     if error == .none {
@@ -4982,6 +5238,7 @@ extension AntVC:UITableViewDataSource,UITableViewDelegate {
 
                             if bigWidth > 0 && bigheight > 0 {
                                 image = image.img_changeSize(size: .init(width: bigWidth, height: bigheight))
+                                print("image.img_changeSize = \(image)")
                                 var showProgress = 0
                                 AntCommandModule.shareInstance.setCustomDialEdit(image: image) { progress in
                                     if showProgress == Int(progress) {
@@ -5622,11 +5879,11 @@ extension AntVC : UIImagePickerControllerDelegate,UINavigationControllerDelegate
     //MARK: - 相机
     
     //从相册中选择
-    func initPhotoPicker(){
+    func initPhotoPicker(allowsEditing:Bool = true){
         DispatchQueue.main.async {
             let photoPicker =  UIImagePickerController()
             photoPicker.delegate = self
-            photoPicker.allowsEditing = true
+            photoPicker.allowsEditing = allowsEditing
             photoPicker.sourceType = .photoLibrary
             //在需要的地方present出来
             photoPicker.modalPresentationStyle = .fullScreen
@@ -5658,7 +5915,7 @@ extension AntVC : UIImagePickerControllerDelegate,UINavigationControllerDelegate
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         
         //获得照片
-        let image:UIImage = info[UIImagePickerController.InfoKey.editedImage] as? UIImage ?? UIImage.init()
+        let image:UIImage = info[UIImagePickerController.InfoKey.editedImage] as? UIImage ?? (info[UIImagePickerController.InfoKey.originalImage] ?? UIImage.init()) as! UIImage
         
         let imageUrl:URL?
         if #available(iOS 11.0, *) {
@@ -5724,7 +5981,7 @@ extension AntVC : UIImagePickerControllerDelegate,UINavigationControllerDelegate
                 }
             }
         }
-        
+        print("customBgImage = \(image)")
         self.customBgImage = image
 
         self.dismiss(animated: true, completion: nil)
