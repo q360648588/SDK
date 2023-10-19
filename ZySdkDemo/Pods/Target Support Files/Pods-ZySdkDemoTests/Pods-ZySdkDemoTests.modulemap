@@ -1,0 +1,6 @@
+framework module Pods_ZySdkDemoTests {
+  umbrella header "Pods-ZySdkDemoTests-umbrella.h"
+
+  export *
+  module * { export * }
+}
