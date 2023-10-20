@@ -187,13 +187,11 @@ class ZyVC: UIViewController {
                 "同步N个联系人",
                 "获取低电提醒",
                 "设置低电提醒",
-                "0x14 获取低电提醒",
-                "0x15 设置低电提醒",
-                "0x16 获取单个LED灯功能",
-                "0x17 设置单个LED灯功能",
-                "0x19 设置单个LED灯电量显示",
-                "0x1A 获取马达震动功能",
-                "0x1B 设置马达震动功能",
+                "获取单个LED灯功能",
+                "设置单个LED灯功能",
+                "设置单个LED灯电量显示",
+                "获取马达震动功能",
+                "设置马达震动功能",
             ],
             [
                 "同步计步数据",
@@ -2563,7 +2561,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x16 获取单个LED灯功能":
+        case "获取单个LED灯功能":
             
             let array = [
                 "0:电量 1:信息 2:bt连接 3:计步达标",
@@ -2595,7 +2593,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
 
             break
-        case "0x17 设置单个LED灯功能":
+        case "设置单个LED灯功能":
             
             let array = [
                 "参数类型 1:信息 2:bt连接 3:计步达标 4:低电",
@@ -2636,7 +2634,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
 
-        case "0x19 设置单个LED灯电量显示":
+        case "设置单个LED灯电量显示":
             
             let array = [
                 "75-100颜色(0-15,bit0:红 bit1:绿 bit2:蓝 bit3:白)",
@@ -2683,7 +2681,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-        case "0x1A 获取马达震动功能":
+        case "获取马达震动功能":
             
             let array = [
                 "0:电量 1:信息 2:bt连接 3:计步达标",
@@ -2711,7 +2709,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-        case "0x1B 设置马达震动功能":
+        case "设置马达震动功能":
             
             let array = [
                 "参数类型 1:信息 2:bt连接 3:计步达标",
