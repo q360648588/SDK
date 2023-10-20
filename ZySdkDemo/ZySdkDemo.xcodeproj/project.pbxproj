@@ -11,7 +11,7 @@
 		6703B8A127B7A94100EF295F /* pic(2).bin in Resources */ = {isa = PBXBuildFile; fileRef = 6703B8A027B7A94100EF295F /* pic(2).bin */; };
 		671F9CB026D778B700AB415A /* ScanVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671F9CAF26D778B700AB415A /* ScanVC.swift */; };
 		6746B8F829A4AA2100204DEC /* JL_BLEKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6746B8F729A4AA2100204DEC /* JL_BLEKit.framework */; };
-		675861412AE116C90000A0A9 /* ZySDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 675861402AE116C80000A0A9 /* ZySDK.framework */; };
+		675596D12AE2132900F5E90C /* ZySDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 675596D02AE2132900F5E90C /* ZySDK.framework */; };
 		67661CF826292A8E0004B197 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661CF726292A8E0004B197 /* AppDelegate.swift */; };
 		67661CFC26292A8E0004B197 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661CFB26292A8E0004B197 /* ViewController.swift */; };
 		67661CFF26292A8E0004B197 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 67661CFD26292A8E0004B197 /* Main.storyboard */; };
@@ -83,7 +83,7 @@
 		6703B8A027B7A94100EF295F /* pic(2).bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "pic(2).bin"; sourceTree = "<group>"; };
 		671F9CAF26D778B700AB415A /* ScanVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanVC.swift; sourceTree = "<group>"; };
 		6746B8F729A4AA2100204DEC /* JL_BLEKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JL_BLEKit.framework; sourceTree = "<group>"; };
-		675861402AE116C80000A0A9 /* ZySDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ZySDK.framework; sourceTree = "<group>"; };
+		675596D02AE2132900F5E90C /* ZySDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ZySDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		676003FB2698404400822E72 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		67661CF426292A8E0004B197 /* ZySdkDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZySdkDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		67661CF726292A8E0004B197 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -138,6 +138,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				675596D12AE2132900F5E90C /* ZySDK.framework in Frameworks */,
 				6746B8F829A4AA2100204DEC /* JL_BLEKit.framework in Frameworks */,
 				FAFF30A00B9A3D2747907C7C /* Pods_ZySdkDemo.framework in Frameworks */,
 			);
@@ -147,7 +148,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				675861412AE116C90000A0A9 /* ZySDK.framework in Frameworks */,
 				B627FDDD3D33A24C0EC3C8A7 /* Pods_ZySdkDemoTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -263,7 +263,7 @@
 		67661D59262980D50004B197 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				675861402AE116C80000A0A9 /* ZySDK.framework */,
+				675596D02AE2132900F5E90C /* ZySDK.framework */,
 				1C72CBC24E012530D0B589FB /* Pods_ZySdkDemo.framework */,
 				FD6529EC18EE69D72FAD6B69 /* Pods_ZySdkDemo_ZySdkDemoUITests.framework */,
 				5FD998C7D470D115972A126B /* Pods_ZySdkDemoTests.framework */,
