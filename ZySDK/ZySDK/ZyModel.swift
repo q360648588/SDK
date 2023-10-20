@@ -2407,9 +2407,9 @@ class ZyFunctionModel_newPortocol:NSObject {
     case unknow = -1                           //未知状态
     case powerIndicator = 0                    //电量提示
     case informationReminder                   //信息提醒
-    case BtBind                                //BT绑定
+    case btBind                                //BT绑定
     case stepCountingStandardReminder          //计步达标提醒
-    case lowBatteryReminder                    //低电量提醒
+    //case lowBatteryReminder                    //低电量提醒
 }
 
 @objc public class ZyLedFunctionModel:NSObject {
@@ -2418,8 +2418,8 @@ class ZyFunctionModel_newPortocol:NSObject {
     @objc public var firstColor = 0
     @objc public var secondColor = 0
     @objc public var thirdColor = 0
-    @objc public var timeLength = 0 //持续时间
-    @objc public var frequency = 0  //闪烁频次
+    @objc public var timeLength = 0 //持续时间[1-20]
+    @objc public var frequency = 0  //闪烁频次[0-5] 0常亮
     
     public override init() {
         super.init()
@@ -2451,9 +2451,9 @@ class ZyFunctionModel_newPortocol:NSObject {
 @objc public class ZyMotorFunctionModel:NSObject {
 
     @objc public var ledType:ZyLedFunctionType = .powerIndicator   //范围[0,4]
-    @objc public var timeLength = 0 //震动时长 范围[0,20]
+    @objc public var timeLength = 0 //震动时长 范围[10,50]
     @objc public var frequency = 0  //震动频次 范围[0,5]
-    @objc public var level = 0      //震动强度 范围[0,10]
+    @objc public var level = 0      //震动强度 范围[1,10]
     
     public override init() {
         super.init()

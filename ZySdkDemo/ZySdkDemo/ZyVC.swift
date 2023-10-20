@@ -2982,7 +2982,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
         case "0x16 获取单个LED灯功能":
             
             let array = [
-                "0:电量 1:信息 2:bt连接 3:计步达标 4:低电",
+                "0:电量 1:信息 2:bt连接 3:计步达标",
             ]
             
             self.logView.clearString()
@@ -3016,7 +3016,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             let array = [
                 "参数类型 1:信息 2:bt连接 3:计步达标 4:低电",
                 "颜色(0-15,bit0:红 bit1:绿 bit2:蓝 bit3:白)",
-                "持续时间 0-50",
+                "持续时间 1-20",
                 "闪烁频次 0-5，0常亮",
             ]
             
@@ -3025,7 +3025,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             self.presentTextFieldAlertVC(title: "提示(默认类型1其他0)", message: "LED灯功能设置(后续参数递增)", holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
-                let modelCount = Int(textArray[1]) ?? 1
+                let modelCount = Int(textArray[0]) ?? 1
                 let colorType = Int(textArray[1]) ?? 0
                 let timeLength = Int(textArray[2]) ?? 0
                 let frequency = Int(textArray[3]) ?? 0
@@ -3058,7 +3058,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 "75-100颜色(0-15,bit0:红 bit1:绿 bit2:蓝 bit3:白)",
                 "21-74颜色(0-15,bit0:红 bit1:绿 bit2:蓝 bit3:白)",
                 "0-20颜色(0-15,bit0:红 bit1:绿 bit2:蓝 bit3:白)",
-                "持续时间 0-50",
+                "持续时间 1-20",
                 "闪烁频次 0-5，0常亮",
             ]
             
@@ -3102,7 +3102,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
         case "0x1A 获取马达震动功能":
             
             let array = [
-                "0:电量 1:信息 2:bt连接 3:计步达标 4:低电",
+                "0:电量 1:信息 2:bt连接 3:计步达标",
             ]
             
             self.logView.clearString()
@@ -3130,10 +3130,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
         case "0x1B 设置马达震动功能":
             
             let array = [
-                "参数类型 1:信息 2:bt连接 3:计步达标 4:低电",
-                "震动时长 0-20",
+                "参数类型 1:信息 2:bt连接 3:计步达标",
+                "震动时长 10-50",
                 "震动频次 0-5 ,0长震",
-                "震动强度 0-10",
+                "震动强度 1-10",
             ]
             
             self.logView.clearString()
@@ -3142,7 +3142,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 
             }, ok: nil) { (textArray) in
 
-                let ledType = Int(textArray[1]) ?? 0
+                let ledType = Int(textArray[0]) ?? 0
                 let timeLength = Int(textArray[1]) ?? 0
                 let frequency = Int(textArray[2]) ?? 0
                 let level = Int(textArray[3]) ?? 0
