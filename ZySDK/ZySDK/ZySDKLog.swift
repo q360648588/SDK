@@ -13,6 +13,7 @@ public class ZySDKLog: NSObject {
     
     var logString = ""
     var allString = ""
+    var powerConsumptionString = ""
     
     private override init() {
         super.init()
@@ -25,6 +26,18 @@ public class ZySDKLog: NSObject {
             self.shareInstance.logString.append(String.init(format: "%@  %@\n\n", formatter.string(from: Date.init()),string))
             self.shareInstance.allString.append(String.init(format: "%@  %@\n\n", formatter.string(from: Date.init()),string))
         }
+    }
+    
+    @objc public class func writePowerConsumptionStringToSDKLog(string:String) {
+        let formatter = DateFormatter.init()
+        formatter.dateFormat = "HH:mm:ss.SSS"
+        DispatchQueue.main.async {
+            self.shareInstance.powerConsumptionString.append(String.init(format: "%@  %@\n\n", formatter.string(from: Date.init()),string))
+        }
+    }
+    
+    @objc public class func powerConsumptionLog() -> String {
+        return self.shareInstance.powerConsumptionString
     }
     
     @objc public class func showLog() -> String {

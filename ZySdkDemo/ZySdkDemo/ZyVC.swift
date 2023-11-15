@@ -277,6 +277,8 @@ class ZyVC: UIViewController {
                 "5自定义表盘升级",
                 "6朝拜闹钟数据",
                 "7本地音乐数据",
+                "8辅助定位数据",
+                "9自定义运动类型",
                 "0x00 获取设备名称",
                 "0x02 获取固件版本",
                 "0x04 获取序列号",
@@ -393,6 +395,7 @@ class ZyVC: UIViewController {
                 "0x83(0x1f) 设置马达震动功能",
                 "0x84(0x1e) 获取LED灯功能",
                 "0x84(0x1f) 获取马达震动功能",
+                "0x84(0x29) 获取自定义运动类型",
             ],
             [
                 "0x00 ",
@@ -402,7 +405,8 @@ class ZyVC: UIViewController {
                 "0x04",
                 "0x05 马达震动",
                 "0x07 重新启动",
-                "恢复出厂并关机"
+                "恢复出厂并关机",
+                "耗电数据上报",
             ],
             [
                 "0x80 实时步数",
@@ -425,6 +429,7 @@ class ZyVC: UIViewController {
                 "上报朝拜闹钟天数及开始时间",
                 "上报请求定位信息",
                 "上报闹钟",
+                "上报语言",
             ],
             [
                 "多包测试命令",
@@ -439,6 +444,8 @@ class ZyVC: UIViewController {
                 "4表盘文件",
                 "5自定义表盘文件",
                 "7音乐文件",
+                "8辅助定位文件",
+                "9自定义运动文件",
             ],
             [
                 "OTA升级",
@@ -3985,6 +3992,18 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
+        case "0x84(0x29) 获取自定义运动类型":
+
+            self.logView.clearString()
+            self.logView.writeString(string: "获取自定义运动类型")
+            ZyCommandModule.shareInstance.getCustomSportsMode { type, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                if error == .none {
+                    self.logView.writeString(string: "自定义运动类型:\(type)")
+                }
+            }
+            
+            break
         case "0x00 ":
             
             
@@ -4079,7 +4098,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             break
         case "恢复出厂并关机":
             self.logView.clearString()
-            self.logView.writeString(string: "重新启动")
+            self.logView.writeString(string: "恢复出厂并关机")
             
             ZyCommandModule.shareInstance.setFactoryAndPowerOff { error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -4088,6 +4107,37 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     print("SetFactoryDataReset ->","success")
                 }
             }
+            break
+        case "耗电数据上报":
+            
+            let array = [
+                "0关1开",
+                "时间间隔1-127",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "耗电数据上报")
+            
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "耗电数据上报", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let isOpen = Int(textArray[0]) ?? 0
+                let timeInterval = Int(textArray[1]) ?? 1
+                
+                self.logView.writeString(string: "开关:\(isOpen)")
+                self.logView.writeString(string: "时间间隔:\(timeInterval)")
+                
+                ZyCommandModule.shareInstance.setPowerConsumptionData(isOpen: isOpen == 0 ? false : true, timeInterval: timeInterval) { error in
+                    
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        print("setPowerConsumptionData ->","success")
+                    }
+                }
+                
+            }
+            
             break
         case "0x80 实时步数":
             self.logView.clearString()
@@ -4377,7 +4427,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
         case "上报朝拜闹钟天数及开始时间":
             
             self.logView.clearString()
-            self.logView.writeString(string: "上报勿扰设置")
+            self.logView.writeString(string: "上报朝拜闹钟天数及开始时间")
             
             ZyCommandModule.shareInstance.reportWorshipStartTime { timeString, dayCount, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -4434,6 +4484,19 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         self.logView.writeString(string: "\n")
                     }
                 }
+            }
+            
+            break
+        case "上报语言":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "上报语言")
+            
+            ZyCommandModule.shareInstance.reportLanguageType { type, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                self.logView.writeString(string: "上报语言类型:\(type)")
+                print("reportLanguageType -> type = \(type)")
             }
             
             break
@@ -4823,6 +4886,83 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
+        case "8辅助定位文件":
+            
+            let fileString = UserDefaults.standard.string(forKey: "8_locationFile")
+            
+            var message = "未选择，默认项目内置工程文件路径"
+            if fileString?.count ?? 0 > 0 {
+                message = fileString!
+            }
+            
+            self.logView.clearString()
+            
+            self.presentSystemAlertVC(title: "当前自定义运动文件路径", message: message, cancel: "修改路径", cancelAction: {
+                
+                let path = NSHomeDirectory() + "/Documents"
+                //let exist = FileManager.default.fileExists(atPath: path)
+                let vc = FileVC.init(filePath: path)
+                self.navigationController?.pushViewController(vc, animated: true)
+                
+                vc.saveClickBlock = { (pathString) in
+                    let homePath = NSHomeDirectory()
+                    let pathString = pathString.replacingOccurrences(of: homePath, with: "")
+                    print("选中的文件连接 pathString =",pathString)
+                    self.logView.writeString(string: "自定义运动文件路径")
+                    if pathString.count > 0 {
+                        UserDefaults.standard.setValue(pathString, forKey: "8_locationFile")
+                        self.logView.writeString(string: pathString)
+                    }else{
+                        UserDefaults.standard.removeObject(forKey: "8_locationFile")
+                        self.logView.writeString(string: "未选择，默认项目内置工程文件路径")
+                    }
+                    UserDefaults.standard.synchronize()
+                }
+                
+            }, ok: "确定") {
+                                
+            }
+            
+            break
+        case "9自定义运动文件":
+            
+            let fileString = UserDefaults.standard.string(forKey: "9_sportsType")
+            
+            var message = "未选择，默认项目内置工程文件路径"
+            if fileString?.count ?? 0 > 0 {
+                message = fileString!
+            }
+            
+            self.logView.clearString()
+            
+            self.presentSystemAlertVC(title: "当前自定义运动文件路径", message: message, cancel: "修改路径", cancelAction: {
+                
+                let path = NSHomeDirectory() + "/Documents"
+                //let exist = FileManager.default.fileExists(atPath: path)
+                let vc = FileVC.init(filePath: path)
+                self.navigationController?.pushViewController(vc, animated: true)
+                
+                vc.saveClickBlock = { (pathString) in
+                    let homePath = NSHomeDirectory()
+                    let pathString = pathString.replacingOccurrences(of: homePath, with: "")
+                    print("选中的文件连接 pathString =",pathString)
+                    self.logView.writeString(string: "自定义运动文件路径")
+                    if pathString.count > 0 {
+                        UserDefaults.standard.setValue(pathString, forKey: "9_sportsType")
+                        self.logView.writeString(string: pathString)
+                    }else{
+                        UserDefaults.standard.removeObject(forKey: "9_sportsType")
+                        self.logView.writeString(string: "未选择，默认项目内置工程文件路径")
+                    }
+                    UserDefaults.standard.synchronize()
+                }
+                
+            }, ok: "确定") {
+                                
+            }
+            
+            break
+
         case "OTA升级":
             
             let array = [
@@ -5187,6 +5327,65 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
             }
             break
+            
+        case "8辅助定位数据":
+            
+            let fileString = self.getFilePathWithType(type: "8")
+            
+            self.logView.writeString(string: "当前选择类型:8辅助定位数据")
+            self.logView.writeString(string: "文件路径:\(fileString as! String)")
+                 
+            print("fileString =",fileString)
+            var showProgress = 0
+            ZyCommandModule.shareInstance.setAssistedPositioning(fileString) { progress in
+                
+                if showProgress == Int(progress) {
+                    showProgress += 1
+                    self.logView.writeString(string: "进度:\(progress)")
+                }
+                print("progress ->",progress)
+
+            } success: { error in
+                
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                print("setAssistedPositioning -> error =",error.rawValue)
+
+            }
+            
+            break
+            
+        case "9自定义运动类型":
+            
+            let fileString = self.getFilePathWithType(type: "9")
+            
+            self.logView.writeString(string: "当前选择类型:9自定义运动类型")
+            self.logView.writeString(string: "文件路径:\(fileString as! String)")
+            print("fileString =",fileString)
+            
+            let array = [
+                "自定义运动类型",
+            ]
+            var showProgress = 0
+            self.presentTextFieldAlertVC(title: "提示(默认自定义运动类型26)", message: "自定义运动类型",holderStringArray: array) {
+                
+            } okAction: { textArray in
+                let sportsType = Int(textArray[0]) ?? 26
+                ZyCommandModule.shareInstance.setCustomSportsMode(sportsType, localFile: fileString) { progress in
+                    if showProgress == Int(progress) {
+                        showProgress += 1
+                        self.logView.writeString(string: "进度:\(progress)")
+                    }
+                    print("progress ->",progress)
+
+                } success: { error in
+                    
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    print("setStartUpgrade -> error =",error.rawValue)
+
+                }
+            }
+            
+            break
         case "自定义背景选择":
             
             self.presentSystemAlertVC(title: "自定义背景选择", message: "", cancel: "相册", cancelAction: {
@@ -5495,6 +5694,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             let strNowTime = timeFormatter.string(from: date)
             let onceUrl:String = String.init(format: "\n保存时间:%@\n\n\n\n\n%@",strNowTime,ZySDKLog.showLog())
             let allUrl:String = String.init(format: "\n保存时间:%@\n\n\n\n\n%@",strNowTime,ZySDKLog.showAllLog())
+            let powerUrl:String = String.init(format: "\n保存时间:%@\n\n\n\n\n%@",strNowTime,ZySDKLog.powerConsumptionLog())
             
             let savePath = NSHomeDirectory() + "/Documents/saveLog"
             let fileManager = FileManager.default
@@ -5513,6 +5713,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             do{
                 try onceUrl.write(toFile: String.init(format: "%@/%@_onceLog.txt",savePath,Date.init().conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss")), atomically: true, encoding: .utf8)
                 try allUrl.write(toFile: String.init(format: "%@/%@_allLog.txt",savePath,Date.init().conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss")), atomically: true, encoding: .utf8)
+                try powerUrl.write(toFile: String.init(format: "%@/%@_powerLog.txt",savePath,Date.init().conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss")), atomically: true, encoding: .utf8)
             }catch {
                 print("信息保存失败")
             }
@@ -5667,6 +5868,34 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }else{
                 
                 fileString = Bundle.main.path(forResource: "消愁", ofType: "mp3") ?? ""
+                
+            }
+            
+        }else if type == "8" {
+            
+            if UserDefaults.standard.string(forKey: "8_locationFile") != nil {
+                
+                fileString = UserDefaults.standard.string(forKey: "8_locationFile")!
+                let homePath = NSHomeDirectory()
+                fileString = homePath + fileString
+                
+            }else{
+                
+                fileString = ""
+                
+            }
+            
+        }else if type == "9" {
+            
+            if UserDefaults.standard.string(forKey: "9_sportsType") != nil {
+                
+                fileString = UserDefaults.standard.string(forKey: "9_sportsType")!
+                let homePath = NSHomeDirectory()
+                fileString = homePath + fileString
+                
+            }else{
+                
+                fileString = ""
                 
             }
             
