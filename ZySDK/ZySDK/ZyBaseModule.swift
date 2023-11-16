@@ -136,7 +136,7 @@ import zlib
         printLog("定时器方法")
         let userDefault = UserDefaults.standard
         let isNeedReconnect = userDefault.bool(forKey: "Zy_ReconnectKey")
-        let reconeectString = userDefault.string(forKey: "Zy_ReconnectIdentifierKey") ?? ""
+        let reconeectString = userDefault.string(forKey: "Zy_ReconnectIdentifierKey") ?? (userDefault.string(forKey: "Ant_ReconnectIdentifierKey") ?? "")
         printLog("isNeedReconnect = ",isNeedReconnect,"reconeectString =",reconeectString,"state =",ZyBleManager.shareInstance.getBlePowerState().rawValue)
         
         var blePower = ""
@@ -201,7 +201,12 @@ import zlib
     @objc public func reconnectDevice(complete:@escaping(()->())) {
         self.reconnectComplete = complete
     }
-    
+    @objc public func setTestEnvironment(state:Bool) {
+        printLog("setTestEnvironment =",state)
+        let userDefault = UserDefaults.standard
+        userDefault.setValue(state, forKey: "Zy_TestEnvironment")
+        userDefault.synchronize()
+    }
     func syncOtaReconnectDevice(complete:@escaping(()->())) {
         self.syncOtaReconnectComplete = complete
     }
@@ -479,7 +484,9 @@ import zlib
                     if ZyCommandModule.shareInstance.otaData != nil {
                         //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
                         self.perform(#selector(self.functionListCommandNoSupport), with:nil, afterDelay: 10)
+                        print("获取功能列表getDeviceSupportList otaData != nil")
                         ZyCommandModule.shareInstance.getDeviceSupportList { model, error in
+                            print("获取功能列表getDeviceSupportList 有回复 error = \(error.rawValue)")
                             NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(self.functionListCommandNoSupport), object: nil)
                             if error == .none {
                                 printLog("连接成功")
@@ -521,7 +528,9 @@ import zlib
                     }else{
                         //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
                         self.perform(#selector(self.functionListCommandNoSupport), with: nil, afterDelay: 10)
+                        print("获取功能列表getDeviceSupportList")
                         ZyCommandModule.shareInstance.getDeviceSupportList { model, error in
+                            print("获取功能列表getDeviceSupportList 有回复 error = \(error.rawValue)")
                             NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(self.functionListCommandNoSupport), object: nil)
                             if error == .none {
                                 printLog("连接成功")

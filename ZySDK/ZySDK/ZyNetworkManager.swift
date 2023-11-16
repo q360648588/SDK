@@ -11,13 +11,17 @@ import Alamofire
 
 class ZyNetworkManager: NSObject {
     
-    let basicUrl = "http://www.zhenyiwulian.com"//"https://zmoofit-api.zhenyiwulian.com"//
+    var basicUrl = "http://www.zhenyiwulian.com"//"https://zmoofit-api.zhenyiwulian.com"//
 //    let basicUrl = "http://192.168.1.21:8080"
     
     public static let shareInstance = ZyNetworkManager()
     
     private override init() {
         super.init()
+        
+        if UserDefaults.standard.bool(forKey: "Zy_TestEnvironment") == true {
+            basicUrl = "https://zmoofit-api.zhenyiwulian.com"
+        }
         
         let net = NetworkReachabilityManager()
         net?.listener = { status in

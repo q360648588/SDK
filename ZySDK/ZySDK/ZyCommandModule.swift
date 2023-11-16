@@ -181,7 +181,10 @@ import CoreLocation
     var receiveSetMotorShakeFunctionSingleBlock:((ZyError) -> Void)?
     var receiveGetLedSetupSingleBlock:((ZyLedFunctionModel?,ZyError) -> Void)?
     var receiveGetMotorShakeFunctionSingleBlock:((ZyMotorFunctionModel?,ZyError) -> Void)?
-    
+    var receiveSetPowerConsumptionDataBlock:((ZyError) -> Void)?
+    var receiveReportPowerConsumptionData:(([String:String],ZyError) -> Void)?
+    var receiveGetCustomSportsModeBlock:((ZyExerciseType,ZyError) -> Void)?
+    var receiveReportLanguageType:((Int,ZyError) -> Void)?
     var stepMaxData:Data?
     var isStepDetailData = false
     var stepMaxIndex = 0
@@ -2917,6 +2920,12 @@ import CoreLocation
                                                 self.parseGetMotorShakeFunction(val: newVal, success: block)
                                             }
                                             break
+                                        case 0x20:
+                                            let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            if let block = self.receiveGetCustomSportsModeBlock {
+                                                self.parseGetCustomSportsMode(val: newVal, success: block)
+                                            }
+                                            break
                                             
                                         default:
                                             break
@@ -3010,6 +3019,12 @@ import CoreLocation
                                                 self.parseNewProtocolUniversalResponse(result: result, success: block)
                                             }
                                             break
+                                        case 0x0f:
+                                            if let block = self.receiveSetPowerConsumptionDataBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                            
                                         default:
                                             break
                                         }
@@ -3078,6 +3093,14 @@ import CoreLocation
                                                     self.parseReportAlarmArray(val: alarmVal, success: block)
                                                 }
                                                 break
+                                            case 0x09:
+                                                let startIndex = Int(valIndex+countLength)
+                                                let endIndex = Int(valIndex+countLength+cmd_length)
+                                                let languageVal = Array(newVal[startIndex..<endIndex])
+                                                if let block = self.receiveReportLanguageType {
+                                                    self.parseReportLanguageType(val: languageVal, success: block)
+                                                }
+                                                break
                                             default:
                                                 break
                                             }
@@ -3086,6 +3109,25 @@ import CoreLocation
                                     }
                                 }
                                 
+                                if val[1] == 0x0a {
+                                    let newVal = Array(val[4..<val.count-2])
+                                    let cmd_id:Int = Int(newVal[0])
+                                    switch cmd_id {
+                                    case 0x08:
+                                        let startIndex = 1
+                                        let endIndex = 24
+                                        let powerVal = Array(newVal[startIndex..<endIndex])
+                                        
+                                        //if let block = self.receiveReportPowerConsumptionData {
+                                            self.parseReportPowerConsumptionData(val: powerVal/*, success: ((_ dataDic:[String:String],_ error:ZyError) -> Void)*/)
+                                        //}
+                                        break
+                                    
+                                    default:
+                                        break
+                                    }
+                                }
+
                                 if val[1] == 0x0b {
                                     var count:Int = Int(newVal[0])
                                     var valIndex:Int = 1
@@ -3160,6 +3202,9 @@ import CoreLocation
                                     }
                                     if let block = self.receiveGetMotorShakeFunctionBlock {
                                         block([],.invalidLength)
+                                    }
+                                    if let block = self.receiveGetCustomSportsModeBlock {
+                                        block(.runIndoor,.invalidLength)
                                     }
                                 }
                                 
@@ -3246,6 +3291,11 @@ import CoreLocation
                                                 block(.invalidLength)
                                             }
                                             break
+                                        case 0x0f:
+                                            if let block = self.receiveSetPowerConsumptionDataBlock {
+                                                block(.invalidLength)
+                                            }
+                                            break
                                         default:
                                             break
                                         }
@@ -3303,6 +3353,11 @@ import CoreLocation
                                             case 0x05:
                                                 if let block = self.receiveReportAlarmArray {
                                                     block([],.invalidLength)
+                                                }
+                                                break
+                                            case 0x09:
+                                                if let block = self.receiveReportLanguageType {
+                                                    block(-1,.invalidLength)
                                                 }
                                                 break
                                             default:
@@ -3406,7 +3461,12 @@ import CoreLocation
                                             self.parseGetMotorShakeFunction(val: newVal, success: block)
                                         }
                                         break
-                                        
+                                    case 0x20:
+                                        let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                        if let block = self.receiveGetCustomSportsModeBlock {
+                                            self.parseGetCustomSportsMode(val: newVal, success: block)
+                                        }
+                                        break
                                     default:
                                         break
                                     }
@@ -3499,6 +3559,11 @@ import CoreLocation
                                             self.parseNewProtocolUniversalResponse(result: result, success: block)
                                         }
                                         break
+                                    case 0x0f:
+                                        if let block = self.receiveSetPowerConsumptionDataBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
                                     default:
                                         break
                                     }
@@ -3567,11 +3632,37 @@ import CoreLocation
                                                 self.parseReportAlarmArray(val: alarmVal, success: block)
                                             }
                                             break
+                                        case 0x09:
+                                            let startIndex = Int(valIndex+countLength)
+                                            let endIndex = Int(valIndex+countLength+cmd_length)
+                                            let languageVal = Array(newVal[startIndex..<endIndex])
+                                            if let block = self.receiveReportLanguageType {
+                                                self.parseReportLanguageType(val: languageVal, success: block)
+                                            }
+                                            break
                                         default:
                                             break
                                         }
                                     }
                                     valIndex = (valIndex+countLength+Int(cmd_length))
+                                }
+                            }
+
+                            if val[1] == 0x0a {
+                                let newVal = Array(val[4..<val.count-2])
+                                let cmd_id:Int = Int(newVal[0])
+                                switch cmd_id {
+                                case 0x08:
+                                    let startIndex = 1
+                                    let endIndex = 24
+                                    let powerVal = Array(newVal[startIndex..<endIndex])
+                                    //if let block = self.receiveReportPowerConsumptionData {
+                                        self.parseReportPowerConsumptionData(val: powerVal/*, success: ((_ dataDic:[String:String],_ error:ZyError) -> Void)*/)
+                                    //}
+                                    break
+                                
+                                default:
+                                    break
                                 }
                             }
                             
@@ -3651,6 +3742,9 @@ import CoreLocation
                                 }
                                 if let block = self.receiveGetMotorShakeFunctionBlock {
                                     block([],.invalidLength)
+                                }
+                                if let block = self.receiveGetCustomSportsModeBlock {
+                                    block(.runIndoor,.invalidLength)
                                 }
                             }
                             
@@ -3737,6 +3831,11 @@ import CoreLocation
                                             block(.invalidLength)
                                         }
                                         break
+                                    case 0x0f:
+                                        if let block = self.receiveSetPowerConsumptionDataBlock {
+                                            block(.invalidLength)
+                                        }
+                                        break
                                     default:
                                         break
                                     }
@@ -3791,6 +3890,11 @@ import CoreLocation
                                         case 0x05:
                                             if let block = self.receiveReportAlarmArray {
                                                 block([],.invalidLength)
+                                            }
+                                            break
+                                        case 0x09:
+                                            if let block = self.receiveReportLanguageType {
+                                                block(-1,.invalidLength)
                                             }
                                             break
                                         default:
@@ -9541,6 +9645,36 @@ import CoreLocation
             }
         }
     }
+    
+    // MARK: - 设备耗电数据上报
+    @objc public func setPowerConsumptionData(isOpen:Bool,timeInterval:Int,success:@escaping((ZyError) -> Void)) {
+        
+        if self.functionListModel?.functionList_newPortocol == false {
+            success(.notSupport)
+            print("不支持此命令")
+            return
+        }
+        
+        let openCount = (isOpen ? 1 : 0 ) + timeInterval << 1
+        print("openCount = \(openCount)")
+        var headVal:[UInt8] = [
+            0xaa,
+            0x87
+        ]
+        
+        var contentVal:[UInt8] = [
+            0x0f,
+            UInt8(openCount)
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetPowerConsumptionDataBlock = success
+            }else{
+                success(error)
+            }
+        }
+    }
         
     // MARK: - 数据主动上报 0x80
     // MARK: - 实时步数
@@ -9897,6 +10031,23 @@ import CoreLocation
             success(model,.none)
         }else{
             success(nil,.invalidLength)
+        }
+    }
+    
+    // MARK: - 语言上报
+    @objc public func reportLanguageType(success:@escaping((Int,ZyError) -> Void)) {
+        self.receiveReportLanguageType = success
+    }
+    
+    private func parseReportLanguageType(val:[UInt8],success:@escaping((Int,ZyError) -> Void)) {
+        if val.count >= 1 {
+            let languageType = val[0]
+            let string = String.init(format: "语言类型:%d",languageType)
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "解析:%@",string))
+            
+            success(Int(languageType),.none)
+        }else{
+            success(-1,.invalidLength)
         }
     }
     
@@ -11380,6 +11531,33 @@ import CoreLocation
         }
     }
     
+    // MARK: - 上报耗电数据
+    @objc public func reportPowerConsumptionData(success:@escaping((_ dataDic:[String:String],_ error:ZyError) -> Void)) {
+        self.receiveReportPowerConsumptionData = success
+    }
+    
+    private func parseReportPowerConsumptionData(val:[UInt8]/*,success:@escaping((_ dataDic:[String:String],_ error:ZyError) -> Void)*/) {
+        
+        let valData = val.withUnsafeBufferPointer { (v) -> Data in
+            return Data.init(buffer: v)
+        }
+
+        ZySDKLog.writeStringToSDKLog(string: String.init(format: "parsePowerConsumptionData待解析数据:\nlength = %d, bytes = %@",valData.count, self.convertDataToHexStr(data: valData)))
+
+        let lightScreenCount = (Int(val[0]) | Int(val[1]) << 8 | Int(val[2]) << 16 | Int(val[3]) << 24)
+        let lightScreenTimeLength = (Int(val[4]) | Int(val[5]) << 8 | Int(val[6]) << 16 | Int(val[7]) << 24)
+        let meassageCount = (Int(val[8]) | Int(val[9]) << 8 | Int(val[10]) << 16 | Int(val[11]) << 24)
+        let battery = Int(val[12])
+        let batteryVoltage = (Int(val[13]) | Int(val[14]) << 8)
+        let callTimeLength = (Int(val[15]) | Int(val[16]) << 8 | Int(val[17]) << 16 | Int(val[18]) << 24)
+        let motorviBrationTimeLength = (Int(val[19]) | Int(val[20]) << 8 | Int(val[21]) << 16 | Int(val[22]) << 24)
+        let dic = ["lightScreenCount":"\(lightScreenCount)","lightScreenTimeLength":"\(lightScreenTimeLength)","meassageCount":"\(meassageCount)","battery":"\(battery)","batteryVoltage":"\(batteryVoltage)","callTimeLength":"\(callTimeLength)","motorviBrationTimeLength":"\(motorviBrationTimeLength)"]
+        //success(dic,.none)
+        let str = String.init(format: "%@", dic)
+        printLog("str = \(str)")
+        ZySDKLog.writePowerConsumptionStringToSDKLog(string: str)
+    }
+    
     // MARK: - 上报请求定位信息
     @objc public func reportLocationInfo(success:@escaping((_ error:ZyError) -> Void)) {
         self.receiveReportLocationInfo = success
@@ -11936,7 +12114,218 @@ import CoreLocation
         
         self.signalCommandSemaphore()
     }
+    
+    // MARK: - 获取自定义运动类型
+    @objc public func getCustomSportsMode(_ success:@escaping((ZyExerciseType,ZyError) -> Void)) {
+        
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。")
+            return
+        }
+        let headVal:[UInt8] = [
+            0xaa,
+            0x84
+        ]
+        
+        //参数id
+        let cmd_id = 0x20
+        
+        let contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveGetCustomSportsModeBlock = success
+            }else{
+                success(.runIndoor,error)
+            }
+        }
+    }
+    
+    private func parseGetCustomSportsMode(val:[UInt8],success:@escaping((ZyExerciseType,ZyError) -> Void)) {
+        
+        let valData = val.withUnsafeBufferPointer { (v) -> Data in
+            return Data.init(buffer: v)
+        }
 
+        ZySDKLog.writeStringToSDKLog(string: String.init(format: "parseGetCustomSportsMode待解析数据:\n length = %d, bytes = %@",valData.count, self.convertDataToHexStr(data: valData)))
+
+        let modelCount = val[0]
+        let sportsType = val[1]
+
+        success(ZyExerciseType.init(rawValue: Int(sportsType)) ?? .runOutside,.none)
+        
+        self.signalCommandSemaphore()
+    }
+
+    // MARK: - 设置自定义运动文件
+    @objc public func setCustomSportsMode(_ sportsType:Int,localFile:Any,progress:@escaping((Float) -> Void),success:@escaping((ZyError) -> Void)){
+        
+        var fileData:Data?
+        if localFile is String {
+            let file:String = localFile as! String
+            if file.hasPrefix("file://") {
+                guard let url = URL.init(string: file) else {
+                    //printLog("\(file) 格式错误")
+                    return
+                }
+                fileData = try? Data.init(contentsOf: url)
+            }else {
+                let url = URL.init(fileURLWithPath: file)
+                fileData = try? Data.init(contentsOf: url)
+            }
+        }
+        if localFile is URL {
+            let file:URL = localFile as! URL
+            fileData = try! Data.init(contentsOf: file)
+        }
+        if localFile is Data {
+            let file:Data = localFile as! Data
+            fileData = file
+        }
+        
+        if fileData == nil {
+            printLog("\(localFile) 获取的文件为空，请检查路径")
+            success(.notSupport)
+            return
+        }
+        guard let fileData = fileData else {return}
+        
+        var sendDataArray:[UInt8] = Array.init()
+        var headArray:[UInt8] = Array.init()
+         
+        let date = Date.init()
+        let calendar = NSCalendar.current
+        var year = calendar.component(.year, from: date)
+        if year < 2000 {
+            year = 2022
+        }
+        var month = calendar.component(.month, from: date)
+        var day = calendar.component(.day, from: date)
+        var hour = calendar.component(.hour, from: date)
+        var minute = calendar.component(.minute, from: date)
+        var second = calendar.component(.second, from: date)
+        
+        //固定为 0xAA,0x55
+        let head:[UInt8] = [0xaa,0x55]
+        //日期/时间  6字节；格式YY-MM-DD HH:MM:SS(BCD码)  默认给的是此刻的时间，实际应该是发第一个model里面的时间
+        var time:[UInt8] = [UInt8(self.decimalToBcd(value: year-2000)),UInt8(self.decimalToBcd(value: month)),UInt8(self.decimalToBcd(value: day)),UInt8(self.decimalToBcd(value: hour)),UInt8(self.decimalToBcd(value: minute)),UInt8(self.decimalToBcd(value: second))]
+        //运动类型
+        let sportsType = [UInt8(sportsType < 26 ? 26 : sportsType)]
+        // 文件长度 仅数据部分，不包含文件头
+        let fileLength = [UInt8(fileData.count & 0xff),UInt8((fileData.count >> 8) & 0xff),UInt8((fileData.count >> 16) & 0xff),UInt8((fileData.count >> 24) & 0xff)]
+        // 文件校验 仅数据部分，不包含文件头，CRC32 校验
+        let fileCrc32 = [UInt8(self.CRC32(data: fileData) & 0xff),UInt8((self.CRC32(data: fileData) >> 8) & 0xff),UInt8((self.CRC32(data: fileData) >> 16) & 0xff),UInt8((self.CRC32(data: fileData) >> 24) & 0xff)]
+        //预留 9byte
+        var arrLength_9:[UInt8] = Array.init()
+        for _ in 0..<9 {
+            arrLength_9.append(0)
+        }
+        //文件头校验 CRC32 校验
+        headArray.append(contentsOf: head)
+        headArray.append(0)//版本号，默认0 后续有需求再改此值
+        headArray.append(contentsOf: time)
+        headArray.append(contentsOf: sportsType)
+        headArray.append(contentsOf: fileLength)
+        headArray.append(contentsOf: fileCrc32)
+        headArray.append(contentsOf: arrLength_9)
+        
+        print("self.CRC32(val: headArray) = \(String.init(format: "%04x", self.CRC32(val: headArray)))")
+        print("headArray = \(headArray)")
+        let headArrayCrc32 = [UInt8(self.CRC32(val: headArray) & 0xff),UInt8((self.CRC32(val: headArray) >> 8) & 0xff),UInt8((self.CRC32(val: headArray) >> 16) & 0xff),UInt8((self.CRC32(val: headArray) >> 24) & 0xff)]
+        
+        sendDataArray.append(contentsOf: headArray)
+        sendDataArray.append(contentsOf: headArrayCrc32)
+        
+        let sendData = Data.init(bytes: &sendDataArray, count: sendDataArray.count) + fileData
+        //print("sendDataArray = \(self.convertDataToHexStr(data: sendDataArray))")
+        self.setOtaStartUpgrade(type: 9, localFile: self.createSendOtaHead(type:9,data: sendData), isContinue: false, progress: progress, success: success)
+    }
+    
+    // MARK: - 设置辅助定位文件
+    @objc public func setAssistedPositioning(_ localFile:Any,progress:@escaping((Float) -> Void),success:@escaping((ZyError) -> Void)){
+        
+        var fileData:Data?
+        if localFile is String {
+            let file:String = localFile as! String
+            if file.hasPrefix("file://") {
+                guard let url = URL.init(string: file) else {
+                    //printLog("\(file) 格式错误")
+                    return
+                }
+                fileData = try? Data.init(contentsOf: url)
+            }else {
+                let url = URL.init(fileURLWithPath: file)
+                fileData = try? Data.init(contentsOf: url)
+            }
+        }
+        if localFile is URL {
+            let file:URL = localFile as! URL
+            fileData = try! Data.init(contentsOf: file)
+        }
+        if localFile is Data {
+            let file:Data = localFile as! Data
+            fileData = file
+        }
+        
+        if fileData == nil {
+            printLog("\(localFile) 获取的文件为空，请检查路径")
+            success(.notSupport)
+            return
+        }
+        guard let fileData = fileData else {return}
+        
+        var sendDataArray:[UInt8] = Array.init()
+        var headArray:[UInt8] = Array.init()
+         
+        let date = Date.init()
+        let calendar = NSCalendar.current
+        var year = calendar.component(.year, from: date)
+        if year < 2000 {
+            year = 2022
+        }
+        var month = calendar.component(.month, from: date)
+        var day = calendar.component(.day, from: date)
+        var hour = calendar.component(.hour, from: date)
+        var minute = calendar.component(.minute, from: date)
+        var second = calendar.component(.second, from: date)
+        
+        //固定为 0xAA,0x55
+        let head:[UInt8] = [0xaa,0x55]
+        //日期/时间  6字节；格式YY-MM-DD HH:MM:SS(BCD码)  默认给的是此刻的时间，实际应该是发第一个model里面的时间
+        var time:[UInt8] = [UInt8(self.decimalToBcd(value: year-2000)),UInt8(self.decimalToBcd(value: month)),UInt8(self.decimalToBcd(value: day)),UInt8(self.decimalToBcd(value: hour)),UInt8(self.decimalToBcd(value: minute)),UInt8(self.decimalToBcd(value: second))]
+        // 文件长度 仅数据部分，不包含文件头
+        let fileLength = [UInt8(fileData.count & 0xff),UInt8((fileData.count >> 8) & 0xff),UInt8((fileData.count >> 16) & 0xff),UInt8((fileData.count >> 24) & 0xff)]
+        // 文件校验 仅数据部分，不包含文件头，CRC32 校验
+        let fileCrc32 = [UInt8(self.CRC32(data: fileData) & 0xff),UInt8((self.CRC32(data: fileData) >> 8) & 0xff),UInt8((self.CRC32(data: fileData) >> 16) & 0xff),UInt8((self.CRC32(data: fileData) >> 24) & 0xff)]
+        //预留 9byte
+        var arrLength_11:[UInt8] = Array.init()
+        for _ in 0..<11 {
+            arrLength_11.append(0)
+        }
+        //文件头校验 CRC32 校验
+        headArray.append(contentsOf: head)
+        headArray.append(0)//版本号，默认0 后续有需求再改此值
+        headArray.append(contentsOf: time)
+        headArray.append(contentsOf: fileLength)
+        headArray.append(contentsOf: fileCrc32)
+        headArray.append(contentsOf: arrLength_11)
+        
+        print("self.CRC32(val: headArray) = \(String.init(format: "%04x", self.CRC32(val: headArray)))")
+        print("headArray = \(headArray)")
+        let headArrayCrc32 = [UInt8(self.CRC32(val: headArray) & 0xff),UInt8((self.CRC32(val: headArray) >> 8) & 0xff),UInt8((self.CRC32(val: headArray) >> 16) & 0xff),UInt8((self.CRC32(val: headArray) >> 24) & 0xff)]
+        
+        sendDataArray.append(contentsOf: headArray)
+        sendDataArray.append(contentsOf: headArrayCrc32)
+        
+        let sendData = Data.init(bytes: &sendDataArray, count: sendDataArray.count) + fileData
+        //print("sendDataArray = \(self.convertDataToHexStr(data: sendDataArray))")
+        self.setOtaStartUpgrade(type: 8, localFile: self.createSendOtaHead(type:8,data: sendData), isContinue: false, progress: progress, success: success)
+    }
+    
     // MARK: - ota升级
     @objc public func setOtaStartUpgrade(type:Int,localFile:Any,isContinue:Bool,progress:@escaping((Float) -> Void),success:@escaping((ZyError) -> Void)) {
         var type = type
