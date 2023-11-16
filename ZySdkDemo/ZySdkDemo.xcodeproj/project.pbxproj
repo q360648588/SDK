@@ -35,6 +35,7 @@
 		67A752B3278AE04900B7D6B2 /* 图库.bin in Resources */ = {isa = PBXBuildFile; fileRef = 67A752B2278AE04800B7D6B2 /* 图库.bin */; };
 		67B6EF3B2A31F0900087C786 /* test_small.bin in Resources */ = {isa = PBXBuildFile; fileRef = 67B6EF3A2A31F0900087C786 /* test_small.bin */; };
 		67B8A1C32768289C0007D3FC /* 数字表盘.bin in Resources */ = {isa = PBXBuildFile; fileRef = 67B8A1C22768289C0007D3FC /* 数字表盘.bin */; };
+		67C788CB2B047DF900293B46 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67C788CD2B047DF900293B46 /* Localizable.strings */; };
 		67CF37E826F589A90035C6B0 /* FileVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67CF37E726F589A90035C6B0 /* FileVC.swift */; };
 		67E74243298CFE32001AF780 /* ios_test.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 67E74240298CFE32001AF780 /* ios_test.bmp */; };
 		67E74244298CFE32001AF780 /* BGP_W000 in Resources */ = {isa = PBXBuildFile; fileRef = 67E74241298CFE32001AF780 /* BGP_W000 */; };
@@ -114,6 +115,8 @@
 		67A752B2278AE04800B7D6B2 /* 图库.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "图库.bin"; sourceTree = "<group>"; };
 		67B6EF3A2A31F0900087C786 /* test_small.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = test_small.bin; sourceTree = "<group>"; };
 		67B8A1C22768289C0007D3FC /* 数字表盘.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "数字表盘.bin"; sourceTree = "<group>"; };
+		67C788CC2B047DF900293B46 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		67C788CE2B047E1400293B46 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		67CF37E726F589A90035C6B0 /* FileVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileVC.swift; sourceTree = "<group>"; };
 		67E74240298CFE32001AF780 /* ios_test.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = ios_test.bmp; sourceTree = "<group>"; };
 		67E74241298CFE32001AF780 /* BGP_W000 */ = {isa = PBXFileReference; lastKnownFileType = file; path = BGP_W000; sourceTree = "<group>"; };
@@ -233,6 +236,7 @@
 				67CF37E726F589A90035C6B0 /* FileVC.swift */,
 				677BF30226DDD5B900D1C10C /* ShowLogView.swift */,
 				67661D7E262A82660004B197 /* LogViewController.swift */,
+				67C788CD2B047DF900293B46 /* Localizable.strings */,
 				6746B8F729A4AA2100204DEC /* JL_BLEKit.framework */,
 				67661CFD26292A8E0004B197 /* Main.storyboard */,
 				67661D0026292A920004B197 /* Assets.xcassets */,
@@ -362,6 +366,7 @@
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hans",
 			);
 			mainGroup = 67661CEB26292A8E0004B197;
 			productRefGroup = 67661CF526292A8E0004B197 /* Products */;
@@ -382,6 +387,7 @@
 			files = (
 				6703B8A127B7A94100EF295F /* pic(2).bin in Resources */,
 				67EB7E9E27995861000CAE03 /* testPic(1).bin in Resources */,
+				67C788CB2B047DF900293B46 /* Localizable.strings in Resources */,
 				67661D0426292A920004B197 /* LaunchScreen.storyboard in Resources */,
 				67E8914C2A8C7223007E8B9E /* 消愁.mp3 in Resources */,
 				67E74245298CFE32001AF780 /* ios.png in Resources */,
@@ -588,6 +594,15 @@
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
+		67C788CD2B047DF900293B46 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				67C788CC2B047DF900293B46 /* en */,
+				67C788CE2B047E1400293B46 /* zh-Hans */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
@@ -595,6 +610,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -656,6 +672,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";

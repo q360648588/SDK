@@ -34,7 +34,7 @@ class ScanVC: UIViewController {
         
         let scanButton = UIButton.init(frame: .init(x: screenWidth/2.0-75, y: screenHeight-80, width: 150, height: 50))
         scanButton.backgroundColor = .red
-        scanButton.setTitle("扫描", for: .normal)
+        scanButton.setTitle(NSLocalizedString("Scan", comment: "扫描"), for: .normal)
         scanButton.addTarget(self, action: #selector(self.scanButtonClick(sender:)), for: .touchUpInside)
         self.view.addSubview(scanButton)
     }

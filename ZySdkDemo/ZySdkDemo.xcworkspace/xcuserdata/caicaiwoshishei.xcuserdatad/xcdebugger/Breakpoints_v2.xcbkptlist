@@ -14,8 +14,8 @@
             filePath = "ZySdkDemo/ZyVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "3055"
-            endingLineNumber = "3055"
+            startingLineNumber = "3063"
+            endingLineNumber = "3063"
             landmarkName = "tableView(_:didSelectRowAt:)"
             landmarkType = "7">
             <Locations>
@@ -94,6 +94,21 @@
                   endingLineNumber = "3055"
                   offsetFromSymbolStart = "428">
                </Location>
+               <Location
+                  uuid = "C5C4ADB6-96A0-4380-B9B6-62B97D35957B - cf68c243c3ee6eaf"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (ZySDK.ZyError) -&gt; () in closure #120 (Swift.Array&lt;Swift.String&gt;) -&gt; () in ZySdkDemo.ZyVC.tableView(_: __C.UITableView, didSelectRowAt: Foundation.IndexPath) -&gt; ()"
+                  moduleName = "ZySdkDemo"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/caicaiwoshishei/Desktop/AntSDK/ZySdkDemo/ZySdkDemo/ZyVC.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "3063"
+                  endingLineNumber = "3063"
+                  offsetFromSymbolStart = "428">
+               </Location>
             </Locations>
          </BreakpointContent>
       </BreakpointProxy>
@@ -107,8 +122,8 @@
             filePath = "ZySdkDemo/ZyVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "3103"
-            endingLineNumber = "3103"
+            startingLineNumber = "3111"
+            endingLineNumber = "3111"
             landmarkName = "tableView(_:didSelectRowAt:)"
             landmarkType = "7">
             <Locations>
@@ -187,6 +202,21 @@
                   endingLineNumber = "3103"
                   offsetFromSymbolStart = "428">
                </Location>
+               <Location
+                  uuid = "1BE9D005-4D61-4548-B2B3-74C640FCD239 - cf68c243c3ee60ff"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (ZySDK.ZyError) -&gt; () in closure #122 (Swift.Array&lt;Swift.String&gt;) -&gt; () in ZySdkDemo.ZyVC.tableView(_: __C.UITableView, didSelectRowAt: Foundation.IndexPath) -&gt; ()"
+                  moduleName = "ZySdkDemo"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/caicaiwoshishei/Desktop/AntSDK/ZySdkDemo/ZySdkDemo/ZyVC.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "3111"
+                  endingLineNumber = "3111"
+                  offsetFromSymbolStart = "428">
+               </Location>
             </Locations>
          </BreakpointContent>
       </BreakpointProxy>
@@ -200,8 +230,8 @@
             filePath = "ZySdkDemo/ZyVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "3899"
-            endingLineNumber = "3899"
+            startingLineNumber = "3908"
+            endingLineNumber = "3908"
             landmarkName = "tableView(_:didSelectRowAt:)"
             landmarkType = "7">
             <Locations>
@@ -278,6 +308,21 @@
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "3899"
                   endingLineNumber = "3899"
+                  offsetFromSymbolStart = "428">
+               </Location>
+               <Location
+                  uuid = "267E09ED-7D4B-4968-B950-00F320D4404D - cf68c243c3d1fbba"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (ZySDK.ZyError) -&gt; () in closure #154 (Swift.Array&lt;Swift.String&gt;) -&gt; () in ZySdkDemo.ZyVC.tableView(_: __C.UITableView, didSelectRowAt: Foundation.IndexPath) -&gt; ()"
+                  moduleName = "ZySdkDemo"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/caicaiwoshishei/Desktop/AntSDK/ZySdkDemo/ZySdkDemo/ZyVC.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "3908"
+                  endingLineNumber = "3908"
                   offsetFromSymbolStart = "428">
                </Location>
             </Locations>

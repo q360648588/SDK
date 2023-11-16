@@ -30,15 +30,15 @@ class ShowLogView: UIView {
         let clearButton = UIButton.init(type: .custom)
         clearButton.backgroundColor = .red.withAlphaComponent(0.3)
         clearButton.frame = CGRect.init(x: screenWidth-100, y: 0, width: 100, height: 40)
-        clearButton.setTitle("关闭", for: .normal)
+        clearButton.setTitle(NSLocalizedString("Shut down", comment: "关闭"), for: .normal)
         clearButton.addTarget(self, action: #selector(clearBtnClick), for: .touchUpInside)
         self.addSubview(clearButton)
          
         let followButton = UIButton.init(type: .custom)
         followButton.backgroundColor = .red.withAlphaComponent(0.3)
         followButton.frame = CGRect.init(x: screenWidth-100, y: 50, width: 100, height: 40)
-        followButton.setTitle("自动跟随", for: .normal)
-        followButton.setTitle("取消跟随", for: .selected)
+        followButton.setTitle(NSLocalizedString("Auto Follow", comment: "自动跟随"), for: .normal)
+        followButton.setTitle(NSLocalizedString("Unfollow", comment: "取消跟随"), for: .selected)
         followButton.isSelected = false
         followButton.addTarget(self, action: #selector(followBtnClick(sender:)), for: .touchUpInside)
         self.addSubview(followButton)
