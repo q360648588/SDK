@@ -5338,7 +5338,7 @@ import CoreLocation
         if val[4] == 1 {
             
             let isOpen = val[5]
-            let string = String.init(format: "%@",isOpen == 0 ? "关闭":"开启")
+            let string = String.init(format: "%@",isOpen == 0 ? NSLocalizedString("Shut down", comment: "关闭"):"开启")
             ZySDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
             success(Int(isOpen),.none)
             

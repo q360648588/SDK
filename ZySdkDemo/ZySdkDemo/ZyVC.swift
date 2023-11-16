@@ -18,13 +18,13 @@ class ZyVC: UIViewController {
     var currentBleState:CBPeripheralState! {
         didSet {
             if self.currentBleState == .disconnected {
-                self.title = "已断开"
+                self.title = "disconnected"
             }else if self.currentBleState == .connecting {
-                self.title = "正在连接"
+                self.title = "connecting"
             }else if self.currentBleState == .connected {
-                self.title = "已连接"
+                self.title = "connected"
             }else if self.currentBleState == .disconnecting {
-                self.title = "正在断开"
+                self.title = "disconnecting"
             }
         }
     }
@@ -64,7 +64,7 @@ class ZyVC: UIViewController {
             if error == .none {
                 print("success.keys.count =",success.keys.count)
                 if success.keys.count > 0 {
-                    self.presentSystemAlertVC(title: "警告", message: "检测到当前设备正在升级，是否继续升级？(超时选择将退出升级)") {
+                    self.presentSystemAlertVC(title: NSLocalizedString("Warning", comment: "警告"), message: NSLocalizedString("The current device is being upgraded. Do you want to continue upgrading? (Timeout option will exit upgrade)", comment: "检测到当前设备正在升级，是否继续升级？(超时选择将退出升级)")) {
                         ZyCommandModule.shareInstance.setStopUpgrade { error in
                             print("退出升级")
                         }
@@ -79,7 +79,7 @@ class ZyVC: UIViewController {
                             print("progress =",progress)
                             if showProgress == Int(progress) {
                                 showProgress += 1
-                                self.logView.writeString(string: "进度:\(progress)")
+                                self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
                             }
 
                         } success: { error in
@@ -103,183 +103,185 @@ class ZyVC: UIViewController {
         self.logView.isHidden = true
         self.view.addSubview(self.logView)
         
-        self.titleArray = ["设备信息","设备设置","设备提醒","设备同步","新协议命令","测试命令","设备主动上报","路径设置","测试升级","服务器相关命令,使用前确定网络正常"]
-
+        self.titleArray = ["\(NSLocalizedString("Device Information", comment: "设备信息"))",
+                           "\(NSLocalizedString("Device Settings", comment: "设备设置"))",
+                           "\(NSLocalizedString("Device Reminder", comment: "设备提醒"))",
+                           "\(NSLocalizedString("Device Sync", comment: "设备同步"))",
+                           "\(NSLocalizedString("New Protocol command", comment: "新协议命令"))",
+                           "\(NSLocalizedString("test command", comment: "测试命令"))",
+                           "\(NSLocalizedString("Device actively reports", comment: "设备主动上报"))",
+                           NSLocalizedString("Path Settings", comment: "路径设置"),
+                           NSLocalizedString("Test upgrade", comment: "测试升级"),
+                           NSLocalizedString("Server related commands, make sure the network is normal before using", comment: "服务器相关命令,使用前确定网络正常"),
+                           ]
         self.dataSourceArray = [
             [
-                //"0引导升级",
-                //"1应用升级",
-                //"2图库升级",
-                //"3字库升级",
-                //"4表盘升级",
-                //"5自定义表盘升级",
-                //"6朝拜闹钟数据",
-                //"7本地音乐数据",
-                //"8辅助定位数据",
-                //"9自定义运动类型",
-                "获取设备名称",
-                "获取固件版本",
-                "获取序列号",
-                "获取mac地址",
-                "获取电量",
-                "设置时间",
-                "获取设备支持的功能列表",
-                "获取产品、固件、资源等版本信息",
+                //"0\(NSLocalizedString("Boot upgrade", comment: "引导升级"))",
+                //"1\(NSLocalizedString("Application upgrade", comment: "应用升级"))",
+                //"2\(NSLocalizedString("Gallery upgrade", comment: "图库升级"))",
+                //"3\(NSLocalizedString("Font library upgrade", comment: "字库升级"))",
+                //"4\(NSLocalizedString("Watch face upgrade", comment: "表盘升级"))",
+                //"5\(NSLocalizedString("Custom watch face upgrade", comment: "自定义表盘升级"))",
+                //"6\(NSLocalizedString("Worship alarm clock data", comment: "朝拜闹钟数据"))",
+                //"7\(NSLocalizedString("Local music data", comment: "本地音乐数据"))",
+                //"8\(NSLocalizedString("Auxiliary positioning data", comment: "辅助定位数据"))",
+                //"9\(NSLocalizedString("Customize the exercise type", comment: "自定义运动类型"))",
+                "\(NSLocalizedString("Get the device name", comment: "获取设备名称"))",
+                "\(NSLocalizedString("Get the firmware version", comment: "获取固件版本"))",
+                "\(NSLocalizedString("Gets the serial number", comment: "获取序列号"))",
+                "\(NSLocalizedString("Get mac address", comment: "获取mac地址"))",
+                "\(NSLocalizedString("Get the power", comment: "获取电量"))",
+                "\(NSLocalizedString("Set up time", comment: "设置时间"))",
+                "\(NSLocalizedString("Get a list of features supported by your device", comment: "获取设备支持的功能列表"))",
+                "\(NSLocalizedString("Obtain version information for products, firmware, and resources", comment: "获取产品、固件、资源等版本信息"))",
             ],
             [
-                "获取个人信息",
-                "设置个人信息",
-                "获取时间制式",
-                "设置时间制式",
-                "获取公英制",
-                "设置公英制",
-                "设置天气",
-                "设置天气(拓展参数)",
-                "设备进入拍照模式",
-                "寻找手环",
-                "获取抬腕亮屏",
-                "设置抬腕亮屏",
-                "获取屏幕亮度",
-                "设置屏幕亮度",
-                "获取亮屏时长",
-                "设置亮屏时长",
-                "获取本地表盘",
-                "设置本地表盘",
-                "获取闹钟",
-                "设置闹钟",
-                "获取设备语言",
-                "设置设备语言",
-                "获取目标步数",
-                "设置目标步数",
-                "设置单次测量",
-                "获取锻炼模式",
-                "设置锻炼模式",
-                "获取天气单位",
-                "设置天气单位",
-                "设置实时数据上报开关",
-                "获取自定义表盘",
-                "设置自定义表盘",
-                "自定义背景选择",
-                "(直接选取无编辑)自定义背景选择",
-                "设置自定义背景",
-                "设置电话状态",
-                "获取自定义表盘尺寸",
-                "获取24小时心率监测",
-                "设置24小时心率监测",
-                "设置设备进入或退出拍照模式",
-                "app同步运动数据至设备(手动自定义)",
-                "app同步运动数据至设备(自动1s递增)",
-                "设置清除所有数据",
-                "绑定",
-                "解绑",
+                "\(NSLocalizedString("Access to Personal Information", comment: "获取个人信息"))",
+                "\(NSLocalizedString("Set up personal information", comment: "设置个人信息"))",
+                "\(NSLocalizedString("Get the time standard", comment: "获取时间制式"))",
+                "\(NSLocalizedString("Set the time standard", comment: "设置时间制式"))",
+                "\(NSLocalizedString("Get the metric system", comment: "获取公英制"))",
+                "\(NSLocalizedString("Set the metric system", comment: "设置公英制"))",
+                "\(NSLocalizedString("Set the weather", comment: "设置天气"))",
+                "\(NSLocalizedString("Set weather (expand parameters)", comment: "设置天气(拓展参数)"))",
+                "\(NSLocalizedString("The device enters camera mode", comment: "设备进入拍照模式"))",
+                "\(NSLocalizedString("Find a bracelet", comment: "寻找手环"))",
+                "\(NSLocalizedString("Get a bright screen for wrist lifting", comment: "获取抬腕亮屏"))",
+                "\(NSLocalizedString("Set up wrist lift bright screen", comment: "设置抬腕亮屏"))",
+                "\(NSLocalizedString("Get screen brightness", comment: "获取屏幕亮度"))",
+                "\(NSLocalizedString("Set screen brightness", comment: "设置屏幕亮度"))",
+                "\(NSLocalizedString("Gets the screen duration", comment: "获取亮屏时长"))",
+                "\(NSLocalizedString("Set the screen duration", comment: "设置亮屏时长"))",
+                "\(NSLocalizedString("Gets the local watch face", comment: "获取本地表盘"))",
+                "\(NSLocalizedString("Set the local watch face", comment: "设置本地表盘"))",
+                "\(NSLocalizedString("Get the alarm clock", comment: "获取闹钟"))",
+                "\(NSLocalizedString("Set an alarm", comment: "设置闹钟"))",
+                "\(NSLocalizedString("Get the device language", comment: "获取设备语言"))",
+                "\(NSLocalizedString("Set the device language", comment: "设置设备语言"))",
+                "\(NSLocalizedString("Gets the target number of steps", comment: "获取目标步数"))",
+                "\(NSLocalizedString("Set the target number of steps", comment: "设置目标步数"))",
+                "\(NSLocalizedString("Set up a single measurement", comment: "设置单次测量"))",
+                "\(NSLocalizedString("Get Exercise patterns", comment: "获取锻炼模式"))",
+                "\(NSLocalizedString("Set exercise mode", comment: "设置锻炼模式"))",
+                "\(NSLocalizedString("Get weather units", comment: "获取天气单位"))",
+                "\(NSLocalizedString("Set weather units", comment: "设置天气单位"))",
+                "\(NSLocalizedString("Set the real-time data reporting switch", comment: "设置实时数据上报开关"))",
+                "\(NSLocalizedString("Gets a custom watch face", comment: "获取自定义表盘"))",
+                "\(NSLocalizedString("Set up a custom watch face", comment: "设置自定义表盘"))",
+                "\(NSLocalizedString("Customize the background selection", comment: "自定义背景选择"))",
+                "\(NSLocalizedString("(Select directly without editing) Customize the background selection", comment: "(直接选取无编辑)自定义背景选择"))",
+                "\(NSLocalizedString("Set Custom Background", comment: "设置自定义背景"))",
+                "\(NSLocalizedString("Set Custom Background (JL)", comment: "设置自定义背景(JL)"))",
+                "\(NSLocalizedString("Set phone status", comment: "设置电话状态"))",
+                "\(NSLocalizedString("Gets the custom dial dimensions", comment: "获取自定义表盘尺寸"))",
+                "\(NSLocalizedString("Get a 24-hour heart rate monitor", comment: "获取24小时心率监测"))",
+                "\(NSLocalizedString("Set up a 24-hour heart rate monitor", comment: "设置24小时心率监测"))",
+                "\(NSLocalizedString("Set the device to enter or exit photo mode", comment: "设置设备进入或退出拍照模式"))",
+                "\(NSLocalizedString("app synchronizes motion data to the device (manually customized)", comment: "app同步运动数据至设备(手动自定义)"))",
+                "\(NSLocalizedString("app synchronizes motion data to the device (automatic 1s increment)", comment: "app同步运动数据至设备(自动1s递增)"))",
+                "\(NSLocalizedString("Set to clear all data", comment: "设置清除所有数据"))",
+                "\(NSLocalizedString("Binding up", comment: "绑定"))",
+                "\(NSLocalizedString("unbind", comment: "解绑"))",
             ],
             [
-                "获取消息提醒",
-                "设置消息提醒",
-                "获取久坐提醒",
-                "设置久坐提醒(一组)",
-                "设置久坐提醒(多组)",
-                "获取勿扰提醒",
-                "设置勿扰提醒",
-                "获取心率预警",
-                "设置心率预警",
-                "获取喝水提醒",
-                "设置喝水提醒",
-                "获取生理周期",
-                "设置生理周期",
-                "同步联系人",
-                "同步N个联系人",
-                "获取低电提醒",
-                "设置低电提醒",
-                "获取单个LED灯功能",
-                "设置单个LED灯功能",
-                "设置单个LED灯电量显示",
-                "获取马达震动功能",
-                "设置马达震动功能",
+                "\(NSLocalizedString("Get message alerts", comment: "获取消息提醒"))",
+                "\(NSLocalizedString("Set message reminders", comment: "设置消息提醒"))",
+                "\(NSLocalizedString("Get sedentary reminders", comment: "获取久坐提醒"))",
+                "\(NSLocalizedString("Set a sedentary reminder (one set)", comment: "设置久坐提醒(一组)"))",
+                "\(NSLocalizedString("Set a sedentary reminder (multiple groups)", comment: "设置久坐提醒(多组)"))",
+                "\(NSLocalizedString("Get Do not disturb reminders", comment: "获取勿扰提醒"))",
+                "\(NSLocalizedString("Set Do not disturb reminder", comment: "设置勿扰提醒"))",
+                "\(NSLocalizedString("Get heart rate alerts", comment: "获取心率预警"))",
+                "\(NSLocalizedString("Set heart rate alert", comment: "设置心率预警"))",
+                "\(NSLocalizedString("Get the cycle", comment: "获取生理周期"))",
+                "\(NSLocalizedString("Set your cycle", comment: "设置生理周期"))",
+                "\(NSLocalizedString("Get water reminders", comment: "获取喝水提醒"))",
+                "\(NSLocalizedString("Set a water reminder", comment: "设置喝水提醒"))",
+                "\(NSLocalizedString("Synchronizing contacts", comment: "同步联系人"))",
+                "\(NSLocalizedString("Synchronize N contacts", comment: "同步N个联系人"))",
+                "\(NSLocalizedString("Get low power alerts", comment: "获取低电提醒"))",
+                "\(NSLocalizedString("Set a low power reminder", comment: "设置低电提醒"))",
+                "\(NSLocalizedString("Get a single LED lamp function", comment: "获取单个LED灯功能"))",
+                "\(NSLocalizedString("Set up a single LED light function", comment: "设置单个LED灯功能"))",
+                "\(NSLocalizedString("Set individual LED light power display", comment: "设置单个LED灯电量显示"))",
+                "\(NSLocalizedString("Get motor vibration function", comment: "获取马达震动功能"))",
+                "\(NSLocalizedString("Set motor vibration function", comment: "设置马达震动功能"))",
             ],
             [
-                "同步计步数据",
-                "同步锻炼数据",
-                "同步测量数据",
+                "\(NSLocalizedString("Synchronize step data", comment: "同步计步数据"))",
+                "\(NSLocalizedString("Synchronizing exercise data", comment: "同步锻炼数据"))",
+                "\(NSLocalizedString("Synchronized measurement data", comment: "同步测量数据"))",
             ],
             [
-                "新协议 同步数据",
-                "新协议 设置天气",
-                "新协议 设置闹钟",
-                "新协议 获取闹钟",
-                "新协议 设置睡眠目标",
-                "新协议 获取睡眠目标",
-                "新协议 获取闹钟",
-                "新协议 获取睡眠目标",
-                "新协议 设置SOS联系人",
-                "新协议 获取SOS联系人",
-                "新协议 周期测量参数设置",
-                "新协议 获取朝拜闹钟天数及开始时间",
-                "新协议 设置时区",
-                "无响应 回应定位信息",
-//                "新协议 设置LED灯功能",
-//                "新协议 设置马达震动功能",
-//                "新协议 获取LED灯功能",
-//                "新协议 获取马达震动功能",
-//                "新协议 获取自定义运动类型"
+                "New \(NSLocalizedString("Synchronizing data", comment: "同步数据"))",
+                "New \(NSLocalizedString("Set the weather", comment: "设置天气"))",
+                "New \(NSLocalizedString("Set an alarm", comment: "设置闹钟"))",
+                "New \(NSLocalizedString("Set a sleep goal", comment: "设置睡眠目标"))",
+                "New \(NSLocalizedString("Get the alarm clock", comment: "获取闹钟"))",
+                "New \(NSLocalizedString("Get a sleep Goal", comment: "获取睡眠目标"))",
+                "New \(NSLocalizedString("Set up SOS contacts", comment: "设置SOS联系人"))",
+                "New \(NSLocalizedString("Get SOS contacts", comment: "获取SOS联系人"))",
+                "New \(NSLocalizedString("Cycle measurement parameter setting", comment: "周期测量参数设置"))",
+                "New \(NSLocalizedString("Get the number of days and start time of the pilgrimage alarm clock", comment: "获取朝拜闹钟天数及开始时间"))",
+                "New \(NSLocalizedString("Set the time zone", comment: "设置时区"))",
+                "New \(NSLocalizedString("No response response location information", comment: "无响应 回应定位信息"))",
+                "New \(NSLocalizedString("Gets a custom movement type", comment: "获取自定义运动类型"))",
             ],
             [
-                "关机",
-                "恢复出厂设置",
-                "马达震动",
-                "重新启动",
-                "恢复出厂并关机",
-                "耗电数据上报",
+                "\(NSLocalizedString("Power off", comment: "关机"))",
+                "\(NSLocalizedString("factory data reset", comment: "恢复出厂设置"))",
+                "\(NSLocalizedString("Vibration of motor", comment: "马达震动"))",
+                "\(NSLocalizedString("Start up again", comment: "重新启动"))",
+                "\(NSLocalizedString("Restore the factory and power down", comment: "恢复出厂并关机"))",
             ],
             [
-                "实时步数",
-                "实时心率",
-                "单次测量结果",
-                "锻炼状态",
-                "找手机",
-                "结束找手机",
-                "拍照",
-                "音乐控制",
-                "来电控制",
-                "上报屏幕亮度",
-                "上报亮屏时长",
-                "上报抬腕亮屏",
-                "上报设备振动",
-                "上报实时数据",
-                "上报运动交互数据",
-                "上报进入或退出拍照模式",
-                "上报勿扰设置",
-                "上报朝拜闹钟天数及开始时间",
-                "上报请求定位信息",
-                "上报闹钟",
-                "上报语言",
+                "\(NSLocalizedString("Real time step count", comment: "实时步数"))",
+                "\(NSLocalizedString("Real time heart rate", comment: "实时心率"))",
+                "\(NSLocalizedString("Results of a single measurement", comment: "单次测量结果"))",
+                "\(NSLocalizedString("Status of exercise", comment: "锻炼状态"))",
+                "\(NSLocalizedString("Find your phone", comment: "找手机"))",
+                "\(NSLocalizedString("End the phone search", comment: "结束找手机"))",
+                "\(NSLocalizedString("Take a photo", comment: "拍照"))",
+                "\(NSLocalizedString("Control of music", comment: "音乐控制"))",
+                "\(NSLocalizedString("Incoming call control", comment: "来电控制"))",
+                "\(NSLocalizedString("Report screen brightness", comment: "上报屏幕亮度"))",
+                "\(NSLocalizedString("Report the screen duration", comment: "上报亮屏时长"))",
+                "\(NSLocalizedString("Report wrist bright screen", comment: "上报抬腕亮屏"))",
+                "\(NSLocalizedString("Report equipment vibration", comment: "上报设备振动"))",
+                "\(NSLocalizedString("Report real-time data", comment: "上报实时数据"))",
+                "\(NSLocalizedString("Report movement interaction data", comment: "上报运动交互数据"))",
+                "\(NSLocalizedString("Report to enter or exit photo mode", comment: "上报进入或退出拍照模式"))",
+                "\(NSLocalizedString("Do not disturb Settings for reporting", comment: "上报勿扰设置"))",
+                "\(NSLocalizedString("Report the number of days and start time of the pilgrimage alarm clock", comment: "上报朝拜闹钟天数及开始时间"))",
+                "\(NSLocalizedString("Report request location information", comment: "上报请求定位信息"))",
+                "\(NSLocalizedString("Report the alarm clock", comment: "上报闹钟"))",
+                "\(NSLocalizedString("Language of reporting", comment: "上报语言"))",
             ],
             [
-                "0引导文件",
-                "1应用文件",
-                "2图库文件",
-                "3字库文件",
-                "4表盘文件",
-                "5自定义表盘文件",
-                "7音乐文件",
-                "8辅助定位文件",
-                "9自定义运动文件",
+                "0\(NSLocalizedString("The boot file", comment: "引导文件"))",
+                "1\(NSLocalizedString("File of application", comment: "应用文件"))",
+                "2\(NSLocalizedString("Photo gallery file", comment: "图库文件"))",
+                "3\(NSLocalizedString("Character library file", comment: "字库文件"))",
+                "4\(NSLocalizedString("Watch face file", comment: "表盘文件"))",
+                "5\(NSLocalizedString("Customize the watch face file", comment: "自定义表盘文件"))",
+                "7\(NSLocalizedString("Music file", comment: "音乐文件"))",
+                "8\(NSLocalizedString("Auxiliary location file", comment: "辅助定位文件"))",
+                "9\(NSLocalizedString("Customize the motion file", comment: "自定义运动文件"))",
             ],
             [
-                "OTA升级",
-                "停止升级",
+                "\(NSLocalizedString("OTA upgrade", comment: "OTA升级"))",
+                "\(NSLocalizedString("Stop upgrading", comment: "停止升级"))",
             ],
             [
-                "获取服务器OTA信息",
-                "自动OTA升级服务器最新设备相关版本",
-                "获取在线表盘",
-                "发送在线表盘",
-                "获取本地表盘图片",
-                "获取自定义表盘图片",
+                "\(NSLocalizedString("Get the server OTA information", comment: "获取服务器OTA信息"))",
+                "\(NSLocalizedString("Automatic OTA upgrade server for the latest device version", comment: "自动OTA升级服务器最新设备相关版本"))",
+                "\(NSLocalizedString("Get online watch face (old interface, get all)", comment: "获取在线表盘(旧接口，获取全部)"))",
+                "\(NSLocalizedString("Get online watch face (new interface, get paging)", comment: "获取在线表盘(新接口，获取分页)"))",
+                "\(NSLocalizedString("Send online watch face", comment: "发送在线表盘"))",
+                "\(NSLocalizedString("Gets the local watch face picture", comment: "获取本地表盘图片"))",
+                "\(NSLocalizedString("Get a custom watch face picture", comment: "获取自定义表盘图片"))",
             ],
         ]
-
-        
     }
     
     
@@ -352,10 +354,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
         print("didSelectRowAt -> date =",Date.init())
         
         switch rowString {
-        case "获取设备名称":
+        case "\(NSLocalizedString("Get the device name", comment: "获取设备名称"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取设备名称")
+            self.logView.writeString(string: NSLocalizedString("Get the device name", comment: "获取设备名称"))
             ZyCommandModule.shareInstance.getDeviceName { success, error in
 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -373,10 +375,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-        case "获取固件版本":
+        case "\(NSLocalizedString("Get the firmware version", comment: "获取固件版本"))":
 
             self.logView.clearString()
-            self.logView.writeString(string: "获取固件版本")
+            self.logView.writeString(string: NSLocalizedString("Get the firmware version", comment: "获取固件版本"))
             ZyCommandModule.shareInstance.getFirmwareVersion{ success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -395,10 +397,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "获取序列号":
+        case "\(NSLocalizedString("Gets the serial number", comment: "获取序列号"))":
 
             self.logView.clearString()
-            self.logView.writeString(string: "获取序列号")
+            self.logView.writeString(string: NSLocalizedString("Gets the serial number", comment: "获取序列号"))
             ZyCommandModule.shareInstance.getSerialNumber {success, error in
 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -418,10 +420,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
         
-        case "获取mac地址":
+        case "0x06 \(NSLocalizedString("Get mac address", comment: "获取mac地址"))":
 
             self.logView.clearString()
-            self.logView.writeString(string: "获取mac地址")
+            self.logView.writeString(string: NSLocalizedString("Get mac address", comment: "获取mac地址"))
             ZyCommandModule.shareInstance.getMac { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -441,10 +443,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取电量":
+        case "0x08 \(NSLocalizedString("Get the power", comment: "获取电量"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取电量")
+            self.logView.writeString(string: NSLocalizedString("Get the power", comment: "获取电量"))
             ZyCommandModule.shareInstance.getBattery { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -464,10 +466,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "设置时间":
+        case "\(NSLocalizedString("Set up time", comment: "设置时间"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置时间")
+            self.logView.writeString(string: NSLocalizedString("Set up time", comment: "设置时间"))
             let format = DateFormatter.init()
             format.dateFormat = "yyyy-MM-dd HH:mm:ss"
             self.logView.writeString(string: String.init(format: "%@", format.string(from: Date.init())))
@@ -484,7 +486,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "获取设备支持的功能列表":
+        case "\(NSLocalizedString("Get a list of features supported by your device", comment: "获取设备支持的功能列表"))":
             
             ZyCommandModule.shareInstance.getDeviceSupportList { success, error in
                 
@@ -502,10 +504,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "获取产品、固件、资源等版本信息":
+        case "\(NSLocalizedString("Obtain version information for products, firmware, and resources", comment: "获取产品、固件、资源等版本信息"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取产品、固件、资源等版本信息")
+            self.logView.writeString(string: NSLocalizedString("Obtain version information for products, firmware, and resources", comment: "获取产品、固件、资源等版本信息"))
             
             ZyCommandModule.shareInstance.getDeviceOtaVersionInfo { success, error in
                 
@@ -528,19 +530,20 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     print("library ->",library)
                     print("font ->",font)
                     
-                    self.logView.writeString(string: "产品id:\(product)")
-                    self.logView.writeString(string: "项目id:\(project)")
-                    self.logView.writeString(string: "固件:\(firmware)")
-                    self.logView.writeString(string: "图库:\(library)")
-                    self.logView.writeString(string: "字库:\(font)")
+                    self.logView.writeString(string: "product id:\(product)")
+                    self.logView.writeString(string: "project id:\(project)")
+                    self.logView.writeString(string: "firmware:\(firmware)")
+                    self.logView.writeString(string: "library:\(library)")
+                    self.logView.writeString(string: "font:\(font)")
                 }
             }
             
             break
-        case "获取个人信息":
+
+        case "\(NSLocalizedString("Access to Personal Information", comment: "获取个人信息"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取个人信息")
+            self.logView.writeString(string: NSLocalizedString("Access to Personal Information", comment: "获取个人信息"))
             
             ZyCommandModule.shareInstance.getPersonalInformation { success, error in
                 
@@ -554,12 +557,12 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         let age = model.age
                         let weight = model.weight
                         let gender = model.gender
-                        print("height ->",height,"age ->",age,"weight ->",weight,"gender ->",gender ? "女":"男")
+                        print("height ->",height,"age ->",age,"weight ->",weight,"gender ->",gender ? NSLocalizedString("female", comment: "女"):NSLocalizedString("male", comment: "男"))
                         
                         self.logView.writeString(string: "age:\(age)")
                         self.logView.writeString(string: "height:\(height)")
                         self.logView.writeString(string: "weight:\(weight)")
-                        self.logView.writeString(string: "gender:\(gender ? "女":"男")")
+                        self.logView.writeString(string: "gender:\(gender ? NSLocalizedString("female", comment: "女"):NSLocalizedString("male", comment: "男"))")
                     }
                     
                 }
@@ -568,21 +571,21 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "设置个人信息":
+        case "0x01 \(NSLocalizedString("Set up personal information", comment: "设置个人信息"))":
             
             let array = [
                 "age:[0,255]",
                 "height:[0,255]",
                 "weight:[0,255]",
-                "gender:[0,1] 0男1女"
+                "gender:[0,1] 0\(NSLocalizedString("male", comment: "男"))1\(NSLocalizedString("female", comment: "女"))"
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置个人信息")
+            self.logView.writeString(string: NSLocalizedString("Set up personal information", comment: "设置个人信息"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "请输入用户资料设置", holderStringArray: array, cancel: "取消", cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set up personal information", comment: "设置个人信息"), holderStringArray: array, cancel: NSLocalizedString("Cancel", comment: "取消"), cancelAction: {
                 
-            }, ok: "确定") { (textArray) in
+            }, ok: NSLocalizedString("Sure", comment: "确定")) { (textArray) in
                 let age = textArray[0]
                 let height = textArray[1]
                 let weight = textArray[2]
@@ -591,7 +594,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 self.logView.writeString(string: "age:\(age.count > 0 ? age:"0")")
                 self.logView.writeString(string: "height:\(height.count > 0 ? height:"0")")
                 self.logView.writeString(string: "weight:\(weight.count > 0 ? weight:"0")")
-                self.logView.writeString(string: "gender:\(gender == "1" ? "女":"男")")
+                self.logView.writeString(string: "gender:\(gender == "1" ? NSLocalizedString("female", comment: "女"):NSLocalizedString("male", comment: "男"))")
                 
                 
                 let model = ZyPersonalModel.init()
@@ -613,10 +616,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取时间制式":
+        case "0x02 \(NSLocalizedString("Get the time standard", comment: "获取时间制式"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取时间制式")
+            self.logView.writeString(string: NSLocalizedString("Get the time standard", comment: "获取时间制式"))
             
             ZyCommandModule.shareInstance.getTimeFormat { success, error in
                 
@@ -626,9 +629,9 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     print("GetTimeFormat ->",success)
                     
                     let timeFormat = success
-                    print("timeFormat ->",timeFormat == 0 ? "24小时制":"12小时制")
+                    print("timeFormat ->",timeFormat == 0 ? NSLocalizedString("24 hour system", comment: "24小时制"):NSLocalizedString("12 hour system", comment: "12小时制"))
                     
-                    self.logView.writeString(string: timeFormat == 0 ? "24小时制":"12小时制")
+                    self.logView.writeString(string: timeFormat == 0 ? NSLocalizedString("24 hour system", comment: "24小时制"):NSLocalizedString("12 hour system", comment: "12小时制"))
                 }
                 
                 //self.navigationController?.pushViewController(vc, animated: true)
@@ -636,20 +639,20 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "设置时间制式":
+        case "0x03 \(NSLocalizedString("Set the time standard", comment: "设置时间制式"))":
             
             let array = [
-                "format:0-24小时制,1-12小时制"
+                "format:0-\(NSLocalizedString("24 hour system", comment: "24小时制")),1-\(NSLocalizedString("12 hour system", comment: "12小时制"))"
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置时间制式")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "请输入时间制", holderStringArray: array, cancel: "取消", cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("Set the time standard", comment: "设置时间制式"))
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set the time standard", comment: "设置时间制式"), holderStringArray: array, cancel: NSLocalizedString("Cancel", comment: "取消"), cancelAction: {
                 
-            }, ok: "确定") { (textArray) in
+            }, ok: NSLocalizedString("Sure", comment: "确定")) { (textArray) in
                 let format = textArray[0]
                 
-                self.logView.writeString(string: "\(format == "1" ? "12小时制":"24小时制")")
+                self.logView.writeString(string: "\(format == "1" ? NSLocalizedString("12 hour system", comment: "12小时制"):NSLocalizedString("24 hour system", comment: "24小时制"))")
                 ZyCommandModule.shareInstance.setTimeFormat(format: Int(format) ?? 0) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -665,10 +668,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取公英制":
+        case "0x04 \(NSLocalizedString("Get the metric system", comment: "获取公英制"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取公英制")
+            self.logView.writeString(string: NSLocalizedString("Get the metric system", comment: "获取公英制"))
             ZyCommandModule.shareInstance.getMetricSystem { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -677,28 +680,28 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     print("GetMetricSystem ->",success)
                     
                     let metricSystem = success
-                    print("metricSystem ->",metricSystem == 0 ? "公制":"英制")
+                    print("metricSystem ->",metricSystem == 0 ? NSLocalizedString("Metric system", comment: "公制"):NSLocalizedString("British system", comment: "英制"))
                     
-                    self.logView.writeString(string: metricSystem == 0 ? "公制":"英制")
+                    self.logView.writeString(string: metricSystem == 0 ? NSLocalizedString("Metric system", comment: "公制"):NSLocalizedString("British system", comment: "英制"))
                 }
             }
             
             break
             
-        case "设置公英制":
+        case "0x05 \(NSLocalizedString("Set the metric system", comment: "设置公英制"))":
             
             let array = [
-                "0:公制，1:英制"
+                "0:\(NSLocalizedString("Metric system", comment: "公制"))，1:\(NSLocalizedString("British system", comment: "英制"))"
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置公英制")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "请输入公英制", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("Set the metric system", comment: "设置公英制"))
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set the metric system", comment: "设置公英制"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let format = textArray[0]
                 
-                self.logView.writeString(string: format == "1" ? "英制":"公制")
+                self.logView.writeString(string: format == "1" ? NSLocalizedString("British system", comment: "英制"):NSLocalizedString("Metric system", comment: "公制"))
                 
                 ZyCommandModule.shareInstance.setMetricSystem(metric: Int(format) ?? 0) { error in
                     
@@ -713,23 +716,23 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "设置天气":
+        case "0x07 \(NSLocalizedString("Set the weather", comment: "设置天气"))":
             
             let array = [
-                "未来天数",
-                "天气类型",
-                "温度",
-                "空气质量",
-                "最低温度",
-                "最高温度",
-                "明日最低温度",
-                "明日最高温度",
+                NSLocalizedString("Days to come", comment: "未来天数"),
+                NSLocalizedString("Type of weather", comment: "天气类型"),
+                NSLocalizedString("temperature", comment: "温度"),
+                NSLocalizedString("Air quality", comment: "空气质量"),
+                NSLocalizedString("Minimum temperature", comment: "最低温度"),
+                NSLocalizedString("Maximum temperature", comment: "最高温度"),
+                NSLocalizedString("Minimum temperature tomorrow", comment: "明日最低温度"),
+                NSLocalizedString("Maximum temperature tomorrow", comment: "明日最高温度"),
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置天气")
+            self.logView.writeString(string: NSLocalizedString("Set the weather", comment: "设置天气"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置天气", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set the weather", comment: "设置天气"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let dayCount = textArray[0]
@@ -742,13 +745,13 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 let tomorrowMaxTemp = textArray[7]
                 
                 self.logView.writeString(string: "第\(dayCount.count>0 ? dayCount : "0")天")
-                self.logView.writeString(string: "天气类型:\(type)")
-                self.logView.writeString(string: "温度:\(temp)")
-                self.logView.writeString(string: "空气质量:\(airQuality)")
-                self.logView.writeString(string: "最低温度:\(minTemp)")
-                self.logView.writeString(string: "最高温度:\(maxTemp)")
-                self.logView.writeString(string: "明日最低温度:\(tomorrowMinTemp)")
-                self.logView.writeString(string: "明日最大温度:\(tomorrowMaxTemp)")
+                self.logView.writeString(string: "\(NSLocalizedString("Type of weather", comment: "天气类型")):\(type)")
+                self.logView.writeString(string: "\(NSLocalizedString("temperature", comment: "温度")):\(temp)")
+                self.logView.writeString(string: "\(NSLocalizedString("Air quality", comment: "空气质量")):\(airQuality)")
+                self.logView.writeString(string: "\(NSLocalizedString("Minimum temperature", comment: "最低温度")):\(minTemp)")
+                self.logView.writeString(string: "\(NSLocalizedString("Maximum temperature", comment: "最高温度")):\(maxTemp)")
+                self.logView.writeString(string: "\(NSLocalizedString("Minimum temperature tomorrow", comment: "明日最低温度")):\(tomorrowMinTemp)")
+                self.logView.writeString(string: "\(NSLocalizedString("Maximum temperature tomorrow", comment: "明日最高温度")):\(tomorrowMaxTemp)")
                 
                 let model = ZyWeatherModel.init()
                 model.dayCount = Int(dayCount) ?? 0
@@ -773,29 +776,29 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "设置天气(拓展参数)":
+        case NSLocalizedString("Set weather (expand parameters)", comment: "设置天气(拓展参数)"):
         
             let array = [
-                "年",
-                "月",
-                "日",
-                "时",
-                "分",
-                "秒",
-                "未来天数",
-                "天气类型",
-                "温度",
-                "空气质量",
-                "最低温度",
-                "最高温度",
-                "明日最低温度",
-                "明日最高温度",
+                NSLocalizedString("Year", comment: "年"),
+                NSLocalizedString("Month", comment: "月"),
+                NSLocalizedString("Day", comment: "日"),
+                NSLocalizedString("Hour", comment: "时"),
+                NSLocalizedString("Minute", comment: "分"),
+                NSLocalizedString("Second", comment: "秒"),
+                NSLocalizedString("Days to come", comment: "未来天数"),
+                NSLocalizedString("Type of weather", comment: "天气类型"),
+                NSLocalizedString("temperature", comment: "温度"),
+                NSLocalizedString("Air quality", comment: "空气质量"),
+                NSLocalizedString("Minimum temperature", comment: "最低温度"),
+                NSLocalizedString("Maximum temperature", comment: "最高温度"),
+                NSLocalizedString("Minimum temperature tomorrow", comment: "明日最低温度"),
+                NSLocalizedString("Maximum temperature tomorrow", comment: "明日最高温度"),
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置天气")
+            self.logView.writeString(string: NSLocalizedString("Set the weather", comment: "设置天气"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置天气", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set the weather", comment: "设置天气"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let year = textArray[0]
@@ -824,15 +827,15 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 
                 let time = String.init(format: "%04d-%02d-%02d %02d:%02d:%02d", Int(year) ?? yearDate , Int(month) ?? monthDate , Int(day) ?? dayDate , Int(hour) ?? hourDate , Int(minute) ?? minuteDate , Int(second) ?? secondDate)
                 
-                self.logView.writeString(string: "显示时间:\(time)")
+                self.logView.writeString(string: "\(NSLocalizedString("Time of display", comment: "显示时间")):\(time)")
                 self.logView.writeString(string: "第\(dayCount.count>0 ? dayCount : "0")天")
-                self.logView.writeString(string: "天气类型:\(type)")
-                self.logView.writeString(string: "温度:\(temp)")
-                self.logView.writeString(string: "空气质量:\(airQuality)")
-                self.logView.writeString(string: "最低温度:\(minTemp)")
-                self.logView.writeString(string: "最高温度:\(maxTemp)")
-                self.logView.writeString(string: "明日最低温度:\(tomorrowMinTemp)")
-                self.logView.writeString(string: "明日最大温度:\(tomorrowMaxTemp)")
+                self.logView.writeString(string: "\(NSLocalizedString("Type of weather", comment: "天气类型")):\(type)")
+                self.logView.writeString(string: "\(NSLocalizedString("temperature", comment: "温度")):\(temp)")
+                self.logView.writeString(string: "\(NSLocalizedString("Air quality", comment: "空气质量")):\(airQuality)")
+                self.logView.writeString(string: "\(NSLocalizedString("Minimum temperature", comment: "最低温度")):\(minTemp)")
+                self.logView.writeString(string: "\(NSLocalizedString("Maximum temperature", comment: "最高温度")):\(maxTemp)")
+                self.logView.writeString(string: "\(NSLocalizedString("Minimum temperature tomorrow", comment: "明日最低温度")):\(tomorrowMinTemp)")
+                self.logView.writeString(string: "\(NSLocalizedString("Maximum temperature tomorrow", comment: "明日最高温度")):\(tomorrowMaxTemp)")
                 
                 let model = ZyWeatherModel.init()
                 model.dayCount = Int(dayCount) ?? 0
@@ -857,10 +860,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "设备进入拍照模式":
+        case "\(NSLocalizedString("The device enters camera mode", comment: "设备进入拍照模式"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "设备进入拍照模式")
+            self.logView.writeString(string: NSLocalizedString("The device enters camera mode", comment: "设备进入拍照模式"))
             ZyCommandModule.shareInstance.setEnterCamera { error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -873,10 +876,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "寻找手环":
+        case "\(NSLocalizedString("Find a bracelet", comment: "寻找手环"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "寻找手环")
+            self.logView.writeString(string: NSLocalizedString("Find a bracelet", comment: "寻找手环"))
             ZyCommandModule.shareInstance.setFindDevice { error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -889,10 +892,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "获取抬腕亮屏":
+        case "\(NSLocalizedString("Get a bright screen for wrist lifting", comment: "获取抬腕亮屏"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取抬腕亮屏")
+            self.logView.writeString(string: NSLocalizedString("Get a bright screen for wrist lifting", comment: "获取抬腕亮屏"))
             ZyCommandModule.shareInstance.getLightScreen { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -901,30 +904,30 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     print("success ->",success)
                     
                     let isOpen = success
-                    print("isOpen ->",isOpen == 0 ? "关闭":"开启")
+                    print("isOpen ->",isOpen == 0 ? NSLocalizedString("Shut down", comment: "关闭"):NSLocalizedString("Turn on", comment: "开启"))
                     
-                    self.logView.writeString(string: isOpen == 0 ? "关闭":"开启")
+                    self.logView.writeString(string: isOpen == 0 ? NSLocalizedString("Shut down", comment: "关闭"):NSLocalizedString("Turn on", comment: "开启"))
                 }
                 //self.navigationController?.pushViewController(vc, animated: true)
             }
             
             break
             
-        case "设置抬腕亮屏":
+        case "\(NSLocalizedString("Set up wrist lift bright screen", comment: "设置抬腕亮屏"))":
             
             let array = [
-                "0:关，1:开"
+                "0:\(NSLocalizedString("Shut down", comment: "关闭"))，1:\(NSLocalizedString("Turn on", comment: "开启"))"
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置抬腕亮屏")
+            self.logView.writeString(string: NSLocalizedString("Set up wrist lift bright screen", comment: "设置抬腕亮屏"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置抬腕亮屏", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set up wrist lift bright screen", comment: "设置抬腕亮屏"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let isOpen = textArray[0]
                 
-                self.logView.writeString(string: (Int(isOpen) ?? 0) > 0 ? "开启":"关闭")
+                self.logView.writeString(string: (Int(isOpen) ?? 0) > 0 ? NSLocalizedString("Turn on", comment: "开启"):NSLocalizedString("Shut down", comment: "关闭"))
                 ZyCommandModule.shareInstance.setLightScreen(isOpen: Int(isOpen) ?? 0) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -938,10 +941,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "获取屏幕亮度":
+        case "\(NSLocalizedString("Get screen brightness", comment: "获取屏幕亮度"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取屏幕亮度")
+            self.logView.writeString(string: NSLocalizedString("Get screen brightness", comment: "获取屏幕亮度"))
             
             ZyCommandModule.shareInstance.getScreenLevel { success, error in
                 
@@ -953,27 +956,27 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     let level = success
                     print("level ->",level)
                     
-                    self.logView.writeString(string: "亮度等级:\(level)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Level of brightness", comment: "亮度等级")):\(level)")
                 }
                 //self.navigationController?.pushViewController(vc, animated: true)
             }
 
             break
             
-        case "设置屏幕亮度":
+        case "\(NSLocalizedString("Set screen brightness", comment: "设置屏幕亮度"))":
             let array = [
-                "亮度等级",
+                NSLocalizedString("Level of brightness", comment: "亮度等级"),
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置屏幕亮度")
+            self.logView.writeString(string: NSLocalizedString("Set screen brightness", comment: "设置屏幕亮度"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置屏幕亮度", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set screen brightness", comment: "设置屏幕亮度"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let level = textArray[0]
                 
-                self.logView.writeString(string: "亮度等级:\(level.count>0 ? level:"0")")
+                self.logView.writeString(string: "\(NSLocalizedString("Level of brightness", comment: "亮度等级")):\(level.count>0 ? level:"0")")
                 
                 ZyCommandModule.shareInstance.setScreenLevel(value: Int(level) ?? 0) { error in
                     
@@ -988,10 +991,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取亮屏时长":
+        case "\(NSLocalizedString("Gets the screen duration", comment: "获取亮屏时长"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取亮屏时长")
+            self.logView.writeString(string: NSLocalizedString("Gets the screen duration", comment: "获取亮屏时长"))
             
             ZyCommandModule.shareInstance.getScreenTimeLong { success, error in
                 
@@ -1003,27 +1006,27 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     let timeLong = success
                     print("timeLong ->",timeLong)
                     
-                    self.logView.writeString(string: "亮屏时长:\(timeLong)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Screen duration", comment: "亮屏时长")):\(timeLong)")
                 }
                 //self.navigationController?.pushViewController(vc, animated: true)
             }
             
             break
             
-        case "设置亮屏时长":
+        case "\(NSLocalizedString("Set the screen duration", comment: "设置亮屏时长"))":
             let array = [
-                "时长",
+                NSLocalizedString("Screen duration", comment: "亮屏时长"),
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置亮屏时长")
+            self.logView.writeString(string: NSLocalizedString("Set the screen duration", comment: "设置亮屏时长"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置亮屏时长", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set the screen duration", comment: "设置亮屏时长"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let timeLong = textArray[0]
                 
-                self.logView.writeString(string: "亮屏时长:\(timeLong.count>0 ? timeLong:"0")")
+                self.logView.writeString(string: "\(NSLocalizedString("Screen duration", comment: "亮屏时长")):\(timeLong.count>0 ? timeLong:"0")")
                 
                 ZyCommandModule.shareInstance.setScreenTimeLong(value: Int(timeLong) ?? 0) { error in
                     
@@ -1037,10 +1040,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "获取本地表盘":
+        case "\(NSLocalizedString("Gets the local watch face", comment: "获取本地表盘"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取本地表盘")
+            self.logView.writeString(string: NSLocalizedString("Gets the local watch face", comment: "获取本地表盘"))
             ZyCommandModule.shareInstance.getLocalDial { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -1058,15 +1061,15 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "设置本地表盘":
+        case "\(NSLocalizedString("Set the local watch face", comment: "设置本地表盘"))":
             let array = [
                 "表盘序号"
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置本地表盘")
+            self.logView.writeString(string: NSLocalizedString("Set the local watch face", comment: "设置本地表盘"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置本地表盘", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set the local watch face", comment: "设置本地表盘"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let index = textArray[0]
@@ -1085,14 +1088,15 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取闹钟":
+        case "\(NSLocalizedString("Get the alarm clock", comment: "获取闹钟"))":
+
             let array = [
-                "闹钟序号"
+                NSLocalizedString("Alarm clock serial number", comment: "闹钟序号")
             ]
 
             self.logView.clearString()
-            self.logView.writeString(string: "获取闹钟")
-//            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "获取闹钟", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("Get the alarm clock", comment: "获取闹钟"))
+//            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Get the alarm clock", comment: "获取闹钟"), holderStringArray: array, cancel: nil, cancelAction: {
 //
 //            }, ok: nil) { (textArray) in
 //                let index = textArray[0]
@@ -1113,18 +1117,18 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 //                        let alarmModel = ZyAlarmModel.init(dic: success)
 //                        print("alarmModel",alarmModel.alarmIndex,"alarmOpen ->",alarmModel.alarmOpen,"alarmTime ->",alarmModel.alarmTime,"alarmType ->",alarmModel.alarmType.rawValue,"alarmRepeat ->",alarmModel.alarmRepeatArray)
 //
-//                        self.logView.writeString(string: "闹钟序号:\(index.count>0 ? index:"0")")
-//                        self.logView.writeString(string: "闹钟时间:\(alarmModel.alarmTime ?? "00:00")")
+//                        self.logView.writeString(string: "\(NSLocalizedString("Alarm clock serial number", comment: "闹钟序号")):\(index.count>0 ? index:"0")")
+//                        self.logView.writeString(string: "\(NSLocalizedString("Alarm clock time", comment: "闹钟时间")):\(alarmModel.alarmTime ?? "00:00")")
 //                        self.logView.writeString(string: "repeatCount:\(repeatCount)")
-//                        self.logView.writeString(string: "闹钟开关:\(alarmModel.alarmOpen)")
+//                        self.logView.writeString(string: "\(NSLocalizedString("Alarm clock switch", comment: "闹钟开关")):\(alarmModel.alarmOpen)")
 //                        if alarmModel.alarmOpen {
-//                            self.logView.writeString(string: "闹钟重复类型:\(alarmModel.alarmType == .single ? "单次闹钟":"重复闹钟")")
+//                            self.logView.writeString(string: "\(NSLocalizedString("Alarm clock repetition type", comment: "闹钟重复类型")):\(alarmModel.alarmType == .single ? NSLocalizedString("Single time alarm clock", comment: "单次闹钟"):NSLocalizedString("Repeat the alarm clock", comment: "重复闹钟"))")
 //                            if alarmModel.alarmType == .cycle {
 //                                if alarmModel.alarmRepeatArray != nil {
-//                                    let str = ((alarmModel.alarmRepeatArray![0] != 0 ? "星期天":"")+(alarmModel.alarmRepeatArray![1] != 0 ? "星期一":"")+(alarmModel.alarmRepeatArray![2] != 0 ? "星期二":"")+(alarmModel.alarmRepeatArray![3] != 0 ? "星期三":"")+(alarmModel.alarmRepeatArray![4] != 0 ? "星期四":"")+(alarmModel.alarmRepeatArray![5] != 0 ? "星期五":"")+(alarmModel.alarmRepeatArray![6] != 0 ? "星期六":""))
-//                                    self.logView.writeString(string: "闹钟重复星期:\(str)")
+//                                    let str = ((alarmModel.alarmRepeatArray![0] != 0 ? NSLocalizedString("Sunday", comment: "星期天"):"")+(alarmModel.alarmRepeatArray![1] != 0 ? NSLocalizedString("Monday", comment: "星期一"):"")+(alarmModel.alarmRepeatArray![2] != 0 ? NSLocalizedString("Tuesday", comment: "星期二"):"")+(alarmModel.alarmRepeatArray![3] != 0 ? NSLocalizedString("Wednesday", comment: "星期三"):"")+(alarmModel.alarmRepeatArray![4] != 0 ? NSLocalizedString("Thursday", comment: "星期四"):"")+(alarmModel.alarmRepeatArray![5] != 0 ? NSLocalizedString("Friday", comment: "星期五"):"")+(alarmModel.alarmRepeatArray![6] != 0 ? NSLocalizedString("Saturday", comment: "星期六"):""))
+//                                    self.logView.writeString(string: "\(NSLocalizedString("The alarm clock repeats the week", comment: "闹钟重复星期")):\(str)")
 //                                }else{
-//                                    self.logView.writeString(string: "闹钟重复星期:重复星期未开启,默认单次闹钟")
+//                                    self.logView.writeString(string: NSLocalizedString("Alarm repeat week: Repeat week is not turned on, default single alarm", comment: "闹钟重复星期:重复星期未开启,默认单次闹钟"))
 //                                }
 //                            }
 //                        }
@@ -1132,7 +1136,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 //                }
 //            }
             
-            self.presentTextFieldAlertVC(title: "获取闹钟", message: "", holderStringArray: nil, cancel: "有效闹钟", cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Get the alarm clock", comment: "获取闹钟"), message: "", holderStringArray: nil, cancel: "有效闹钟", cancelAction: {
                 for i in stride(from: 0, to: 10, by: 1) {
                     ZyCommandModule.shareInstance.getAlarm(index: i) { success, error in
 
@@ -1142,20 +1146,20 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                             if let alarmModel = success {
                                 print("alarmModel",alarmModel.alarmIndex,"alarmOpen ->",alarmModel.alarmOpen,"alarmTime ->",String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute),"alarmType ->",alarmModel.alarmType.rawValue,"alarmRepeat ->",alarmModel.alarmRepeatArray)
                                 if alarmModel.isValid {
-                                    self.logView.writeString(string: "闹钟序号:\(alarmModel.alarmIndex)")
-                                    self.logView.writeString(string: "闹钟时间:\(String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute))")
+                                    self.logView.writeString(string: "\(NSLocalizedString("Alarm clock serial number", comment: "闹钟序号")):\(alarmModel.alarmIndex)")
+                                    self.logView.writeString(string: "\(NSLocalizedString("Alarm clock time", comment: "闹钟时间")):\(String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute))")
                                     self.logView.writeString(string: "repeatCount:\(alarmModel.alarmRepeatCount)")
                                     let str = alarmModel.alarmOpen ? "":"\n"
-                                    self.logView.writeString(string: "闹钟开关:\(alarmModel.alarmOpen)\(str)")
+                                    self.logView.writeString(string: "\(NSLocalizedString("Alarm clock switch", comment: "闹钟开关")):\(alarmModel.alarmOpen)\(str)")
                                     if alarmModel.alarmOpen {
-                                        self.logView.writeString(string: "闹钟重复类型:\(alarmModel.alarmType == .single ? "单次闹钟":"重复闹钟")")
+                                        self.logView.writeString(string: "\(NSLocalizedString("Alarm clock repetition type", comment: "闹钟重复类型")):\(alarmModel.alarmType == .single ? NSLocalizedString("Single time alarm clock", comment: "单次闹钟"):NSLocalizedString("Repeat the alarm clock", comment: "重复闹钟"))")
                                         if alarmModel.alarmType == .cycle {
                                             if alarmModel.alarmRepeatArray != nil {
-                                                let str = ((alarmModel.alarmRepeatArray![0] != 0 ? "星期天":"")+(alarmModel.alarmRepeatArray![1] != 0 ? "星期一":"")+(alarmModel.alarmRepeatArray![2] != 0 ? "星期二":"")+(alarmModel.alarmRepeatArray![3] != 0 ? "星期三":"")+(alarmModel.alarmRepeatArray![4] != 0 ? "星期四":"")+(alarmModel.alarmRepeatArray![5] != 0 ? "星期五":"")+(alarmModel.alarmRepeatArray![6] != 0 ? "星期六":""))
+                                                let str = ((alarmModel.alarmRepeatArray![0] != 0 ? NSLocalizedString("Sunday", comment: "星期天"):"")+(alarmModel.alarmRepeatArray![1] != 0 ? NSLocalizedString("Monday", comment: "星期一"):"")+(alarmModel.alarmRepeatArray![2] != 0 ? NSLocalizedString("Tuesday", comment: "星期二"):"")+(alarmModel.alarmRepeatArray![3] != 0 ? NSLocalizedString("Wednesday", comment: "星期三"):"")+(alarmModel.alarmRepeatArray![4] != 0 ? NSLocalizedString("Thursday", comment: "星期四"):"")+(alarmModel.alarmRepeatArray![5] != 0 ? NSLocalizedString("Friday", comment: "星期五"):"")+(alarmModel.alarmRepeatArray![6] != 0 ? NSLocalizedString("Saturday", comment: "星期六"):""))
                                                 print("闹钟重复星期:\(str)")
-                                                self.logView.writeString(string: "闹钟重复星期:\(str)\n")
+                                                self.logView.writeString(string: "\(NSLocalizedString("The alarm clock repeats the week", comment: "闹钟重复星期")):\(str)\n")
                                             }else{
-                                                self.logView.writeString(string: "闹钟重复星期:重复星期未开启,默认单次闹钟\n")
+                                                self.logView.writeString(string: "\(NSLocalizedString("Alarm repeat week: Repeat week is not turned on, default single alarm", comment: "闹钟重复星期:重复星期未开启,默认单次闹钟"))\n")
                                                 print("闹钟重复星期:重复星期未开启,默认单次闹钟")
                                             }
                                         }
@@ -1165,7 +1169,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         }
                     }
                 }
-            }, ok: "全部闹钟") { _ in
+            }, ok: NSLocalizedString("All the alarm clocks", comment: "全部闹钟")) { _ in
                 for i in stride(from: 0, to: 10, by: 1) {
                     ZyCommandModule.shareInstance.getAlarm(index: i) { success, error in
 
@@ -1175,20 +1179,20 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                             if let alarmModel = success {
                                 print("alarmModel",alarmModel.alarmIndex,"alarmOpen ->",alarmModel.alarmOpen,"alarmTime ->",String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute),"alarmType ->",alarmModel.alarmType.rawValue,"alarmRepeat ->",alarmModel.alarmRepeatArray)
 
-                                self.logView.writeString(string: "闹钟序号:\(alarmModel.alarmIndex)")
-                                self.logView.writeString(string: "闹钟时间:\(String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute))")
+                                self.logView.writeString(string: "\(NSLocalizedString("Alarm clock serial number", comment: "闹钟序号")):\(alarmModel.alarmIndex)")
+                                self.logView.writeString(string: "\(NSLocalizedString("Alarm clock time", comment: "闹钟时间")):\(String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute))")
                                 self.logView.writeString(string: "repeatCount:\(alarmModel.alarmRepeatCount)")
                                 let str = alarmModel.alarmOpen ? "":"\n"
-                                self.logView.writeString(string: "闹钟开关:\(alarmModel.alarmOpen)\(str)")
+                                self.logView.writeString(string: "\(NSLocalizedString("Alarm clock switch", comment: "闹钟开关")):\(alarmModel.alarmOpen)\(str)")
                                 if alarmModel.alarmOpen {
-                                    self.logView.writeString(string: "闹钟重复类型:\(alarmModel.alarmType == .single ? "单次闹钟":"重复闹钟")")
+                                    self.logView.writeString(string: "\(NSLocalizedString("Alarm clock repetition type", comment: "闹钟重复类型")):\(alarmModel.alarmType == .single ? NSLocalizedString("Single time alarm clock", comment: "单次闹钟"):NSLocalizedString("Repeat the alarm clock", comment: "重复闹钟"))")
                                     if alarmModel.alarmType == .cycle {
                                         if alarmModel.alarmRepeatArray != nil {
-                                            let str = ((alarmModel.alarmRepeatArray![0] != 0 ? "星期天":"")+(alarmModel.alarmRepeatArray![1] != 0 ? "星期一":"")+(alarmModel.alarmRepeatArray![2] != 0 ? "星期二":"")+(alarmModel.alarmRepeatArray![3] != 0 ? "星期三":"")+(alarmModel.alarmRepeatArray![4] != 0 ? "星期四":"")+(alarmModel.alarmRepeatArray![5] != 0 ? "星期五":"")+(alarmModel.alarmRepeatArray![6] != 0 ? "星期六":""))
+                                            let str = ((alarmModel.alarmRepeatArray![0] != 0 ? NSLocalizedString("Sunday", comment: "星期天"):"")+(alarmModel.alarmRepeatArray![1] != 0 ? NSLocalizedString("Monday", comment: "星期一"):"")+(alarmModel.alarmRepeatArray![2] != 0 ? NSLocalizedString("Tuesday", comment: "星期二"):"")+(alarmModel.alarmRepeatArray![3] != 0 ? NSLocalizedString("Wednesday", comment: "星期三"):"")+(alarmModel.alarmRepeatArray![4] != 0 ? NSLocalizedString("Thursday", comment: "星期四"):"")+(alarmModel.alarmRepeatArray![5] != 0 ? NSLocalizedString("Friday", comment: "星期五"):"")+(alarmModel.alarmRepeatArray![6] != 0 ? NSLocalizedString("Saturday", comment: "星期六"):""))
                                             print("闹钟重复星期:\(str)")
-                                            self.logView.writeString(string: "闹钟重复星期:\(str)\n")
+                                            self.logView.writeString(string: "\(NSLocalizedString("The alarm clock repeats the week", comment: "闹钟重复星期")):\(str)\n")
                                         }else{
-                                            self.logView.writeString(string: "闹钟重复星期:重复星期未开启,默认单次闹钟\n")
+                                            self.logView.writeString(string: "\(NSLocalizedString("Alarm repeat week: Repeat week is not turned on, default single alarm", comment: "闹钟重复星期:重复星期未开启,默认单次闹钟"))\n")
                                             print("闹钟重复星期:重复星期未开启,默认单次闹钟")
                                         }
                                     }
@@ -1201,18 +1205,18 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "设置闹钟":
+        case "\(NSLocalizedString("Set an alarm", comment: "设置闹钟"))":
             
             let array = [
-                "闹钟序号",
-                "重复",
-                "开始小时",
-                "开始分钟"
+                NSLocalizedString("Alarm clock serial number", comment: "闹钟序号"),
+                NSLocalizedString("Repeat the alarm clock", comment: "重复闹钟"),
+                NSLocalizedString("Hour of commencement", comment: "开始小时"),
+                NSLocalizedString("Start minutes", comment: "开始分钟")
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置闹钟")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置闹钟", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("Set an alarm", comment: "设置闹钟"))
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set an alarm", comment: "设置闹钟"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let index = textArray[0]
@@ -1229,18 +1233,18 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 let dic = ["repeatCount": repeatCount, "hour": hour, "index": index, "minute": minute]
                 let alarmModel = ZyAlarmModel.init(dic: dic)
                 
-                self.logView.writeString(string: "闹钟序号:\(index.count>0 ? index:"0")")
-                self.logView.writeString(string: "闹钟时间:\(String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute))")
+                self.logView.writeString(string: "\(NSLocalizedString("Alarm clock serial number", comment: "闹钟序号")):\(index.count>0 ? index:"0")")
+                self.logView.writeString(string: "\(NSLocalizedString("Alarm clock time", comment: "闹钟时间")):\(String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute))")
                 self.logView.writeString(string: "repeatCount:\(repeatCount)")
-                self.logView.writeString(string: "闹钟开关:\(alarmModel.alarmOpen)")
+                self.logView.writeString(string: "\(NSLocalizedString("Alarm clock switch", comment: "闹钟开关")):\(alarmModel.alarmOpen)")
                 if alarmModel.alarmOpen {
-                    self.logView.writeString(string: "闹钟重复类型:\(alarmModel.alarmType == .single ? "单次闹钟":"重复闹钟")")
+                    self.logView.writeString(string: "\(NSLocalizedString("Alarm clock repetition type", comment: "闹钟重复类型")):\(alarmModel.alarmType == .single ? NSLocalizedString("Single time alarm clock", comment: "单次闹钟"):NSLocalizedString("Repeat the alarm clock", comment: "重复闹钟"))")
                     if alarmModel.alarmType == .cycle {
                         if alarmModel.alarmRepeatArray != nil {
-                            let str = ((alarmModel.alarmRepeatArray![0] != 0 ? "星期天":"")+(alarmModel.alarmRepeatArray![1] != 0 ? "星期一":"")+(alarmModel.alarmRepeatArray![2] != 0 ? "星期二":"")+(alarmModel.alarmRepeatArray![3] != 0 ? "星期三":"")+(alarmModel.alarmRepeatArray![4] != 0 ? "星期四":"")+(alarmModel.alarmRepeatArray![5] != 0 ? "星期五":"")+(alarmModel.alarmRepeatArray![6] != 0 ? "星期六":""))
-                            self.logView.writeString(string: "闹钟重复星期:\(str)")
+                            let str = ((alarmModel.alarmRepeatArray![0] != 0 ? NSLocalizedString("Sunday", comment: "星期天"):"")+(alarmModel.alarmRepeatArray![1] != 0 ? NSLocalizedString("Monday", comment: "星期一"):"")+(alarmModel.alarmRepeatArray![2] != 0 ? NSLocalizedString("Tuesday", comment: "星期二"):"")+(alarmModel.alarmRepeatArray![3] != 0 ? NSLocalizedString("Wednesday", comment: "星期三"):"")+(alarmModel.alarmRepeatArray![4] != 0 ? NSLocalizedString("Thursday", comment: "星期四"):"")+(alarmModel.alarmRepeatArray![5] != 0 ? NSLocalizedString("Friday", comment: "星期五"):"")+(alarmModel.alarmRepeatArray![6] != 0 ? NSLocalizedString("Saturday", comment: "星期六"):""))
+                            self.logView.writeString(string: "\(NSLocalizedString("The alarm clock repeats the week", comment: "闹钟重复星期")):\(str)")
                         }else{
-                            self.logView.writeString(string: "闹钟重复星期:重复星期未开启,默认单次闹钟")
+                            self.logView.writeString(string: NSLocalizedString("Alarm repeat week: Repeat week is not turned on, default single alarm", comment: "闹钟重复星期:重复星期未开启,默认单次闹钟"))
                         }
                     }
                 }
@@ -1261,10 +1265,11 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取设备语言":
+        case "\(NSLocalizedString("Get the device language", comment: "获取设备语言"))":
+
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取设备语言")
+            self.logView.writeString(string: NSLocalizedString("Get the device language", comment: "获取设备语言"))
             ZyCommandModule.shareInstance.getDeviceLanguage { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -1281,16 +1286,17 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             //self.navigationController?.pushViewController(vc, animated: true)
             break
             
-        case "设置设备语言":
+        case "\(NSLocalizedString("Set the device language", comment: "设置设备语言"))":
+
             
             let array = [
-                "语言序号"
+                NSLocalizedString("Language serial number", comment: "语言序号")
             ]
             self.logView.clearString()
-            self.logView.writeString(string: "设置设备语言")
+            self.logView.writeString(string: NSLocalizedString("Set the device language", comment: "设置设备语言"))
             
             //0英语1中文简体2日语3韩语4德语5法语6西班牙语7阿拉伯语8俄语9中文繁体10意大利11葡萄牙12乌克兰语13印地语
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置设备语言\n0英文1简体中文2日语3韩语4德语5法语6西班牙语7阿拉伯语8俄语9繁体中文10意大利语11葡萄牙语12乌克兰语13印地语14波兰语15希腊语16越南语17印度尼西亚语18泰语19荷兰语20土耳其语21罗马尼亚语22丹麦语23瑞典语24孟加拉语25捷克语26波斯语27希伯来语28马来语29斯洛伐克语30南非科萨语31斯洛文尼亚语32匈牙利语33立陶宛语34乌尔都语35保加利亚语36克罗地亚语37拉脱维亚语38爱沙尼亚语39高棉语", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: "\(NSLocalizedString("Set the device language", comment: "设置设备语言"))\n\(NSLocalizedString("0 English 1 Simplified Chinese 2 Japanese 3 Korean 4 German 5 French 6 Spanish 7 Arabic 8 Russian 9 Traditional Chinese 10 Italian 11 Portuguese 12 Ukrainian 13 Hindi 14 Polish 15 Greek 16 Vietnamese 17 Indonesian 18 Thai 19 Dutch 20 Turkish 21 Romanian 22 Danish 23 Swedish 24 Bangladeshi Latin 25 Czech 26 Persian 27 Hebrew 28 Malay 29 Slovak 30 Xhosa 31 Slovenian 32 Hungarian 33 Lithuanian 34 Urdu 35 Bulgarian 36 Croatian 37 Latvian 38 Estonian 39 Khmer", comment: "0英文1简体中文2日语3韩语4德语5法语6西班牙语7阿拉伯语8俄语9繁体中文10意大利语11葡萄牙语12乌克兰语13印地语14波兰语15希腊语16越南语17印度尼西亚语18泰语19荷兰语20土耳其语21罗马尼亚语22丹麦语23瑞典语24孟加拉语25捷克语26波斯语27希伯来语28马来语29斯洛伐克语30南非科萨语31斯洛文尼亚语32匈牙利语33立陶宛语34乌尔都语35保加利亚语36克罗地亚语37拉脱维亚语38爱沙尼亚语39高棉语"))", holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let index = textArray[0]
@@ -1309,10 +1315,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取目标步数":
+        case "\(NSLocalizedString("Gets the target number of steps", comment: "获取目标步数"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取目标步数")
+            self.logView.writeString(string: NSLocalizedString("Gets the target number of steps", comment: "获取目标步数"))
             ZyCommandModule.shareInstance.getStepGoal { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -1330,15 +1336,15 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         
             break
             
-        case "设置目标步数":
+        case "\(NSLocalizedString("Set the target number of steps", comment: "设置目标步数"))":
             
             let array = [
-                "目标步数"
+                NSLocalizedString("Target number of steps", comment: "目标步数")
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置目标步数")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置目标步数", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("Set the target number of steps", comment: "设置目标步数"))
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set the target number of steps", comment: "设置目标步数"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let target = textArray[0]
@@ -1357,17 +1363,17 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x1d 设置单次测量":
+        case "\(NSLocalizedString("Set up a single measurement", comment: "设置单次测量"))":
                         
             let array = [
-                "类型：0-心率，1-血压，2-血氧",
-                "0:关，1:开"
+                "\(NSLocalizedString("Type", comment: "类型"))：0-\(NSLocalizedString("Heart rate", comment: "心率"))，1-\(NSLocalizedString("Blood pressure", comment: "血压"))，2-\(NSLocalizedString("Blood oxygen", comment: "血氧"))",
+                "0:\(NSLocalizedString("Shut down", comment: "关闭"))，1:\(NSLocalizedString("Turn on", comment: "开启"))"
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置单次测量")
+            self.logView.writeString(string: NSLocalizedString("Set up a single measurement", comment: "设置单次测量"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置单次测量", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set up a single measurement", comment: "设置单次测量"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let type = textArray[0]
@@ -1375,20 +1381,20 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 if type.count > 0 {
                     var str = ""
                     if type == "0" {
-                        str = "心率"
+                        str = NSLocalizedString("Heart rate", comment: "心率")
                     }else if type == "1" {
-                        str = "血压"
+                        str = NSLocalizedString("Blood pressure", comment: "血压")
                     }else if type == "2" {
-                        str = "血氧"
+                        str = NSLocalizedString("Blood oxygen", comment: "血氧")
                     }else{
                         str = type
                     }
-                    self.logView.writeString(string: "测量类型:\(str)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Type of measurement", comment: "测量类型")):\(str)")
                 }else{
-                    self.logView.writeString(string: "测量类型:心率")
+                    self.logView.writeString(string: "\(NSLocalizedString("Type of measurement", comment: "测量类型")):\(NSLocalizedString("Heart rate", comment: "心率"))")
                 }
 
-                self.logView.writeString(string: (Int(isOpen) ?? 0) > 0 ? "开启":"关闭")
+                self.logView.writeString(string: (Int(isOpen) ?? 0) > 0 ? NSLocalizedString("Turn on", comment: "开启"):NSLocalizedString("Shut down", comment: "关闭"))
                 
                 ZyCommandModule.shareInstance.setSingleMeasurement(type: Int(type) ?? 0, isOpen: Int(isOpen) ?? 0) { error in
                     
@@ -1403,10 +1409,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取锻炼模式":
+        case "\(NSLocalizedString("Get Exercise patterns", comment: "获取锻炼模式"))":
 
             self.logView.clearString()
-            self.logView.writeString(string: "获取锻炼模式")
+            self.logView.writeString(string: NSLocalizedString("Get Exercise patterns", comment: "获取锻炼模式"))
             ZyCommandModule.shareInstance.getExerciseMode { success, state, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 if error == .none {
@@ -1416,19 +1422,19 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     print("type ->",type)
                     var stateString = ""
                     if state == .unknow {
-                        stateString = "不支持的状态"
+                        stateString = NSLocalizedString("The state is not supported", comment: "不支持的状态")
                         print(stateString)
                     }else if state == .end {
-                        stateString = "结束"
+                        stateString = NSLocalizedString("End of", comment: "结束")
                         print(stateString)
                     }else if state == .start {
-                        stateString = "开始"
+                        stateString = NSLocalizedString("Start", comment: "开始")
                         print(stateString)
                     }else if state == .continue {
-                        stateString = "继续"
+                        stateString = NSLocalizedString("Go on", comment: "继续")
                         print(stateString)
                     }else if state == .pause {
-                        stateString = "暂停"
+                        stateString = NSLocalizedString("Pause", comment: "暂停")
                         print(stateString)
                     }
                     self.logView.writeString(string: "\(type.rawValue),\(stateString)")
@@ -1437,34 +1443,34 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "设置锻炼模式":
+        case "\(NSLocalizedString("Set exercise mode", comment: "设置锻炼模式"))":
             
             let array = [
-                "锻炼类型",
-                "0:退出,1:进入,2:继续,3:暂停",
+                NSLocalizedString("Type of exercise", comment: "锻炼类型"),
+                "0:\(NSLocalizedString("Drop out", comment: "退出")),1:\(NSLocalizedString("Enter into", comment: "进入")),2:\(NSLocalizedString("Go on", comment: "继续")),3:\(NSLocalizedString("Pause", comment: "暂停"))",
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置锻炼模式")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置锻炼模式", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("Set exercise mode", comment: "设置锻炼模式"))
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set exercise mode", comment: "设置锻炼模式"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let type = textArray[0]
                 let isOpen = textArray[1]
                 
-                self.logView.writeString(string: "锻炼类型:\(type.count>0 ? type:"0")")
-                var stateString = "退出"
+                self.logView.writeString(string: "\(NSLocalizedString("Type of exercise", comment: "锻炼类型")):\(type.count>0 ? type:"0")")
+                var stateString = NSLocalizedString("Drop out", comment: "退出")
                 if Int(isOpen) == 0 {
-                    stateString = "退出"
+                    stateString = NSLocalizedString("Drop out", comment: "退出")
                     self.timestamp = nil
                 }else if Int(isOpen) == 1 {
-                    stateString = "进入"
+                    stateString = NSLocalizedString("Enter into", comment: "进入")
                     let timestamp = Int(Date().timeIntervalSince1970)
                     self.timestamp = timestamp
                 }else if Int(isOpen) == 2 {
-                    stateString = "继续"
+                    stateString = NSLocalizedString("Go on", comment: "继续")
                 }else if Int(isOpen) == 3 {
-                    stateString = "暂停"
+                    stateString = NSLocalizedString("Pause", comment: "暂停")
                 }
                 self.logView.writeString(string: stateString)
                 let state = ZyExerciseState.init(rawValue: Int(isOpen) ?? 0) ?? .end
@@ -1484,10 +1490,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取天气单位":
+        case "\(NSLocalizedString("Get weather units", comment: "获取天气单位"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取天气单位")
+            self.logView.writeString(string: NSLocalizedString("Get weather units", comment: "获取天气单位"))
             
             ZyCommandModule.shareInstance.getWeatherUnit { success, error in
                 
@@ -1499,27 +1505,27 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     let weatherUnit = success
                     print("weatherUnit ->",weatherUnit)
                     
-                    self.logView.writeString(string: weatherUnit == 0 ? "摄氏度":"华氏度")
+                    self.logView.writeString(string: weatherUnit == 0 ? NSLocalizedString("Degrees Celsius", comment: "摄氏度"):NSLocalizedString("Degrees Fahrenheit", comment: "华氏度"))
                 }
                 //self.navigationController?.pushViewController(vc, animated: true)
             }
             
             break
             
-        case "设置天气单位":
+        case "\(NSLocalizedString("Set weather units", comment: "设置天气单位"))":
             let array = [
-                "0:摄氏度,1:华氏度",
+                "0:\(NSLocalizedString("Degrees Celsius", comment: "摄氏度")),1:\(NSLocalizedString("Degrees Fahrenheit", comment: "华氏度"))",
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置天气单位")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置天气单位", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("Set weather units", comment: "设置天气单位"))
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set weather units", comment: "设置天气单位"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let type = textArray[0]
                 ZyCommandModule.shareInstance.setWeatherUnit(type: Int(type) ?? 0) { error in
                     
-                    self.logView.writeString(string: (type as NSString).intValue > 0 ? "华氏度":"摄氏度")
+                    self.logView.writeString(string: (type as NSString).intValue > 0 ? NSLocalizedString("Degrees Fahrenheit", comment: "华氏度"):NSLocalizedString("Degrees Celsius", comment: "摄氏度"))
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
                     if error == .none {
@@ -1529,21 +1535,22 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "设置实时数据上报开关":
+        case "\(NSLocalizedString("Set the real-time data reporting switch", comment: "设置实时数据上报开关"))":
+
             let array = [
-                "0:关闭,1:开启",
+                "0:\(NSLocalizedString("Shut down", comment: "关闭")),1:\(NSLocalizedString("Turn on", comment: "开启"))",
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "实时数据上报开关")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置实时数据上报开关", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("Set the real-time data reporting switch", comment: "设置实时数据上报开关"))
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set the real-time data reporting switch", comment: "设置实时数据上报开关"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let isOpen = textArray[0]
                 
                 ZyCommandModule.shareInstance.setReportRealtimeData(isOpen: Int(isOpen) ?? 0, success: { error in
                     
-                    self.logView.writeString(string: (Int(isOpen) ?? 0) == 0 ? "关闭":"开启")
+                    self.logView.writeString(string: (Int(isOpen) ?? 0) == 0 ? NSLocalizedString("Shut down", comment: "关闭"):NSLocalizedString("Turn on", comment: "开启"))
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
                     if error == .none {
@@ -1553,10 +1560,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "获取自定义表盘":
+        case "\(NSLocalizedString("Gets a custom watch face", comment: "获取自定义表盘"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取自定义表盘")
+            self.logView.writeString(string: NSLocalizedString("Gets a custom watch face", comment: "获取自定义表盘"))
             
             ZyCommandModule.shareInstance.getCustomDialEdit { success, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -1572,27 +1579,27 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         let color = model.color
                         print("color ->",color)
                         
-                        self.logView.writeString(string: "颜色值:\(colorHex)")
-                        self.logView.writeString(string: "位置类型:\(positionType.rawValue)")
-                        self.logView.writeString(string: "时间上方:\(timeUpType.rawValue)")
-                        self.logView.writeString(string: "时间下方:\(timeDownType.rawValue)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Value of color", comment: "颜色值")):\(colorHex)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Type of location", comment: "位置类型")):\(positionType.rawValue)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Above the time", comment: "时间上方")):\(timeUpType.rawValue)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Below the time", comment: "时间下方")):\(timeDownType.rawValue)")
                     }
                 }
             }
             
             break
             
-        case "设置自定义表盘":
+        case "\(NSLocalizedString("Set up a custom watch face", comment: "设置自定义表盘"))":
             let array = [
-                "输入十六进制颜色值",
-                "显示位置,0左上1左中2左下3右上4右中5右下",
-                "时间上方类型,0关闭1日期2睡眠3心率4计步5星期",
-                "时间下方类型,0关闭1日期2睡眠3心率4计步5星期"
+                NSLocalizedString("Enter the hexadecimal color value", comment: "输入十六进制颜色值"),
+                NSLocalizedString("Display position,0 top left 1 Middle left 2 Bottom left 3 Top right 4 Middle right 5 bottom right", comment: "显示位置,0左上1左中2左下3右上4右中5右下"),
+                "\(NSLocalizedString("Above the time", comment: "时间上方")),0\(NSLocalizedString("Shut down", comment: "关闭"))1\(NSLocalizedString("Date", comment: "日期"))2\(NSLocalizedString("Sleep", comment: "睡眠"))3\(NSLocalizedString("Heart rate", comment: "心率"))4\(NSLocalizedString("Step counting", comment: "计步"))5\(NSLocalizedString("Week of the week", comment: "星期"))",
+                "\(NSLocalizedString("Below the time", comment: "时间下方")),0\(NSLocalizedString("Shut down", comment: "关闭"))1\(NSLocalizedString("Date", comment: "日期"))2\(NSLocalizedString("Sleep", comment: "睡眠"))3\(NSLocalizedString("Heart rate", comment: "心率"))4\(NSLocalizedString("Step counting", comment: "计步"))5\(NSLocalizedString("Week of the week", comment: "星期"))"
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置自定义表盘")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置自定义表盘", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("Set up a custom watch face", comment: "设置自定义表盘"))
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set up a custom watch face", comment: "设置自定义表盘"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let color = textArray[0]
@@ -1600,10 +1607,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 let timeUpType = textArray[2]
                 let timeDownType = textArray[3]
                 
-                self.logView.writeString(string: "颜色值:\(color)")
-                self.logView.writeString(string: "位置类型:\(positionType)")
-                self.logView.writeString(string: "时间上方:\(timeUpType)")
-                self.logView.writeString(string: "时间下方:\(timeDownType)")
+                self.logView.writeString(string: "\(NSLocalizedString("Value of color", comment: "颜色值")):\(color)")
+                self.logView.writeString(string: "\(NSLocalizedString("Type of location", comment: "位置类型")):\(positionType)")
+                self.logView.writeString(string: "\(NSLocalizedString("Above the time", comment: "时间上方")):\(timeUpType)")
+                self.logView.writeString(string: "\(NSLocalizedString("Below the time", comment: "时间下方")):\(timeDownType)")
                 
                 let model = ZyCustomDialModel.init()
                 model.color = UIColor.init(hexString: color)
@@ -1624,22 +1631,22 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "设置电话状态":
+        case "\(NSLocalizedString("Set phone status", comment: "设置电话状态"))":
             
             let array = [
-                "0:已挂断,1:已接听",
+                "0:\(NSLocalizedString("Hang up", comment: "挂断")),1:\(NSLocalizedString("Answer the phone", comment: "接听"))",
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置电话状态")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置电话状态", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("Set phone status", comment: "设置电话状态"))
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set phone status", comment: "设置电话状态"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let state = textArray[0]
                 
                 ZyCommandModule.shareInstance.setPhoneState(state: state) { error in
                     
-                    self.logView.writeString(string: state == "1" ? "接听":"挂断")
+                    self.logView.writeString(string: state == "1" ? NSLocalizedString("Answer the phone", comment: "接听"):NSLocalizedString("Hang up", comment: "挂断"))
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
                     if error == .none {
@@ -1651,10 +1658,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取自定义表盘尺寸":
+        case "\(NSLocalizedString("Gets the custom dial dimensions", comment: "获取自定义表盘尺寸"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取自定义表盘尺寸")
+            self.logView.writeString(string: NSLocalizedString("Gets the custom dial dimensions", comment: "获取自定义表盘尺寸"))
             
             ZyCommandModule.shareInstance.getCustonDialFrameSize { success, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -1675,10 +1682,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取24小时心率监测":
+        case "\(NSLocalizedString("Get a 24-hour heart rate monitor", comment: "获取24小时心率监测"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取24小时心率监测")
+            self.logView.writeString(string: NSLocalizedString("Get a 24-hour heart rate monitor", comment: "获取24小时心率监测"))
             
             ZyCommandModule.shareInstance.get24HrMonitor { success, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -1687,28 +1694,28 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     print("Get24HrMonitor ->",success)
                     
                     let isOpen = success
-                    self.logView.writeString(string: isOpen == 0 ? "关闭":"开启")
+                    self.logView.writeString(string: isOpen == 0 ? NSLocalizedString("Shut down", comment: "关闭"):NSLocalizedString("Turn on", comment: "开启"))
                 }
             }
             
             break
-            
-        case "设置24小时心率监测":
+
+        case "\(NSLocalizedString("Set up a 24-hour heart rate monitor", comment: "设置24小时心率监测"))":
             
             let array = [
-                "0:关闭,1:开启",
+                "0:\(NSLocalizedString("Shut down", comment: "关闭")),1:\(NSLocalizedString("Turn on", comment: "开启"))",
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置24小时心率监测")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置24小时心率监测", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("Set up a 24-hour heart rate monitor", comment: "设置24小时心率监测"))
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set up a 24-hour heart rate monitor", comment: "设置24小时心率监测"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let isOpen = textArray[0]
                 
                 ZyCommandModule.shareInstance.set24HrMonitor(isOpen: Int(isOpen) ?? 0) { error in
                     
-                    self.logView.writeString(string: (Int(isOpen) ?? 0) == 0 ? "关闭":"启动")
+                    self.logView.writeString(string: (Int(isOpen) ?? 0) == 0 ? NSLocalizedString("Shut down", comment: "关闭"):NSLocalizedString("Turn on", comment: "开启"))
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
                     if error == .none {
@@ -1719,21 +1726,21 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
 
-        case "设置设备进入或退出拍照模式":
+        case "\(NSLocalizedString("Set the device to enter or exit photo mode", comment: "设置设备进入或退出拍照模式"))":
             
             let array = [
-                "0:进入,1:退出",
+                "0:\(NSLocalizedString("Enter into", comment: "进入")),1:\(NSLocalizedString("Drop out", comment: "退出"))",
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置设备进入或退出拍照模式")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置设备进入或退出拍照模式", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("Set the device to enter or exit photo mode", comment: "设置设备进入或退出拍照模式"))
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set the device to enter or exit photo mode", comment: "设置设备进入或退出拍照模式"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let isOpen = textArray[0]
                 
                 ZyCommandModule.shareInstance.setEnterOrExitCamera(isOpen: Int(isOpen) ?? 0) { error in
-                    self.logView.writeString(string: (Int(isOpen) ?? 0) == 0 ? "进入":"退出")
+                    self.logView.writeString(string: (Int(isOpen) ?? 0) == 0 ? NSLocalizedString("Enter into", comment: "进入"):NSLocalizedString("Drop out", comment: "退出"))
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     
                     if error == .none {
@@ -1744,18 +1751,18 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "app同步运动数据至设备(手动自定义)":
+        case "\(NSLocalizedString("app synchronizes motion data to the device (manually customized)", comment: "app同步运动数据至设备(手动自定义)"))":
             
             let array = [
-                "锻炼类型",
-                "运动时长",
-                "卡路里",
-                "距离",
+                NSLocalizedString("Type of exercise", comment: "锻炼类型"),
+                NSLocalizedString("Duration of exercise", comment: "运动时长"),
+                NSLocalizedString("Calories", comment: "卡路里"),
+                NSLocalizedString("Distance", comment: "距离"),
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "app同步运动数据至设备")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "app同步运动数据至设备", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("app synchronizes motion data to the device", comment: "app同步运动数据至设备"))
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("app synchronizes motion data to the device", comment: "app同步运动数据至设备"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let type = textArray[0]
@@ -1774,26 +1781,25 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "app同步运动数据至设备(自动1s递增)":
+        case "\(NSLocalizedString("app synchronizes motion data to the device (automatic 1s increment)", comment: "app同步运动数据至设备(自动1s递增)"))":
             
             let array = [
-                "锻炼类型",
-                "运动时长递增数(默认1)",
-                "卡路里递增数(默认1)",
-                "距离递递增数(默认1)",
+                NSLocalizedString("Type of exercise", comment: "锻炼类型"),
+                NSLocalizedString("Increasing number of exercise duration (default 1)", comment: "运动时长递增数(默认1)"),
+                NSLocalizedString("Calorie increment (default 1)", comment: "卡路里递增数(默认1)"),
+                NSLocalizedString("Distance increment number (default 1)", comment: "距离递递增数(默认1)"),
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "app同步运动数据至设备")
+            self.logView.writeString(string: NSLocalizedString("app synchronizes motion data to the device", comment: "app同步运动数据至设备"))
             
             var timer:Timer?
             
             if #available(iOS 10.0, *) {
                 
-                self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "app同步运动数据至设备", holderStringArray: array, cancel: "取消", cancelAction: {
+                self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("app synchronizes motion data to the device", comment: "app同步运动数据至设备"), holderStringArray: array, cancel: NSLocalizedString("Cancel", comment: "取消"), cancelAction: {
                     
-                }, ok: "开始") { (textArray) in
-                    
+                }, ok: NSLocalizedString("Start", comment: "开始")) { (textArray) in
                     var timeLong = 0
                     var calories = 0
                     var distance = 0
@@ -1808,10 +1814,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         calories += (Int(caloriesAddCount) ?? 1)
                         distance += (Int(distanceAddCount) ?? 1)
                         print("timeLong = \(timeLong), calories = \(calories), distance = \(distance)")
-                        self.logView.writeString(string: "运动类型:\(Int(type) ?? 0)")
-                        self.logView.writeString(string: "运动时长:\(timeLong)")
-                        self.logView.writeString(string: "卡路里:\(calories)")
-                        self.logView.writeString(string: "距离:\(distance)\n")
+                        self.logView.writeString(string: "\(NSLocalizedString("Type of exercise", comment: "锻炼类型")):\(Int(type) ?? 0)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Duration of exercise", comment: "运动时长")):\(timeLong)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Calories", comment: "卡路里")):\(calories)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Distance", comment: "距离")):\(distance)\n")
                         ZyCommandModule.shareInstance.setExerciseDataToDevice(type: ZyExerciseType.init(rawValue: Int(type) ?? 0) ?? .runOutside, timeLong: timeLong, calories: calories, distance: distance) { error in
 
                             if error == .none {
@@ -1820,7 +1826,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         }
                     }
                     
-                    self.presentSystemAlertVC(title: "提示", message: "点击确定结束此次自动发送", cancelAction: nil) {
+                    self.presentSystemAlertVC(title: NSLocalizedString("Tips", comment: "提示"), message: NSLocalizedString("Click OK to end this automatic send", comment: "点击确定结束此次自动发送"), cancelAction: nil) {
                         timer?.invalidate()
                         timer = nil
                     }
@@ -1832,9 +1838,9 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "设置清除所有数据":
+        case "\(NSLocalizedString("Set to clear all data", comment: "设置清除所有数据"))":
             self.logView.clearString()
-            self.logView.writeString(string: "设置清除所有数据")
+            self.logView.writeString(string: NSLocalizedString("Set to clear all data", comment: "设置清除所有数据"))
             
             ZyCommandModule.shareInstance.setClearAllData { error in
                 
@@ -1847,9 +1853,9 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "绑定":
+        case "\(NSLocalizedString("Binding up", comment: "绑定"))":
             self.logView.clearString()
-            self.logView.writeString(string: "绑定")
+            self.logView.writeString(string: NSLocalizedString("Binding up", comment: "绑定"))
             
             ZyCommandModule.shareInstance.setBind { error in
                 
@@ -1862,10 +1868,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "解绑":
+        case "\(NSLocalizedString("unbind", comment: "解绑"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "解绑")
+            self.logView.writeString(string: NSLocalizedString("unbind", comment: "解绑"))
             
             ZyCommandModule.shareInstance.setUnbind { error in
                 
@@ -1877,10 +1883,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
 
-        case "获取消息提醒":
+        case "\(NSLocalizedString("Get message alerts", comment: "获取消息提醒"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取消息提醒")
+            self.logView.writeString(string: NSLocalizedString("Get message alerts", comment: "获取消息提醒"))
             ZyCommandModule.shareInstance.getNotificationRemind { success,success1, error  in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -1893,8 +1899,8 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     
                     let array1 = success1
                     print("GetMessageRemind ->",array1)
-                    self.logView.writeString(string: "\(array)")
-                    self.logView.writeString(string: "拓展推送:\(array1)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Message type switch", comment: "消息类型开关")):\(array)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Extended message switch", comment: "拓展消息开关")):\(array1)")
                 }
                 
                 //self.navigationController?.pushViewController(vc, animated: true)
@@ -1902,17 +1908,17 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "设置消息提醒":
+        case "\(NSLocalizedString("Set message reminders", comment: "设置消息提醒"))":
             
             let array = [
-                "消息类型开关",
-                "拓展消息开关",
+                NSLocalizedString("Message type switch", comment: "消息类型开关"),
+                NSLocalizedString("Extended message switch", comment: "拓展消息开关"),
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置消息提醒")
+            self.logView.writeString(string: NSLocalizedString("Set message reminders", comment: "设置消息提醒"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置消息提醒", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set message reminders", comment: "设置消息提醒"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let isOpen = textArray[0]
@@ -1928,7 +1934,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 //                }
                 if #available(iOS 13.0, *) {
                     if let state = ZyCommandModule.shareInstance.peripheral?.ancsAuthorized {
-                        self.logView.writeString(string: "蓝牙共享系统通知:\(state ? "开":"关")")
+                        self.logView.writeString(string: "蓝牙共享系统通知:\(state ? NSLocalizedString("Turn on", comment: "开启"):NSLocalizedString("Shut down", comment: "关闭"))")
                     }
                 }
                 let array = ZyCommandModule.shareInstance.getNotificationTypeArrayWithIntString(countString: isOpen)
@@ -1936,8 +1942,8 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 let extensionArray = ZyCommandModule.shareInstance.getNotificationExtensionTypeArrayWithIntString(countString: extensionOpen)
                 print("extensionArray ->",extensionArray)
                 
-                self.logView.writeString(string: "\(array)")
-                self.logView.writeString(string: "拓展消息:\(extensionArray)")
+                self.logView.writeString(string: "\(NSLocalizedString("Message type switch", comment: "消息类型开关")):\(array)")
+                self.logView.writeString(string: "\(NSLocalizedString("Extended message switch", comment: "拓展消息开关")):\(extensionArray)")
                 ZyCommandModule.shareInstance.setNotificationRemindArray(array: array, extensionArray: extensionArray) { error in
 
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -1951,10 +1957,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "获取久坐提醒":
+        case "\(NSLocalizedString("Get sedentary reminders", comment: "获取久坐提醒"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取久坐提醒")
+            self.logView.writeString(string: NSLocalizedString("Get sedentary reminders", comment: "获取久坐提醒"))
             ZyCommandModule.shareInstance.getSedentary { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -1966,11 +1972,11 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         let isOpen = model.isOpen
                         let timeLong = model.timeLong
                         let modelArray = model.timeArray
-                        self.logView.writeString(string: isOpen ? "开启":"关闭")
-                        self.logView.writeString(string: "提醒时长:\(timeLong)")
+                        self.logView.writeString(string: isOpen ? NSLocalizedString("Turn on", comment: "开启"):NSLocalizedString("Shut down", comment: "关闭"))
+                        self.logView.writeString(string: "\(NSLocalizedString("Length of interval", comment: "间隔时长")):\(timeLong)")
                         for item in modelArray {
-                            self.logView.writeString(string: "开始时间:\(item.startHour).\(item.startMinute)")
-                            self.logView.writeString(string: "结束时间:\(item.endHour).\(item.endMinute)")
+                            self.logView.writeString(string: "\(NSLocalizedString("Time to start", comment: "开始时间")):\(item.startHour).\(item.startMinute)")
+                            self.logView.writeString(string: "\(NSLocalizedString("End of period", comment: "结束时间")):\(item.endHour).\(item.endMinute)")
                         }
                     }
                 }
@@ -1978,21 +1984,21 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "设置久坐提醒(一组)":
+        case "\(NSLocalizedString("Set a sedentary reminder (one set)", comment: "设置久坐提醒(一组)"))":
             
             let array = [
-                "0:关，1:开",
-                "间隔时长",
-                "开始小时",
-                "开始分钟",
-                "结束小时",
-                "结束分钟",
+                "0:\(NSLocalizedString("Shut down", comment: "关闭"))，1:\(NSLocalizedString("Turn on", comment: "开启"))",
+                NSLocalizedString("Length of interval", comment: "间隔时长"),
+                NSLocalizedString("Hour of commencement", comment: "开始小时"),
+                NSLocalizedString("Start minutes", comment: "开始分钟"),
+                NSLocalizedString("Closing hours", comment: "结束小时"),
+                NSLocalizedString("End of the minute", comment: "结束分钟"),
                 
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置久坐提醒")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0,格式错误可能闪退)", message: "设置久坐提醒", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("Set reminders for sitting", comment: "设置久坐提醒"))
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认0,格式错误可能闪退)", message: NSLocalizedString("Set reminders for sitting", comment: "设置久坐提醒"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let isOpen = textArray[0]
@@ -2002,10 +2008,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 let endHour = textArray[4]
                 let endMinute = textArray[5]
                 
-                self.logView.writeString(string: (Int(isOpen) ?? 0) > 0 ? "开启":"关闭")
-                self.logView.writeString(string: "开始时间:\(startHour.count>0 ? startHour:"0").\(startMinute.count>0 ? startMinute:"0")")
-                self.logView.writeString(string: "结束时间:\(endHour.count>0 ? endHour:"0").\(endMinute.count>0 ? endMinute:"0")")
-                self.logView.writeString(string: "提醒时长:\(timeLong.count>0 ? timeLong:"0")")
+                self.logView.writeString(string: (Int(isOpen) ?? 0) > 0 ? NSLocalizedString("Turn on", comment: "开启"):NSLocalizedString("Shut down", comment: "关闭"))
+                self.logView.writeString(string: "\(NSLocalizedString("Time to start", comment: "开始时间")):\(startHour.count>0 ? startHour:"0").\(startMinute.count>0 ? startMinute:"0")")
+                self.logView.writeString(string: "\(NSLocalizedString("End of period", comment: "结束时间")):\(endHour.count>0 ? endHour:"0").\(endMinute.count>0 ? endMinute:"0")")
+                self.logView.writeString(string: "\(NSLocalizedString("Length of interval", comment: "间隔时长")):\(timeLong.count>0 ? timeLong:"0")")
                 
                 ZyCommandModule.shareInstance.setSedentary(isOpen: isOpen, timeLong: timeLong, startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute) { error in
                     
@@ -2020,24 +2026,24 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "设置久坐提醒(多组)":
+        case "\(NSLocalizedString("Set a sedentary reminder (multiple groups)", comment: "设置久坐提醒(多组)"))":
             
             let array = [
-                "0:关，1:开",
-                "间隔时长",
-                "开始小时",
-                "开始分钟",
-                "结束小时",
-                "结束分钟",
-                "开始小时",
-                "开始分钟",
-                "结束小时",
-                "结束分钟",
+                "0:\(NSLocalizedString("Shut down", comment: "关闭"))，1:\(NSLocalizedString("Turn on", comment: "开启"))",
+                NSLocalizedString("Length of interval", comment: "间隔时长"),
+                NSLocalizedString("Hour of commencement", comment: "开始小时"),
+                NSLocalizedString("Start minutes", comment: "开始分钟"),
+                NSLocalizedString("Closing hours", comment: "结束小时"),
+                NSLocalizedString("End of the minute", comment: "结束分钟"),
+                NSLocalizedString("Hour of commencement", comment: "开始小时"),
+                NSLocalizedString("Start minutes", comment: "开始分钟"),
+                NSLocalizedString("Closing hours", comment: "结束小时"),
+                NSLocalizedString("End of the minute", comment: "结束分钟"),
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置久坐提醒")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0,格式错误可能闪退)", message: "设置久坐提醒", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("Set reminders for sitting", comment: "设置久坐提醒"))
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认0,格式错误可能闪退)", message: NSLocalizedString("Set reminders for sitting", comment: "设置久坐提醒"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let isOpen = textArray[0]
@@ -2051,12 +2057,12 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 let endHour_2 = textArray[8]
                 let endMinute_2 = textArray[9]
                 
-                self.logView.writeString(string: (Int(isOpen) ?? 0) > 0 ? "开启":"关闭")
-                self.logView.writeString(string: "提醒时长:\(timeLong.count>0 ? timeLong:"0")")
-                self.logView.writeString(string: "第一组开始时间:\(startHour.count>0 ? startHour:"0").\(startMinute.count>0 ? startMinute:"0")")
-                self.logView.writeString(string: "第一组结束时间:\(endHour.count>0 ? endHour:"0").\(endMinute.count>0 ? endMinute:"0")")
-                self.logView.writeString(string: "第二组开始时间:\(startHour_2.count>0 ? startHour_2:"0").\(startMinute_2.count>0 ? startMinute_2:"0")")
-                self.logView.writeString(string: "第二组结束时间:\(endHour_2.count>0 ? endHour_2:"0").\(endMinute_2.count>0 ? endMinute_2:"0")")
+                self.logView.writeString(string: (Int(isOpen) ?? 0) > 0 ? NSLocalizedString("Turn on", comment: "开启"):NSLocalizedString("Shut down", comment: "关闭"))
+                self.logView.writeString(string: "\(NSLocalizedString("Length of interval", comment: "间隔时长")):\(timeLong.count>0 ? timeLong:"0")")
+                self.logView.writeString(string: "1\(NSLocalizedString("Time to start", comment: "开始时间")):\(startHour.count>0 ? startHour:"0").\(startMinute.count>0 ? startMinute:"0")")
+                self.logView.writeString(string: "1\(NSLocalizedString("End of period", comment: "结束时间")):\(endHour.count>0 ? endHour:"0").\(endMinute.count>0 ? endMinute:"0")")
+                self.logView.writeString(string: "2\(NSLocalizedString("Time to start", comment: "开始时间")):\(startHour_2.count>0 ? startHour_2:"0").\(startMinute_2.count>0 ? startMinute_2:"0")")
+                self.logView.writeString(string: "2\(NSLocalizedString("End of period", comment: "结束时间")):\(endHour_2.count>0 ? endHour_2:"0").\(endMinute_2.count>0 ? endMinute_2:"0")")
                 
                 let model = ZyStartEndTimeModel.init()
                 model.startHour = Int(startHour) ?? 0
@@ -2097,11 +2103,11 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 
             }
             break
-                
-            case "获取勿扰提醒":
-        
+
+        case "\(NSLocalizedString("Get Do not disturb reminders", comment: "获取勿扰提醒"))":
+            
             self.logView.clearString()
-            self.logView.writeString(string: "获取勿扰提醒")
+            self.logView.writeString(string: NSLocalizedString("Get Do not disturb reminders", comment: "获取勿扰提醒"))
             
             ZyCommandModule.shareInstance.getDoNotDisturb { success, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -2117,29 +2123,29 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         let endHour = model.timeModel.endHour
                         let endMinute = model.timeModel.endMinute
                         
-                        self.logView.writeString(string: isOpen ? "开启":"关闭")
-                        self.logView.writeString(string: "开始时间:\(startHour):\(startMinute)")
-                        self.logView.writeString(string: "结束时间:\(endHour):\(endMinute)")
+                        self.logView.writeString(string: isOpen ? NSLocalizedString("Turn on", comment: "开启"):NSLocalizedString("Shut down", comment: "关闭"))
+                        self.logView.writeString(string: "\(NSLocalizedString("Time to start", comment: "开始时间")):\(startHour):\(startMinute)")
+                        self.logView.writeString(string: "\(NSLocalizedString("End of period", comment: "结束时间")):\(endHour):\(endMinute)")
                     }
                 }
             }
             
             break
             
-        case "设置勿扰提醒":
+        case "\(NSLocalizedString("Set Do not disturb reminder", comment: "设置勿扰提醒"))":
             
             let array = [
-                "0:关闭，1:开启",
-                "开始小时",
-                "开始分钟",
-                "结束小时",
-                "结束分钟"
+                "0:\(NSLocalizedString("Shut down", comment: "关闭"))，1:\(NSLocalizedString("Turn on", comment: "开启"))",
+                NSLocalizedString("Hour of commencement", comment: "开始小时"),
+                NSLocalizedString("Start minutes", comment: "开始分钟"),
+                NSLocalizedString("Closing hours", comment: "结束小时"),
+                NSLocalizedString("End of the minute", comment: "结束分钟")
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置勿扰提醒")
+            self.logView.writeString(string: NSLocalizedString("Set Do not disturb reminder", comment: "设置勿扰提醒"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置勿扰提醒", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set Do not disturb reminder", comment: "设置勿扰提醒"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let isOpen = textArray[0]
@@ -2148,9 +2154,9 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 let endHour = textArray[3]
                 let endMinute = textArray[4]
                 
-                self.logView.writeString(string: (Int(isOpen) ?? 0) == 0 ? "关闭":"开启")
-                self.logView.writeString(string: String.init(format: "开始时间 %02d:%02d", Int(startHour) ?? 0,Int(startMinute) ?? 0))
-                self.logView.writeString(string: String.init(format: "结束时间 %02d:%02d", Int(endHour) ?? 0,Int(endMinute) ?? 0))
+                self.logView.writeString(string: (Int(isOpen) ?? 0) == 0 ? NSLocalizedString("Shut down", comment: "关闭"):NSLocalizedString("Turn on", comment: "开启"))
+                self.logView.writeString(string: String.init(format: "\(NSLocalizedString("Time to start", comment: "开始时间")) %02d:%02d", Int(startHour) ?? 0,Int(startMinute) ?? 0))
+                self.logView.writeString(string: String.init(format: "\(NSLocalizedString("End of period", comment: "结束时间")) %02d:%02d", Int(endHour) ?? 0,Int(endMinute) ?? 0))
                 
                 ZyCommandModule.shareInstance.setDoNotDisturb(isOpen: isOpen, startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute) { error in
                     
@@ -2164,10 +2170,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取心率预警":
+        case "\(NSLocalizedString("Get heart rate alerts", comment: "获取心率预警"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取心率预警")
+            self.logView.writeString(string: NSLocalizedString("Get heart rate alerts", comment: "获取心率预警"))
             
             ZyCommandModule.shareInstance.getHrWaring { success, error in
                 
@@ -2181,9 +2187,9 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         let maxHr = model.maxValue
                         let minHr = model.minValue
                         
-                        self.logView.writeString(string: isOpen ? "开启":"关闭")
-                        self.logView.writeString(string: "最大值:\(maxHr)")
-                        self.logView.writeString(string: "最小值:\(minHr)")
+                        self.logView.writeString(string: isOpen ? NSLocalizedString("Turn on", comment: "开启"):NSLocalizedString("Shut down", comment: "关闭"))
+                        self.logView.writeString(string: "\(NSLocalizedString("Maximum value", comment: "最大值")):\(maxHr)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Minimum value", comment: "最小值")):\(minHr)")
                     }
                     
                     
@@ -2191,28 +2197,28 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-            
-        case "设置心率预警":
+
+        case "\(NSLocalizedString("Set heart rate alert", comment: "设置心率预警"))":
             
             let array = [
-                "0:关闭，1:开启",
-                "最大值",
-                "最小值",
+                "0:\(NSLocalizedString("Shut down", comment: "关闭"))，1:\(NSLocalizedString("Turn on", comment: "开启"))",
+                NSLocalizedString("Maximum value", comment: "最大值"),
+                NSLocalizedString("Minimum value", comment: "最小值"),
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置心率预警")
+            self.logView.writeString(string: NSLocalizedString("Set heart rate alert", comment: "设置心率预警"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置心率预警", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set heart rate alert", comment: "设置心率预警"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let isOpen = textArray[0]
                 let maxHr = textArray[1]
                 let minHr = textArray[2]
                 
-                self.logView.writeString(string: (Int(isOpen) ?? 0) == 0 ? "关闭":"开启")
-                self.logView.writeString(string: "最大值:\(maxHr)")
-                self.logView.writeString(string: "最小值:\(minHr)")
+                self.logView.writeString(string: (Int(isOpen) ?? 0) == 0 ? NSLocalizedString("Shut down", comment: "关闭"):NSLocalizedString("Turn on", comment: "开启"))
+                self.logView.writeString(string: "\(NSLocalizedString("Maximum value", comment: "最大值")):\(maxHr)")
+                self.logView.writeString(string: "\(NSLocalizedString("Minimum value", comment: "最小值")):\(minHr)")
                 
                 ZyCommandModule.shareInstance.setHrWaring(isOpen: isOpen, maxHr: maxHr, minHr: minHr) { error in
                     
@@ -2226,21 +2232,21 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "同步联系人":
+        case NSLocalizedString("Synchronizing contacts", comment: "同步联系人"):
             
             let array = [
-                "0姓名(默认张三)",
-                "0号码(默认13755660033)",
-                "1姓名(默认李四)",
-                "1号码(默认0755-6128998)",
-                "2姓名",
-                "2号码",
+                "0\(NSLocalizedString("Name", comment: "姓名"))(默认张三)",
+                "0\(NSLocalizedString("Number", comment: "号码"))(默认13755660033)",
+                "1\(NSLocalizedString("Name", comment: "姓名"))(默认李四)",
+                "1\(NSLocalizedString("Number", comment: "号码"))(默认0755-6128998)",
+                "2\(NSLocalizedString("Name", comment: "姓名"))",
+                "2\(NSLocalizedString("Number", comment: "号码"))",
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "同步联系人")
+            self.logView.writeString(string: NSLocalizedString("Synchronizing contacts", comment: "同步联系人"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认为空)", message: "设置联系人", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Hint (Invalid data is null by default)", comment: "提示(无效数据默认为空)"), message: NSLocalizedString("Set up contacts", comment: "设置联系人"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let model_0 = ZyAddressBookModel.init()
@@ -2255,9 +2261,9 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 model_2.name = textArray[4]
                 model_2.phoneNumber = textArray[5]
                 
-                self.logView.writeString(string: "联系人0 姓名:\(model_0.name),号码:\(model_0.phoneNumber)")
-                self.logView.writeString(string: "联系人1 姓名:\(model_1.name),号码:\(model_1.phoneNumber)")
-                self.logView.writeString(string: "联系人2 姓名:\(model_2.name),号码:\(model_2.phoneNumber)")
+                self.logView.writeString(string: "\(NSLocalizedString("Contact Person", comment: "联系人"))0 \(NSLocalizedString("Name", comment: "姓名")):\(model_0.name),\(NSLocalizedString("Number", comment: "号码")):\(model_0.phoneNumber)")
+                self.logView.writeString(string: "\(NSLocalizedString("Contact Person", comment: "联系人"))1 \(NSLocalizedString("Name", comment: "姓名")):\(model_1.name),\(NSLocalizedString("Number", comment: "号码")):\(model_1.phoneNumber)")
+                self.logView.writeString(string: "\(NSLocalizedString("Contact Person", comment: "联系人"))2 \(NSLocalizedString("Name", comment: "姓名")):\(model_2.name),\(NSLocalizedString("Number", comment: "号码")):\(model_2.phoneNumber)")
                 
                 ZyCommandModule.shareInstance.setAddressBook(modelArray: [model_0,model_1,model_2]) { error in
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -2270,18 +2276,18 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "同步N个联系人":
+        case NSLocalizedString("Synchronize N contacts", comment: "同步N个联系人"):
             
             let array = [
-                "同步个数(默认10个)",
-                "姓名(默认张三,+\"-序号\")",
-                "号码(默认13755660000,+序号)",
+                NSLocalizedString("Number of synchronizations (default 10)", comment: "同步个数(默认10个)"),
+                "\(NSLocalizedString("Name", comment: "姓名"))(默认张三,+\"-序号\")",
+                "\(NSLocalizedString("Number", comment: "号码"))(默认13755660000,+序号)",
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "同步N个联系人")
+            self.logView.writeString(string: NSLocalizedString("Synchronize N contacts", comment: "同步N个联系人"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认为空)", message: "设置联系人", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Hint (Invalid data is null by default)", comment: "提示(无效数据默认为空)"), message: NSLocalizedString("Set up contacts", comment: "设置联系人"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 var peopleCount = 10
@@ -2294,7 +2300,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     model.name = (textArray[1].count == 0 ? "张三" : textArray[1])+"-\(i)"
                     model.phoneNumber = String.init(format: "%ld", (Int64(textArray[2].count == 0 ? "13755660000" : textArray[2]) ?? 13755660000)+Int64(i))
                     modelArray.append(model)
-                    self.logView.writeString(string: "联系人\(i) 姓名:\(model.name),号码:\(model.phoneNumber)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Contact Person", comment: "联系人"))\(i) \(NSLocalizedString("Name", comment: "姓名")):\(model.name),\(NSLocalizedString("Number", comment: "号码")):\(model.phoneNumber)")
                 }
                 
                 ZyCommandModule.shareInstance.setAddressBook(modelArray: modelArray) { error in
@@ -2308,10 +2314,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取生理周期":
+        case "\(NSLocalizedString("Get the cycle", comment: "获取生理周期"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取生理周期")
+            self.logView.writeString(string: NSLocalizedString("Get the cycle", comment: "获取生理周期"))
             
             ZyCommandModule.shareInstance.getMenstrualCycle { success, error in
                 
@@ -2330,33 +2336,33 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         let remindHour = model.remindHour
                         let remindMinute = model.remindMinute
                         
-                        self.logView.writeString(string: isOpen ? "开启":"关闭")
-                        self.logView.writeString(string: "周期天数: \(cycleCount)")
-                        self.logView.writeString(string: "经期天数: \(menstrualCount)")
-                        self.logView.writeString(string: String.init(format: "上一次月经开始日期: %04d-%02d-%02d", year,month,day))
-                        self.logView.writeString(string: "提前提醒天数: \(advanceDay)")
-                        self.logView.writeString(string: String.init(format: "提醒时间: %02d:%02d", remindHour,remindMinute))
+                        self.logView.writeString(string: isOpen ? NSLocalizedString("Turn on", comment: "开启"):NSLocalizedString("Shut down", comment: "关闭"))
+                        self.logView.writeString(string: "\(NSLocalizedString("Number of cycle days", comment: "周期天数")): \(cycleCount)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Number of menstrual days", comment: "经期天数")): \(menstrualCount)")
+                        self.logView.writeString(string: String.init(format: "\(NSLocalizedString("Date of commencement of last menstrual period", comment: "上一次月经开始日期")): %04d-%02d-%02d", year,month,day))
+                        self.logView.writeString(string: "\(NSLocalizedString("Remind days in advance", comment: "提前提醒天数")): \(advanceDay)")
+                        self.logView.writeString(string: String.init(format: "\(NSLocalizedString("Time to remind", comment: "提醒时间")): %02d:%02d", remindHour,remindMinute))
                     }
                 }
             }
             
             break
-            
-        case "设置生理周期":
+
+        case "\(NSLocalizedString("Set your cycle", comment: "设置生理周期"))":
             
             let array = [
-                "开关",
-                "周期天数",
-                "月经天数",
-                "上次经期的年",
-                "上次经期的月",
-                "上次经期的日",
-                "提前提醒的天数",
-                "提醒小时",
-                "提醒分钟"
+                NSLocalizedString("On/off switch", comment: "开关"),
+                NSLocalizedString("Number of cycle days", comment: "周期天数"),
+                NSLocalizedString("Number of menstrual days", comment: "经期天数"),
+                NSLocalizedString("The year of your last period", comment: "上次经期的年"),
+                NSLocalizedString("The month of your last period", comment: "上次经期的月"),
+                NSLocalizedString("The date of your last period", comment: "上次经期的日"),
+                NSLocalizedString("The number of days of advance reminder", comment: "提前提醒的天数"),
+                NSLocalizedString("Hours of reminder", comment: "提醒小时"),
+                NSLocalizedString("A reminder minute", comment: "提醒分钟")
             ]
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置生理周期", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set your cycle", comment: "设置生理周期"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 
@@ -2381,12 +2387,12 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 model.remindHour = remindHour
                 model.remindMinute = remindMinute
                 
-                self.logView.writeString(string: isOpen ? "开启":"关闭")
-                self.logView.writeString(string: "周期天数: \(cycleCount)")
-                self.logView.writeString(string: "经期天数: \(menstrualCount)")
-                self.logView.writeString(string: String.init(format: "上一次月经开始日期: %04d-%02d-%02d", year,month,day))
-                self.logView.writeString(string: "提前提醒天数: \(advanceDay)")
-                self.logView.writeString(string: String.init(format: "提醒时间: %02d:%02d", remindHour,remindMinute))
+                self.logView.writeString(string: isOpen ? NSLocalizedString("Turn on", comment: "开启"):NSLocalizedString("Shut down", comment: "关闭"))
+                self.logView.writeString(string: "\(NSLocalizedString("Number of cycle days", comment: "周期天数")): \(cycleCount)")
+                self.logView.writeString(string: "\(NSLocalizedString("Number of menstrual days", comment: "经期天数")): \(menstrualCount)")
+                self.logView.writeString(string: String.init(format: "\(NSLocalizedString("Date of commencement of last menstrual period", comment: "上一次月经开始日期")): %04d-%02d-%02d", year,month,day))
+                self.logView.writeString(string: "\(NSLocalizedString("Remind days in advance", comment: "提前提醒天数")): \(advanceDay)")
+                self.logView.writeString(string: String.init(format: "\(NSLocalizedString("Time to remind", comment: "提醒时间")): %02d:%02d", remindHour,remindMinute))
                 
                 ZyCommandModule.shareInstance.setMenstrualCycle(model: model) { error in
                     
@@ -2401,7 +2407,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取洗手提醒":
+        case "\(NSLocalizedString("Get Hand-washing reminders", comment: "获取洗手提醒"))":
             
             ZyCommandModule.shareInstance.getWashHand { success, error in
                 print("GetWashHand ->",success)
@@ -2409,17 +2415,17 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "设置洗手提醒":
+        case "\(NSLocalizedString("Set reminders for hand washing", comment: "设置洗手提醒"))":
             
             let array = [
-                "0:关，1:开",
-                "开始小时",
-                "开始分钟",
-                "目标次数",
-                "提醒间隔"
+                "0:\(NSLocalizedString("Shut down", comment: "关闭"))，1:\(NSLocalizedString("Turn on", comment: "开启"))",
+                NSLocalizedString("Hour of commencement", comment: "开始小时"),
+                NSLocalizedString("Start minutes", comment: "开始分钟"),
+                NSLocalizedString("Number of targets", comment: "目标次数"),
+                NSLocalizedString("Length of interval", comment: "间隔时长")
             ]
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置洗手提醒", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set reminders for hand washing", comment: "设置洗手提醒"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let isOpen = textArray[0]
@@ -2434,11 +2440,11 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-                        
-        case "获取喝水提醒":
+            
+        case "\(NSLocalizedString("Get water reminders", comment: "获取喝水提醒"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取喝水提醒")
+            self.logView.writeString(string: NSLocalizedString("Get water reminders", comment: "获取喝水提醒"))
 
             ZyCommandModule.shareInstance.getDrinkWater { success, error in
                 
@@ -2453,28 +2459,28 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         let endMinute = model.timeModel.endMinute
                         let remindInterval = model.remindInterval
                         
-                        self.logView.writeString(string: isOpen ? "开启":"关闭")
-                        self.logView.writeString(string: "开始时间: \(startHour):\(startMinute)")
-                        self.logView.writeString(string: "结束时间: \(endHour):\(endMinute)")
-                        self.logView.writeString(string: "提醒间隔: \(remindInterval)")
+                        self.logView.writeString(string: isOpen ? NSLocalizedString("Turn on", comment: "开启"):NSLocalizedString("Shut down", comment: "关闭"))
+                        self.logView.writeString(string: "\(NSLocalizedString("Time to start", comment: "开始时间")): \(startHour):\(startMinute)")
+                        self.logView.writeString(string: "\(NSLocalizedString("End of period", comment: "结束时间")): \(endHour):\(endMinute)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Length of interval", comment: "间隔时长")): \(remindInterval)")
                     }
                 }
             }
             
             break
             
-        case "设置喝水提醒":
+        case "\(NSLocalizedString("Set a water reminder", comment: "设置喝水提醒"))":
             
             let array = [
-                "0:关，1:开",
-                "开始小时",
-                "开始分钟",
-                "结束小时",
-                "结束分钟",
-                "提醒间隔"
+                "0:\(NSLocalizedString("Shut down", comment: "关闭"))，1:\(NSLocalizedString("Turn on", comment: "开启"))",
+                NSLocalizedString("Hour of commencement", comment: "开始小时"),
+                NSLocalizedString("Start minutes", comment: "开始分钟"),
+                NSLocalizedString("Closing hours", comment: "结束小时"),
+                NSLocalizedString("End of the minute", comment: "结束分钟"),
+                NSLocalizedString("Length of interval", comment: "间隔时长")
             ]
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置喝水提醒", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set a water reminder", comment: "设置喝水提醒"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let isOpen = textArray[0]
@@ -2506,10 +2512,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取低电提醒":
+        case "\(NSLocalizedString("Get low power alerts", comment: "获取低电提醒"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取低电提醒")
+            self.logView.writeString(string: NSLocalizedString("Get low power alerts", comment: "获取低电提醒"))
             
             ZyCommandModule.shareInstance.getLowBatteryRemind { success, error in
                 
@@ -2522,27 +2528,27 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         let remindCount = model.remindCount
                         let remindInterval = model.remindInterval
                         
-                        self.logView.writeString(string: isOpen ? "开启":"关闭")
-                        self.logView.writeString(string: "提醒电量:\(remindBattery)")
-                        self.logView.writeString(string: "提醒次数:\(remindCount)")
-                        self.logView.writeString(string: "提醒间隔:\(remindInterval)")
+                        self.logView.writeString(string: isOpen ? NSLocalizedString("Turn on", comment: "开启"):NSLocalizedString("Shut down", comment: "关闭"))
+                        self.logView.writeString(string: "\(NSLocalizedString("Reminder of power", comment: "提醒电量")):\(remindBattery)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Number of reminders", comment: "提醒次数")):\(remindCount)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Length of interval", comment: "间隔时长")):\(remindInterval)")
                     }
                 }
                 
             }
             
             break
-            
-        case "设置低电提醒":
+
+        case "\(NSLocalizedString("Set a low power reminder", comment: "设置低电提醒"))":
             
             let array = [
-                "0:关，1:开",
-                "提醒电量",
-                "提醒次数",
-                "提醒间隔",
+                "0:\(NSLocalizedString("Shut down", comment: "关闭"))，1:\(NSLocalizedString("Turn on", comment: "开启"))",
+                NSLocalizedString("Reminder of power", comment: "提醒电量"),
+                NSLocalizedString("Number of reminders", comment: "提醒次数"),
+                NSLocalizedString("Length of interval", comment: "间隔时长"),
             ]
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置低电提醒", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set reminders for hand washing", comment: "设置洗手提醒"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let isOpen = textArray[0]
@@ -2569,16 +2575,16 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取单个LED灯功能":
+        case "\(NSLocalizedString("Get a single LED lamp function", comment: "获取单个LED灯功能"))":
             
             let array = [
-                "0:电量 1:信息 2:bt连接 3:计步达标",
+                "0:\(NSLocalizedString("Amount of electricity", comment: "电量")) 1:\(NSLocalizedString("Information", comment: "信息")) 2:\(NSLocalizedString("bt connection", comment: "bt连接")) 3:\(NSLocalizedString("Count steps to reach the standard", comment: "计步达标"))",
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取单个LED灯功能")
+            self.logView.writeString(string: NSLocalizedString("Get a single LED lamp function", comment: "获取单个LED灯功能"))
             
-            self.presentTextFieldAlertVC(title: "提示(默认0)", message: "获取单个LED灯功能", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Get a single LED lamp function", comment: "获取单个LED灯功能"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let type = Int(textArray[0]) ?? 0
@@ -2588,31 +2594,31 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     if error == .none {
                         
                         if let model = model {
-                            self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
-                            self.logView.writeString(string: "颜色: \(model.ledColor)")
-                            self.logView.writeString(string: "97-100颜色: \(model.firstColor)")
-                            self.logView.writeString(string: "21-74颜色: \(model.secondColor)")
-                            self.logView.writeString(string: "0-20颜色: \(model.thirdColor)")
-                            self.logView.writeString(string: "持续时长: \(model.timeLength)")
-                            self.logView.writeString(string: "闪烁频次: \(model.frequency)\n\n")
+                            self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")): \(model.ledType.rawValue)")
+                            self.logView.writeString(string: "\(NSLocalizedString("Color", comment: "颜色")): \(model.ledColor)")
+                            self.logView.writeString(string: "97-100\(NSLocalizedString("Color", comment: "颜色")): \(model.firstColor)")
+                            self.logView.writeString(string: "21-74\(NSLocalizedString("Color", comment: "颜色")): \(model.secondColor)")
+                            self.logView.writeString(string: "0-20\(NSLocalizedString("Color", comment: "颜色")): \(model.thirdColor)")
+                            self.logView.writeString(string: "\(NSLocalizedString("Duration of duration", comment: "持续时长")): \(model.timeLength)")
+                            self.logView.writeString(string: "\(NSLocalizedString("Frequency of flicker", comment: "闪烁频次")): \(model.frequency)\n\n")
                         }
                     }
                 }
             }
 
             break
-        case "设置单个LED灯功能":
+        case "\(NSLocalizedString("Set up a single LED light function", comment: "设置单个LED灯功能"))":
             
             let array = [
-                "参数类型 1:信息 2:bt连接 3:计步达标 4:低电",
-                "颜色(0-15,bit0:红 bit1:绿 bit2:蓝 bit3:白)",
-                "持续时间 1-20",
-                "闪烁频次 0-5，0常亮",
+                "\(NSLocalizedString("Type", comment: "类型")) 1:\(NSLocalizedString("Information", comment: "信息")) 2:\(NSLocalizedString("bt connection", comment: "bt连接")) 3:\(NSLocalizedString("Count steps to reach the standard", comment: "计步达标")) 4:低电",
+                "\(NSLocalizedString("Color", comment: "颜色"))(0-15,bit0:\(NSLocalizedString("red", comment: "红")) bit1:\(NSLocalizedString("green", comment: "绿")) bit2:\(NSLocalizedString("blue", comment: "蓝")) bit3:\(NSLocalizedString("white", comment: "白")))",
+                "\(NSLocalizedString("Duration of duration", comment: "持续时长")) 1-20",
+                "\(NSLocalizedString("Frequency of flicker", comment: "闪烁频次")) 0-5，0常亮",
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "LED灯功能设置")
-            self.presentTextFieldAlertVC(title: "提示(默认类型1其他0)", message: "LED灯功能设置(后续参数递增)", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("LED lamp function setting", comment: "LED灯功能设置"))
+            self.presentTextFieldAlertVC(title: "提示(默认类型1其他0)", message: NSLocalizedString("LED lamp function setting", comment: "LED灯功能设置"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let modelCount = Int(textArray[0]) ?? 1
@@ -2625,10 +2631,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 model.timeLength = timeLength
                 model.frequency = frequency
                 model.ledColor = colorType
-                self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
-                self.logView.writeString(string: "颜色: \(model.ledColor)")
-                self.logView.writeString(string: "持续时长: \(model.timeLength)")
-                self.logView.writeString(string: "闪烁频次: \(model.frequency)\n\n")
+                self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")): \(model.ledType.rawValue)")
+                self.logView.writeString(string: "\(NSLocalizedString("Color", comment: "颜色")): \(model.ledColor)")
+                self.logView.writeString(string: "\(NSLocalizedString("Duration of duration", comment: "持续时长")): \(model.timeLength)")
+                self.logView.writeString(string: "\(NSLocalizedString("Frequency of flicker", comment: "闪烁频次")): \(model.frequency)\n\n")
                 
                 ZyCommandModule.shareInstance.setLedSetup(model: model, success: { error in
                     
@@ -2642,19 +2648,19 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
 
-        case "设置单个LED灯电量显示":
+        case "\(NSLocalizedString("Set individual LED light power display", comment: "设置单个LED灯电量显示"))":
             
             let array = [
-                "75-100颜色(0-15,bit0:红 bit1:绿 bit2:蓝 bit3:白)",
-                "21-74颜色(0-15,bit0:红 bit1:绿 bit2:蓝 bit3:白)",
-                "0-20颜色(0-15,bit0:红 bit1:绿 bit2:蓝 bit3:白)",
-                "持续时间 1-20",
-                "闪烁频次 0-5，0常亮",
+                "75-100\(NSLocalizedString("Color", comment: "颜色"))(0-15,bit0:\(NSLocalizedString("red", comment: "红")) bit1:\(NSLocalizedString("green", comment: "绿")) bit2:\(NSLocalizedString("blue", comment: "蓝")) bit3:\(NSLocalizedString("white", comment: "白"))",
+                "21-74\(NSLocalizedString("Color", comment: "颜色"))(0-15,bit0:\(NSLocalizedString("red", comment: "红")) bit1:\(NSLocalizedString("green", comment: "绿")) bit2:\(NSLocalizedString("blue", comment: "蓝")) bit3:\(NSLocalizedString("white", comment: "白"))",
+                "0-20\(NSLocalizedString("Color", comment: "颜色"))(0-15,bit0:\(NSLocalizedString("red", comment: "红")) bit1:\(NSLocalizedString("green", comment: "绿")) bit2:\(NSLocalizedString("blue", comment: "蓝")) bit3:\(NSLocalizedString("white", comment: "白"))",
+                "\(NSLocalizedString("Duration of duration", comment: "持续时长")) 1-20",
+                "\(NSLocalizedString("Frequency of flicker", comment: "闪烁频次")) 0-5，0常亮",
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "LED灯功能设置")
-            self.presentTextFieldAlertVC(title: "提示(默认类型1其他0)", message: "LED灯功能设置(后续参数递增)", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("LED lamp function setting", comment: "LED灯功能设置"))
+            self.presentTextFieldAlertVC(title: "提示(默认类型1其他0)", message: NSLocalizedString("LED lamp function setting", comment: "LED灯功能设置"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let firstColor = Int(textArray[0]) ?? 1
@@ -2671,12 +2677,12 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 model.secondColor = secondColor
                 model.thirdColor = thirdColor
 
-                self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
-                self.logView.writeString(string: "75-100颜色: \(model.firstColor)")
-                self.logView.writeString(string: "21-74颜色: \(model.secondColor)")
-                self.logView.writeString(string: "0-20颜色: \(model.thirdColor)")
-                self.logView.writeString(string: "持续时长: \(model.timeLength)")
-                self.logView.writeString(string: "闪烁频次: \(model.frequency)\n\n")
+                self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")): \(model.ledType.rawValue)")
+                self.logView.writeString(string: "75-100\(NSLocalizedString("Color", comment: "颜色")): \(model.firstColor)")
+                self.logView.writeString(string: "21-74\(NSLocalizedString("Color", comment: "颜色")): \(model.secondColor)")
+                self.logView.writeString(string: "0-20\(NSLocalizedString("Color", comment: "颜色")): \(model.thirdColor)")
+                self.logView.writeString(string: "\(NSLocalizedString("Duration of duration", comment: "持续时长")): \(model.timeLength)")
+                self.logView.writeString(string: "\(NSLocalizedString("Frequency of flicker", comment: "闪烁频次")): \(model.frequency)\n\n")
                 
                 ZyCommandModule.shareInstance.setLedSetup(model: model, success: { error in
                     
@@ -2689,16 +2695,17 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-        case "获取马达震动功能":
+
+        case "\(NSLocalizedString("Get motor vibration function", comment: "获取马达震动功能"))":
             
             let array = [
-                "0:电量 1:信息 2:bt连接 3:计步达标",
+                "0:\(NSLocalizedString("Amount of electricity", comment: "电量")) 1:\(NSLocalizedString("Information", comment: "信息")) 2:\(NSLocalizedString("bt connection", comment: "bt连接")) 3:\(NSLocalizedString("Count steps to reach the standard", comment: "计步达标"))",
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取马达震动功能")
+            self.logView.writeString(string: NSLocalizedString("Get motor vibration function", comment: "获取马达震动功能"))
             
-            self.presentTextFieldAlertVC(title: "提示(默认0)", message: "获取马达震动功能", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Get motor vibration function", comment: "获取马达震动功能"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let type = Int(textArray[0]) ?? 0
@@ -2707,28 +2714,29 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     if error == .none {
                         if let model = model {
-                            self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
-                            self.logView.writeString(string: "震动时长: \(model.timeLength)")
-                            self.logView.writeString(string: "震动频次: \(model.frequency)")
-                            self.logView.writeString(string: "震动强度: \(model.level)\n\n")
+                            self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")): \(model.ledType.rawValue)")
+                            self.logView.writeString(string: "\(NSLocalizedString("Duration of vibration", comment: "震动时长")): \(model.timeLength)")
+                            self.logView.writeString(string: "\(NSLocalizedString("Frequency of vibration", comment: "震动频次")): \(model.frequency)")
+                            self.logView.writeString(string: "\(NSLocalizedString("Intensity of vibration", comment: "震动强度")): \(model.level)\n\n")
                         }
                     }
                 }
             }
             
             break
-        case "设置马达震动功能":
+
+        case "\(NSLocalizedString("Set motor vibration function", comment: "设置马达震动功能"))":
             
             let array = [
-                "参数类型 1:信息 2:bt连接 3:计步达标",
-                "震动时长 10-50",
-                "震动频次 0-5 ,0长震",
-                "震动强度 1-10",
+                "\(NSLocalizedString("Type", comment: "类型")) 1:\(NSLocalizedString("Information", comment: "信息")) 2:\(NSLocalizedString("bt connection", comment: "bt连接")) 3:\(NSLocalizedString("Count steps to reach the standard", comment: "计步达标"))",
+                "\(NSLocalizedString("Duration of vibration", comment: "震动时长")) 10-50",
+                "\(NSLocalizedString("Frequency of vibration", comment: "震动频次")) 0-5 ,0长震",
+                "\(NSLocalizedString("Intensity of vibration", comment: "震动强度")) 1-10",
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "马达震动功能设置")
-            self.presentTextFieldAlertVC(title: "提示(默认0)", message: "马达震动功能设置", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("Set motor vibration function", comment: "设置马达震动功能"))
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set motor vibration function", comment: "设置马达震动功能"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
 
@@ -2742,10 +2750,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 model.timeLength = timeLength
                 model.frequency = frequency
                 model.level = level
-                self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
-                self.logView.writeString(string: "震动时长: \(model.timeLength)")
-                self.logView.writeString(string: "震动频次: \(model.frequency)")
-                self.logView.writeString(string: "震动强度: \(model.level)\n\n")
+                self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")): \(model.ledType.rawValue)")
+                self.logView.writeString(string: "\(NSLocalizedString("Duration of vibration", comment: "震动时长")): \(model.timeLength)")
+                self.logView.writeString(string: "\(NSLocalizedString("Frequency of vibration", comment: "震动频次")): \(model.frequency)")
+                self.logView.writeString(string: "\(NSLocalizedString("Intensity of vibration", comment: "震动强度")): \(model.level)\n\n")
                 
                 ZyCommandModule.shareInstance.setMotorShakeFunction(model: model) { error in
                     
@@ -2758,17 +2766,17 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-        case "0x00 同步计步数据":
+        case "\(NSLocalizedString("Synchronize step data", comment: "同步计步数据"))":
             
             let array = [
-                "同步类型",
-                "同步天数",
+                NSLocalizedString("Type of synchronization", comment: "同步类型"),
+                NSLocalizedString("Number of synchronized days", comment: "同步天数"),
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "同步健康数据")
+            self.logView.writeString(string: NSLocalizedString("Synchronize step data", comment: "同步计步数据"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "同步计步数据", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Synchronize step data", comment: "同步计步数据"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let type = textArray[0]
@@ -2790,10 +2798,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                                 
                                 print("detailArray ->",detailArray)
                                 
-                                self.logView.writeString(string: "详情步数:\(detailArray)")
-                                self.logView.writeString(string: "总步数:\(step)")
-                                self.logView.writeString(string: "总卡路里:\(calorie)")
-                                self.logView.writeString(string: "总距离:\(distance)")
+                                self.logView.writeString(string: "\(NSLocalizedString("Detailed steps", comment: "详情步数")):\(detailArray)")
+                                self.logView.writeString(string: "\(NSLocalizedString("Total number of steps", comment: "总步数")):\(step)")
+                                self.logView.writeString(string: "\(NSLocalizedString("Total calories", comment: "总卡路里")):\(calorie)")
+                                self.logView.writeString(string: "\(NSLocalizedString("Total distance", comment: "总距离")):\(distance)")
                             }
                         }
                         
@@ -2805,10 +2813,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                                 let detailArray = model.detailArray
                                 print("deep ->",deep,"awake ->",awake,"light ->",light,"detailArray ->",detailArray)
                                 
-                                self.logView.writeString(string: "深睡时长:\(deep)")
-                                self.logView.writeString(string: "浅睡时长:\(light)")
-                                self.logView.writeString(string: "清醒时长:\(awake)")
-                                self.logView.writeString(string: "详情睡眠:\(detailArray)")
+                                self.logView.writeString(string: "\(NSLocalizedString("Deep sleep duration", comment: "深睡时长")):\(deep)")
+                                self.logView.writeString(string: "\(NSLocalizedString("Light sleep duration", comment: "浅睡时长")):\(light)")
+                                self.logView.writeString(string: "\(NSLocalizedString("Duration of wakefulness", comment: "清醒时长")):\(awake)")
+                                self.logView.writeString(string: "\(NSLocalizedString("Details Sleep", comment: "详情睡眠")):\(detailArray)")
                             }
                         }
                         
@@ -2817,7 +2825,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                                 let detailArray = model.detailArray
                                 print("detailArray ->",detailArray)
                                 
-                                self.logView.writeString(string: "详情心率:\(detailArray)")
+                                self.logView.writeString(string: "\(NSLocalizedString("Details Heart rate", comment: "详情心率")):\(detailArray)")
                             }
                         }
                         
@@ -2825,13 +2833,13 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
                         var typeString = ""
                         if type == "1" {
-                            typeString = "步数"
+                            typeString = NSLocalizedString("Number of steps", comment: "步数")
                         }else if type == "2" {
-                            typeString = "心率"
+                            typeString = NSLocalizedString("Heart rate", comment: "心率")
                         }else if type == "3" {
-                            typeString = "睡眠"
+                            typeString = NSLocalizedString("Sleep", comment: "睡眠")
                         }
-                        self.logView.writeString(string: "类型:\(typeString)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")):\(typeString)")
                         self.logView.writeString(string: "第\(dayCount)天数据")
                     }
                     //self.navigationController?.pushViewController(vc, animated: true)
@@ -2841,17 +2849,17 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "同步锻炼数据":
+        case "\(NSLocalizedString("Synchronizing exercise data", comment: "同步锻炼数据"))":
             
             let array = [
-                //"同步类型",
-                "同步序号",
+                //NSLocalizedString("Type of synchronization", comment: "同步类型"),
+                NSLocalizedString("Synchronization serial number", comment: "同步序号"),
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "同步锻炼数据")
+            self.logView.writeString(string: NSLocalizedString("Synchronizing exercise data", comment: "同步锻炼数据"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "同步锻炼数据", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Synchronizing exercise data", comment: "同步锻炼数据"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 //let type = textArray[0]
@@ -2872,14 +2880,14 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         let calorie = model.calorie
                         let distance = model.distance
                         
-                        self.logView.writeString(string: "开始时间:\(startTime)")
-                        self.logView.writeString(string: "类型:\(type.rawValue)")
-                        self.logView.writeString(string: "心率:\(hr)")
-                        self.logView.writeString(string: "运动时长:\(validTimeLength)")
-                        self.logView.writeString(string: "步数:\(step)")
-                        self.logView.writeString(string: "结束时间:\(endTime)")
-                        self.logView.writeString(string: "卡路里:\(calorie)")
-                        self.logView.writeString(string: "距离:\(distance)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Time to start", comment: "开始时间")):\(startTime)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")):\(type.rawValue)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Heart rate", comment: "心率")):\(hr)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Duration of exercise", comment: "运动时长")):\(validTimeLength)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Number of steps", comment: "步数")):\(step)")
+                        self.logView.writeString(string: "\(NSLocalizedString("End of period", comment: "结束时间")):\(endTime)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Calories", comment: "卡路里")):\(calorie)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Distance", comment: "距离")):\(distance)")
                     }
 
                 }
@@ -2888,16 +2896,17 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "同步测量数据":
+        case NSLocalizedString("Synchronized measurement data", comment: "同步测量数据"):
+            
             let array = [
-                "1：心率，2：血氧，3：血压，4：血糖，5：压力，6.体温，7：心电",
-                "1：全天测量 ，2：点击测量",
-                "第x天(条) 10以内输入不间隔",
+                "1：\(NSLocalizedString("Heart rate", comment: "心率"))，2：\(NSLocalizedString("Blood oxygen", comment: "血氧"))，3：\(NSLocalizedString("Blood pressure", comment: "血压"))，4：\(NSLocalizedString("Blood sugar", comment: "血糖"))，5：\(NSLocalizedString("Pressure", comment: "压力"))，6.\(NSLocalizedString("Body temperature", comment: "体温"))，7：\(NSLocalizedString("electrocardiogram", comment: "心电"))",
+                "1：\(NSLocalizedString("Full day measurement", comment: "全天测量")) ，2：\(NSLocalizedString("Click and measure", comment: "点击测量"))",
+                NSLocalizedString("The input is not spaced within 10 days of x day (article)", comment: "第x天(条) 10以内输入不间隔"),
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "同步数据")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "同步计步数据", holderStringArray: array) {
+            self.logView.writeString(string: NSLocalizedString("Synchronizing data", comment: "同步数据"))
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Synchronizing data", comment: "同步数据"), holderStringArray: array) {
                 
             } okAction: { textArray in
                 let dataType = textArray[0]
@@ -2921,11 +2930,11 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                             let listModelArray = model.listArray
                             
                             print("listModelArray ->",listModelArray)
-                            self.logView.writeString(string: "类型:\(type.rawValue)")
-                            self.logView.writeString(string: "间隔时长:\(timeInterval)")
+                            self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")):\(type.rawValue)")
+                            self.logView.writeString(string: "\(NSLocalizedString("Length of interval", comment: "间隔时长")):\(timeInterval)")
                             for item in listModelArray {
                                 let item:ZyMeasurementValueModel = item
-                                self.logView.writeString(string: "历史数据 时间:\(item.time) value1:\(item.value_1),value2:\(item.value_2)\n")
+                                self.logView.writeString(string: "time:\(item.time) value1:\(item.value_1),value2:\(item.value_2)\n")
                             }
                         }
                         
@@ -2934,17 +2943,17 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "新协议 同步数据":
+        case "New \(NSLocalizedString("Synchronizing data", comment: "同步数据"))":
             
             let array = [
-                "1:步数 2:心率 3:睡眠 4:锻炼",
-                "第x天(条) 10以内输入不间隔",
+                "1:\(NSLocalizedString("Number of steps", comment: "步数")) 2:\(NSLocalizedString("Heart rate", comment: "心率")) 3:\(NSLocalizedString("Sleep", comment: "睡眠")) 4:\(NSLocalizedString("Exercise", comment: "锻炼"))",
+                NSLocalizedString("The input is not spaced within 10 days of x day (article)", comment: "第x天(条) 10以内输入不间隔"),
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "同步数据")
+            self.logView.writeString(string: NSLocalizedString("Synchronizing data", comment: "同步数据"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "同步计步数据", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Synchronizing data", comment: "同步数据"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let type = textArray[0]
@@ -2979,10 +2988,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                                             
                                             print("detailArray ->",detailArray)
                                             self.logView.writeString(string: "第\(key)天")
-                                            self.logView.writeString(string: "详情步数:\(detailArray)")
-                                            self.logView.writeString(string: "总步数:\(step)")
-                                            self.logView.writeString(string: "总卡路里:\(calorie)")
-                                            self.logView.writeString(string: "总距离:\(distance)\n")
+                                            self.logView.writeString(string: "\(NSLocalizedString("Detailed steps", comment: "详情步数")):\(detailArray)")
+                                            self.logView.writeString(string: "\(NSLocalizedString("Total number of steps", comment: "总步数")):\(step)")
+                                            self.logView.writeString(string: "\(NSLocalizedString("Total calories", comment: "总卡路里")):\(calorie)")
+                                            self.logView.writeString(string: "\(NSLocalizedString("Total distance", comment: "总距离")):\(distance)\n")
                                         }
                                     }
                                     
@@ -2994,10 +3003,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                                             let detailArray = model.detailArray
                                             print("deep ->",deep,"awake ->",awake,"light ->",light,"detailArray ->",detailArray)
                                             self.logView.writeString(string: "第\(key)天")
-                                            self.logView.writeString(string: "深睡时长:\(deep)")
-                                            self.logView.writeString(string: "浅睡时长:\(light)")
-                                            self.logView.writeString(string: "清醒时长:\(awake)")
-                                            self.logView.writeString(string: "详情睡眠:\(detailArray)\n")
+                                            self.logView.writeString(string: "\(NSLocalizedString("Deep sleep duration", comment: "深睡时长")):\(deep)")
+                                            self.logView.writeString(string: "\(NSLocalizedString("Light sleep duration", comment: "浅睡时长")):\(light)")
+                                            self.logView.writeString(string: "\(NSLocalizedString("Duration of wakefulness", comment: "清醒时长")):\(awake)")
+                                            self.logView.writeString(string: "\(NSLocalizedString("Details Sleep", comment: "详情睡眠")):\(detailArray)\n")
                                         }
                                     }
                                     
@@ -3006,7 +3015,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                                             let detailArray = model.detailArray
                                             print("detailArray ->",detailArray)
                                             self.logView.writeString(string: "第\(key)天")
-                                            self.logView.writeString(string: "详情心率:\(detailArray)\n")
+                                            self.logView.writeString(string: "\(NSLocalizedString("Details Heart rate", comment: "详情心率")):\(detailArray)\n")
                                         }
                                     }
                                     
@@ -3021,14 +3030,14 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                                             let calorie = model.calorie
                                             let distance = model.distance
                                             self.logView.writeString(string: "第\(key)条")
-                                            self.logView.writeString(string: "开始时间:\(startTime)")
-                                            self.logView.writeString(string: "类型:\(type.rawValue)")
-                                            self.logView.writeString(string: "心率:\(hr)")
-                                            self.logView.writeString(string: "运动时长:\(validTimeLength)")
-                                            self.logView.writeString(string: "步数:\(step)")
-                                            self.logView.writeString(string: "结束时间:\(endTime)")
-                                            self.logView.writeString(string: "卡路里:\(calorie)")
-                                            self.logView.writeString(string: "距离:\(distance)\n")
+                                            self.logView.writeString(string: "\(NSLocalizedString("Time to start", comment: "开始时间")):\(startTime)")
+                                            self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")):\(type.rawValue)")
+                                            self.logView.writeString(string: "\(NSLocalizedString("Heart rate", comment: "心率")):\(hr)")
+                                            self.logView.writeString(string: "\(NSLocalizedString("Duration of exercise", comment: "运动时长")):\(validTimeLength)")
+                                            self.logView.writeString(string: "\(NSLocalizedString("Number of steps", comment: "步数")):\(step)")
+                                            self.logView.writeString(string: "\(NSLocalizedString("End of period", comment: "结束时间")):\(endTime)")
+                                            self.logView.writeString(string: "\(NSLocalizedString("Calories", comment: "卡路里")):\(calorie)")
+                                            self.logView.writeString(string: "\(NSLocalizedString("Distance", comment: "距离")):\(distance)\n")
                                             let gpsArray = model.gpsArray
                                             if gpsArray.count > 0 {
                                                 var logArray = [String]()
@@ -3039,7 +3048,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                                                         logArray.append("时间:\(formatter.string(from:item.timestamp)),latitude:\(item.coordinate.latitude),longitude:\(item.coordinate.longitude)")
                                                     }
                                                 }
-                                                self.logView.writeString(string: "距离:\(logArray)\n")
+                                                self.logView.writeString(string: "\(NSLocalizedString("Distance", comment: "距离")):\(logArray)\n")
                                             }
                                         }
                                     }
@@ -3057,29 +3066,29 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "新协议 设置天气":
+        case "New \(NSLocalizedString("Set the weather", comment: "设置天气"))":
             
             let array = [
-                "年",
-                "月",
-                "日",
-                "时",
-                "分",
-                "秒",
-                "总条数，后续的所有温度递增+1",
-                "天气类型",
-                "温度",
-                "空气质量",
-                "最低温度",
-                "最高温度",
-                "明日最低温度",
-                "明日最高温度",
+                NSLocalizedString("Year", comment: "年"),
+                NSLocalizedString("Month", comment: "月"),
+                NSLocalizedString("Day", comment: "日"),
+                NSLocalizedString("Hour", comment: "时"),
+                NSLocalizedString("Minute", comment: "分"),
+                NSLocalizedString("Second", comment: "秒"),
+                NSLocalizedString("The total number of bars, all subsequent temperatures increase by +1", comment: "总条数，后续的所有温度递增+1"),
+                NSLocalizedString("Type of weather", comment: "天气类型"),
+                NSLocalizedString("temperature", comment: "温度"),
+                NSLocalizedString("Air quality", comment: "空气质量"),
+                NSLocalizedString("Minimum temperature", comment: "最低温度"),
+                NSLocalizedString("Maximum temperature", comment: "最高温度"),
+                NSLocalizedString("Minimum temperature tomorrow", comment: "明日最低温度"),
+                NSLocalizedString("Maximum temperature tomorrow", comment: "明日最高温度"),
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置天气")
+            self.logView.writeString(string: NSLocalizedString("Set the weather", comment: "设置天气"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置天气", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set the weather", comment: "设置天气"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let year = textArray[0]
@@ -3112,19 +3121,19 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 let timeDate = format.date(from: time)
                 let timestamp:Int = Int(timeDate?.timeIntervalSince1970 ?? 0)
                 
-                self.logView.writeString(string: "显示时间:\(time),时间戳:\(timestamp)")
+                self.logView.writeString(string: "\(NSLocalizedString("Time of display", comment: "显示时间")):\(time),时间戳:\(timestamp)")
                 
                 var modelArray = [ZyWeatherModel]()
                 
                 for i in stride(from: 0, to: Int(dayCount) ?? 0, by: 1) {
                     self.logView.writeString(string: "第\(i)天")
-                    self.logView.writeString(string: "天气类型:\(type)")
-                    self.logView.writeString(string: "温度:\((Int(temp) ?? 0) + i)")
-                    self.logView.writeString(string: "空气质量:\(airQuality)")
-                    self.logView.writeString(string: "最低温度:\((Int(minTemp) ?? 0) + i)")
-                    self.logView.writeString(string: "最高温度:\((Int(maxTemp) ?? 0) + i)")
-                    self.logView.writeString(string: "明日最低温度:\((Int(tomorrowMinTemp) ?? 0) + i)")
-                    self.logView.writeString(string: "明日最大温度:\((Int(tomorrowMaxTemp) ?? 0) + i)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Type of weather", comment: "天气类型")):\(type)")
+                    self.logView.writeString(string: "\(NSLocalizedString("temperature", comment: "温度")):\((Int(temp) ?? 0) + i)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Air quality", comment: "空气质量")):\(airQuality)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Minimum temperature", comment: "最低温度")):\((Int(minTemp) ?? 0) + i)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Maximum temperature", comment: "最高温度")):\((Int(maxTemp) ?? 0) + i)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Minimum temperature tomorrow", comment: "明日最低温度")):\((Int(tomorrowMinTemp) ?? 0) + i)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Maximum temperature tomorrow", comment: "明日最高温度")):\((Int(tomorrowMaxTemp) ?? 0) + i)")
                     self.logView.writeString(string: "\n")
                     
                     let model = ZyWeatherModel.init()
@@ -3153,18 +3162,18 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "新协议 设置闹钟":
+        case "New \(NSLocalizedString("Set an alarm", comment: "设置闹钟"))":
             
             let array = [
-                "闹钟个数",
-                "重复",
-                "开始小时",
-                "开始分钟"
+                NSLocalizedString("Number of alarm clocks", comment: "闹钟个数"),
+                NSLocalizedString("Repeat the alarm clock", comment: "重复闹钟"),
+                NSLocalizedString("Hour of commencement", comment: "开始小时"),
+                NSLocalizedString("Start minutes", comment: "开始分钟")
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置闹钟")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置闹钟", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("Set an alarm", comment: "设置闹钟"))
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set an alarm", comment: "设置闹钟"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let totalCount = textArray[0]
@@ -3178,18 +3187,18 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     let dic = ["repeatCount": "\(repeatCount)", "hour": "\(hour)", "index": "\(i)", "minute": "\(minute)"]
                     let alarmModel = ZyAlarmModel.init(dic: dic)
                     
-                    self.logView.writeString(string: "闹钟序号:\(i)")
-                    self.logView.writeString(string: "闹钟时间:\(String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute))")
+                    self.logView.writeString(string: "\(NSLocalizedString("Alarm clock serial number", comment: "闹钟序号")):\(i)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Alarm clock time", comment: "闹钟时间")):\(String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute))")
                     self.logView.writeString(string: "repeatCount:\(repeatCount)")
-                    self.logView.writeString(string: "闹钟开关:\(alarmModel.alarmOpen)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Alarm clock switch", comment: "闹钟开关")):\(alarmModel.alarmOpen)")
                     if alarmModel.alarmOpen {
-                        self.logView.writeString(string: "闹钟重复类型:\(alarmModel.alarmType == .single ? "单次闹钟":"重复闹钟")")
+                        self.logView.writeString(string: "\(NSLocalizedString("Alarm clock repetition type", comment: "闹钟重复类型")):\(alarmModel.alarmType == .single ? NSLocalizedString("Single time alarm clock", comment: "单次闹钟"):NSLocalizedString("Repeat the alarm clock", comment: "重复闹钟"))")
                         if alarmModel.alarmType == .cycle {
                             if alarmModel.alarmRepeatArray != nil {
-                                let str = ((alarmModel.alarmRepeatArray![0] != 0 ? "星期天":"")+(alarmModel.alarmRepeatArray![1] != 0 ? "星期一":"")+(alarmModel.alarmRepeatArray![2] != 0 ? "星期二":"")+(alarmModel.alarmRepeatArray![3] != 0 ? "星期三":"")+(alarmModel.alarmRepeatArray![4] != 0 ? "星期四":"")+(alarmModel.alarmRepeatArray![5] != 0 ? "星期五":"")+(alarmModel.alarmRepeatArray![6] != 0 ? "星期六":""))
-                                self.logView.writeString(string: "闹钟重复星期:\(str)")
+                                let str = ((alarmModel.alarmRepeatArray![0] != 0 ? NSLocalizedString("Sunday", comment: "星期天"):"")+(alarmModel.alarmRepeatArray![1] != 0 ? NSLocalizedString("Monday", comment: "星期一"):"")+(alarmModel.alarmRepeatArray![2] != 0 ? NSLocalizedString("Tuesday", comment: "星期二"):"")+(alarmModel.alarmRepeatArray![3] != 0 ? NSLocalizedString("Wednesday", comment: "星期三"):"")+(alarmModel.alarmRepeatArray![4] != 0 ? NSLocalizedString("Thursday", comment: "星期四"):"")+(alarmModel.alarmRepeatArray![5] != 0 ? NSLocalizedString("Friday", comment: "星期五"):"")+(alarmModel.alarmRepeatArray![6] != 0 ? NSLocalizedString("Saturday", comment: "星期六"):""))
+                                self.logView.writeString(string: "\(NSLocalizedString("The alarm clock repeats the week", comment: "闹钟重复星期")):\(str)")
                             }else{
-                                self.logView.writeString(string: "闹钟重复星期:重复星期未开启,默认单次闹钟")
+                                self.logView.writeString(string: NSLocalizedString("Alarm repeat week: Repeat week is not turned on, default single alarm", comment: "闹钟重复星期:重复星期未开启,默认单次闹钟"))
                             }
                         }
                     }
@@ -3211,10 +3220,11 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "新协议 获取闹钟":
+        case "New \(NSLocalizedString("Get the alarm clock", comment: "获取闹钟"))":
+
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取闹钟")
+            self.logView.writeString(string: NSLocalizedString("Get the alarm clock", comment: "获取闹钟"))
             
             ZyCommandModule.shareInstance.getNewAlarmArray { alarmArray, error in
                 
@@ -3226,19 +3236,19 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     for alarm in alarmArray {
                         let alarmModel = alarm
                         //print("alarmModel",alarmModel.alarmIndex,"alarmOpen ->",alarmModel.alarmOpen,"alarmTime ->",alarmModel.alarmTime,"alarmType ->",alarmModel.alarmType.rawValue,"alarmRepeat ->",alarmModel.alarmRepeatArray)
-                        
-                        self.logView.writeString(string: "闹钟序号:\(alarmModel.alarmIndex)")
-                        self.logView.writeString(string: "闹钟时间:\(alarmModel.alarmHour):\(alarmModel.alarmMinute)")
+
+                        self.logView.writeString(string: "\(NSLocalizedString("Alarm clock serial number", comment: "闹钟序号")):\(alarmModel.alarmIndex)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Alarm clock time", comment: "闹钟时间")):\(alarmModel.alarmHour):\(alarmModel.alarmMinute)")
                         self.logView.writeString(string: "repeatCount:\(alarmModel.alarmRepeatCount)")
-                        self.logView.writeString(string: "闹钟开关:\(alarmModel.alarmOpen)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Alarm clock switch", comment: "闹钟开关")):\(alarmModel.alarmOpen)")
                         if alarmModel.alarmOpen {
-                            self.logView.writeString(string: "闹钟重复类型:\(alarmModel.alarmType == .single ? "单次闹钟":"重复闹钟")")
+                            self.logView.writeString(string: "\(NSLocalizedString("Alarm clock repetition type", comment: "闹钟重复类型")):\(alarmModel.alarmType == .single ? NSLocalizedString("Single time alarm clock", comment: "单次闹钟"):NSLocalizedString("Repeat the alarm clock", comment: "重复闹钟"))")
                             if alarmModel.alarmType == .cycle {
                                 if alarmModel.alarmRepeatArray != nil {
-                                    let str = ((alarmModel.alarmRepeatArray![0] != 0 ? "星期天":"")+(alarmModel.alarmRepeatArray![1] != 0 ? "星期一":"")+(alarmModel.alarmRepeatArray![2] != 0 ? "星期二":"")+(alarmModel.alarmRepeatArray![3] != 0 ? "星期三":"")+(alarmModel.alarmRepeatArray![4] != 0 ? "星期四":"")+(alarmModel.alarmRepeatArray![5] != 0 ? "星期五":"")+(alarmModel.alarmRepeatArray![6] != 0 ? "星期六":""))
-                                    self.logView.writeString(string: "闹钟重复星期:\(str)")
+                                    let str = ((alarmModel.alarmRepeatArray![0] != 0 ? NSLocalizedString("Sunday", comment: "星期天"):"")+(alarmModel.alarmRepeatArray![1] != 0 ? NSLocalizedString("Monday", comment: "星期一"):"")+(alarmModel.alarmRepeatArray![2] != 0 ? NSLocalizedString("Tuesday", comment: "星期二"):"")+(alarmModel.alarmRepeatArray![3] != 0 ? NSLocalizedString("Wednesday", comment: "星期三"):"")+(alarmModel.alarmRepeatArray![4] != 0 ? NSLocalizedString("Thursday", comment: "星期四"):"")+(alarmModel.alarmRepeatArray![5] != 0 ? NSLocalizedString("Friday", comment: "星期五"):"")+(alarmModel.alarmRepeatArray![6] != 0 ? NSLocalizedString("Saturday", comment: "星期六"):""))
+                                    self.logView.writeString(string: "\(NSLocalizedString("The alarm clock repeats the week", comment: "闹钟重复星期")):\(str)")
                                 }else{
-                                    self.logView.writeString(string: "闹钟重复星期:重复星期未开启,默认单次闹钟")
+                                    self.logView.writeString(string: NSLocalizedString("Alarm repeat week: Repeat week is not turned on, default single alarm", comment: "闹钟重复星期:重复星期未开启,默认单次闹钟"))
                                 }
                             }
                         }
@@ -3249,15 +3259,15 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "新协议 设置睡眠目标":
+        case "New \(NSLocalizedString("Set a sleep goal", comment: "设置睡眠目标"))":
             
             let array = [
-                "睡眠目标(分钟)",
+                NSLocalizedString("Sleep Goals (minutes)", comment: "睡眠目标(分钟)"),
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "设置睡眠目标")
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置睡眠目标", holderStringArray: array, cancel: nil, cancelAction: {
+            self.logView.writeString(string: NSLocalizedString("Set a sleep goal", comment: "设置睡眠目标"))
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set a sleep goal", comment: "设置睡眠目标"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let targetCount = Int(textArray[0]) ?? 0
@@ -3274,33 +3284,34 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "新协议 获取睡眠目标":
+        case "New \(NSLocalizedString("Get a sleep Goal", comment: "获取睡眠目标"))":
+
             self.logView.clearString()
-            self.logView.writeString(string: "获取睡眠目标")
+            self.logView.writeString(string: NSLocalizedString("Get a sleep Goal", comment: "获取睡眠目标"))
             
             ZyCommandModule.shareInstance.getSleepGoal { targetCount, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
                 if error == .none {
                     
-                    self.logView.writeString(string: "睡眠目标(分钟):\(targetCount)   \(targetCount/60):\(targetCount%60)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Sleep Goals (minutes)", comment: "睡眠目标(分钟)")):\(targetCount)   \(targetCount/60):\(targetCount%60)")
                     
                 }
             }
             
             break
             
-        case "新协议 设置SOS联系人":
+        case "New \(NSLocalizedString("Set up SOS contacts", comment: "设置SOS联系人"))":
 
             let array = [
-                "姓名",
-                "号码",
+                NSLocalizedString("Name", comment: "姓名"),
+                NSLocalizedString("Number", comment: "号码"),
             ]
 
             self.logView.clearString()
-            self.logView.writeString(string: "设置SOS联系人")
+            self.logView.writeString(string: NSLocalizedString("Set up SOS contacts", comment: "设置SOS联系人"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认为空)", message: "设置联系人", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Hint (Invalid data is null by default)", comment: "提示(无效数据默认为空)"), message: NSLocalizedString("Set up contacts", comment: "设置联系人"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 
@@ -3308,7 +3319,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 model.name = textArray[0]
                 model.phoneNumber = textArray[1]
                 
-                self.logView.writeString(string: "联系人 姓名:\(model.name),号码:\(model.phoneNumber)")
+                self.logView.writeString(string: "\(NSLocalizedString("Contact Person", comment: "联系人")) \(NSLocalizedString("Name", comment: "姓名")):\(model.name),\(NSLocalizedString("Number", comment: "号码")):\(model.phoneNumber)")
                 
                 ZyCommandModule.shareInstance.setSosContactPerson(model: model) { error in
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -3319,33 +3330,33 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "新协议 获取SOS联系人":
+        case "New \(NSLocalizedString("Get SOS contacts", comment: "获取SOS联系人"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取SOS联系人")
+            self.logView.writeString(string: NSLocalizedString("Get SOS contacts", comment: "获取SOS联系人"))
             
             ZyCommandModule.shareInstance.getSosContactPerson { model, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 if let model = model {
-                    self.logView.writeString(string: "联系人 姓名:\(model.name),号码:\(model.phoneNumber)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Contact Person", comment: "联系人")) \(NSLocalizedString("Name", comment: "姓名")):\(model.name),\(NSLocalizedString("Number", comment: "号码")):\(model.phoneNumber)")
                     print("getSosContactPerson -> success")
                 }
             }
             
             break
             
-        case "新协议 周期测量参数设置":
+        case "New \(NSLocalizedString("Cycle measurement parameter setting", comment: "周期测量参数设置"))":
             
             let array = [
-                "类型：1：心率，2：血氧，3：血压，4：血糖，5：压力，6.体温，7：心电，",
-                "开关：0：关 1：开",
-                "时长：>0"
+                "\(NSLocalizedString("Type", comment: "类型"))：1：\(NSLocalizedString("Heart rate", comment: "心率"))，2：\(NSLocalizedString("Blood oxygen", comment: "血氧"))，3：\(NSLocalizedString("Blood pressure", comment: "血压"))，4：\(NSLocalizedString("Blood sugar", comment: "血糖"))，5：\(NSLocalizedString("Pressure", comment: "压力"))，6.\(NSLocalizedString("Body temperature", comment: "体温"))，7：\(NSLocalizedString("electrocardiogram", comment: "心电"))，",
+                "\(NSLocalizedString("On/off switch", comment: "开关"))：0：\(NSLocalizedString("Shut down", comment: "关闭")) 1：\(NSLocalizedString("Turn on", comment: "开启"))",
+                "\(NSLocalizedString("Length of time", comment: "时长"))时长：>0"
             ]
 
             self.logView.clearString()
             self.logView.writeString(string: "设置周期测量参数")
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认为空)", message: "设置周期测量参数", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Hint (Invalid data is null by default)", comment: "提示(无效数据默认为空)"), message: "设置周期测量参数", holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 
@@ -3353,7 +3364,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 let isOpen = textArray[1]
                 let timeInterval = textArray[2]
                 
-                self.logView.writeString(string: "类型:\(type),开关:\(isOpen),时长:\(timeInterval)")
+                self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")):\(type),\(NSLocalizedString("On/off switch", comment: "开关")):\(isOpen),时长:\(timeInterval)")
                 
                 ZyCommandModule.shareInstance.setCycleMeasurementParameters(type: Int(type) ?? 0, isOpen: Int(isOpen) ?? 0, timeInterval: Int(timeInterval) ?? 0) { error in
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -3364,32 +3375,33 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-        case "新协议 获取朝拜闹钟天数及开始时间":
+
+        case "New \(NSLocalizedString("Get the number of days and start time of the pilgrimage alarm clock", comment: "获取朝拜闹钟天数及开始时间"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取朝拜闹钟天数及开始时间")
+            self.logView.writeString(string: NSLocalizedString("Get the number of days and start time of the pilgrimage alarm clock", comment: "获取朝拜闹钟天数及开始时间"))
             
             ZyCommandModule.shareInstance.getWorshipStartTime { timeString, dayCount, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
-                self.logView.writeString(string: "朝拜闹钟 天数:\(dayCount),开始日期:\(timeString)")
+                self.logView.writeString(string: "\(NSLocalizedString("Pilgrimage alarm clock", comment: "朝拜闹钟")) dayCount:\(dayCount),date:\(timeString)")
                 print("getWorshipStartTime -> timeString = \(timeString),dayCount = \(dayCount)")
             }
             
             break
             
-        case "新协议 设置时区":
+        case "New \(NSLocalizedString("Set the time zone", comment: "设置时区"))":
             
             let array = [
-                "0:零时区 1-12:东区 13-24:西区",
+                "0:\(NSLocalizedString("Zero time zone", comment: "零时区")) 1-12:\(NSLocalizedString("east area", comment: "东区")) 13-24:\(NSLocalizedString("west area", comment: "西区"))",
             ]
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认为手机系统时区)", message: "设置时区", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: "提示(无效数据默认为手机系统时区)", message: NSLocalizedString("Set the time zone", comment: "设置时区"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 
                 let timeZone = textArray[0]
-                self.logView.writeString(string: "设置时区: \(timeZone)")
+                self.logView.writeString(string: "\(NSLocalizedString("Set the time zone", comment: "设置时区")): \(timeZone)")
                             
                 ZyCommandModule.shareInstance.setTimeZone(timeZone:  Int(timeZone) ?? 0) { error in
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -3401,13 +3413,13 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "无响应 回应定位信息":
+        case NSLocalizedString("No response response location information", comment: "无响应 回应定位信息"):
             
             let array = [
-                "纬度:xxx.xxxxxx",
-                "经度:xxx.xxxxxx",
-                "方向:xxx",
-                "速度:xx.xx"
+                "\(NSLocalizedString("Latitude of latitude", comment: "纬度")):xxx.xxxxxx",
+                "\(NSLocalizedString("Degree of longitude", comment: "经度")):xxx.xxxxxx",
+                "\(NSLocalizedString("Direction of travel", comment: "方向")):xxx",
+                "\(NSLocalizedString("Speed of movement", comment: "速度")):xx.xx"
             ]
             
             self.presentTextFieldAlertVC(title: "提示(无效数据默认为0)", message: "设置定位信息", holderStringArray: array, cancel: nil, cancelAction: {
@@ -3419,10 +3431,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 let course = Double(textArray[2]) ?? 0.0
                 let speed = Double(textArray[3]) ?? 0.0
                 
-                self.logView.writeString(string: "纬度: \(latitude)")
-                self.logView.writeString(string: "经度: \(longitude)")
-                self.logView.writeString(string: "方向: \(course)")
-                self.logView.writeString(string: "速度: \(speed)")
+                self.logView.writeString(string: "\(NSLocalizedString("Latitude of latitude", comment: "纬度")): \(latitude)")
+                self.logView.writeString(string: "\(NSLocalizedString("Degree of longitude", comment: "经度")): \(longitude)")
+                self.logView.writeString(string: "\(NSLocalizedString("Direction of travel", comment: "方向")): \(course)")
+                self.logView.writeString(string: "\(NSLocalizedString("Speed of movement", comment: "速度")): \(speed)")
                 
                 let location = CLLocation.init(coordinate: CLLocationCoordinate2D.init(latitude: latitude, longitude: longitude), altitude: 0, horizontalAccuracy: CLLocationAccuracy(), verticalAccuracy: CLLocationAccuracy(), course: course, speed: speed, timestamp: Date())
 
@@ -3431,169 +3443,24 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-            
-        case "新协议 设置LED灯功能":
-            
-            let array = [
-                "参数数组(设置类型输入不间隔) 0:电量 1:信息 2:bt连接 3:计步达标 4:低电",
-                "颜色(0-15,bit0:红 bit1:绿 bit2:蓝 bit3:白)",
-                "持续时间 0-50",
-                "闪烁频次 0-5，0常亮",
-            ]
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "LED灯功能设置")
-            self.presentTextFieldAlertVC(title: "提示(参数个数默认1其他默认0)", message: "LED灯功能设置(后续参数递增)", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let modelCount = textArray[0]
-                let colorType = Int(textArray[1]) ?? 0
-                let timeLength = Int(textArray[2]) ?? 0
-                let frequency = Int(textArray[3]) ?? 0
-                                
-                let dayNumber:String = modelCount.components(separatedBy: .decimalDigits.inverted).joined()
-                var dayArray = [Int]()
-                for i in dayNumber {
-                    dayArray.append(Int(String(i)) ?? 0)
-                }
-                print("dayArray = \(dayArray)")
-                
-                var modelArray = [ZyLedFunctionModel]()
-                for i in dayArray {
-                    let model = ZyLedFunctionModel()
-                    model.ledType = ZyLedFunctionType.init(rawValue: i) ?? .powerIndicator
-                    model.timeLength = timeLength
-                    model.frequency = frequency
-                    model.ledColor = colorType
-                    modelArray.append(model)
-                    self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
-                    self.logView.writeString(string: "颜色: \(model.ledColor)")
-                    self.logView.writeString(string: "持续时长: \(model.timeLength)")
-                    self.logView.writeString(string: "闪烁频次: \(model.frequency)\n\n")
-                }
-                
-                ZyCommandModule.shareInstance.setLedSetup(modelArray: modelArray) { error in
-                    
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    
-                    if error == .none {
-                        print("setLedSetup ->","success")
-                    }
-                }
-            }
-            
-            break
-        case "新协议 设置马达震动功能":
-            
-            let array = [
-                "参数数组(设置类型输入不间隔) 0:电量 1:信息 2:bt连接 3:计步达标 4:低电",
-                "震动时长 0-20",
-                "震动频次 0-5 ,0长震",
-                "震动强度 0-10",
-            ]
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "马达震动功能设置")
-            self.presentTextFieldAlertVC(title: "提示(参数个数默认1其他默认0)", message: "马达震动功能设置(后续参数递增)", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
 
-                let modelCount = textArray[0]
-                let timeLength = Int(textArray[1]) ?? 0
-                let frequency = Int(textArray[2]) ?? 0
-                let level = Int(textArray[3]) ?? 0
-                
-                let dayNumber:String = modelCount.components(separatedBy: .decimalDigits.inverted).joined()
-                var dayArray = [Int]()
-                for i in dayNumber {
-                    dayArray.append(Int(String(i)) ?? 0)
-                }
-                print("dayArray = \(dayArray)")
-                
-                var modelArray = [ZyMotorFunctionModel]()
-                for i in dayArray {
-                    let model = ZyMotorFunctionModel()
-                    model.ledType = ZyLedFunctionType.init(rawValue: i) ?? .powerIndicator
-                    model.timeLength = timeLength
-                    model.frequency = frequency
-                    model.level = level
-                    modelArray.append(model)
-                    self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
-                    self.logView.writeString(string: "震动时长: \(model.timeLength)")
-                    self.logView.writeString(string: "震动频次: \(model.frequency)")
-                    self.logView.writeString(string: "震动强度: \(model.level)\n\n")
-                }
-                
-                ZyCommandModule.shareInstance.setMotorShakeFunction(modelArray: modelArray, success: { error in
-                    
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    
-                    if error == .none {
-                        print("setMotorShakeFunction ->","success")
-                    }
-                })
-            }
-            
-            break
-            
-        case "新协议 获取LED灯功能":
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "获取LED灯功能")
-            ZyCommandModule.shareInstance.getLedSetup { modelArray, error in
-                self.logView.writeString(string: self.getErrorCodeString(error: error))
-                if error == .none {
-                    for model in modelArray {
-                        
-                        self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
-                        self.logView.writeString(string: "颜色: \(model.ledColor)")
-                        self.logView.writeString(string: "持续时长: \(model.timeLength)")
-                        self.logView.writeString(string: "闪烁频次: \(model.frequency)\n\n")
-                        
-                    }
-                }
-            }
-            
-            break
-        case "新协议 获取马达震动功能":
-            self.logView.clearString()
-            self.logView.writeString(string: "获取马达震动功能")
-            ZyCommandModule.shareInstance.getMotorShakeFunction { modelArray, error in
-                self.logView.writeString(string: self.getErrorCodeString(error: error))
-                if error == .none {
-                    for model in modelArray {
-                        
-                        self.logView.writeString(string: "功能类型: \(model.ledType.rawValue)")
-                        self.logView.writeString(string: "震动时长: \(model.timeLength)")
-                        self.logView.writeString(string: "震动频次: \(model.frequency)")
-                        self.logView.writeString(string: "震动强度: \(model.level)\n\n")
-                        
-                    }
-                }
-            }
-            
-            break
-        case "新协议 获取自定义运动类型":
+        case "New \(NSLocalizedString("Gets a custom movement type", comment: "获取自定义运动类型"))":
 
             self.logView.clearString()
-            self.logView.writeString(string: "获取自定义运动类型")
+            self.logView.writeString(string: NSLocalizedString("Gets a custom movement type", comment: "获取自定义运动类型"))
             ZyCommandModule.shareInstance.getCustomSportsMode { type, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 if error == .none {
-                    self.logView.writeString(string: "自定义运动类型:\(type)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Customize the exercise type", comment: "自定义运动类型")):\(type)")
                 }
             }
             
             break
-        case "0x00 ":
             
-            
-            break
-            
-        case "0x01 关机":
+        case "\(NSLocalizedString("Power off", comment: "关机"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "关机")
+            self.logView.writeString(string: NSLocalizedString("Power off", comment: "关机"))
             
             ZyCommandModule.shareInstance.setPowerTurnOff { error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -3606,10 +3473,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "恢复出厂设置":
+        case "0x03 \(NSLocalizedString("factory data reset", comment: "恢复出厂设置"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "恢复出厂设置")
+            self.logView.writeString(string: NSLocalizedString("factory data reset", comment: "恢复出厂设置"))
             
             ZyCommandModule.shareInstance.setFactoryDataReset { error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -3624,27 +3491,27 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
         case "马达震动":
             
             let array = [
-                "0:停止，1:单次震动，2:间歇震动三次，3:连续震动"
+                "0:\(NSLocalizedString("stop", comment: "停止"))，1:\(NSLocalizedString("A single vibration", comment: "单次震动"))，2:\(NSLocalizedString("Intermittent vibration three times", comment: "间歇震动三次"))，3:\(NSLocalizedString("Continuous vibration", comment: "连续震动"))"
             ]
             
             self.logView.clearString()
-            self.logView.writeString(string: "马达震动")
+            self.logView.writeString(string: NSLocalizedString("Vibration of motor", comment: "马达震动"))
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "马达震动", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Vibration of motor", comment: "马达震动"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let type = textArray[0]
                 var str = "未知状态"
                 if type == "0" || type.count <= 0 {
-                    str = "停止"
+                    str = NSLocalizedString("stop", comment: "停止")
                 } else if type == "1" {
-                    str = "单次震动"
+                    str = NSLocalizedString("A single vibration", comment: "单次震动")
                 }else if type == "2" {
-                    str = "间歇震动三次"
+                    str = NSLocalizedString("Intermittent vibration three times", comment: "间歇震动三次")
                 }else if type == "3" {
-                    str = "连续震动"
+                    str = NSLocalizedString("Continuous vibration", comment: "连续震动")
                 }
-                self.logView.writeString(string: "类型:\(str)")
+                self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")):\(str)")
                 
                 ZyCommandModule.shareInstance.setMotorVibration(type: type) { error in
                     
@@ -3657,9 +3524,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-        case "重新启动":
+            
+        case "\(NSLocalizedString("Start up again", comment: "重新启动"))":
             self.logView.clearString()
-            self.logView.writeString(string: "重新启动")
+            self.logView.writeString(string: NSLocalizedString("Start up again", comment: "重新启动"))
             
             ZyCommandModule.shareInstance.setRestart { error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -3669,9 +3537,9 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 }
             }
             break
-        case "恢复出厂并关机":
+        case NSLocalizedString("Restore the factory and power down", comment: "恢复出厂并关机"):
             self.logView.clearString()
-            self.logView.writeString(string: "恢复出厂并关机")
+            self.logView.writeString(string: NSLocalizedString("Restore the factory and power down", comment: "恢复出厂并关机"))
             
             ZyCommandModule.shareInstance.setFactoryAndPowerOff { error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -3682,40 +3550,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
 
-        case "耗电数据上报":
-            
-            let array = [
-                "0关1开",
-                "时间间隔1-127",
-            ]
-            
+
+        case "\(NSLocalizedString("Real time step count", comment: "实时步数"))":
             self.logView.clearString()
-            self.logView.writeString(string: "耗电数据上报")
-            
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "耗电数据上报", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let isOpen = Int(textArray[0]) ?? 0
-                let timeInterval = Int(textArray[1]) ?? 1
-                
-                self.logView.writeString(string: "开关:\(isOpen)")
-                self.logView.writeString(string: "时间间隔:\(timeInterval)")
-                
-                ZyCommandModule.shareInstance.setPowerConsumptionData(isOpen: isOpen == 0 ? false : true, timeInterval: timeInterval) { error in
-                    
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    
-                    if error == .none {
-                        print("setPowerConsumptionData ->","success")
-                    }
-                }
-                
-            }
-            
-            break
-        case "实时步数":
-            self.logView.clearString()
-            self.logView.writeString(string: "设备端点击显示")
+            self.logView.writeString(string: NSLocalizedString("Click display on the device side", comment: "设备端点击显示"))
             
             ZyCommandModule.shareInstance.reportRealTimeStep { success, error in
                 //self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -3729,206 +3567,216 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         let step = model.step
                         let distance = model.distance
                         let calorie = model.calorie
-                        self.logView.writeString(string: "步数:\(step)")
-                        self.logView.writeString(string: "距离:\(distance)")
-                        self.logView.writeString(string: "卡路里:\(calorie)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Number of steps", comment: "步数")):\(step)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Distance", comment: "距离")):\(distance)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Calories", comment: "卡路里")):\(calorie)")
                     }
                     
                 }
             }
             break
             
-        case "实时心率":
+        case "\(NSLocalizedString("Real time heart rate", comment: "实时心率"))":
             self.logView.clearString()
-            self.logView.writeString(string: "设备端点击显示")
+            self.logView.writeString(string: NSLocalizedString("Click display on the device side", comment: "设备端点击显示"))
                         
             ZyCommandModule.shareInstance.reportRealTimeHr { success, error in
                 //self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
                 if error == .none {
                     let hr = success["hr"] as! String
-                    self.logView.writeString(string: "心率:\(hr)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Heart rate", comment: "心率")):\(hr)")
                 }
             }
             break
-        case "单次测量结果":
+
+        case "\(NSLocalizedString("Results of a single measurement", comment: "单次测量结果"))":
+
             self.logView.clearString()
-            self.logView.writeString(string: "设备端点击显示")
+            self.logView.writeString(string: NSLocalizedString("Click display on the device side", comment: "设备端点击显示"))
                         
             ZyCommandModule.shareInstance.reportSingleMeasurementResult { success, error in
                 //self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
                 if error == .none {
                     let type = success["type"] as! String
-                    var str = "未知类型"
+                    var str = NSLocalizedString("Type unknown", comment: "未知类型")
                     if type == "0" {
-                        str = "心率"
+                        str = NSLocalizedString("Heart rate", comment: "心率")
                     }else if type == "1" {
-                        str = "血压"
+                        str = NSLocalizedString("Blood pressure", comment: "血压")
                     }else if type == "2" {
-                        str = "血氧"
+                        str = NSLocalizedString("Blood oxygen", comment: "血氧")
                     }
                     let value1 = success["value1"] as! String
                     let value2 = success["value2"] as! String
-                    self.logView.writeString(string: "类型:\(str)")
-                    self.logView.writeString(string: "测量值1:\(value1)")
-                    self.logView.writeString(string: "测量值2:\(value2)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")):\(str)")
+                    self.logView.writeString(string: "value1:\(value1)")
+                    self.logView.writeString(string: "value2:\(value2)")
                 }
             }
             break
-        case "锻炼状态":
+
+        case "\(NSLocalizedString("Status of exercise", comment: "锻炼状态"))":
 
             self.logView.clearString()
-            self.logView.writeString(string: "设备端点击显示")
+            self.logView.writeString(string: NSLocalizedString("Click display on the device side", comment: "设备端点击显示"))
             
             ZyCommandModule.shareInstance.reportExerciseState { state ,error in
 
                 if error == .none {
                     var stateString = ""
                     if state == .unknow {
-                        stateString = "不支持状态"
+                        stateString = "unknow"
                     }else if state == .end {
-                        stateString = "结束"
+                        stateString = NSLocalizedString("End of", comment: "结束")
                     }else if state == .start {
-                        stateString = "开始"
+                        stateString = NSLocalizedString("Start", comment: "开始")
                     }else if state == .pause {
-                        stateString = "暂停"
+                        stateString = NSLocalizedString("Pause", comment: "暂停")
                     }else if state == .continue {
-                        stateString = "继续"
+                        stateString = NSLocalizedString("Go on", comment: "继续")
                     }
                     self.logView.writeString(string: "上报锻炼状态:\(stateString)")
                 }
             }
             break
-        case "找手机":
+
+        case "\(NSLocalizedString("Find your phone", comment: "找手机"))":
+
             self.logView.clearString()
-            self.logView.writeString(string: "设备端点击显示")
+            self.logView.writeString(string: NSLocalizedString("Click display on the device side", comment: "设备端点击显示"))
             
             ZyCommandModule.shareInstance.reportFindPhone { error in
                 if error == .none {
-                    self.logView.writeString(string: "找手机")
-                }
-            }
-            break
-        case "结束找手机":
-            self.logView.clearString()
-            self.logView.writeString(string: "设备端点击显示")
-            
-            ZyCommandModule.shareInstance.reportEndFindPhone { error in
-                if error == .none {
-                    self.logView.writeString(string: "结束找手机")
-                }
-            }
-            break
-        case "拍照":
-            self.logView.clearString()
-            self.logView.writeString(string: "设备端点击显示")
-            
-            ZyCommandModule.shareInstance.reportTakePictures { error in
-                if error == .none {
-                    self.logView.writeString(string: "拍照")
+                    self.logView.writeString(string: NSLocalizedString("Find your phone", comment: "找手机"))
                 }
             }
             break
 
-        case "0x8c 音乐控制":
+        case "\(NSLocalizedString("End the phone search", comment: "结束找手机"))":
+
             self.logView.clearString()
-            self.logView.writeString(string: "设备端点击显示")
+            self.logView.writeString(string: NSLocalizedString("Click display on the device side", comment: "设备端点击显示"))
+            
+            ZyCommandModule.shareInstance.reportEndFindPhone { error in
+                if error == .none {
+                    self.logView.writeString(string: NSLocalizedString("End the phone search", comment: "结束找手机"))
+                }
+            }
+            break
+
+        case "\(NSLocalizedString("Take a photo", comment: "拍照"))":
+
+            self.logView.clearString()
+            self.logView.writeString(string: NSLocalizedString("Click display on the device side", comment: "设备端点击显示"))
+            
+            ZyCommandModule.shareInstance.reportTakePictures { error in
+                if error == .none {
+                    self.logView.writeString(string: NSLocalizedString("Take a photo", comment: "拍照"))
+                }
+            }
+            break
+
+        case "\(NSLocalizedString("Control of music", comment: "音乐控制"))":
+
+            self.logView.clearString()
+            self.logView.writeString(string: NSLocalizedString("Click display on the device side", comment: "设备端点击显示"))
             
             ZyCommandModule.shareInstance.reportMusicControl { success, error in
                 
                 if error == .none {
                     let type = success
-                    var str = "未知类型"
+                    var str = NSLocalizedString("Type unknown", comment: "未知类型")
                     if type == 0 {
-                        str = "暂停"
+                        str = NSLocalizedString("Pause", comment: "暂停")
                     }else if type == 1 {
-                        str = "播放"
+                        str = NSLocalizedString("Play on", comment: "播放")
                     }else if type == 2 {
-                        str = "上一曲"
+                        str = NSLocalizedString("The last song", comment: "上一曲")
                     }else if type == 3 {
-                        str = "下一曲"
+                        str = NSLocalizedString("The next song", comment: "下一曲")
                     }
-                    self.logView.writeString(string: "类型:\(str)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")):\(str)")
                 }
             }
             break
             
-        case "0x8e 来电控制":
+        case "\(NSLocalizedString("Incoming call control", comment: "来电控制"))":
             
             self.logView.clearString()
-            self.logView.writeString(string: "设备端点击显示")
+            self.logView.writeString(string: NSLocalizedString("Click display on the device side", comment: "设备端点击显示"))
             
             ZyCommandModule.shareInstance.reportCallControl { success, error in
                 if error == .none {
                     let type = success
-                    var str = "未知类型"
+                    var str = NSLocalizedString("Type unknown", comment: "未知类型")
                     if type == 0 {
-                        str = "挂断"
+                        str = NSLocalizedString("Hang up", comment: "挂断")
                     }else if type == 1 {
-                        str = "接听"
+                        str = NSLocalizedString("Answer the phone", comment: "接听")
                     }
-                    self.logView.writeString(string: "类型:\(str)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")):\(str)")
                 }
             }
             
             break
             
-        case "上报屏幕亮度":
+        case NSLocalizedString("Report screen brightness", comment: "上报屏幕亮度"):
             self.logView.clearString()
-            self.logView.writeString(string: "设备端点击显示")
+            self.logView.writeString(string: NSLocalizedString("Click display on the device side", comment: "设备端点击显示"))
             
             ZyCommandModule.shareInstance.reportScreenLevel { success, error in
                 if error == .none {
                     let level = success
-                    self.logView.writeString(string: "屏幕亮度:\(level)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Brightness of screen", comment: "屏幕亮度")):\(level)")
                 }
             }
             
             break
             
-        case "上报亮屏时长":
+        case NSLocalizedString("Report the screen duration", comment: "上报亮屏时长"):
             self.logView.clearString()
-            self.logView.writeString(string: "设备端点击显示")
+            self.logView.writeString(string: NSLocalizedString("Click display on the device side", comment: "设备端点击显示"))
             
             ZyCommandModule.shareInstance.reportScreenTimeLong { success, error in
                 if error == .none {
                     let timeLong = success
-                    self.logView.writeString(string: "屏幕时长:\(timeLong)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Screen duration", comment: "亮屏时长")):\(timeLong)")
                 }
             }
             
             break
             
-        case "上报抬腕亮屏":
+        case NSLocalizedString("Report wrist bright screen", comment: "上报抬腕亮屏"):
             self.logView.clearString()
-            self.logView.writeString(string: "设备端点击显示")
+            self.logView.writeString(string: NSLocalizedString("Click display on the device side", comment: "设备端点击显示"))
             
             ZyCommandModule.shareInstance.reportLightScreen { success, error in
                 if error == .none {
                     let isOpen = success
-                    self.logView.writeString(string: "抬腕亮屏 开关:\(isOpen == 0 ? "关":"开")")
+                    self.logView.writeString(string: "\(NSLocalizedString("Lift wrist bright screen", comment: "抬腕亮屏")) \(NSLocalizedString("On/off switch", comment: "开关")):\(isOpen == 0 ? NSLocalizedString("Shut down", comment: "关闭"):NSLocalizedString("Turn on", comment: "开启"))")
                 }
             }
             
             break
             
-        case "上报设备振动":
+        case NSLocalizedString("Report equipment vibration", comment: "上报设备振动"):
             self.logView.clearString()
-            self.logView.writeString(string: "设备端点击显示")
+            self.logView.writeString(string: NSLocalizedString("Click display on the device side", comment: "设备端点击显示"))
             
             ZyCommandModule.shareInstance.reportDeviceVibration { success, error in
                 if error == .none {
                     let isOpen = success
-                    self.logView.writeString(string: "设备振动 开关:\(isOpen == 0 ? "关":"开")")
+                    self.logView.writeString(string: "\(NSLocalizedString("Vibration of equipment", comment: "设备振动")) \(NSLocalizedString("On/off switch", comment: "开关")):\(isOpen == 0 ? NSLocalizedString("Shut down", comment: "关闭"):NSLocalizedString("Turn on", comment: "开启"))")
                 }
             }
             break
             
-        case "上报实时数据":
+        case NSLocalizedString("Report real-time data", comment: "上报实时数据"):
             
             self.logView.clearString()
-            self.logView.writeString(string: "设备端点击显示")
+            self.logView.writeString(string: NSLocalizedString("Click display on the device side", comment: "设备端点击显示"))
             
             ZyCommandModule.shareInstance.reportNewRealtimeData { stepModel, hr, bo, sbp, dbp, error in
                 if error == .none {
@@ -3937,50 +3785,50 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         let calorie = model.calorie
                         let distance = model.distance
                         
-                        self.logView.writeString(string: "总步数:\(step)")
-                        self.logView.writeString(string: "总卡路里:\(calorie)")
-                        self.logView.writeString(string: "总距离:\(distance)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Total number of steps", comment: "总步数")):\(step)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Total calories", comment: "总卡路里")):\(calorie)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Total distance", comment: "总距离")):\(distance)")
                     }
-                    self.logView.writeString(string: "心率:\(hr)")
-                    self.logView.writeString(string: "血氧:\(bo)")
-                    self.logView.writeString(string: "血压:\(sbp)/\(dbp)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Heart rate", comment: "心率")):\(hr)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Blood oxygen", comment: "血氧")):\(bo)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Blood pressure", comment: "血压")):\(sbp)/\(dbp)")
                 }
             }
             
             break
             
-        case "上报运动交互数据":
+        case NSLocalizedString("Report movement interaction data", comment: "上报运动交互数据"):
             
             self.logView.clearString()
-            self.logView.writeString(string: "上报运动交互数据")
+            self.logView.writeString(string: NSLocalizedString("Report movement interaction data", comment: "上报运动交互数据"))
             
             ZyCommandModule.shareInstance.reportExerciseInteractionData { timestamp, step, hr, error in
                 if error == .none {
                     self.logView.writeString(string: "时间戳:\(timestamp)")
-                    self.logView.writeString(string: "总步数:\(step)")
-                    self.logView.writeString(string: "心率:\(hr)\n")
+                    self.logView.writeString(string: "\(NSLocalizedString("Total number of steps", comment: "总步数")):\(step)")
+                    self.logView.writeString(string: "\(NSLocalizedString("Heart rate", comment: "心率")):\(hr)\n")
                 }
             }
             
             break
             
-        case "上报进入或退出拍照模式":
+        case NSLocalizedString("Report to enter or exit photo mode", comment: "上报进入或退出拍照模式"):
             
             self.logView.clearString()
-            self.logView.writeString(string: "上报进入或退出拍照模式")
+            self.logView.writeString(string: NSLocalizedString("Report to enter or exit photo mode", comment: "上报进入或退出拍照模式"))
             
             ZyCommandModule.shareInstance.reportEnterOrExitCamera { result, error in
                 if error == .none {
-                    self.logView.writeString(string: "\(result == 0 ? "进入":"退出")拍照模式")
+                    self.logView.writeString(string: "\(result == 0 ? NSLocalizedString("Enter photo mode", comment: "进入拍照模式"):NSLocalizedString("Exit photo mode", comment: "退出拍照模式"))")
                 }
             }
             
             break
             
-        case "上报勿扰设置":
+        case NSLocalizedString("Do not disturb Settings for reporting", comment: "上报勿扰设置"):
             
             self.logView.clearString()
-            self.logView.writeString(string: "上报勿扰设置")
+            self.logView.writeString(string: NSLocalizedString("Do not disturb Settings for reporting", comment: "上报勿扰设置"))
             
             ZyCommandModule.shareInstance.reportDoNotDisturb { model, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -3992,28 +3840,28 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         let endHour = model.timeModel.endHour
                         let endMinute = model.timeModel.endMinute
                         
-                        self.logView.writeString(string: isOpen ? "开启":"关闭")
-                        self.logView.writeString(string: "开始时间:\(startHour):\(startMinute)")
-                        self.logView.writeString(string: "结束时间:\(endHour):\(endMinute)")
+                        self.logView.writeString(string: isOpen ? NSLocalizedString("Turn on", comment: "开启"):NSLocalizedString("Shut down", comment: "关闭"))
+                        self.logView.writeString(string: "\(NSLocalizedString("Time to start", comment: "开始时间")):\(startHour):\(startMinute)")
+                        self.logView.writeString(string: "\(NSLocalizedString("End of period", comment: "结束时间")):\(endHour):\(endMinute)")
                     }
                 }
             }
             
             break
-        case "上报朝拜闹钟天数及开始时间":
+        case NSLocalizedString("Report the number of days and start time of the pilgrimage alarm clock", comment: "上报朝拜闹钟天数及开始时间"):
             
             self.logView.clearString()
-            self.logView.writeString(string: "上报朝拜闹钟天数及开始时间")
+            self.logView.writeString(string: NSLocalizedString("Report the number of days and start time of the pilgrimage alarm clock", comment: "上报朝拜闹钟天数及开始时间"))
             
             ZyCommandModule.shareInstance.reportWorshipStartTime { timeString, dayCount, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
-                self.logView.writeString(string: "朝拜闹钟 天数:\(dayCount),开始日期:\(timeString)")
+                self.logView.writeString(string: "\(NSLocalizedString("Pilgrimage alarm clock", comment: "朝拜闹钟")) dayCount:\(dayCount),date:\(timeString)")
                 print("reportWorshipStartTime -> timeString = \(timeString),dayCount = \(dayCount)")
             }
             
             break
-        case "上报请求定位信息":
+        case NSLocalizedString("Report request location information", comment: "上报请求定位信息"):
             
             self.logView.clearString()
             self.logView.writeString(string: "设备端触发显示")
@@ -4021,13 +3869,13 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             ZyCommandModule.shareInstance.reportLocationInfo { error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
-                self.logView.writeString(string: "上报请求定位信息")
+                self.logView.writeString(string: NSLocalizedString("Report request location information", comment: "上报请求定位信息"))
                 print("reportLocationInfo")
             }
             
             break
 
-        case "上报闹钟":
+        case NSLocalizedString("Report the alarm clock", comment: "上报闹钟"):
             
             self.logView.clearString()
             self.logView.writeString(string: "设备端触发显示")
@@ -4043,18 +3891,18 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         let alarmModel = alarm
                         //print("alarmModel",alarmModel.alarmIndex,"alarmOpen ->",alarmModel.alarmOpen,"alarmTime ->",alarmModel.alarmTime,"alarmType ->",alarmModel.alarmType.rawValue,"alarmRepeat ->",alarmModel.alarmRepeatArray)
 
-                        self.logView.writeString(string: "闹钟序号:\(alarmModel.alarmIndex)")
-                        self.logView.writeString(string: "闹钟时间:\(alarmModel.alarmHour):\(alarmModel.alarmMinute)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Alarm clock serial number", comment: "闹钟序号")):\(alarmModel.alarmIndex)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Alarm clock time", comment: "闹钟时间")):\(alarmModel.alarmHour):\(alarmModel.alarmMinute)")
                         self.logView.writeString(string: "repeatCount:\(alarmModel.alarmRepeatCount)")
-                        self.logView.writeString(string: "闹钟开关:\(alarmModel.alarmOpen)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Alarm clock switch", comment: "闹钟开关")):\(alarmModel.alarmOpen)")
                         if alarmModel.alarmOpen {
-                            self.logView.writeString(string: "闹钟重复类型:\(alarmModel.alarmType == .single ? "单次闹钟":"重复闹钟")")
+                            self.logView.writeString(string: "\(NSLocalizedString("Alarm clock repetition type", comment: "闹钟重复类型")):\(alarmModel.alarmType == .single ? NSLocalizedString("Single time alarm clock", comment: "单次闹钟"):NSLocalizedString("Repeat the alarm clock", comment: "重复闹钟"))")
                             if alarmModel.alarmType == .cycle {
                                 if alarmModel.alarmRepeatArray != nil {
-                                    let str = ((alarmModel.alarmRepeatArray![0] != 0 ? "星期天":"")+(alarmModel.alarmRepeatArray![1] != 0 ? "星期一":"")+(alarmModel.alarmRepeatArray![2] != 0 ? "星期二":"")+(alarmModel.alarmRepeatArray![3] != 0 ? "星期三":"")+(alarmModel.alarmRepeatArray![4] != 0 ? "星期四":"")+(alarmModel.alarmRepeatArray![5] != 0 ? "星期五":"")+(alarmModel.alarmRepeatArray![6] != 0 ? "星期六":""))
-                                    self.logView.writeString(string: "闹钟重复星期:\(str)")
+                                    let str = ((alarmModel.alarmRepeatArray![0] != 0 ? NSLocalizedString("Sunday", comment: "星期天"):"")+(alarmModel.alarmRepeatArray![1] != 0 ? NSLocalizedString("Monday", comment: "星期一"):"")+(alarmModel.alarmRepeatArray![2] != 0 ? NSLocalizedString("Tuesday", comment: "星期二"):"")+(alarmModel.alarmRepeatArray![3] != 0 ? NSLocalizedString("Wednesday", comment: "星期三"):"")+(alarmModel.alarmRepeatArray![4] != 0 ? NSLocalizedString("Thursday", comment: "星期四"):"")+(alarmModel.alarmRepeatArray![5] != 0 ? NSLocalizedString("Friday", comment: "星期五"):"")+(alarmModel.alarmRepeatArray![6] != 0 ? NSLocalizedString("Saturday", comment: "星期六"):""))
+                                    self.logView.writeString(string: "\(NSLocalizedString("The alarm clock repeats the week", comment: "闹钟重复星期")):\(str)")
                                 }else{
-                                    self.logView.writeString(string: "闹钟重复星期:重复星期未开启,默认单次闹钟")
+                                    self.logView.writeString(string: NSLocalizedString("Alarm repeat week: Repeat week is not turned on, default single alarm", comment: "闹钟重复星期:重复星期未开启,默认单次闹钟"))
                                 }
                             }
                         }
@@ -4064,99 +3912,32 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-        case "上报语言":
+        case NSLocalizedString("Language of reporting", comment: "上报语言"):
             
             self.logView.clearString()
-            self.logView.writeString(string: "上报语言")
+            self.logView.writeString(string: NSLocalizedString("Language of reporting", comment: "上报语言"))
             
             ZyCommandModule.shareInstance.reportLanguageType { type, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
-                self.logView.writeString(string: "上报语言类型:\(type)")
+                self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")):\(type)")
                 print("reportLanguageType -> type = \(type)")
             }
             
             break
-        case "多包测试命令":
             
-            let array = [
-                "数据总长度 默认1000",
-                "分包发送长度 默认20",
-                "CMD_CLASS 默认0x80",
-                "CMD_ID 默认0"
-            ]
-            
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "多包测试命令", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let totalLength = textArray[0]
-                let subpackageLength = textArray[1]
-                let cmdClass = textArray[2]
-                let cmdId = textArray[3]
-                
-                ZyCommandModule.shareInstance.testMultiplePackages(cmdClass: Int(cmdClass) ?? 0x80, cmdId: Int(cmdId) ?? 0, totalLength: Int(totalLength) ?? 1000, subpackageLength:  Int(subpackageLength) ?? 20)
-                
-            }
-            
-            
-            break
-            
-        case "多包UTF8字符串测试命令":
-            
-            let array = [
-                "输入字符串,默认'你好'",
-                "CMD_CLASS 默认0x02",
-                "CMD_ID 默认0x11",
-                "type 默认1"
-            ]
-            
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "多包UTF8字符串测试命令", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let sendString = textArray[0]
-                let cmdClass = textArray[1]
-                let cmdId = textArray[2]
-                let type = textArray[3]
-                
-                ZyCommandModule.shareInstance.testUtf8StringData(cmdClass: Int(cmdClass) ?? 0x02, cmdId: Int(cmdId) ?? 0x11,type: type, sendString: sendString.count <= 0 ? "你好":sendString)
-                
-            }
-            
-            break
-            
-        case "多包Unicode字符串测命令":
-            let array = [
-                "输入字符串,默认'你好'",
-                "CMD_CLASS 默认0x02",
-                "CMD_ID 默认0x11",
-                "type 默认1"
-            ]
-            
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "多包Unicode字符串测命令", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let sendString = textArray[0]
-                let cmdClass = textArray[1]
-                let cmdId = textArray[2]
-                let type = textArray[3]
-                
-                ZyCommandModule.shareInstance.testUnicodeStringData(cmdClass: Int(cmdClass) ?? 0x02, cmdId: Int(cmdId) ?? 0x11,type: type, sendString: sendString.count <= 0 ? "你好":sendString)
-                
-            }
-            break
-            
-        case "0引导文件":
+        case "0\(NSLocalizedString("The boot file", comment: "引导文件"))":
             
             let fileString = UserDefaults.standard.string(forKey: "0_BootFiles")
             
-            var message = "未选择，默认项目内置工程文件路径"
+            var message = NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径")
             if fileString?.count ?? 0 > 0 {
                 message = fileString!
             }
             
             self.logView.clearString()
             
-            self.presentSystemAlertVC(title: "当前引导文件路径", message: message, cancel: "修改路径", cancelAction: {
+            self.presentSystemAlertVC(title: NSLocalizedString("Boot file path", comment: "引导文件路径"), message: message, cancel: NSLocalizedString("Modify the path", comment: "修改路径"), cancelAction: {
                 
                 let path = NSHomeDirectory() + "/Documents"
                 //let exist = FileManager.default.fileExists(atPath: path)
@@ -4167,35 +3948,35 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     let homePath = NSHomeDirectory()
                     let pathString = pathString.replacingOccurrences(of: homePath, with: "")
                     print("选中的文件连接 pathString =",pathString)
-                    self.logView.writeString(string: "引导文件路径")
+                    self.logView.writeString(string: NSLocalizedString("Boot file path", comment: "引导文件路径"))
                     if pathString.count > 0 {
                         UserDefaults.standard.setValue(pathString, forKey: "0_BootFiles")
                         self.logView.writeString(string: pathString)
                     }else{
                         UserDefaults.standard.removeObject(forKey: "0_BootFiles")
-                        self.logView.writeString(string: "未选择，默认项目内置工程文件路径")
+                        self.logView.writeString(string: NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径"))
                     }
                     UserDefaults.standard.synchronize()
                 }
                 
-            }, ok: "确定") {
+            }, ok: NSLocalizedString("Sure", comment: "确定")) {
                                 
             }
             
             break
         
-        case "1应用文件":
+        case "1\(NSLocalizedString("File of application", comment: "应用文件"))":
             
             let fileString = UserDefaults.standard.string(forKey: "1_ApplicationFiles")
             
-            var message = "未选择，默认项目内置工程文件路径"
+            var message = NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径")
             if fileString?.count ?? 0 > 0 {
                 message = fileString!
             }
             
             self.logView.clearString()
             
-            self.presentSystemAlertVC(title: "当前应用文件路径", message: message, cancel: "修改路径", cancelAction: {
+            self.presentSystemAlertVC(title: NSLocalizedString("Application file path", comment: "应用文件路径"), message: message, cancel: NSLocalizedString("Modify the path", comment: "修改路径"), cancelAction: {
                 
                 let path = NSHomeDirectory() + "/Documents"
                 //let exist = FileManager.default.fileExists(atPath: path)
@@ -4206,35 +3987,35 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     let homePath = NSHomeDirectory()
                     let pathString = pathString.replacingOccurrences(of: homePath, with: "")
                     print("选中的文件连接 pathString =",pathString)
-                    self.logView.writeString(string: "应用文件路径")
+                    self.logView.writeString(string: NSLocalizedString("Application file path", comment: "应用文件路径"))
                     if pathString.count > 0 {
                         UserDefaults.standard.setValue(pathString, forKey: "1_ApplicationFiles")
                         self.logView.writeString(string: pathString)
                     }else{
                         UserDefaults.standard.removeObject(forKey: "1_ApplicationFiles")
-                        self.logView.writeString(string: "未选择，默认项目内置工程文件路径")
+                        self.logView.writeString(string: NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径"))
                     }
                     UserDefaults.standard.synchronize()
                 }
                 
-            }, ok: "确定") {
+            }, ok: NSLocalizedString("Sure", comment: "确定")) {
                                 
             }
             
             break
             
-        case "2图库文件":
+        case "2\(NSLocalizedString("Photo gallery file", comment: "图库文件"))":
             
             let fileString = UserDefaults.standard.string(forKey: "2_LibraryFiles")
             
-            var message = "未选择，默认项目内置工程文件路径"
+            var message = NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径")
             if fileString?.count ?? 0 > 0 {
                 message = fileString!
             }
             
             self.logView.clearString()
             
-            self.presentSystemAlertVC(title: "当前图库文件路径", message: message, cancel: "修改路径", cancelAction: {
+            self.presentSystemAlertVC(title: NSLocalizedString("Gallery file path", comment: "图库文件路径"), message: message, cancel: NSLocalizedString("Modify the path", comment: "修改路径"), cancelAction: {
                 
                 let path = NSHomeDirectory() + "/Documents"
                 //let exist = FileManager.default.fileExists(atPath: path)
@@ -4245,35 +4026,35 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     let homePath = NSHomeDirectory()
                     let pathString = pathString.replacingOccurrences(of: homePath, with: "")
                     print("选中的文件连接 pathString =",pathString)
-                    self.logView.writeString(string: "图库文件路径")
+                    self.logView.writeString(string: NSLocalizedString("Gallery file path", comment: "图库文件路径"))
                     if pathString.count > 0 {
                         UserDefaults.standard.setValue(pathString, forKey: "2_LibraryFiles")
                         self.logView.writeString(string: pathString)
                     }else{
                         UserDefaults.standard.removeObject(forKey: "2_LibraryFiles")
-                        self.logView.writeString(string: "未选择，默认项目内置工程文件路径")
+                        self.logView.writeString(string: NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径"))
                     }
                     UserDefaults.standard.synchronize()
                 }
                 
-            }, ok: "确定") {
+            }, ok: NSLocalizedString("Sure", comment: "确定")) {
                                 
             }
             
             break
             
-        case "3字库文件":
+        case "3\(NSLocalizedString("Character library file", comment: "字库文件"))":
             
             let fileString = UserDefaults.standard.string(forKey: "3_FontFiles")
             
-            var message = "未选择，默认项目内置工程文件路径"
+            var message = NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径")
             if fileString?.count ?? 0 > 0 {
                 message = fileString!
             }
             
             self.logView.clearString()
             
-            self.presentSystemAlertVC(title: "当前字库文件路径", message: message, cancel: "修改路径", cancelAction: {
+            self.presentSystemAlertVC(title: NSLocalizedString("Font file path", comment: "字库文件路径"), message: message, cancel: NSLocalizedString("Modify the path", comment: "修改路径"), cancelAction: {
                 
                 let path = NSHomeDirectory() + "/Documents"
                 //let exist = FileManager.default.fileExists(atPath: path)
@@ -4284,35 +4065,35 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     let homePath = NSHomeDirectory()
                     let pathString = pathString.replacingOccurrences(of: homePath, with: "")
                     print("选中的文件连接 pathString =",pathString)
-                    self.logView.writeString(string: "字库文件路径")
+                    self.logView.writeString(string: NSLocalizedString("Font file path", comment: "字库文件路径"))
                     if pathString.count > 0 {
                         UserDefaults.standard.setValue(pathString, forKey: "3_FontFiles")
                         self.logView.writeString(string: pathString)
                     }else{
                         UserDefaults.standard.removeObject(forKey: "3_FontFiles")
-                        self.logView.writeString(string: "未选择，默认项目内置工程文件路径")
+                        self.logView.writeString(string: NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径"))
                     }
                     UserDefaults.standard.synchronize()
                 }
                 
-            }, ok: "确定") {
+            }, ok: NSLocalizedString("Sure", comment: "确定")) {
                                 
             }
             
             break
         
-        case "4表盘文件":
+        case "4\(NSLocalizedString("Watch face file", comment: "表盘文件"))":
             
             let fileString = UserDefaults.standard.string(forKey: "4_DialFiles")
             
-            var message = "未选择，默认项目内置工程文件路径"
+            var message = NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径")
             if fileString?.count ?? 0 > 0 {
                 message = fileString!
             }
             
             self.logView.clearString()
             
-            self.presentSystemAlertVC(title: "当前表盘文件路径", message: message, cancel: "修改路径", cancelAction: {
+            self.presentSystemAlertVC(title: NSLocalizedString("Watch face file path", comment: "表盘文件路径"), message: message, cancel: NSLocalizedString("Modify the path", comment: "修改路径"), cancelAction: {
                 
                 let path = NSHomeDirectory() + "/Documents"
                 //let exist = FileManager.default.fileExists(atPath: path)
@@ -4323,35 +4104,35 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     let homePath = NSHomeDirectory()
                     let pathString = pathString.replacingOccurrences(of: homePath, with: "")
                     print("选中的文件连接 pathString =",pathString)
-                    self.logView.writeString(string: "表盘文件路径")
+                    self.logView.writeString(string: NSLocalizedString("Watch face file path", comment: "表盘文件路径"))
                     if pathString.count > 0 {
                         UserDefaults.standard.setValue(pathString, forKey: "4_DialFiles")
                         self.logView.writeString(string: pathString)
                     }else{
                         UserDefaults.standard.removeObject(forKey: "4_DialFiles")
-                        self.logView.writeString(string: "未选择，默认项目内置工程文件路径")
+                        self.logView.writeString(string: NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径"))
                     }
                     UserDefaults.standard.synchronize()
                 }
                 
-            }, ok: "确定") {
+            }, ok: NSLocalizedString("Sure", comment: "确定")) {
                                 
             }
             
             break
             
-        case "5自定义表盘文件":
+        case "5\(NSLocalizedString("Customize the watch face file", comment: "自定义表盘文件"))":
             
             let fileString = UserDefaults.standard.string(forKey: "5_CustonDialFiles")
             
-            var message = "未选择，默认项目内置工程文件路径"
+            var message = NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径")
             if fileString?.count ?? 0 > 0 {
                 message = fileString!
             }
             
             self.logView.clearString()
             
-            self.presentSystemAlertVC(title: "当前自定义表盘文件路径", message: message, cancel: "修改路径", cancelAction: {
+            self.presentSystemAlertVC(title: NSLocalizedString("Customize the watch face file path", comment: "自定义表盘文件路径"), message: message, cancel: NSLocalizedString("Modify the path", comment: "修改路径"), cancelAction: {
                 
                 let path = NSHomeDirectory() + "/Documents"
                 //let exist = FileManager.default.fileExists(atPath: path)
@@ -4362,35 +4143,35 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     let homePath = NSHomeDirectory()
                     let pathString = pathString.replacingOccurrences(of: homePath, with: "")
                     print("选中的文件连接 pathString =",pathString)
-                    self.logView.writeString(string: "自定义表盘文件路径")
+                    self.logView.writeString(string: NSLocalizedString("Customize the watch face file path", comment: "自定义表盘文件路径"))
                     if pathString.count > 0 {
                         UserDefaults.standard.setValue(pathString, forKey: "5_CustonDialFiles")
                         self.logView.writeString(string: pathString)
                     }else{
                         UserDefaults.standard.removeObject(forKey: "5_CustonDialFiles")
-                        self.logView.writeString(string: "未选择，默认项目内置工程文件路径")
+                        self.logView.writeString(string: NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径"))
                     }
                     UserDefaults.standard.synchronize()
                 }
                 
-            }, ok: "确定") {
+            }, ok: NSLocalizedString("Sure", comment: "确定")) {
                                 
             }
             
             break
             
-        case "7音乐文件":
+        case "7\(NSLocalizedString("Music file", comment: "音乐文件"))":
             
             let fileString = UserDefaults.standard.string(forKey: "7_MusicFiles")
             
-            var message = "未选择，默认项目内置工程文件路径"
+            var message = NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径")
             if fileString?.count ?? 0 > 0 {
                 message = fileString!
             }
             
             self.logView.clearString()
             
-            self.presentSystemAlertVC(title: "当前音乐文件路径", message: message, cancel: "修改路径", cancelAction: {
+            self.presentSystemAlertVC(title: NSLocalizedString("Music file path", comment: "音乐文件路径"), message: message, cancel: NSLocalizedString("Modify the path", comment: "修改路径"), cancelAction: {
                 
                 let path = NSHomeDirectory() + "/Documents"
                 //let exist = FileManager.default.fileExists(atPath: path)
@@ -4425,13 +4206,13 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                             let homePath = NSHomeDirectory()
                             let pathString = pathString.replacingOccurrences(of: homePath, with: "")
                             print("选中的文件连接 pathString =",pathString)
-                            self.logView.writeString(string: "音乐文件路径")
+                            self.logView.writeString(string: NSLocalizedString("Music file path", comment: "音乐文件路径"))
                             if pathString.count > 0 {
                                 UserDefaults.standard.setValue(pathString, forKey: "7_MusicFiles")
                                 self.logView.writeString(string: pathString)
                             }else{
                                 UserDefaults.standard.removeObject(forKey: "7_MusicFiles")
-                                self.logView.writeString(string: "未选择，默认项目内置工程文件路径")
+                                self.logView.writeString(string: NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径"))
                             }
                             UserDefaults.standard.synchronize()
                         }else{
@@ -4446,35 +4227,35 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         let homePath = NSHomeDirectory()
                         let pathString = pathString.replacingOccurrences(of: homePath, with: "")
                         print("选中的文件连接 pathString =",pathString)
-                        self.logView.writeString(string: "音乐文件路径")
+                        self.logView.writeString(string: NSLocalizedString("Music file path", comment: "音乐文件路径"))
                         if pathString.count > 0 {
                             UserDefaults.standard.setValue(pathString, forKey: "7_MusicFiles")
                             self.logView.writeString(string: pathString)
                         }else{
                             UserDefaults.standard.removeObject(forKey: "7_MusicFiles")
-                            self.logView.writeString(string: "未选择，默认项目内置工程文件路径")
+                            self.logView.writeString(string: NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径"))
                         }
                         UserDefaults.standard.synchronize()
                     }
                 }
                 
-            }, ok: "确定") {
+            }, ok: NSLocalizedString("Sure", comment: "确定")) {
                                 
             }
             
             break
-        case "8辅助定位文件":
+        case "8\(NSLocalizedString("Auxiliary location file", comment: "辅助定位文件"))":
             
             let fileString = UserDefaults.standard.string(forKey: "8_locationFile")
             
-            var message = "未选择，默认项目内置工程文件路径"
+            var message = NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径")
             if fileString?.count ?? 0 > 0 {
                 message = fileString!
             }
             
             self.logView.clearString()
             
-            self.presentSystemAlertVC(title: "当前自定义运动文件路径", message: message, cancel: "修改路径", cancelAction: {
+            self.presentSystemAlertVC(title: NSLocalizedString("Auxiliary location path", comment: "辅助定位路径"), message: message, cancel: NSLocalizedString("Modify the path", comment: "修改路径"), cancelAction: {
                 
                 let path = NSHomeDirectory() + "/Documents"
                 //let exist = FileManager.default.fileExists(atPath: path)
@@ -4485,34 +4266,34 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     let homePath = NSHomeDirectory()
                     let pathString = pathString.replacingOccurrences(of: homePath, with: "")
                     print("选中的文件连接 pathString =",pathString)
-                    self.logView.writeString(string: "自定义运动文件路径")
+                    self.logView.writeString(string: NSLocalizedString("Auxiliary location path", comment: "辅助定位路径"))
                     if pathString.count > 0 {
                         UserDefaults.standard.setValue(pathString, forKey: "8_locationFile")
                         self.logView.writeString(string: pathString)
                     }else{
                         UserDefaults.standard.removeObject(forKey: "8_locationFile")
-                        self.logView.writeString(string: "未选择，默认项目内置工程文件路径")
+                        self.logView.writeString(string: NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径"))
                     }
                     UserDefaults.standard.synchronize()
                 }
                 
-            }, ok: "确定") {
+            }, ok: NSLocalizedString("Sure", comment: "确定")) {
                                 
             }
             
             break
-        case "9自定义运动文件":
+        case "9\(NSLocalizedString("Customize the motion file", comment: "自定义运动文件"))":
             
             let fileString = UserDefaults.standard.string(forKey: "9_sportsType")
             
-            var message = "未选择，默认项目内置工程文件路径"
+            var message = NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径")
             if fileString?.count ?? 0 > 0 {
                 message = fileString!
             }
             
             self.logView.clearString()
             
-            self.presentSystemAlertVC(title: "当前自定义运动文件路径", message: message, cancel: "修改路径", cancelAction: {
+            self.presentSystemAlertVC(title: NSLocalizedString("Customize the motion file path", comment: "自定义运动文件路径"), message: message, cancel: NSLocalizedString("Modify the path", comment: "修改路径"), cancelAction: {
                 
                 let path = NSHomeDirectory() + "/Documents"
                 //let exist = FileManager.default.fileExists(atPath: path)
@@ -4523,40 +4304,40 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     let homePath = NSHomeDirectory()
                     let pathString = pathString.replacingOccurrences(of: homePath, with: "")
                     print("选中的文件连接 pathString =",pathString)
-                    self.logView.writeString(string: "自定义运动文件路径")
+                    self.logView.writeString(string: NSLocalizedString("Customize the motion file path", comment: "自定义运动文件路径"))
                     if pathString.count > 0 {
                         UserDefaults.standard.setValue(pathString, forKey: "9_sportsType")
                         self.logView.writeString(string: pathString)
                     }else{
                         UserDefaults.standard.removeObject(forKey: "9_sportsType")
-                        self.logView.writeString(string: "未选择，默认项目内置工程文件路径")
+                        self.logView.writeString(string: NSLocalizedString("Not selected, default project built-in project file path", comment: "未选择，默认项目内置工程文件路径"))
                     }
                     UserDefaults.standard.synchronize()
                 }
                 
-            }, ok: "确定") {
+            }, ok: NSLocalizedString("Sure", comment: "确定")) {
                                 
             }
             
             break
 
-        case "OTA升级":
+        case NSLocalizedString("OTA upgrade", comment: "OTA升级"):
             
             let array = [
-                "文件类型：默认0-引导文件",
+                "文件类型：默认0-\(NSLocalizedString("The boot file", comment: "引导文件"))",
             ]
             
             self.logView.clearString()
-            self.presentTextFieldAlertVC(title: "OTA升级(无效类型默认0)", message: "请确定文件路径选择正确，错误或无效数据可能导致闪退", holderStringArray: array, cancel: "取消", cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("OTA upgrade (default 0 for invalid types)", comment: "OTA升级(无效类型默认0)"), message: NSLocalizedString("Make sure the file path is correctly selected. Errors or invalid data may cause a flashback", comment: "请确定文件路径选择正确，错误或无效数据可能导致闪退"), holderStringArray: array, cancel: NSLocalizedString("Cancel", comment: "取消"), cancelAction: {
                 
-            }, ok: "确定") { textArray in
+            }, ok: NSLocalizedString("Sure", comment: "确定")) { textArray in
                 
                 let type = textArray[0]
                 
                 let fileString = self.getFilePathWithType(type: type)
                 
-                self.logView.writeString(string: "当前选择类型:\(type)")
-                self.logView.writeString(string: "文件路径:\(fileString as! String)")
+                self.logView.writeString(string: "\(NSLocalizedString("Current selection type", comment: "当前选择类型")):\(type)")
+                self.logView.writeString(string: "\(NSLocalizedString("Path to file", comment: "文件路径")):\(fileString as! String)")
                 
                 print("fileString =",fileString)
                 var showProgress = 0
@@ -4564,7 +4345,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
                     if showProgress == Int(progress) {
                         showProgress += 1
-                        self.logView.writeString(string: "进度:\(progress)")
+                        self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
                     }
                     print("progress ->",progress)
 
@@ -4578,96 +4359,8 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-            
-        case "0x00 分包信息交互(APP)":
-            
-            let array = [
-                "最大发送长度:默认1024",
-                "最大接收长度:默认1024"
-            ]
-            
-            self.logView.clearString()
-            
-            self.presentTextFieldAlertVC(title: "提示(不输入或无效数据为默认1024)", message: "分包信息交互", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { textArray in
-                
-                let maxSend = textArray[0]
-                let maxReceive = textArray[1]
-                
-                self.logView.writeString(string: "APP -> maxSend:\(maxSend)")
-                self.logView.writeString(string: "APP -> maxReceive:\(maxReceive)")
-                
-                ZyCommandModule.shareInstance.setSubpackageInformationInteraction(maxSend: Int(maxSend) ?? 1024, maxReceive: Int(maxReceive) ?? 1024) { success,error in
-                    print("SetSubpackageInformationInteraction -> error =",error)
-                    
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    
-                    if error == .none {
-                        
-                        let maxSend = success["maxSend"] as! String
-                        let maxReceive = success["maxReceive"] as! String
-                        
-                        self.logView.writeString(string: "设备 -> maxSend:\(maxSend)")
-                        self.logView.writeString(string: "设备 -> maxReceive:\(maxReceive)")
-                        
-                        print("maxSend =",maxSend)
-                        print("maxReceive =",maxReceive)
-                        
-                    }
-                    
-                }
-                                
-            }
-            
 
-            
-            break
-            
-        case "0x02 启动升级":
-            
-            let array = [
-                "文件类型:默认0-引导文件",
-                "单包最大字节:默认20"
-            ]
-            
-            self.logView.clearString()
-            self.presentTextFieldAlertVC(title: "启动升级", message: "请确定文件路径选择正确，错误或无效数据可能导致闪退", holderStringArray: array, cancel: "取消", cancelAction: {
-                
-            }, ok: "确定") { textArray in
-                
-                let type = textArray[0]
-                let maxCount = textArray[1]
-                
-                let fileString = self.getFilePathWithType(type: type)
-                                
-                self.logView.writeString(string: "当前选择类型:\(type)")
-                self.logView.writeString(string: "文件路径:\(fileString)")
-                self.logView.writeString(string: "单包最大字节数:\(maxCount)")
-                var showProgress = 0
-                ZyCommandModule.shareInstance.setStartUpgrade(type: Int(type) ?? 0, localFile: fileString, maxCount: Int(maxCount) ?? 20, isContinue: false) { progress in
-                    
-                    print("progress =",progress)
-                    if showProgress == Int(progress) {
-                        showProgress += 1
-                        self.logView.writeString(string: "进度:\(progress)")
-                    }
-                    
-                } success: { error in
-                    
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    print("setStartUpgrade -> error =",error.rawValue)
-                    
-                }
-                
-                //Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(self.test123(timer:)), userInfo: nil, repeats: true)
-                
-                
-            }
-            
-            break
-            
-        case "0x03 停止升级":
+        case "\(NSLocalizedString("Stop upgrading", comment: "停止升级"))":
             
             ZyCommandModule.shareInstance.setStopUpgrade { error in
                 print("setStopUpgrade -> error =",error)
@@ -4675,12 +4368,12 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
 
-        case "0引导升级":
+        case "0\(NSLocalizedString("Boot upgrade", comment: "引导升级"))":
             
             let fileString = self.getFilePathWithType(type: "0")
             
-            self.logView.writeString(string: "当前选择类型:0引导升级")
-            self.logView.writeString(string: "文件路径:\(fileString as! String)")
+            self.logView.writeString(string: "\(NSLocalizedString("Current selection type", comment: "当前选择类型")):0\(NSLocalizedString("Boot upgrade", comment: "引导升级"))")
+            self.logView.writeString(string: "\(NSLocalizedString("Path to file", comment: "文件路径")):\(fileString as! String)")
             
             print("fileString =",fileString)
             var showProgress = 0
@@ -4688,7 +4381,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
                 if showProgress == Int(progress) {
                     showProgress += 1
-                    self.logView.writeString(string: "进度:\(progress)")
+                    self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
                 }
                 print("progress ->",progress)
 
@@ -4701,11 +4394,11 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "1应用升级":
+        case "1\(NSLocalizedString("Application upgrade", comment: "应用升级"))":
             let fileString = self.getFilePathWithType(type: "1")
             
-            self.logView.writeString(string: "当前选择类型:1应用升级")
-            self.logView.writeString(string: "文件路径:\(fileString as! String)")
+            self.logView.writeString(string: "\(NSLocalizedString("Current selection type", comment: "当前选择类型")):1\(NSLocalizedString("Application upgrade", comment: "应用升级"))")
+            self.logView.writeString(string: "\(NSLocalizedString("Path to file", comment: "文件路径")):\(fileString as! String)")
             
             print("fileString =",fileString)
             var showProgress = 0
@@ -4713,7 +4406,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
                 if showProgress == Int(progress) {
                     showProgress += 1
-                    self.logView.writeString(string: "进度:\(progress)")
+                    self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
                 }
                 
                 print("progress ->",progress)
@@ -4726,11 +4419,11 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "2图库升级":
+        case "2\(NSLocalizedString("Gallery upgrade", comment: "图库升级"))":
             let fileString = self.getFilePathWithType(type: "2")
             
-            self.logView.writeString(string: "当前选择类型:2图库升级")
-            self.logView.writeString(string: "文件路径:\(fileString as! String)")
+            self.logView.writeString(string: "\(NSLocalizedString("Current selection type", comment: "当前选择类型")):2\(NSLocalizedString("Gallery upgrade", comment: "图库升级"))")
+            self.logView.writeString(string: "\(NSLocalizedString("Path to file", comment: "文件路径")):\(fileString as! String)")
             
             print("fileString =",fileString)
             var showProgress = 0
@@ -4738,7 +4431,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
                 if showProgress == Int(progress) {
                     showProgress += 1
-                    self.logView.writeString(string: "进度:\(progress)")
+                    self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
                 }
                 print("progress ->",progress)
 
@@ -4750,11 +4443,11 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "3字库升级":
+        case "3\(NSLocalizedString("Font library upgrade", comment: "字库升级")))":
             let fileString = self.getFilePathWithType(type: "3")
             
-            self.logView.writeString(string: "当前选择类型:3字库升级")
-            self.logView.writeString(string: "文件路径:\(fileString as! String)")
+            self.logView.writeString(string: "\(NSLocalizedString("Current selection type", comment: "当前选择类型")):3\(NSLocalizedString("Font library upgrade", comment: "字库升级")))")
+            self.logView.writeString(string: "\(NSLocalizedString("Path to file", comment: "文件路径")):\(fileString as! String)")
             
             print("fileString =",fileString)
             var showProgress = 0
@@ -4762,7 +4455,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
                 if showProgress == Int(progress) {
                     showProgress += 1
-                    self.logView.writeString(string: "进度:\(progress)")
+                    self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
                 }
                 print("progress ->",progress)
 
@@ -4774,11 +4467,11 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "4表盘升级":
+        case "4\(NSLocalizedString("Watch face upgrade", comment: "表盘升级"))":
             let fileString = self.getFilePathWithType(type: "4")
             
-            self.logView.writeString(string: "当前选择类型:4表盘升级")
-            self.logView.writeString(string: "文件路径:\(fileString as! String)")
+            self.logView.writeString(string: "\(NSLocalizedString("Current selection type", comment: "当前选择类型")):4\(NSLocalizedString("Watch face upgrade", comment: "表盘升级"))")
+            self.logView.writeString(string: "\(NSLocalizedString("Path to file", comment: "文件路径")):\(fileString as! String)")
             
             print("fileString =",fileString)
             var showProgress = 0
@@ -4786,7 +4479,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
                 if showProgress == Int(progress) {
                     showProgress += 1
-                    self.logView.writeString(string: "进度:\(progress)")
+                    self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
                 }
                 print("progress ->",progress)
 
@@ -4798,12 +4491,12 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "5自定义表盘升级":
+        case "5\(NSLocalizedString("Custom watch face upgrade", comment: "自定义表盘升级"))":
             
             let fileString = self.getFilePathWithType(type: "5")
             
-            self.logView.writeString(string: "当前选择类型:5自定义表盘升级")
-            self.logView.writeString(string: "文件路径:\(fileString as! String)")
+            self.logView.writeString(string: "\(NSLocalizedString("Current selection type", comment: "当前选择类型")):5\(NSLocalizedString("Custom watch face upgrade", comment: "自定义表盘升级"))")
+            self.logView.writeString(string: "\(NSLocalizedString("Path to file", comment: "文件路径")):\(fileString as! String)")
                  
             print("fileString =",fileString)
             var showProgress = 0
@@ -4811,7 +4504,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
                 if showProgress == Int(progress) {
                     showProgress += 1
-                    self.logView.writeString(string: "进度:\(progress)")
+                    self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
                 }
                 print("progress ->",progress)
 
@@ -4824,14 +4517,14 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "6朝拜闹钟数据":
+        case "6\(NSLocalizedString("Worship alarm clock data", comment: "朝拜闹钟数据"))":
             self.logView.clearString()
             let array = [
                 "起始日期:yyyy-MM-dd(默认当天)",
                 "发送条数(时间按序号开始且递增+1,默认1条)",
             ]
 
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "设置朝拜闹钟至设备", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Worship alarm clock data", comment: "朝拜闹钟数据"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
 
@@ -4861,7 +4554,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     
                     if showProgress == Int(progress) {
                         showProgress += 1
-                        self.logView.writeString(string: "进度:\(progress)")
+                        self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
                     }
                     print("progress ->",progress)
 
@@ -4871,7 +4564,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 }
             }
             break
-        case "7本地音乐数据":
+        case "7\(NSLocalizedString("Local music data", comment: "本地音乐数据"))":
             
             let fileString = self.getFilePathWithType(type: "7")
             print("fileString =",fileString)
@@ -4886,7 +4579,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 "文件名:\(fileName)",
             ]
             var showProgress = 0
-            self.presentTextFieldAlertVC(title: "提示(默认文件名:\(fileName))", message: "发送音乐文件至设备", holderStringArray: array) {
+            self.presentTextFieldAlertVC(title: "提示(默认文件名:\(fileName))", message: NSLocalizedString("Local music data", comment: "本地音乐数据"), holderStringArray: array) {
                 
             } okAction: { (textArray) in
                 let name = textArray[0].count == 0 ? fileName : textArray[0]
@@ -4894,7 +4587,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     
                     if showProgress == Int(progress) {
                         showProgress += 1
-                        self.logView.writeString(string: "进度:\(progress)")
+                        self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
                     }
                     print("progress ->",progress)
 
@@ -4906,12 +4599,12 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "8辅助定位数据":
+        case "8\(NSLocalizedString("Auxiliary positioning data", comment: "辅助定位数据"))":
             
             let fileString = self.getFilePathWithType(type: "8")
             
-            self.logView.writeString(string: "当前选择类型:8辅助定位数据")
-            self.logView.writeString(string: "文件路径:\(fileString as! String)")
+            self.logView.writeString(string: "\(NSLocalizedString("Current selection type", comment: "当前选择类型")):8\(NSLocalizedString("Auxiliary positioning data", comment: "辅助定位数据"))")
+            self.logView.writeString(string: "\(NSLocalizedString("Path to file", comment: "文件路径")):\(fileString as! String)")
                  
             print("fileString =",fileString)
             var showProgress = 0
@@ -4919,7 +4612,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 
                 if showProgress == Int(progress) {
                     showProgress += 1
-                    self.logView.writeString(string: "进度:\(progress)")
+                    self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
                 }
                 print("progress ->",progress)
 
@@ -4932,26 +4625,26 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "9自定义运动类型":
+        case "9\(NSLocalizedString("Customize the exercise type", comment: "自定义运动类型"))":
             
             let fileString = self.getFilePathWithType(type: "9")
             
-            self.logView.writeString(string: "当前选择类型:9自定义运动类型")
-            self.logView.writeString(string: "文件路径:\(fileString as! String)")
+            self.logView.writeString(string: "\(NSLocalizedString("Current selection type", comment: "当前选择类型")):9\(NSLocalizedString("Customize the exercise type", comment: "自定义运动类型"))")
+            self.logView.writeString(string: "\(NSLocalizedString("Path to file", comment: "文件路径")):\(fileString as! String)")
             print("fileString =",fileString)
             
             let array = [
-                "自定义运动类型",
+                NSLocalizedString("Customize the exercise type", comment: "自定义运动类型"),
             ]
             var showProgress = 0
-            self.presentTextFieldAlertVC(title: "提示(默认自定义运动类型26)", message: "自定义运动类型",holderStringArray: array) {
+            self.presentTextFieldAlertVC(title: "提示(默认自定义运动类型26)", message: NSLocalizedString("Customize the exercise type", comment: "自定义运动类型"),holderStringArray: array) {
                 
             } okAction: { textArray in
                 let sportsType = Int(textArray[0]) ?? 26
                 ZyCommandModule.shareInstance.setCustomSportsMode(sportsType, localFile: fileString) { progress in
                     if showProgress == Int(progress) {
                         showProgress += 1
-                        self.logView.writeString(string: "进度:\(progress)")
+                        self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
                     }
                     print("progress ->",progress)
 
@@ -4964,26 +4657,26 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-        case "自定义背景选择":
+        case NSLocalizedString("Customize the background selection", comment: "自定义背景选择"):
             
-            self.presentSystemAlertVC(title: "自定义背景选择", message: "", cancel: "相册", cancelAction: {
+            self.presentSystemAlertVC(title: NSLocalizedString("Customize the background selection", comment: "自定义背景选择"), message: "", cancel: NSLocalizedString("Photo album", comment: "相册"), cancelAction: {
                 self.initPhotoPicker()
-            }, ok: "拍照") {
+            }, ok: NSLocalizedString("Take a photo", comment: "拍照")) {
                 self.initCameraPicker()
             }
             
             break
-        case "(直接选取无编辑)自定义背景选择":
+        case NSLocalizedString("(Select directly without editing) Customize the background selection", comment: "(直接选取无编辑)自定义背景选择"):
             
-            self.presentSystemAlertVC(title: "(直接选取无编辑)自定义背景选择", message: "", cancel: "相册", cancelAction: {
+            self.presentSystemAlertVC(title: NSLocalizedString("(Select directly without editing) Customize the background selection", comment: "(直接选取无编辑)自定义背景选择"), message: "", cancel: NSLocalizedString("Photo album", comment: "相册"), cancelAction: {
                 self.initPhotoPicker(allowsEditing: false)
-            }, ok: "拍照") {
+            }, ok: NSLocalizedString("Take a photo", comment: "拍照")) {
                 self.initCameraPicker()
             }
             
             break
             
-        case "设置自定义背景":
+        case NSLocalizedString("Set Custom Background", comment: "设置自定义背景"):
 
             if var image = self.customBgImage {
                 print("image = \(image)")
@@ -5002,7 +4695,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                                 ZyCommandModule.shareInstance.setCustomDialEdit(image: image) { progress in
                                     if showProgress == Int(progress) {
                                         showProgress += 1
-                                        self.logView.writeString(string: "进度:\(progress)")
+                                        self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
                                     }
                                     print("progress ->",progress)
                                 } success: { error in
@@ -5030,7 +4723,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                         
             break
             
-        case "设置自定义背景(JL)":
+        case NSLocalizedString("Set Custom Background (JL)", comment: "设置自定义背景(JL)"):
             
             if var image = self.customBgImage {
                 
@@ -5048,7 +4741,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                                 ZyCommandModule.shareInstance.setCustomDialEdit(image: image, progress: { progress in
                                     if showProgress == Int(progress) {
                                         showProgress += 1
-                                        self.logView.writeString(string: "进度:\(progress)")
+                                        self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
                                     }
                                     print("progress ->",progress)
                                 }, isJL_Device: true) { error in
@@ -5076,7 +4769,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取服务器OTA信息":
+        case NSLocalizedString("Get the server OTA information", comment: "获取服务器OTA信息"):
             
             ZyCommandModule.shareInstance.getServerOtaDeviceInfo { success, error in
                 
@@ -5093,13 +4786,13 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "自动OTA升级服务器最新设备相关版本":
+        case NSLocalizedString("Automatic OTA upgrade server for the latest device version", comment: "自动OTA升级服务器最新设备相关版本"):
             var showProgress = 0
             ZyCommandModule.shareInstance.setAutoServerOtaDeviceInfo { progress in
 
                 if showProgress == Int(progress) {
                     showProgress += 1
-                    self.logView.writeString(string: "进度:\(progress)")
+                    self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
                 }
                 print("progress ->",progress)
 
@@ -5109,8 +4802,11 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 print("setAutoServerOtaDeviceInfo ->",error)
             }
             break
+        case NSLocalizedString("Get online watch face (old interface, get all)", comment: "获取在线表盘(旧接口，获取全部)"):
+
+            self.logView.clearString()
+            self.logView.writeString(string: NSLocalizedString("Get online watch face", comment: "获取在线表盘"))
             
-        case "获取在线表盘":
             ZyCommandModule.shareInstance.getOnlineDialList { dialArray, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
                 print("getOnlineDialList ->",dialArray.count)
@@ -5129,10 +4825,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-        case "获取在线表盘(新接口，获取分页)":
+        case NSLocalizedString("Get online watch face (new interface, get paging)", comment: "获取在线表盘(新接口，获取分页)"):
 
             self.logView.clearString()
-            self.logView.writeString(string: "获取在线表盘信息")
+            self.logView.writeString(string: NSLocalizedString("Get online watch face", comment: "获取在线表盘"))
             
             
             let array = [
@@ -5140,7 +4836,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 "单页的个数"
             ]
             
-            self.presentTextFieldAlertVC(title: "提示(无效数据默认0)", message: "获取在线表盘信息", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Get online watch face", comment: "获取在线表盘"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 let pageIndex = textArray[0]
@@ -5169,14 +4865,14 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "发送在线表盘":
+        case NSLocalizedString("Send online watch face", comment: "发送在线表盘"):
             
             self.logView.clearString()
-            self.logView.writeString(string: "发送在线表盘")
+            self.logView.writeString(string: NSLocalizedString("Send online watch face", comment: "发送在线表盘"))
             
             let array = ["输入获取到的表盘ID"]
             
-            self.presentTextFieldAlertVC(title: "发送在线表盘", message: "输入获取的表盘ID,输入错误不操作", holderStringArray: array, cancel: nil, cancelAction: {
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Send online watch face", comment: "发送在线表盘"), message: "输入获取的表盘ID,输入错误不操作", holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { textArray in
                 
@@ -5190,7 +4886,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     ZyCommandModule.shareInstance.setOnlienDialFile(model: self.dialArray[index]) { progress in
                         if showProgress == Int(progress) {
                             showProgress += 1
-                            self.logView.writeString(string: "进度:\(progress)")
+                            self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
                         }
                         print("progress ->",progress)
                     } success: { error in
@@ -5204,10 +4900,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取本地表盘图片":
+        case NSLocalizedString("Gets the local watch face picture", comment: "获取本地表盘图片"):
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取本地表盘图片")
+            self.logView.writeString(string: NSLocalizedString("Gets the local watch face picture", comment: "获取本地表盘图片"))
             
             ZyCommandModule.shareInstance.getLocalDialImageServerInfo { dic, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -5215,7 +4911,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 if error == .none {
                     if let dic = dic {
                         print("获取本地表盘图片 \ndic =\(dic)")
-                        self.logView.writeString(string: "本地表盘图片信息:\(dic)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Gets the local watch face picture", comment: "获取本地表盘图片")):\(dic)")
                     }
                 }
                 
@@ -5223,10 +4919,10 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "获取自定义表盘图片":
+        case NSLocalizedString("Get a custom watch face picture", comment: "获取自定义表盘图片"):
             
             self.logView.clearString()
-            self.logView.writeString(string: "获取自定义表盘图片")
+            self.logView.writeString(string: NSLocalizedString("Get a custom watch face picture", comment: "获取自定义表盘图片"))
             
             ZyCommandModule.shareInstance.getCustomDialImageServerInfo { dic, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -5234,14 +4930,13 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 if error == .none {
                     if let dic = dic {
                         print("获取自定义表盘图片 \ndic =\(dic)")
-                        self.logView.writeString(string: "获取自定义表盘图片:\(dic)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Get a custom watch face picture", comment: "获取自定义表盘图片")):\(dic)")
                     }
                 }
                 
             }
             
             break
-
         default:
             break
         }
@@ -5394,15 +5089,15 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
     func getErrorCodeString(error:ZyError) -> String {
         if error == .none {
-            return "成功"
+            return "成功 none"
         }else if error == .disconnected {
-            return "设备未连接"
+            return "设备未连接 disconnected"
         }else if error == .invalidCharacteristic {
-            return "无效特征值"
+            return "无效特征值 invalidCharacteristic"
         }else if error == .invalidLength {
-            return "无效数据长度"
+            return "无效数据长度 invalidLength"
         }else if error == .invalidState {
-            return "无效状态"
+            return "无效状态 invalidState"
         }else if error == .notSupport {
             return "不支持此功能"
         }else if error == .noResponse {

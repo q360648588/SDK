@@ -21,6 +21,7 @@
 		67661D7F262A82670004B197 /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661D7E262A82660004B197 /* LogViewController.swift */; };
 		676705B2269014D300CB048B /* ZyVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 676705B1269014D300CB048B /* ZyVC.swift */; };
 		677BF30326DDD5B900D1C10C /* ShowLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 677BF30226DDD5B900D1C10C /* ShowLogView.swift */; };
+		67C788CB2B047DF900293B46 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67C788CD2B047DF900293B46 /* Localizable.strings */; };
 		67CF37E826F589A90035C6B0 /* FileVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67CF37E726F589A90035C6B0 /* FileVC.swift */; };
 		67E8914C2A8C7223007E8B9E /* 消愁.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 67E8914B2A8C7222007E8B9E /* 消愁.mp3 */; };
 		B627FDDD3D33A24C0EC3C8A7 /* Pods_ZySdkDemoTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5FD998C7D470D115972A126B /* Pods_ZySdkDemoTests.framework */; };
@@ -82,6 +83,8 @@
 		67661D7E262A82660004B197 /* LogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
 		676705B1269014D300CB048B /* ZyVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZyVC.swift; sourceTree = "<group>"; };
 		677BF30226DDD5B900D1C10C /* ShowLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowLogView.swift; sourceTree = "<group>"; };
+		67C788CC2B047DF900293B46 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		67C788CE2B047E1400293B46 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		67CF37E726F589A90035C6B0 /* FileVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileVC.swift; sourceTree = "<group>"; };
 		67E8914B2A8C7222007E8B9E /* 消愁.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "消愁.mp3"; sourceTree = "<group>"; };
 		709083BC5FF85A3A92F0F492 /* Pods-AntSdkDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AntSdkDemo.release.xcconfig"; path = "Target Support Files/Pods-AntSdkDemo/Pods-AntSdkDemo.release.xcconfig"; sourceTree = "<group>"; };
@@ -179,6 +182,7 @@
 				67CF37E726F589A90035C6B0 /* FileVC.swift */,
 				677BF30226DDD5B900D1C10C /* ShowLogView.swift */,
 				67661D7E262A82660004B197 /* LogViewController.swift */,
+				67C788CD2B047DF900293B46 /* Localizable.strings */,
 				6746B8F729A4AA2100204DEC /* JL_BLEKit.framework */,
 				67661CFD26292A8E0004B197 /* Main.storyboard */,
 				67661D0026292A920004B197 /* Assets.xcassets */,
@@ -308,6 +312,7 @@
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hans",
 			);
 			mainGroup = 67661CEB26292A8E0004B197;
 			productRefGroup = 67661CF526292A8E0004B197 /* Products */;
@@ -326,6 +331,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				67C788CB2B047DF900293B46 /* Localizable.strings in Resources */,
 				67661D0426292A920004B197 /* LaunchScreen.storyboard in Resources */,
 				67E8914C2A8C7223007E8B9E /* 消愁.mp3 in Resources */,
 				67661D0126292A920004B197 /* Assets.xcassets in Resources */,
@@ -516,6 +522,15 @@
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
+		67C788CD2B047DF900293B46 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				67C788CC2B047DF900293B46 /* en */,
+				67C788CE2B047E1400293B46 /* zh-Hans */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
@@ -523,6 +538,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -584,6 +600,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -709,7 +726,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				INFOPLIST_FILE = ZySdkDemoTests/Info.plist;
+				INFOPLIST_FILE = AntSdkDemoTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -735,7 +752,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				INFOPLIST_FILE = ZySdkDemoTests/Info.plist;
+				INFOPLIST_FILE = AntSdkDemoTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -756,7 +773,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = ZySdkDemoUITests/Info.plist;
+				INFOPLIST_FILE = AntSdkDemoUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -766,7 +783,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = ZySdkDemo;
+				TEST_TARGET_NAME = AntSdkDemo;
 			};
 			name = Debug;
 		};
@@ -776,7 +793,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = ZySdkDemoUITests/Info.plist;
+				INFOPLIST_FILE = AntSdkDemoUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -786,7 +803,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = ZySdkDemo;
+				TEST_TARGET_NAME = AntSdkDemo;
 			};
 			name = Release;
 		};

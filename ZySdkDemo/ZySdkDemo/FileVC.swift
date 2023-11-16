@@ -36,9 +36,9 @@ class FileVC: UIViewController {
         self.tableView.dataSource = self
         self.view.addSubview(self.tableView)
         
-        self.title = "选中保存，选空清除"
+        self.title = NSLocalizedString("Select Save, select empty to clear", comment: "选中保存，选空清除")
         
-        let rightItem = UIBarButtonItem.init(title: "保存/清除", style: .done, target: self, action: #selector(saveClick))
+        let rightItem = UIBarButtonItem.init(title: NSLocalizedString("Save/Clear", comment: "保存/清除"), style: .done, target: self, action: #selector(saveClick))
         self.navigationItem.rightBarButtonItem = rightItem
         
     }
@@ -47,8 +47,8 @@ class FileVC: UIViewController {
         
         if self.saveUrl?.count ?? 0 <= 0 {
             
-            self.presentSystemAlertVC(title: "警告", message: "当前未选择文件，默认会清除该选中类型文件") {
-                                
+            self.presentSystemAlertVC(title: NSLocalizedString("Warning", comment: "警告"), message: NSLocalizedString("No file is currently selected, the selected type file will be cleared by default", comment: "当前未选择文件，默认会清除该选中类型文件")) {
+                
             } okAction: {
                 
                 if let block = self.saveClickBlock {
