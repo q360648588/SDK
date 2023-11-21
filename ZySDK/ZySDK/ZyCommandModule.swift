@@ -185,6 +185,11 @@ import CoreLocation
     var receiveReportPowerConsumptionData:(([String:String],ZyError) -> Void)?
     var receiveGetCustomSportsModeBlock:((ZyExerciseType,ZyError) -> Void)?
     var receiveReportLanguageType:((Int,ZyError) -> Void)?
+    var receiveGetLedCustomSetupBlock:((ZyLedFunctionModel?,ZyError) -> Void)?
+    var receiveSetLedCustomSetupBlock:((ZyError) -> Void)?
+    var receiveGetMotorShakeCustomBlock:((ZyMotorFunctionModel?,ZyError) -> Void)?
+    var receiveSetMotorShakeCustomBlock:((ZyError) -> Void)?
+    
     var stepMaxData:Data?
     var isStepDetailData = false
     var stepMaxIndex = 0
@@ -1810,6 +1815,81 @@ import CoreLocation
                         //printLog("第\(#line)行" , "\(#function)")
                         self.signalCommandSemaphore()
                         ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetMotorShakeFunctionSingle长度校验出错"))
+                    }
+                    
+                }
+                
+                //获取LED自定义设置
+                if val[0] == 0x02 && val[1] == 0x9c {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveGetLedCustomSetupBlock {
+                            self.parseGetLedCustomSetup(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveGetLedCustomSetupBlock {
+                            block(nil,.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetLedCustomSetup长度校验出错"))
+                    }
+                }
+                
+                //设置LED自定义设置
+                if val[0] == 0x02 && val[1] == 0x9d {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveSetLedCustomSetupBlock {
+                            self.parseSetLedCustomSetup(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveSetLedCustomSetupBlock {
+                            block(.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetLedCustomSetup长度校验出错"))
+                    }
+                    
+                }
+                
+                //获取自定义震动
+                if val[0] == 0x02 && val[1] == 0x9E {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveGetMotorShakeCustomBlock {
+                            self.parseGetMotorShakeCustom(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveGetMotorShakeCustomBlock {
+                            block(nil,.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetMotorShakeCustom长度校验出错"))
+                    }
+                    
+                }
+                
+                //设置自定义震动
+                if val[0] == 0x02 && val[1] == 0x9F {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveSetMotorShakeCustomBlock {
+                            self.parseSetMotorShakeCustom(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveSetMotorShakeCustomBlock {
+                            block(.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetMotorShakeCustom长度校验出错"))
                     }
                     
                 }
@@ -4794,7 +4874,7 @@ import CoreLocation
         
         if val[4] == 1 {
             
-            let string = String.init(format: "%02d",val[5])
+            let string = String.init(format: "%d",val[5])
             
             ZySDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
             success(string,.none)
@@ -12112,6 +12192,163 @@ import CoreLocation
             success([],.fail)
         }
         
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 获取LED自定义设置
+    @objc public func getLedCustomSetup(success:@escaping((ZyLedFunctionModel?,ZyError) -> Void)){
+        
+        var val:[UInt8] = [
+            0x02,
+            0x1c,
+            0x04,
+            0x00,
+        ]
+
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveGetLedCustomSetupBlock = success
+        }else{
+            success(nil,state)
+        }
+        
+    }
+    
+    private func parseGetLedCustomSetup(val:[UInt8],success:@escaping((ZyLedFunctionModel?,ZyError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+
+        if val[2] == 8 {
+            let ledColor = val[5]
+            let timeLength = val[6]
+            let frequency = val[7]
+            let string = String.init(format: "颜色:%d,持续时长:%d,闪烁频次:%d",ledColor,timeLength,frequency)
+            print("\(string)")
+            ZySDKLog.writeStringToSDKLog(string: string)
+            let model = ZyLedFunctionModel.init(dic: ["ledType":Int(ZyLedFunctionType.customSetup.rawValue),"ledColor":Int(ledColor),"timeLength":Int(timeLength),"frequency":Int(frequency)])
+            success(model,.none)
+        }else{
+            success(nil,.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 设置LED自定义设置
+    @objc public func setLedCustomSetup(model:ZyLedFunctionModel,success:@escaping((ZyError) -> Void)) {
+        
+        var val:[UInt8] = [
+            0x02,
+            0x1d,
+            0x07,
+            0x00,
+            UInt8(model.ledColor),
+            UInt8(model.timeLength),
+            UInt8(model.frequency),
+        ]
+        
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetLedCustomSetupBlock = success
+        }else{
+            success(state)
+        }
+    }
+    
+    private func parseSetLedCustomSetup(val:[UInt8],success:@escaping((ZyError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val[4] == 1 {
+            
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@", state))
+            success(.none)
+            
+        }else{
+            success(.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 获取自定义震动设置
+    @objc public func getMotorShakeCustom(success:@escaping((ZyMotorFunctionModel?,ZyError) -> Void)){
+        
+        var val:[UInt8] = [
+            0x02,
+            0x1e,
+            0x04,
+            0x00,
+        ]
+
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveGetMotorShakeCustomBlock = success
+        }else{
+            success(nil,state)
+        }
+        
+    }
+    
+    private func parseGetMotorShakeCustom(val:[UInt8],success:@escaping((ZyMotorFunctionModel?,ZyError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val[2] == 8 {
+            let timeLength = val[5]
+            let frequency = val[6]
+            let level = val[7]
+            let string = String.init(format: "震动时长:%d,震动频次:%d,震动强度:%d",timeLength,frequency,level)
+            print("\(string)")
+            ZySDKLog.writeStringToSDKLog(string: string)
+            let model = ZyMotorFunctionModel.init(dic: ["ledType":Int(ZyLedFunctionType.customSetup.rawValue),"timeLength":Int(timeLength),"frequency":Int(frequency),"level":Int(level)])
+            success(model,.none)
+            
+        }else{
+            success(nil,.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 设置自定义震动
+    @objc public func setMotorShakeCustom(model:ZyMotorFunctionModel,success:@escaping((ZyError) -> Void)) {
+        
+        var val:[UInt8] = [
+            0x02,
+            0x1f,
+            0x07,
+            0x00,
+            UInt8(model.timeLength),
+            UInt8(model.frequency),
+            UInt8(model.level),
+        ]
+        
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetMotorShakeCustomBlock = success
+        }else{
+            success(state)
+        }
+    }
+    
+    private func parseSetMotorShakeCustom(val:[UInt8],success:@escaping((ZyError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val[4] == 1 {
+            
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@", state))
+            success(.none)
+            
+        }else{
+            success(.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
         self.signalCommandSemaphore()
     }
     

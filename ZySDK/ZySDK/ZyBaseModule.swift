@@ -276,6 +276,41 @@ import zlib
             model.rssi = Int(truncating: rssi)
             model.peripheral = peripheral
             model.uuidString = peripheral.identifier.uuidString
+            var macString:String?
+            if let macData:Data = advertisementData["kCBAdvDataManufacturerData"] as? Data {
+                var mac:String = ""
+                if macData.count > 6 + 6 + 1 {
+                    if macData[13] == 0x80 {
+                        let newData = macData.subdata(in: 7..<13)
+                        //print("--->>> newData = \(self.convertDataToHexStr(data: newData))")
+                        mac = self.convertDataToHexStr(data: newData)
+                        mac = mac.replacingOccurrences(of: " ", with: "")
+                        var index = mac.count
+                        while ((index - 2) > 0) {
+                            index -= 2
+                            mac.insert(":", at: mac.index(mac.startIndex, offsetBy: index))
+                        }
+                        macString = mac
+                    }
+                }else if macData.count >= 2 + 6 {
+                    var newData = macData.subdata(in: 2..<8)
+                    //print("--->>> newData = \(self.convertDataToHexStr(data: newData))")
+                    macString = newData.withUnsafeBytes { (bytes) -> String in
+                        var dataString = ""
+                        for i in stride(from: bytes.count-1, through: 0, by: -1) {
+                            let count = UInt8(bytes[i])
+                            
+                            dataString = dataString + String.init(format: "%02x", count)
+                            if i > 0 {
+                                dataString += ":"
+                            }
+                        }
+                        return dataString
+                    }
+                }
+                
+            }
+            model.macString = macString
             if !peripheralArray.contains(where: { item in
                 if item.uuidString == model.uuidString {
                     return true
@@ -299,6 +334,7 @@ import zlib
     /// 停止扫描
     @objc public func stopScan() {
         ZyBleManager.shareInstance.stopScanPeripheral()
+        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(stopScan), object: nil)
     }
     
     /// 连接设备
@@ -373,6 +409,16 @@ import zlib
         }
     }
     
+    @objc public func otaDisconnect() {
+        //断开连接并打开正常的重连方法
+        if let peripheral = self.peripheral {
+            ZyBleManager.shareInstance.disconnect(peripheral: peripheral)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now()+3) {
+            self.ant_ReconnectTimer?.fireDate = .distantPast
+        }
+    }
+    
     /// 断开连接
     @objc public func disconnect() {
         if self.functionListModel?.functionList_bind == true {
@@ -387,6 +433,7 @@ import zlib
         
         let userDefault = UserDefaults.standard
         userDefault.removeObject(forKey: "Zy_ReconnectIdentifierKey")
+        userDefault.removeObject(forKey: "Ant_ReconnectIdentifierKey")
         userDefault.synchronize()
         
         ZyBleManager.shareInstance.CentralDisonnectPeripheral { (central, peripheral, error) in
