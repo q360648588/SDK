@@ -24,6 +24,7 @@ import CoreLocation
     @objc public var rssi:Int = 0
     @objc public var peripheral:CBPeripheral?
     @objc public var uuidString:String?
+    @objc public var macString:String?
 }
 
 @objc public enum ZyFunctionListType:Int {
@@ -3068,7 +3069,7 @@ class ZyFunctionModel_newPortocol:NSObject {
 }
 
 @objc public class ZyStartEndTimeModel:NSObject {
-    @objc public var startHour:Int = -1 {
+    @objc public var startHour:Int = 0 {
         didSet {
             if self.startHour < UInt8.min || self.startHour > UInt8.max {
                 self.startHour = 0
@@ -3076,7 +3077,7 @@ class ZyFunctionModel_newPortocol:NSObject {
             }
         }
     }
-    @objc public var startMinute:Int = -1 {
+    @objc public var startMinute:Int = 0 {
         didSet {
             if self.startMinute < UInt8.min || self.startMinute > UInt8.max {
                 self.startMinute = 0
@@ -3084,7 +3085,7 @@ class ZyFunctionModel_newPortocol:NSObject {
             }
         }
     }
-    @objc public var endHour:Int = -1 {
+    @objc public var endHour:Int = 0 {
         didSet {
             if self.endHour < UInt8.min || self.endHour > UInt8.max {
                 self.endHour = 0
@@ -3092,7 +3093,7 @@ class ZyFunctionModel_newPortocol:NSObject {
             }
         }
     }
-    @objc public var endMinute:Int = -1 {
+    @objc public var endMinute:Int = 0 {
         didSet {
             if self.endMinute < UInt8.min || self.endMinute > UInt8.max {
                 self.endMinute = 0
@@ -3149,6 +3150,7 @@ class ZyFunctionModel_newPortocol:NSObject {
     case btBind                                //BT绑定
     case stepCountingStandardReminder          //计步达标提醒
     //case lowBatteryReminder                    //低电量提醒
+    case customSetup                           //自定义设置
 }
 
 @objc public class ZyLedFunctionModel:NSObject {

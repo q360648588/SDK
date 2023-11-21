@@ -381,6 +381,10 @@ class ZyVC: UIViewController {
                 "0x19 \(NSLocalizedString("Set individual LED light power display", comment: "设置单个LED灯电量显示"))",
                 "0x1A \(NSLocalizedString("Get motor vibration function", comment: "获取马达震动功能"))",
                 "0x1B \(NSLocalizedString("Set motor vibration function", comment: "设置马达震动功能"))",
+                "0x1c \(NSLocalizedString("Get a custom LED", comment: "获取自定义LED"))",
+                "0x1d \(NSLocalizedString("Set up a custom LED", comment: "设置自定义LED"))",
+                "0x1e \(NSLocalizedString("Get custom vibrations", comment: "获取自定义震动"))",
+                "0x1f \(NSLocalizedString("Set up custom vibration", comment: "设置自定义震动"))",
             ],
             [
                 "0x00 \(NSLocalizedString("Synchronize step data", comment: "同步计步数据"))",
@@ -3183,6 +3187,116 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
+            
+        case "0x1c \(NSLocalizedString("Get a custom LED", comment: "获取自定义LED"))":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: NSLocalizedString("Get a custom LED", comment: "获取自定义LED"))
+            
+            ZyCommandModule.shareInstance.getLedCustomSetup { model, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                if error == .none {
+                    if let model = model {
+                        self.logView.writeString(string: "\(NSLocalizedString("Color", comment: "颜色")): \(model.ledColor)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Duration of duration", comment: "持续时长")): \(model.timeLength)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Frequency of flicker", comment: "闪烁频次")): \(model.frequency)\n\n")
+                    }
+                }
+            }
+            
+            break
+        case "0x1d \(NSLocalizedString("Set up a custom LED", comment: "设置自定义LED"))":
+            
+            let array = [
+                "\(NSLocalizedString("Color", comment: "颜色"))(0-15,bit0:\(NSLocalizedString("red", comment: "红")) bit1:\(NSLocalizedString("green", comment: "绿")) bit2:\(NSLocalizedString("blue", comment: "蓝")) bit3:\(NSLocalizedString("white", comment: "白")))",
+                "\(NSLocalizedString("Duration of duration", comment: "持续时长")) 1-20",
+                "\(NSLocalizedString("Frequency of flicker", comment: "闪烁频次")) 0-5，0常亮",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: NSLocalizedString("Set up a custom LED", comment: "设置自定义LED"))
+            self.presentTextFieldAlertVC(title: "提示(默认类型1其他0)", message: NSLocalizedString("Set up a custom LED", comment: "设置自定义LED"), holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let colorType = Int(textArray[0]) ?? 0
+                let timeLength = Int(textArray[1]) ?? 0
+                let frequency = Int(textArray[2]) ?? 0
+                
+                let model = ZyLedFunctionModel()
+                model.ledType = .customSetup
+                model.timeLength = timeLength
+                model.frequency = frequency
+                model.ledColor = colorType
+                self.logView.writeString(string: "\(NSLocalizedString("Color", comment: "颜色")): \(model.ledColor)")
+                self.logView.writeString(string: "\(NSLocalizedString("Duration of duration", comment: "持续时长")): \(model.timeLength)")
+                self.logView.writeString(string: "\(NSLocalizedString("Frequency of flicker", comment: "闪烁频次")): \(model.frequency)\n\n")
+                ZyCommandModule.shareInstance.setLedCustomSetup(model: model) { error in
+                    
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        print("setLedSetup ->","success")
+                    }
+                }
+            }
+            
+            break
+        case "0x1e \(NSLocalizedString("Get custom vibrations", comment: "获取自定义震动"))":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: NSLocalizedString("Get custom vibrations", comment: "获取自定义震动"))
+            
+            ZyCommandModule.shareInstance.getMotorShakeCustom { model, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                if error == .none {
+                    if let model = model {
+                        self.logView.writeString(string: "\(NSLocalizedString("Duration of vibration", comment: "震动时长")): \(model.timeLength)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Frequency of vibration", comment: "震动频次")): \(model.frequency)")
+                        self.logView.writeString(string: "\(NSLocalizedString("Intensity of vibration", comment: "震动强度")): \(model.level)\n\n")
+                    }
+                }
+            }
+            
+            break
+        case "0x1f \(NSLocalizedString("Set up custom vibration", comment: "设置自定义震动"))":
+            
+            let array = [
+                "\(NSLocalizedString("Duration of vibration", comment: "震动时长")) 10-50",
+                "\(NSLocalizedString("Frequency of vibration", comment: "震动频次")) 0-5 ,0长震",
+                "\(NSLocalizedString("Intensity of vibration", comment: "震动强度")) 1-10",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string: NSLocalizedString("Set up custom vibration", comment: "设置自定义震动"))
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set up custom vibration", comment: "设置自定义震动"), holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+
+                let timeLength = Int(textArray[0]) ?? 0
+                let frequency = Int(textArray[1]) ?? 0
+                let level = Int(textArray[2]) ?? 0
+                
+                let model = ZyMotorFunctionModel()
+                model.ledType = .customSetup
+                model.timeLength = timeLength
+                model.frequency = frequency
+                model.level = level
+                self.logView.writeString(string: "\(NSLocalizedString("Duration of vibration", comment: "震动时长")): \(model.timeLength)")
+                self.logView.writeString(string: "\(NSLocalizedString("Frequency of vibration", comment: "震动频次")): \(model.frequency)")
+                self.logView.writeString(string: "\(NSLocalizedString("Intensity of vibration", comment: "震动强度")): \(model.level)\n\n")
+                
+                ZyCommandModule.shareInstance.setMotorShakeCustom(model: model) { error in
+                    
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        print("setMotorShakeFunction ->","success")
+                    }
+                }
+            }
+            
+            break
+            
         case "0x00 \(NSLocalizedString("Synchronize step data", comment: "同步计步数据"))":
             
             let array = [

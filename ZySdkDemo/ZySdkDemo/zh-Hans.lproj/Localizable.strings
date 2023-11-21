@@ -416,10 +416,10 @@
 "OTA upgrade (default 0 for invalid types)"="OTA升级(无效类型默认0)";
 "Make sure the file path is correctly selected. Errors or invalid data may cause a flashback"="请确定文件路径选择正确，错误或无效数据可能导致闪退";
 "Photo album"="相册";
-""="";
-""="";
-""="";
-""="";
+"Get a custom LED"="获取自定义LED";
+"Set up a custom LED"="设置自定义LED";
+"Get custom vibrations"="获取自定义震动";
+"Set up custom vibration"="设置自定义震动";
 ""="";
 ""="";
 ""="";
