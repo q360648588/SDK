@@ -12219,14 +12219,15 @@ import CoreLocation
     private func parseGetLedCustomSetup(val:[UInt8],success:@escaping((ZyLedFunctionModel?,ZyError) -> Void)) {
         let state = String.init(format: "%02x", val[4])
 
-        if val[2] == 8 {
+        if val[2] == 9 {
             let ledColor = val[5]
             let timeLength = val[6]
             let frequency = val[7]
-            let string = String.init(format: "颜色:%d,持续时长:%d,闪烁频次:%d",ledColor,timeLength,frequency)
+            let ledOpenCount = val[8]
+            let string = String.init(format: "颜色:%d,持续时长:%d,闪烁频次:%d,LED开关",ledColor,timeLength,frequency,ledOpenCount)
             print("\(string)")
             ZySDKLog.writeStringToSDKLog(string: string)
-            let model = ZyLedFunctionModel.init(dic: ["ledType":Int(ZyLedFunctionType.customSetup.rawValue),"ledColor":Int(ledColor),"timeLength":Int(timeLength),"frequency":Int(frequency)])
+            let model = ZyLedFunctionModel.init(dic: ["ledType":Int(ZyLedFunctionType.customSetup.rawValue),"ledColor":Int(ledColor),"timeLength":Int(timeLength),"frequency":Int(frequency),"ledOpenCount":Int(ledOpenCount)])
             success(model,.none)
         }else{
             success(nil,.invalidState)
@@ -12246,6 +12247,7 @@ import CoreLocation
             UInt8(model.ledColor),
             UInt8(model.timeLength),
             UInt8(model.frequency),
+            UInt8(model.ledOpenCount),
         ]
         
         let data = Data.init(bytes: &val, count: val.count)

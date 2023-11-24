@@ -3161,6 +3161,7 @@ class ZyFunctionModel_newPortocol:NSObject {
     @objc public var thirdColor = 0
     @objc public var timeLength = 0 //持续时间[1-20]
     @objc public var frequency = 0  //闪烁频次[0-5] 0常亮
+    @objc public var ledOpenCount = 0  //0:OFF bit0:L bit1:M bit2:H
     
     public override init() {
         super.init()
@@ -3169,7 +3170,7 @@ class ZyFunctionModel_newPortocol:NSObject {
     @objc public init(dic:[String:Any]) {
         super.init()
         
-        if dic.keys.contains("ledType") && dic.keys.contains("ledColor") && dic.keys.contains("timeLength") && dic.keys.contains("frequency") {
+        if dic.keys.contains("ledType") && dic.keys.contains("ledColor") && dic.keys.contains("timeLength") && dic.keys.contains("frequency") && dic.keys.contains("ledOpenCount") {
             if let index = dic["ledType"] as? Int {
                 self.ledType = ZyLedFunctionType.init(rawValue: index) ?? .unknow
             }
@@ -3177,6 +3178,7 @@ class ZyFunctionModel_newPortocol:NSObject {
             self.ledColor = Int(UInt8(dic["ledColor"] as! Int) )
             self.timeLength = Int(UInt8(dic["timeLength"] as! Int))
             self.frequency = Int(UInt8(dic["frequency"] as! Int))
+            self.ledOpenCount = Int(UInt8(dic["ledOpenCount"] as! Int))
             
             if dic.keys.contains("firstColor") && dic.keys.contains("secondColor") && dic.keys.contains("thirdColor") {
                 self.firstColor = Int(UInt8(dic["firstColor"] as! Int) )
