@@ -424,7 +424,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
         
-        case "0x06 \(NSLocalizedString("Get mac address", comment: "获取mac地址"))":
+        case "\(NSLocalizedString("Get mac address", comment: "获取mac地址"))":
 
             self.logView.clearString()
             self.logView.writeString(string: NSLocalizedString("Get mac address", comment: "获取mac地址"))
@@ -447,7 +447,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x08 \(NSLocalizedString("Get the power", comment: "获取电量"))":
+        case "\(NSLocalizedString("Get the power", comment: "获取电量"))":
             
             self.logView.clearString()
             self.logView.writeString(string: NSLocalizedString("Get the power", comment: "获取电量"))
@@ -575,7 +575,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "0x01 \(NSLocalizedString("Set up personal information", comment: "设置个人信息"))":
+        case "\(NSLocalizedString("Set up personal information", comment: "设置个人信息"))":
             
             let array = [
                 "age:[0,255]",
@@ -620,7 +620,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x02 \(NSLocalizedString("Get the time standard", comment: "获取时间制式"))":
+        case "\(NSLocalizedString("Get the time standard", comment: "获取时间制式"))":
             
             self.logView.clearString()
             self.logView.writeString(string: NSLocalizedString("Get the time standard", comment: "获取时间制式"))
@@ -643,7 +643,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
 
             break
             
-        case "0x03 \(NSLocalizedString("Set the time standard", comment: "设置时间制式"))":
+        case "\(NSLocalizedString("Set the time standard", comment: "设置时间制式"))":
             
             let array = [
                 "format:0-\(NSLocalizedString("24 hour system", comment: "24小时制")),1-\(NSLocalizedString("12 hour system", comment: "12小时制"))"
@@ -672,7 +672,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x04 \(NSLocalizedString("Get the metric system", comment: "获取公英制"))":
+        case "\(NSLocalizedString("Get the metric system", comment: "获取公英制"))":
             
             self.logView.clearString()
             self.logView.writeString(string: NSLocalizedString("Get the metric system", comment: "获取公英制"))
@@ -692,7 +692,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x05 \(NSLocalizedString("Set the metric system", comment: "设置公英制"))":
+        case "\(NSLocalizedString("Set the metric system", comment: "设置公英制"))":
             
             let array = [
                 "0:\(NSLocalizedString("Metric system", comment: "公制"))，1:\(NSLocalizedString("British system", comment: "英制"))"
@@ -720,7 +720,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x07 \(NSLocalizedString("Set the weather", comment: "设置天气"))":
+        case "\(NSLocalizedString("Set the weather", comment: "设置天气"))":
             
             let array = [
                 NSLocalizedString("Days to come", comment: "未来天数"),
@@ -3591,7 +3591,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             
             break
             
-        case "0x03 \(NSLocalizedString("factory data reset", comment: "恢复出厂设置"))":
+        case "\(NSLocalizedString("factory data reset", comment: "恢复出厂设置"))":
             
             self.logView.clearString()
             self.logView.writeString(string: NSLocalizedString("factory data reset", comment: "恢复出厂设置"))
