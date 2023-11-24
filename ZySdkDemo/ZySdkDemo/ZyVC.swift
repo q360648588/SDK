@@ -2782,7 +2782,8 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     if let model = model {
                         self.logView.writeString(string: "\(NSLocalizedString("Color", comment: "颜色")): \(model.ledColor)")
                         self.logView.writeString(string: "\(NSLocalizedString("Duration of duration", comment: "持续时长")): \(model.timeLength)")
-                        self.logView.writeString(string: "\(NSLocalizedString("Frequency of flicker", comment: "闪烁频次")): \(model.frequency)\n\n")
+                        self.logView.writeString(string: "\(NSLocalizedString("Frequency of flicker", comment: "闪烁频次")): \(model.frequency)")
+                        self.logView.writeString(string: "model.ledOpenCount: \(model.ledOpenCount)\n\n")
                     }
                 }
             }
@@ -2794,6 +2795,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 "\(NSLocalizedString("Color", comment: "颜色"))(0-15,bit0:\(NSLocalizedString("red", comment: "红")) bit1:\(NSLocalizedString("green", comment: "绿")) bit2:\(NSLocalizedString("blue", comment: "蓝")) bit3:\(NSLocalizedString("white", comment: "白")))",
                 "\(NSLocalizedString("Duration of duration", comment: "持续时长")) 1-20",
                 "\(NSLocalizedString("Frequency of flicker", comment: "闪烁频次")) 0-5，0常亮",
+                "ledOpenCount"
             ]
             
             self.logView.clearString()
@@ -2804,15 +2806,18 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 let colorType = Int(textArray[0]) ?? 0
                 let timeLength = Int(textArray[1]) ?? 0
                 let frequency = Int(textArray[2]) ?? 0
+                let ledOpenCount = Int(textArray[3]) ?? 0
                 
                 let model = ZyLedFunctionModel()
                 model.ledType = .customSetup
                 model.timeLength = timeLength
                 model.frequency = frequency
                 model.ledColor = colorType
+                model.ledOpenCount = ledOpenCount
                 self.logView.writeString(string: "\(NSLocalizedString("Color", comment: "颜色")): \(model.ledColor)")
                 self.logView.writeString(string: "\(NSLocalizedString("Duration of duration", comment: "持续时长")): \(model.timeLength)")
-                self.logView.writeString(string: "\(NSLocalizedString("Frequency of flicker", comment: "闪烁频次")): \(model.frequency)\n\n")
+                self.logView.writeString(string: "\(NSLocalizedString("Frequency of flicker", comment: "闪烁频次")): \(model.frequency)")
+                self.logView.writeString(string: "model.ledOpenCount: \(model.ledOpenCount)\n\n")
                 ZyCommandModule.shareInstance.setLedCustomSetup(model: model) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
