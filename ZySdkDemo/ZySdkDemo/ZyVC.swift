@@ -409,7 +409,8 @@ class ZyVC: UIViewController {
                 "0x83(0x1f) \(NSLocalizedString("Set motor vibration function", comment: "设置马达震动功能"))",
                 "0x84(0x1e) \(NSLocalizedString("Get the LED light function", comment: "获取LED灯功能"))",
                 "0x84(0x1f) \(NSLocalizedString("Get motor vibration function", comment: "获取马达震动功能"))",
-                "0x84(0x29) \(NSLocalizedString("Gets a custom movement type", comment: "获取自定义运动类型"))",
+                "0x84(0x20) \(NSLocalizedString("Gets a custom movement type", comment: "获取自定义运动类型"))",
+                "0x83(0x21) 设置蓝牙名"
             ],
             [
                 "0x00 ",
@@ -444,6 +445,7 @@ class ZyVC: UIViewController {
                 "\(NSLocalizedString("Report request location information", comment: "上报请求定位信息"))",
                 "\(NSLocalizedString("Report the alarm clock", comment: "上报闹钟"))",
                 "\(NSLocalizedString("Language of reporting", comment: "上报语言"))",
+                "上报辅助定位"
             ],
             [
                 "\(NSLocalizedString("Multi-package test command", comment: "多包测试命令"))",
@@ -475,6 +477,7 @@ class ZyVC: UIViewController {
                 "\(NSLocalizedString("Send online watch face", comment: "发送在线表盘"))",
                 "\(NSLocalizedString("Gets the local watch face picture", comment: "获取本地表盘图片"))",
                 "\(NSLocalizedString("Get a custom watch face picture", comment: "获取自定义表盘图片"))",
+                "获取辅助定位文件"
             ],
             [
                 "\(NSLocalizedString("Save the existing command log", comment: "保存现有命令log"))",
@@ -4120,7 +4123,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-        case "0x84(0x29) \(NSLocalizedString("Gets a custom movement type", comment: "获取自定义运动类型"))":
+        case "0x84(0x20) \(NSLocalizedString("Gets a custom movement type", comment: "获取自定义运动类型"))":
 
             self.logView.clearString()
             self.logView.writeString(string: NSLocalizedString("Gets a custom movement type", comment: "获取自定义运动类型"))
@@ -4131,6 +4134,29 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                 }
             }
             
+            break
+            
+        case "0x83(0x21) 设置蓝牙名":
+            
+            self.logView.clearString()
+            let array = [
+                "设置蓝牙名",
+            ]
+            
+            self.presentTextFieldAlertVC(title: "提示(名称过长部分会被截掉)", message: NSLocalizedString("设置蓝牙名", comment: ""), holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                
+                let bleName = textArray[0]
+                self.logView.writeString(string: "\(NSLocalizedString("设置蓝牙名", comment: "")): \(bleName)")
+                        
+                ZyCommandModule.shareInstance.setBleName(name: bleName) { error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    if error == .none {
+                        print("setBleName -> success")
+                    }
+                }
+            }
             break
         case "0x00 ":
             
@@ -4628,6 +4654,19 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
+        case "上报辅助定位":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: NSLocalizedString("上报辅助定位", comment: ""))
+            ZyCommandModule.shareInstance.reportAssistedPositioning { state, error in
+                
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                self.logView.writeString(string: "\(NSLocalizedString("辅助定位状态", comment: "")):\(state)")
+                print("reportAssistedPositioning -> type = \(state)")
+            }
+            
+            break
         case NSLocalizedString("Multi-package test command", comment: "多包测试命令"):
             
             let array = [
@@ -4986,7 +5025,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                             }
                             UserDefaults.standard.synchronize()
                         }else{
-                            self.presentSystemAlertVC(title: "文件类型错误", message: "请选择设备支持的音乐文件(\(supportString)") {
+                            self.presentSystemAlertVC(title: "文件类型错误", message: "请选择设备支持的音乐文件\(supportString)") {
                                 
                             } okAction: {
                                 
@@ -5301,7 +5340,7 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
             
-        case "3\(NSLocalizedString("Font library upgrade", comment: "字库升级")))":
+        case "3\(NSLocalizedString("Font library upgrade", comment: "字库升级"))":
             let fileString = self.getFilePathWithType(type: "3")
             
             self.logView.writeString(string: "\(NSLocalizedString("Current selection type", comment: "当前选择类型")):3\(NSLocalizedString("Font library upgrade", comment: "字库升级")))")
@@ -5810,6 +5849,22 @@ extension ZyVC:UITableViewDataSource,UITableViewDelegate {
                     }
                 }
                 
+            }
+            
+            break
+            
+        case "获取辅助定位文件":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: NSLocalizedString("获取辅助定位文件", comment: ""))
+            
+            ZyCommandModule.shareInstance.getServerAssistedPositioningData { _,_,error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                
+                if error == .none {
+                    print("获取辅助定位文件 success")
+                    self.logView.writeString(string: "\(NSLocalizedString("获取辅助定位文件", comment: ""))")
+                }
             }
             
             break

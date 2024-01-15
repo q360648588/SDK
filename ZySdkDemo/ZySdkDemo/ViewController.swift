@@ -237,7 +237,7 @@ class ViewController: UIViewController {
         
         let dateLabel = UILabel.init(frame: .init(x: 0, y: 600, width: screenWidth, height: 44))
         dateLabel.backgroundColor = .green
-        dateLabel.text = "\(NSLocalizedString("Date of update", comment: "更新日期")):2023-11-24"
+        dateLabel.text = "\(NSLocalizedString("Date of update", comment: "更新日期")):2024-1-4"
         dateLabel.textColor = .red
         dateLabel.numberOfLines = 0
         dateLabel.textAlignment = .center

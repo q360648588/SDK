@@ -123,6 +123,9 @@ import CoreLocation
     @objc public private(set) var functionList_localPlay = false
     @objc public private(set) var functionList_locationGps = false
     @objc public private(set) var functionList_customSports = false
+    @objc public private(set) var functionList_timeZone = false
+    @objc public private(set) var functionList_sleepDataVersion = false
+    @objc public private(set) var functionList_bleNameSetup = false
     
     @objc public private(set) var functionDetail_exercise:ZyFunctionModel_exercise?
     @objc public private(set) var functionDetail_notification:ZyFunctionModel_notification?
@@ -148,6 +151,8 @@ import CoreLocation
     @objc public private(set) var functionDetail_localPlay:ZyFunctionModel_supportMusicFileTypeModel?
     @objc public private(set) var functionDetail_locationGps:ZyFunctionModel_locationGps?
     @objc public private(set) var functionDetail_customSports:ZyFunctionModel_customSports?
+    @objc public private(set) var functionDetail_sleepDataVersion:ZyFunctionModel_sleepDataVersion?
+    @objc public private(set) var functionDetail_bleNameSetup:ZyFunctionModel_bleNameSetup?
     
     init(val:[UInt8]) {
         
@@ -342,7 +347,12 @@ import CoreLocation
             case 54:
                 self.functionDetail_customSports = ZyFunctionModel_customSports(val: functionVal)
                 break
-                
+            case 56:
+                self.functionDetail_sleepDataVersion = ZyFunctionModel_sleepDataVersion(val: functionVal)
+                break
+            case 57:
+                self.functionDetail_bleNameSetup = ZyFunctionModel_bleNameSetup(val: functionVal)
+                break
             default:
                 break
             }
@@ -468,7 +478,12 @@ import CoreLocation
                 break
             case 54:self.functionList_customSports = state == 0 ? false:true
                 break
-        
+            case 55:self.functionList_timeZone = state == 0 ? false:true
+                break
+            case 56:self.functionList_sleepDataVersion = state == 0 ? false:true
+                break
+            case 57:self.functionList_bleNameSetup = state == 0 ? false:true
+                break
             default:
                 break
             }
@@ -1340,6 +1355,21 @@ import CoreLocation
                 }
             }
         }
+        if self.functionList_timeZone {
+            log += "\n时区"
+        }
+        if self.functionList_sleepDataVersion {
+            log += "\n睡眠数据版本信息"
+            if let model = self.functionDetail_sleepDataVersion {
+                log += "\n      睡眠版本:\(model.versionType)"
+            }
+        }
+        if self.functionList_bleNameSetup {
+            log += "\n蓝牙名设置"
+            if let model = self.functionDetail_bleNameSetup {
+                log += "\n      名称最大长度:\(model.nameMaxLength)"
+            }
+        }
         return log
     }
 }
@@ -2161,6 +2191,7 @@ class ZyFunctionModel_newPortocol:NSObject {
 @objc public class ZyFunctionModel_customDial:NSObject {
     
     @objc public private(set) var isSupportfontColor = true       //0:不支持,1:支持
+    @objc public private(set) var isSupportLocationInfomation = true    //0:不支持，1支持
     
     init(result:Int) {
         self.isSupportfontColor = result == 0 ? false:true
@@ -2887,7 +2918,7 @@ class ZyFunctionModel_newPortocol:NSObject {
     case swimming                           //游泳
     case runIndoor                          //室内跑
     case volleyball                         //排球
-    case walkFast                           //健走
+    case walkFast                           //健走(预留)
     case spinning                           //动感单车
     case sitUps                             //仰卧起坐
     case mountainClimbing                   //登山
@@ -2902,8 +2933,8 @@ class ZyFunctionModel_newPortocol:NSObject {
     case tableTennis                        //乒乓球
     case cricket                            //板球
     case rugby                              //橄榄球
-        
-    case fitness = 26                       //0 健走
+    case onFoot                             //徒步
+    case fitness = 26                       //0 健身
     case trailRunning = 27                  //1 越野跑
     case dumbbells = 28                     //2 哑铃
     case rowingMachine = 29                 //3 划船机
@@ -3238,3 +3269,56 @@ class ZyFunctionModel_newPortocol:NSObject {
         super.init()
     }
 }
+
+@objc public class ZyFunctionModel_sleepDataVersion:NSObject {
+    @objc public private(set) var versionType = 0 {
+        didSet {
+            if self.versionType < UInt8.min || self.versionType > UInt8.max {
+                self.versionType = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    
+    public override init() {
+        super.init()
+    }
+    
+    init(val:[UInt8]) {
+        self.versionType = Int(val[0])
+        super.init()
+    }
+    
+    init(dic:[String:Any]) {
+        super.init()
+        
+        self.versionType = Int(dic["versionType"] as! String) ?? 0
+    }
+}
+
+@objc public class ZyFunctionModel_bleNameSetup:NSObject {
+    @objc public private(set) var nameMaxLength = 0 {
+        didSet {
+            if self.nameMaxLength < UInt8.min || self.nameMaxLength > UInt8.max {
+                self.nameMaxLength = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    
+    public override init() {
+        super.init()
+    }
+    
+    init(val:[UInt8]) {
+        self.nameMaxLength = Int(val[0])
+        super.init()
+    }
+    
+    init(dic:[String:Any]) {
+        super.init()
+        
+        self.nameMaxLength = Int(dic["nameMaxLength"] as! String) ?? 0
+    }
+}
+

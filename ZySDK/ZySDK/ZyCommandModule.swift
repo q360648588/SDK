@@ -183,12 +183,14 @@ import CoreLocation
     var receiveGetMotorShakeFunctionSingleBlock:((ZyMotorFunctionModel?,ZyError) -> Void)?
     var receiveSetPowerConsumptionDataBlock:((ZyError) -> Void)?
     var receiveReportPowerConsumptionData:(([String:String],ZyError) -> Void)?
+    var receiveReportAssistedPositioning:((Int,ZyError) -> Void)?
     var receiveGetCustomSportsModeBlock:((ZyExerciseType,ZyError) -> Void)?
     var receiveReportLanguageType:((Int,ZyError) -> Void)?
     var receiveGetLedCustomSetupBlock:((ZyLedFunctionModel?,ZyError) -> Void)?
     var receiveSetLedCustomSetupBlock:((ZyError) -> Void)?
     var receiveGetMotorShakeCustomBlock:((ZyMotorFunctionModel?,ZyError) -> Void)?
     var receiveSetMotorShakeCustomBlock:((ZyError) -> Void)?
+    var receiveSetBleNameBlock:((ZyError) -> Void)?
     
     var stepMaxData:Data?
     var isStepDetailData = false
@@ -3071,6 +3073,11 @@ import CoreLocation
                                                 self.parseNewProtocolUniversalResponse(result: result, success: block)
                                             }
                                             break
+                                        case 0x21:
+                                            if let block = self.receiveSetBleNameBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
                                             
                                         default:
                                             break
@@ -3193,6 +3200,12 @@ import CoreLocation
                                     let newVal = Array(val[4..<val.count-2])
                                     let cmd_id:Int = Int(newVal[0])
                                     switch cmd_id {
+                                    case 0x07:
+                                        let stateVal = Array(newVal[1..<2])
+                                        if let block = self.receiveReportAssistedPositioning {
+                                            self.parseReportAssistedPositioning(val: stateVal, success: block)
+                                        }
+                                        break
                                     case 0x08:
                                         let startIndex = 1
                                         let endIndex = 24
@@ -3344,7 +3357,11 @@ import CoreLocation
                                                 block(.invalidLength)
                                             }
                                             break
-                                            
+                                        case 0x21:
+                                            if let block = self.receiveSetBleNameBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
                                         default:
                                             break
                                         }
@@ -3611,7 +3628,11 @@ import CoreLocation
                                             self.parseNewProtocolUniversalResponse(result: result, success: block)
                                         }
                                         break
-                                        
+                                    case 0x21:
+                                        if let block = self.receiveSetBleNameBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
                                     default:
                                         break
                                     }
@@ -3732,6 +3753,12 @@ import CoreLocation
                                 let newVal = Array(val[4..<val.count-2])
                                 let cmd_id:Int = Int(newVal[0])
                                 switch cmd_id {
+                                case 0x07:
+                                    let stateVal = Array(newVal[1..<2])
+                                    if let block = self.receiveReportAssistedPositioning {
+                                        self.parseReportAssistedPositioning(val: stateVal, success: block)
+                                    }
+                                    break
                                 case 0x08:
                                     let startIndex = 1
                                     let endIndex = 24
@@ -3884,7 +3911,11 @@ import CoreLocation
                                             block(.invalidLength)
                                         }
                                         break
-                                        
+                                    case 0x21:
+                                        if let block = self.receiveSetBleNameBlock {
+                                            block(.invalidLength)
+                                        }
+                                        break
                                     default:
                                         break
                                     }
@@ -8586,7 +8617,7 @@ import CoreLocation
         modelDataArray[0] = UInt8((allModelLenght ) & 0xff)
         modelDataArray[1] = UInt8((allModelLenght >> 8) & 0xff)
         modelDataArray[2] = UInt8((modelCount ) & 0xff)
-        modelDataArray[4] = UInt8((modelCount >> 8 ) & 0xff)
+        modelDataArray[3] = UInt8((modelCount >> 8 ) & 0xff)
         
         let crc16 = self.CRC16(val: modelDataArray)
 
@@ -8643,7 +8674,7 @@ import CoreLocation
                         valArray[11] = UInt8((crc16 >> 8) & 0xff)
                         valArray[12] = UInt8(lastLength)
 
-                        let arr:[UInt8] = Array.init(modelDataArray[0..<7])
+                        let arr:[UInt8] = modelDataArray.count == 4 ? Array.init(modelDataArray[0..<4]) : Array.init(modelDataArray[0..<7])
                         valArray.replaceSubrange(valArray.index(0, offsetBy: 13)..<valArray.endIndex, with: arr)
                         
                     }else{
@@ -9157,261 +9188,13 @@ import CoreLocation
             
             ZySDKLog.writeStringToSDKLog(string: String.init(format: "第%@天,类型:%@", day,typeString))
             
-            var sleepArray = [Int].init()
-            var originalArray:[Dictionary<String,Array<Int>>] = [[String:Array<Int>]].init()
-            for i in stride(from: 0, to: val.count, by: 1) {
-                let sleepCount = val[i]
-                
-                let state_1 = (sleepCount >> 7 & 0x1) << 1 | (sleepCount >> 6 & 0x1)
-                let state_2 = (sleepCount >> 5 & 0x1) << 1 | (sleepCount >> 4 & 0x1)
-                let state_3 = (sleepCount >> 3 & 0x1) << 1 | (sleepCount >> 2 & 0x1)
-                let state_4 = (sleepCount >> 1 & 0x1) << 1 | (sleepCount >> 0 & 0x1)
-                
-                sleepArray.append(Int(state_1))
-                sleepArray.append(Int(state_2))
-                sleepArray.append(Int(state_3))
-                sleepArray.append(Int(state_4))
-                
-                let string = String.init(format: "index_%d:0x%02x", i,sleepCount)
-                let dic:Dictionary<String,Array<Int>> = [string:[Int(state_1),Int(state_2),Int(state_3),Int(state_4)]]
-                originalArray.append(dic)
-            }
-            
-            //{"end":"20:45","start":"20:09","total":"36","type":"1"}
-            var modelArray = [[String:String]].init()
-            var modelArray_filter = [[String:String]].init()
-            var startIndex = 0
-            var isAwakeSameState = false
-            var islightSameState = false
-            var isDeepSameState = false
-            var isInvalidSameState = false
-            var totalDeep = 0
-            var totalLight = 0
-            var totalAwake = 0
-            var totalInvalid = 0
-            for i in stride(from: 0, to: sleepArray.count-1, by: 1) {
-                
-                let state = sleepArray[i]
-                let nextState = sleepArray[i+1]
-                
-                var start = ""
-                var end = ""
-                
-                if state == 0 {//清醒
-                    if !isAwakeSameState {
-                        //开始记录第一个状态点
-                        isAwakeSameState = true
-                        startIndex = i
-                    }
-                    
-                    if state != nextState {
-                        //跟下一个状态不一致时保存开始到当前的序号
-                        isAwakeSameState = false
-                        if startIndex > 720 {
-                            start = String.init(format: "%02d:%02d", (startIndex-720)/60 == 24 ? 0 : ((startIndex-720)/60) ,(startIndex-720)%60)
-                        }else{
-                            start = String.init(format: "%02d:%02d", (startIndex+720)/60 == 24 ? 0 : ((startIndex+720)/60) ,(startIndex+720)%60)
-                        }
-                        if i > 720 {
-                            end = String.init(format: "%02d:%02d", (i-720)/60 == 24 ? 0 : ((i-720)/60),(i-720)%60)
-                        }else{
-                            end = String.init(format: "%02d:%02d", (i+720)/60 == 24 ? 0 : ((i+720)/60),(i+720)%60)
-                        }
-                        
-                        let total = String.init(format: "%d", i - startIndex + 1)
-                        let type = String.init(format: "%d", state)
-                        
-                        modelArray.append(["start":start,"end":end,"total":total,"type":type])
-                        modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
-                    }
-                    totalAwake += 1
-                }else if state == 1 {//浅睡
-                    if !islightSameState {
-                        //开始记录第一个状态点
-                        islightSameState = true
-                        startIndex = i
-                    }
-                    
-                    if state != nextState {
-                        //跟下一个状态不一致时保存开始到当前的序号
-                        islightSameState = false
-                        if startIndex > 720 {
-                            start = String.init(format: "%02d:%02d", (startIndex-720)/60 == 24 ? 0 : ((startIndex-720)/60) ,(startIndex-720)%60)
-                        }else{
-                            start = String.init(format: "%02d:%02d", (startIndex+720)/60 == 24 ? 0 : ((startIndex+720)/60) ,(startIndex+720)%60)
-                        }
-                        if i > 720 {
-                            end = String.init(format: "%02d:%02d", (i-720)/60 == 24 ? 0 : ((i-720)/60),(i-720)%60)
-                        }else{
-                            end = String.init(format: "%02d:%02d", (i+720)/60 == 24 ? 0 : ((i+720)/60),(i+720)%60)
-                        }
-                        let total = String.init(format: "%d", i - startIndex + 1)
-                        let type = String.init(format: "%d", state)
-                        
-                        modelArray.append(["start":start,"end":end,"total":total,"type":type])
-                        modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
-                    }
-                    totalLight += 1
-                    
-                }else if state == 2 {//深睡
-                    if !isDeepSameState {
-                        //开始记录第一个状态点
-                        isDeepSameState = true
-                        startIndex = i
-                    }
-                    
-                    if state != nextState {
-                        //跟下一个状态不一致时保存开始到当前的序号
-                        isDeepSameState = false
-                        if startIndex > 720 {
-                            start = String.init(format: "%02d:%02d", (startIndex-720)/60 == 24 ? 0 : ((startIndex-720)/60) ,(startIndex-720)%60)
-                        }else{
-                            start = String.init(format: "%02d:%02d", (startIndex+720)/60 == 24 ? 0 : ((startIndex+720)/60) ,(startIndex+720)%60)
-                        }
-                        if i > 720 {
-                            end = String.init(format: "%02d:%02d", (i-720)/60 == 24 ? 0 : ((i-720)/60),(i-720)%60)
-                        }else{
-                            end = String.init(format: "%02d:%02d", (i+720)/60 == 24 ? 0 : ((i+720)/60),(i+720)%60)
-                        }
-                        let total = String.init(format: "%d", i - startIndex + 1)
-                        let type = String.init(format: "%d", state)
-                        
-                        modelArray.append(["start":start,"end":end,"total":total,"type":type])
-                        modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
-                    }
-                    totalDeep += 1
-                }else{//无效数据
-                    if !isInvalidSameState {
-                        //开始记录第一个状态点
-                        isInvalidSameState = true
-                        startIndex = i
-                    }
-                    
-                    if state != nextState {
-                        //跟下一个状态不一致时保存开始到当前的序号
-                        isInvalidSameState = false
-                        if startIndex > 720 {
-                            start = String.init(format: "%02d:%02d", (startIndex-720)/60 == 24 ? 0 : ((startIndex-720)/60) ,(startIndex-720)%60)
-                        }else{
-                            start = String.init(format: "%02d:%02d", (startIndex+720)/60 == 24 ? 0 : ((startIndex+720)/60) ,(startIndex+720)%60)
-                        }
-                        if i > 720 {
-                            end = String.init(format: "%02d:%02d", (i-720)/60 == 24 ? 0 : ((i-720)/60),(i-720)%60)
-                        }else{
-                            end = String.init(format: "%02d:%02d", (i+720)/60 == 24 ? 0 : ((i+720)/60),(i+720)%60)
-                        }
-                        let total = String.init(format: "%d", i - startIndex + 1)
-                        let type = String.init(format: "%d", state)
-                        
-                        if !modelArray.isEmpty {
-                            modelArray.append(["start":start,"end":end,"total":total,"type":type])
-                        }
-                        //modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
-                    }
-                    totalInvalid += 1
-                }
-                
-                //循环到最后一个数据
-                if i == sleepArray.count-2 {
-                    //判断最后一个数据跟最后一个状态是否一致
-                    if state == nextState {
-                        //一致把最后一个状态加入最后一组数据
-                        isAwakeSameState = false
-                        if startIndex > 720 {
-                            start = String.init(format: "%02d:%02d", (startIndex-720)/60 == 24 ? 0 : ((startIndex-720)/60) ,(startIndex-720)%60)
-                        }else{
-                            start = String.init(format: "%02d:%02d", (startIndex+720)/60 == 24 ? 0 : ((startIndex+720)/60) ,(startIndex+720)%60)
-                        }
-                        if i > 720 {
-                            end = String.init(format: "%02d:%02d", (i-720+1)/60 == 24 ? 0 : ((i-720+1)/60),(i-720+1)%60)
-                        }else{
-                            end = String.init(format: "%02d:%02d", (i+720+1)/60 == 24 ? 0 : ((i+720+1)/60),(i+720+1)%60)
-                        }
-                        let total = String.init(format: "%d", (i+1) - startIndex + 1)
-                        let type = String.init(format: "%d", state)
-                        if type != "3" {
-                            modelArray.append(["start":start,"end":end,"total":total,"type":type])
-                            modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
-                        }
-                    }else{
-                        //不一致的，最后一个状态为单独一组
-                        let start = String.init(format: "%02d:%02d", (i-720)/60 == 24 ? 0 : ((i-720)/60) ,(i-720)%60)
-                        let end = String.init(format: "%02d:%02d", (i-720+1)/60 == 24 ? 0 : ((i-720+1)/60) ,(i-720+1)%60)
-                        let total = String.init(format: "%d", 1)
-                        let type = String.init(format: "%d", nextState)
-                        if type != "3" {
-                            modelArray.append(["start":start,"end":end,"total":total,"type":type])
-                            modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
-                        }
-                    }
-                    if nextState == 0 {
-                        totalAwake += 1
-                    }else if nextState == 1 {
-                        totalLight += 1
-                    }else if nextState == 2 {
-                        totalDeep += 1
-                    }else{
-                        totalInvalid += 1
-                    }
-                }
-            }
-            var newArray:[[String:String]] = []
-            var changeDic:[String:String] = [:]
-            for i in 0..<modelArray.count-1 {
-                
-                let currentDic:[String:String] = modelArray[i]
-                let nextDic:[String:String] = modelArray[i+1]
-                if changeDic.isEmpty {
-                    changeDic = currentDic
-                    if changeDic["type"] == "3" {
-                        changeDic["type"] = "0"
-                        totalAwake += Int(changeDic["total"] ?? "0") ?? 0
-                    }
-                }
-                
-                let currentType = currentDic["type"]
-                let nextType = nextDic["type"]
-                
-                
-                //nextType==0的数据在上面一个for里面已经添加过
-                if (currentType == "0" || currentType == "3") && (nextType == "3") {
-                    
-                    changeDic["end"] = nextDic["end"]
-                    changeDic["type"] = "0"
-                    let currentTotal = Int(changeDic["total"] ?? "0") ?? 0
-                    let nextTotal = Int(nextDic["total"] ?? "0") ?? 0
-                    changeDic["total"] = "\(currentTotal + nextTotal)"
-                    totalAwake += currentTotal + nextTotal
-                }else{
-                    newArray.append(changeDic)
-                    changeDic = [:]
-                }
-                
-                if i == modelArray.count-2 {
-                    if changeDic.isEmpty {
-                        newArray.append(nextDic)
-                    }else{
-                        newArray.append(changeDic)
-                    }
-                }
-            }
-            printLog("-------modelArray =",modelArray)
-            modelArray = newArray
-
-            //ZySDKLog.writeStringToSDKLog(string: "原始数据")
-            //ZySDKLog.writeStringToSDKLog(string: "\(originalArray)")
-            //ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@\n\n\n", originalArray))
-            
-            //ZySDKLog.writeStringToSDKLog(string: "1440未整合数据")
-            //ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@\n\n\n", sleepArray))
-            
-            //ZySDKLog.writeStringToSDKLog(string: "睡眠整合数据")
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@\n\n\n", modelArray))
-            
-//            printLog("originalArray =",originalArray)
-//            printLog("sleepArray =",sleepArray,sleepArray.count)
-            printLog("modelArray =",modelArray)
-            printLog("modelArray_filter =",modelArray_filter)
+            let sleepDic = self.dealSleepData(val: val)
+            let totalDeep = sleepDic["deep"] as! Int
+            let totalLight = sleepDic["light"] as! Int
+            let totalAwake = sleepDic["awake"] as! Int
+            let sleepArray = sleepDic["originalArray"]  as! [Int]
+            let modelArray = sleepDic["detailArray"] as! [String:String]
+            let modelArray_filter = sleepDic["detailArray_filter"]  as! [String:String]
             
             let model = ZySleepModel.init(dic: ["dayCount":day.count == 0 ? "0":day,"type":type,"deep":"\(totalDeep)","light":"\(totalLight)","awake":"\(totalAwake)","originalArray":sleepArray,"detailArray":modelArray,"detailArray_filter":modelArray_filter])
             success(model,.none)
@@ -10426,263 +10209,13 @@ import CoreLocation
             
             ZySDKLog.writeStringToSDKLog(string: String.init(format: "第%d天,类型:%@", day,typeString))
             
-            var sleepArray = [Int].init()
-            var originalArray:[Dictionary<String,Array<Int>>] = [[String:Array<Int>]].init()
-            for i in stride(from: 0, to: val.count, by: 1) {
-                let sleepCount = val[i]
-                
-                let state_1 = (sleepCount >> 7 & 0x1) << 1 | (sleepCount >> 6 & 0x1)
-                let state_2 = (sleepCount >> 5 & 0x1) << 1 | (sleepCount >> 4 & 0x1)
-                let state_3 = (sleepCount >> 3 & 0x1) << 1 | (sleepCount >> 2 & 0x1)
-                let state_4 = (sleepCount >> 1 & 0x1) << 1 | (sleepCount >> 0 & 0x1)
-                
-                sleepArray.append(Int(state_1))
-                sleepArray.append(Int(state_2))
-                sleepArray.append(Int(state_3))
-                sleepArray.append(Int(state_4))
-                
-                let string = String.init(format: "index_%d:0x%02x", i,sleepCount)
-                let dic:Dictionary<String,Array<Int>> = [string:[Int(state_1),Int(state_2),Int(state_3),Int(state_4)]]
-                originalArray.append(dic)
-            }
-            
-            //{"end":"20:45","start":"20:09","total":"36","type":"1"}
-            var modelArray = [[String:String]].init()
-            var modelArray_filter = [[String:String]].init()
-            var startIndex = 0
-            var isAwakeSameState = false
-            var islightSameState = false
-            var isDeepSameState = false
-            var isInvalidSameState = false
-            var totalDeep = 0
-            var totalLight = 0
-            var totalAwake = 0
-            var totalInvalid = 0
-            for i in stride(from: 0, to: sleepArray.count-1, by: 1) {
-                
-                let state = sleepArray[i]
-                let nextState = sleepArray[i+1]
-                
-                var start = ""
-                var end = ""
-                
-                if state == 0 {//清醒
-                    if !isAwakeSameState {
-                        //开始记录第一个状态点
-                        isAwakeSameState = true
-                        startIndex = i
-                    }
-                    
-                    if state != nextState {
-                        //跟下一个状态不一致时保存开始到当前的序号
-                        isAwakeSameState = false
-                        if startIndex > 720 {
-                            start = String.init(format: "%02d:%02d", (startIndex-720)/60,(startIndex-720)%60)
-                        }else{
-                            start = String.init(format: "%02d:%02d", (startIndex+720)/60,(startIndex+720)%60)
-                        }
-                        if i > 720 {
-                            end = String.init(format: "%02d:%02d", (i-720)/60,(i-720)%60)
-                        }else{
-                            end = String.init(format: "%02d:%02d", (i+720)/60,(i+720)%60)
-                        }
-                        
-                        let total = String.init(format: "%d", i - startIndex + 1)
-                        let type = String.init(format: "%d", state)
-                        
-                        modelArray.append(["start":start,"end":end,"total":total,"type":type])
-                        modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
-                    }
-                    totalAwake += 1
-                }else if state == 1 {//浅睡
-                    if !islightSameState {
-                        //开始记录第一个状态点
-                        islightSameState = true
-                        startIndex = i
-                    }
-                    
-                    if state != nextState {
-                        //跟下一个状态不一致时保存开始到当前的序号
-                        islightSameState = false
-                        if startIndex > 720 {
-                            start = String.init(format: "%02d:%02d", (startIndex-720)/60,(startIndex-720)%60)
-                        }else{
-                            start = String.init(format: "%02d:%02d", (startIndex+720)/60,(startIndex+720)%60)
-                        }
-                        if i > 720 {
-                            end = String.init(format: "%02d:%02d", (i-720)/60,(i-720)%60)
-                        }else{
-                            end = String.init(format: "%02d:%02d", (i+720)/60,(i+720)%60)
-                        }
-                        let total = String.init(format: "%d", i - startIndex + 1)
-                        let type = String.init(format: "%d", state)
-                        
-                        modelArray.append(["start":start,"end":end,"total":total,"type":type])
-                        modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
-                    }
-                    totalLight += 1
-                    
-                }else if state == 2 {//深睡
-                    if !isDeepSameState {
-                        //开始记录第一个状态点
-                        isDeepSameState = true
-                        startIndex = i
-                    }
-                    
-                    if state != nextState {
-                        //跟下一个状态不一致时保存开始到当前的序号
-                        isDeepSameState = false
-                        if startIndex > 720 {
-                            start = String.init(format: "%02d:%02d", (startIndex-720)/60,(startIndex-720)%60)
-                        }else{
-                            start = String.init(format: "%02d:%02d", (startIndex+720)/60,(startIndex+720)%60)
-                        }
-                        if i > 720 {
-                            end = String.init(format: "%02d:%02d", (i-720)/60,(i-720)%60)
-                        }else{
-                            end = String.init(format: "%02d:%02d", (i+720)/60,(i+720)%60)
-                        }
-                        let total = String.init(format: "%d", i - startIndex + 1)
-                        let type = String.init(format: "%d", state)
-                        
-                        modelArray.append(["start":start,"end":end,"total":total,"type":type])
-                        modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
-                    }
-                    totalDeep += 1
-                }else{//无效数据
-                    if !isInvalidSameState {
-                        //开始记录第一个状态点
-                        isInvalidSameState = true
-                        startIndex = i
-                    }
-                    
-                    if state != nextState {
-                        //跟下一个状态不一致时保存开始到当前的序号
-                        isInvalidSameState = false
-                        if startIndex > 720 {
-                            start = String.init(format: "%02d:%02d", (startIndex-720)/60,(startIndex-720)%60)
-                        }else{
-                            start = String.init(format: "%02d:%02d", (startIndex+720)/60,(startIndex+720)%60)
-                        }
-                        if i > 720 {
-                            end = String.init(format: "%02d:%02d", (i-720)/60,(i-720)%60)
-                        }else{
-                            end = String.init(format: "%02d:%02d", (i+720)/60,(i+720)%60)
-                        }
-                        let total = String.init(format: "%d", i - startIndex + 1)
-                        let type = String.init(format: "%d", state)
-                        
-                        if !modelArray.isEmpty {
-                            modelArray.append(["start":start,"end":end,"total":total,"type":type])
-                        }
-                        //modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
-                    }
-                    totalInvalid += 1
-                }
-                
-                //循环到最后一个数据
-                if i == sleepArray.count-2 {
-                    //判断最后一个数据跟最后一个状态是否一致
-                    if state == nextState {
-                        //一致把最后一个状态加入最后一组数据
-                        isAwakeSameState = false
-                        if startIndex > 720 {
-                            start = String.init(format: "%02d:%02d", (startIndex-720)/60,(startIndex-720)%60)
-                        }else{
-                            start = String.init(format: "%02d:%02d", (startIndex+720)/60,(startIndex+720)%60)
-                        }
-                        if i > 720 {
-                            end = String.init(format: "%02d:%02d", (i-720+1)/60,(i-720+1)%60)
-                        }else{
-                            end = String.init(format: "%02d:%02d", (i+720+1)/60,(i+720+1)%60)
-                        }
-                        let total = String.init(format: "%d", (i+1) - startIndex + 1)
-                        let type = String.init(format: "%d", state)
-                        if type != "3" {
-                            modelArray.append(["start":start,"end":end,"total":total,"type":type])
-                            modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
-                        }
-                    }else{
-                        //不一致的，最后一个状态为单独一组
-                        let start = String.init(format: "%02d:%02d", i/60,i%60)
-                        let end = String.init(format: "%02d:%02d", (i+1)/60,(i+1)%60)
-                        let total = String.init(format: "%d", 1)
-                        let type = String.init(format: "%d", nextState)
-                        if type != "3" {
-                            modelArray.append(["start":start,"end":end,"total":total,"type":type])
-                            modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
-                        }
-                    }
-                    if nextState == 0 {
-                        totalAwake += 1
-                    }else if nextState == 1 {
-                        totalLight += 1
-                    }else if nextState == 2 {
-                        totalDeep += 1
-                    }else{
-                        totalInvalid += 1
-                    }
-                }
-            }
-            var newArray:[[String:String]] = []
-            var changeDic:[String:String] = [:]
-            for i in 0..<modelArray.count-1 {
-                
-                let currentDic:[String:String] = modelArray[i]
-                let nextDic:[String:String] = modelArray[i+1]
-                if changeDic.isEmpty {
-                    changeDic = currentDic
-                    if changeDic["type"] == "3" {
-                        changeDic["type"] = "0"
-                        totalAwake += Int(changeDic["total"] ?? "0") ?? 0
-                    }
-                }
-                
-                let currentType = currentDic["type"]
-                let nextType = nextDic["type"]
-                
-                
-                //nextType==0的数据在上面一个for里面已经添加过
-                if (currentType == "0" || currentType == "3") && (nextType == "3") {
-                    
-                    changeDic["end"] = nextDic["end"]
-                    changeDic["type"] = "0"
-                    let currentTotal = Int(changeDic["total"] ?? "0") ?? 0
-                    let nextTotal = Int(nextDic["total"] ?? "0") ?? 0
-                    changeDic["total"] = "\(currentTotal + nextTotal)"
-                    totalAwake += currentTotal + nextTotal
-                }else{
-                    newArray.append(changeDic)
-                    changeDic = [:]
-                }
-                
-                if i == modelArray.count-2 {
-                    if changeDic.isEmpty {
-                        newArray.append(nextDic)
-                    }else{
-                        newArray.append(changeDic)
-                    }
-                }
-            }
-            printLog("-------modelArray =",modelArray)
-            if newArray.count > 0 {
-                modelArray = newArray
-            }
-
-            //ZySDKLog.writeStringToSDKLog(string: "原始数据")
-            //ZySDKLog.writeStringToSDKLog(string: "\(originalArray)")
-            //ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@\n\n\n", originalArray))
-            
-            //ZySDKLog.writeStringToSDKLog(string: "1440未整合数据")
-            //ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@\n\n\n", sleepArray))
-            
-            //ZySDKLog.writeStringToSDKLog(string: "睡眠整合数据")
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@\n\n\n", modelArray))
-            
-//            printLog("originalArray =",originalArray)
-//            printLog("sleepArray =",sleepArray,sleepArray.count)
-            printLog("modelArray =",modelArray)
-            printLog("modelArray_filter =",modelArray_filter)
+            let sleepDic = self.dealSleepData(val: val)
+            let totalDeep = sleepDic["deep"] as! Int
+            let totalLight = sleepDic["light"] as! Int
+            let totalAwake = sleepDic["awake"] as! Int
+            let sleepArray = sleepDic["originalArray"]  as! [Int]
+            let modelArray = sleepDic["detailArray"] as! [[String:String]]
+            let modelArray_filter = sleepDic["detailArray_filter"]  as! [[String:String]]
             
             let model = ZySleepModel.init(dic: ["type":type,"deep":"\(totalDeep)","light":"\(totalLight)","awake":"\(totalAwake)","originalArray":sleepArray,"detailArray":modelArray,"detailArray_filter":modelArray_filter])
             return model
@@ -10786,6 +10319,288 @@ import CoreLocation
         }
         return nil
         //printLog("第\(#line)行" , "\(#function)")
+    }
+    
+    func dealSleepData(val:[UInt8]) -> [String:Any] {
+        var sleepArray = [Int].init()
+        var originalArray:[Dictionary<String,Array<Int>>] = [[String:Array<Int>]].init()
+        for i in stride(from: 0, to: val.count, by: 1) {
+            let sleepCount = val[i]
+            
+            let state_1 = (sleepCount >> 7 & 0x1) << 1 | (sleepCount >> 6 & 0x1)
+            let state_2 = (sleepCount >> 5 & 0x1) << 1 | (sleepCount >> 4 & 0x1)
+            let state_3 = (sleepCount >> 3 & 0x1) << 1 | (sleepCount >> 2 & 0x1)
+            let state_4 = (sleepCount >> 1 & 0x1) << 1 | (sleepCount >> 0 & 0x1)
+            
+            sleepArray.append(Int(state_1))
+            sleepArray.append(Int(state_2))
+            sleepArray.append(Int(state_3))
+            sleepArray.append(Int(state_4))
+            
+            let string = String.init(format: "index_%d:0x%02x", i,sleepCount)
+            let dic:Dictionary<String,Array<Int>> = [string:[Int(state_1),Int(state_2),Int(state_3),Int(state_4)]]
+            originalArray.append(dic)
+        }
+        
+        //{"end":"20:45","start":"20:09","total":"36","type":"1"}
+        var modelArray = [[String:String]].init()
+        var modelArray_filter = [[String:String]].init()
+        var startIndex = 0
+        var isAwakeSameState = false
+        var islightSameState = false
+        var isDeepSameState = false
+        var isInvalidSameState = false
+        var totalDeep = 0
+        var totalLight = 0
+        var totalAwake = 0
+        var totalInvalid = 0
+        var timeOffset = 720
+        if self.functionListModel?.functionList_sleepDataVersion == true {
+            if let model = self.functionListModel?.functionDetail_sleepDataVersion {
+                if model.versionType == 1 {
+                    timeOffset = 1080
+                }
+            }
+        }
+        for i in stride(from: 0, to: sleepArray.count-1, by: 1) {
+            
+            let state = sleepArray[i]
+            let nextState = sleepArray[i+1]
+            
+            var start = ""
+            var end = ""
+            
+            if state == 0 {//清醒
+                if !isAwakeSameState {
+                    //开始记录第一个状态点
+                    isAwakeSameState = true
+                    startIndex = i
+                }
+                
+                if state != nextState {
+                    //跟下一个状态不一致时保存开始到当前的序号
+                    isAwakeSameState = false
+                    if startIndex > timeOffset {
+                        start = String.init(format: "%02d:%02d", (startIndex-timeOffset)/60,(startIndex-timeOffset)%60)
+                    }else{
+                        start = String.init(format: "%02d:%02d", (startIndex+timeOffset)/60,(startIndex+timeOffset)%60)
+                    }
+                    if i > timeOffset {
+                        end = String.init(format: "%02d:%02d", (i-timeOffset)/60,(i-timeOffset)%60)
+                    }else{
+                        end = String.init(format: "%02d:%02d", (i+timeOffset)/60,(i+timeOffset)%60)
+                    }
+                    
+                    let total = String.init(format: "%d", i - startIndex + 1)
+                    let type = String.init(format: "%d", state)
+                    
+                    modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                    modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
+                }
+                totalAwake += 1
+            }else if state == 1 {//浅睡
+                if !islightSameState {
+                    //开始记录第一个状态点
+                    islightSameState = true
+                    startIndex = i
+                }
+                
+                if state != nextState {
+                    //跟下一个状态不一致时保存开始到当前的序号
+                    islightSameState = false
+                    if startIndex > timeOffset {
+                        start = String.init(format: "%02d:%02d", (startIndex-timeOffset)/60,(startIndex-timeOffset)%60)
+                    }else{
+                        start = String.init(format: "%02d:%02d", (startIndex+timeOffset)/60,(startIndex+timeOffset)%60)
+                    }
+                    if i > timeOffset {
+                        end = String.init(format: "%02d:%02d", (i-timeOffset)/60,(i-timeOffset)%60)
+                    }else{
+                        end = String.init(format: "%02d:%02d", (i+timeOffset)/60,(i+timeOffset)%60)
+                    }
+                    let total = String.init(format: "%d", i - startIndex + 1)
+                    let type = String.init(format: "%d", state)
+                    
+                    modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                    modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
+                }
+                totalLight += 1
+                
+            }else if state == 2 {//深睡
+                if !isDeepSameState {
+                    //开始记录第一个状态点
+                    isDeepSameState = true
+                    startIndex = i
+                }
+                
+                if state != nextState {
+                    //跟下一个状态不一致时保存开始到当前的序号
+                    isDeepSameState = false
+                    if startIndex > timeOffset {
+                        start = String.init(format: "%02d:%02d", (startIndex-timeOffset)/60,(startIndex-timeOffset)%60)
+                    }else{
+                        start = String.init(format: "%02d:%02d", (startIndex+timeOffset)/60,(startIndex+timeOffset)%60)
+                    }
+                    if i > timeOffset {
+                        end = String.init(format: "%02d:%02d", (i-timeOffset)/60,(i-timeOffset)%60)
+                    }else{
+                        end = String.init(format: "%02d:%02d", (i+timeOffset)/60,(i+timeOffset)%60)
+                    }
+                    let total = String.init(format: "%d", i - startIndex + 1)
+                    let type = String.init(format: "%d", state)
+                    
+                    modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                    modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
+                }
+                totalDeep += 1
+            }else{//无效数据
+                if !isInvalidSameState {
+                    //开始记录第一个状态点
+                    isInvalidSameState = true
+                    startIndex = i
+                }
+                
+                if state != nextState {
+                    //跟下一个状态不一致时保存开始到当前的序号
+                    isInvalidSameState = false
+                    if startIndex > timeOffset {
+                        start = String.init(format: "%02d:%02d", (startIndex-timeOffset)/60,(startIndex-timeOffset)%60)
+                    }else{
+                        start = String.init(format: "%02d:%02d", (startIndex+timeOffset)/60,(startIndex+timeOffset)%60)
+                    }
+                    if i > timeOffset {
+                        end = String.init(format: "%02d:%02d", (i-timeOffset)/60,(i-timeOffset)%60)
+                    }else{
+                        end = String.init(format: "%02d:%02d", (i+timeOffset)/60,(i+timeOffset)%60)
+                    }
+                    let total = String.init(format: "%d", i - startIndex + 1)
+                    let type = String.init(format: "%d", state)
+                    
+                    if !modelArray.isEmpty {
+                        modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                    }
+                    //modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
+                }
+                totalInvalid += 1
+            }
+            
+            //循环到最后一个数据
+            if i == sleepArray.count-2 {
+                //判断最后一个数据跟最后一个状态是否一致
+                if state == nextState {
+                    //一致把最后一个状态加入最后一组数据
+                    isAwakeSameState = false
+                    if startIndex > timeOffset {
+                        start = String.init(format: "%02d:%02d", (startIndex-timeOffset)/60,(startIndex-timeOffset)%60)
+                    }else{
+                        start = String.init(format: "%02d:%02d", (startIndex+timeOffset)/60,(startIndex+timeOffset)%60)
+                    }
+                    if i > timeOffset {
+                        end = String.init(format: "%02d:%02d", (i-timeOffset+1)/60,(i-timeOffset+1)%60)
+                    }else{
+                        end = String.init(format: "%02d:%02d", (i+timeOffset+1)/60,(i+timeOffset+1)%60)
+                    }
+                    let total = String.init(format: "%d", (i+1) - startIndex + 1)
+                    let type = String.init(format: "%d", state)
+                    if type != "3" {
+                        modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                        modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
+                    }
+                }else{
+                    //不一致的，最后一个状态为单独一组
+                    let start = String.init(format: "%02d:%02d", i/60,i%60)
+                    let end = String.init(format: "%02d:%02d", (i+1)/60,(i+1)%60)
+                    let total = String.init(format: "%d", 1)
+                    let type = String.init(format: "%d", nextState)
+                    if type != "3" {
+                        modelArray.append(["start":start,"end":end,"total":total,"type":type])
+                        modelArray_filter.append(["start":start,"end":end,"total":total,"type":type])
+                    }
+                }
+                if nextState == 0 {
+                    totalAwake += 1
+                }else if nextState == 1 {
+                    totalLight += 1
+                }else if nextState == 2 {
+                    totalDeep += 1
+                }else{
+                    totalInvalid += 1
+                }
+            }
+        }
+        var newArray:[[String:String]] = []
+        var changeDic:[String:String] = [:]
+        var filterFirstInvalidDic = false
+        for i in 0..<modelArray.count-1 {
+            
+            let currentDic:[String:String] = modelArray[i]
+            let nextDic:[String:String] = modelArray[i+1]
+            
+            let currentType = currentDic["type"]
+            let nextType = nextDic["type"]
+            if filterFirstInvalidDic == false {
+                if (currentType == "0" || currentType == "3") {
+                    changeDic = [:]
+                    //过滤掉要减去过滤的清醒时长
+                    if currentType == "0" {
+                        totalAwake -= Int(currentDic["total"] ?? "0") ?? 0
+                    }
+                    continue
+                }else{
+                    filterFirstInvalidDic = true
+                }
+            }
+            
+            if changeDic.isEmpty {
+                changeDic = currentDic
+                if changeDic["type"] == "3" {
+                    changeDic["type"] = "0"
+                    totalAwake += Int(changeDic["total"] ?? "0") ?? 0
+                }
+            }
+            
+            //nextType==0的数据在上面一个for里面已经添加过
+            if (currentType == "0" || currentType == "3") && (nextType == "3") {
+                
+                changeDic["end"] = nextDic["end"]
+                changeDic["type"] = "0"
+                let currentTotal = Int(changeDic["total"] ?? "0") ?? 0
+                let nextTotal = Int(nextDic["total"] ?? "0") ?? 0
+                changeDic["total"] = "\(currentTotal + nextTotal)"
+                totalAwake += currentTotal + nextTotal
+            }else{
+                newArray.append(changeDic)
+                changeDic = [:]
+            }
+            
+            if i == modelArray.count-2 {
+                if changeDic.isEmpty {
+                    newArray.append(nextDic)
+                }else{
+                    newArray.append(changeDic)
+                }
+            }
+        }
+        printLog("-------modelArray =",modelArray)
+        if newArray.count > 0 {
+            modelArray = newArray
+        }
+
+        //ZySDKLog.writeStringToSDKLog(string: "原始数据")
+        //ZySDKLog.writeStringToSDKLog(string: "\(originalArray)")
+        //ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@\n\n\n", originalArray))
+        
+        //ZySDKLog.writeStringToSDKLog(string: "1440未整合数据")
+        //ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@\n\n\n", sleepArray))
+        
+        //ZySDKLog.writeStringToSDKLog(string: "睡眠整合数据")
+        ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@\n\n\n", modelArray))
+        
+//            printLog("originalArray =",originalArray)
+//            printLog("sleepArray =",sleepArray,sleepArray.count)
+        printLog("modelArray =",modelArray)
+        printLog("modelArray_filter =",modelArray_filter)
+        return ["deep":totalDeep,"light":totalLight,"awake":totalAwake,"originalArray":sleepArray,"detailArray":modelArray,"detailArray_filter":modelArray_filter]
     }
     
     // MARK: - 同步测量数据
@@ -11611,6 +11426,23 @@ import CoreLocation
         }
     }
     
+    // MARK: - 上报请求辅助定位文件
+    @objc public func reportAssistedPositioning(success:@escaping((_ state:Int, _ error:ZyError) -> Void)) {
+        self.receiveReportAssistedPositioning = success
+    }
+    
+    private func parseReportAssistedPositioning(val:[UInt8],success:@escaping((_ state:Int, _ error:ZyError) -> Void)) {
+     
+        if val.count >= 1 {
+            let state = Int(val[0])
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "辅助定位状态上报:\(state) 0无效1有效"))
+            success(state,.none)
+        }else{
+            success(0,.invalidState)
+        }
+        
+    }
+    
     // MARK: - 上报耗电数据
     @objc public func reportPowerConsumptionData(success:@escaping((_ dataDic:[String:String],_ error:ZyError) -> Void)) {
         self.receiveReportPowerConsumptionData = success
@@ -12399,6 +12231,61 @@ import CoreLocation
         
         self.signalCommandSemaphore()
     }
+    
+    // MARK: - 蓝牙改名字
+    @objc public func setBleName(name:String,success:@escaping((ZyError) -> Void)) {
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。")
+            return
+        }
+        var headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 0x21
+
+        var nameVal:[UInt8] = .init()
+        if let data:Data = name.data(using: .utf8) {
+            if let model = self.functionListModel?.functionDetail_bleNameSetup {
+                if data.count < model.nameMaxLength {
+                    
+                    nameVal = data.withUnsafeBytes { (byte) -> [UInt8] in
+                        let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+                        return [UInt8](UnsafeBufferPointer.init(start: b, count: data.count))
+                    }
+                    
+                }else{
+                    let newData = data.subdata(in: 0..<model.nameMaxLength)
+                    
+                    nameVal = newData.withUnsafeBytes { (byte) -> [UInt8] in
+                        let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+                        return [UInt8](UnsafeBufferPointer.init(start: b, count: newData.count))
+                    }
+                }
+            }
+        }
+        //参数长度
+        let modelCount = nameVal.count
+        
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
+        ]
+        contentVal.append(contentsOf: nameVal)
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetBleNameBlock = success
+            }else{
+                success(error)
+            }
+        }
+    }
 
     // MARK: - 设置自定义运动文件
     @objc public func setCustomSportsMode(_ sportsType:Int,localFile:Any,progress:@escaping((Float) -> Void),success:@escaping((ZyError) -> Void)){
@@ -12481,6 +12368,11 @@ import CoreLocation
         
         let sendData = Data.init(bytes: &sendDataArray, count: sendDataArray.count) + fileData
         //print("sendDataArray = \(self.convertDataToHexStr(data: sendDataArray))")
+//        let sportsPath = NSHomeDirectory() + "/Documents/test_sportsData.bin"
+//        if FileManager.createFile(filePath: sportsPath).isSuccess {
+//            
+//            FileManager.default.createFile(atPath: sportsPath, contents: self.createSendOtaHead(type: 9 ,data: sendData), attributes: nil)
+//        }
         self.setOtaStartUpgrade(type: 9, localFile: self.createSendOtaHead(type:9,data: sendData), isContinue: false, progress: progress, success: success)
     }
     
@@ -12805,7 +12697,7 @@ import CoreLocation
             self.receiveSetStartUpgradeBlock = success
             self.receiveSetStartUpgradeProgressBlock = progress
             self.otaData = fileData!
-            
+            printLog("正常进入升级")
         }
         
     }
@@ -13877,12 +13769,117 @@ import CoreLocation
         
     }
     
-    func downloadBinFile(url:String,filePath:String,success:@escaping((String,ZyError) -> Void)) {
+    // MARK: - 获取辅助定位数据
+    public func getServerAssistedPositioningData(success:@escaping((String?,Data?,ZyError) -> Void)) {
+
+        let urlStringArray = [
+            "https://zywlian.oss-cn-hongkong.aliyuncs.com/custom/praylocation/ELPO_BDS_3.DAT",
+            "https://zywlian.oss-cn-hongkong.aliyuncs.com/custom/praylocation/ELPO_GAL_3.DAT",
+            "https://zywlian.oss-cn-hongkong.aliyuncs.com/custom/praylocation/ELPO_GLO_3.DAT",
+            "https://zywlian.oss-cn-hongkong.aliyuncs.com/custom/praylocation/ELPO_GPS_3.DAT",
+        ]
+        
+        let group = DispatchGroup()
+        let filePath = NSHomeDirectory() + "/Documents/AssistedPositioning/"
+        for item in urlStringArray {
+            group.enter()
+            self.downloadBinFile(url: item, filePath: filePath, zipType: "DAT") { path, errror in
+                group.leave()
+                if errror == .none {
+                    print("path = \(path)")
+                }
+            }
+        }
+        group.notify(queue: .main) {
+            print("所有文件下载完毕")
+            let fileDic = FileManager.getFileListInFolderWithPath(path: filePath)
+            print("fileDic.content = \(fileDic.content)")
+            var headData:Data = .init()
+            var fileData:Data = .init()
+            if let fileNameList = fileDic.content as? [String] {
+                let gpsName = "ELPO_GPS_3.DAT"
+                let gloName = "ELPO_GLO_3.DAT"
+                let galName = "ELPO_GAL_3.DAT"
+                let bdsName = "ELPO_BDS_3.DAT"
+                if fileNameList.contains(gpsName) && fileNameList.contains(gloName) && fileNameList.contains(galName) && fileNameList.contains(bdsName) {
+                    let gpsFile = filePath + gpsName
+                    let gloFile = filePath + gloName
+                    let galFile = filePath + galName
+                    let bdsFile = filePath + bdsName
+                    
+                    if let gpsData = try? Data.init(contentsOf: URL.init(fileURLWithPath: gpsFile)) {
+                        let val = [
+                            UInt8((gpsData.count ) & 0xff),
+                            UInt8((gpsData.count >> 8) & 0xff),
+                            UInt8((gpsData.count >> 16) & 0xff),
+                            UInt8((gpsData.count >> 24) & 0xff),
+                        ]
+                        headData.append(val, count: val.count)
+                        fileData.append(gpsData)
+                    }
+                    
+                    if let gloData = try? Data.init(contentsOf: URL.init(fileURLWithPath: gloFile)) {
+                        let val = [
+                            UInt8((gloData.count ) & 0xff),
+                            UInt8((gloData.count >> 8) & 0xff),
+                            UInt8((gloData.count >> 16) & 0xff),
+                            UInt8((gloData.count >> 24) & 0xff),
+                        ]
+                        headData.append(val, count: val.count)
+                        fileData.append(gloData)
+                    }
+                    
+                    if let galData = try? Data.init(contentsOf: URL.init(fileURLWithPath: galFile)) {
+                        let val = [
+                            UInt8((galData.count ) & 0xff),
+                            UInt8((galData.count >> 8) & 0xff),
+                            UInt8((galData.count >> 16) & 0xff),
+                            UInt8((galData.count >> 24) & 0xff),
+                        ]
+                        headData.append(val, count: val.count)
+                        fileData.append(galData)
+                    }
+                    
+                    if let bdsData = try? Data.init(contentsOf: URL.init(fileURLWithPath: bdsFile)) {
+                        let val = [
+                            UInt8((bdsData.count ) & 0xff),
+                            UInt8((bdsData.count >> 8) & 0xff),
+                            UInt8((bdsData.count >> 16) & 0xff),
+                            UInt8((bdsData.count >> 24) & 0xff),
+                        ]
+                        headData.append(val, count: val.count)
+                        fileData.append(bdsData)
+                    }
+                    
+                    let finalFilePath = filePath + "finalFile.DAT"
+                    let finalData = headData+fileData
+                    if FileManager.createFile(filePath: filePath).isSuccess {
+                        FileManager.default.createFile(atPath: finalFilePath, contents: finalData, attributes: nil)
+                    }
+                    success(finalFilePath,finalData,.none)
+                }else{
+                    success(nil,nil,.fail)
+                }
+            }else{
+                success(nil,nil,.fail)
+            }
+            
+        }
+    }
+    
+    func downloadBinFile(url:String,filePath:String,zipType:String? = nil,success:@escaping((String,ZyError) -> Void)) {
         var fileString = ""
         let destination:Alamofire.DownloadRequest.DownloadFileDestination/*Destination*/ = { (_, _) in
             let binFileArray = url.components(separatedBy: "/")
             
-            fileString = filePath + (binFileArray.last ?? "default.bin")
+            var zipDefaultString = "default."
+            if let typeString = zipType {
+                zipDefaultString += typeString
+            }else{
+                zipDefaultString += "bin"
+            }
+            
+            fileString = filePath + (binFileArray.last ?? zipDefaultString)
             let fileRUL = URL.init(fileURLWithPath: fileString)//拼接处完整的路径
             printLog("fileString ->",fileString)
             return (fileRUL, [.removePreviousFile,.createIntermediateDirectories])

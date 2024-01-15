@@ -36,7 +36,6 @@ import zlib
     }
     
     @objc dynamic public internal(set) var blePowerState:CBCentralManagerState = .unknown
-    @objc dynamic public internal(set) var functionListModel:ZyFunctionListModel? = nil
     
     var writeCharacteristic:CBCharacteristic?//6E400002-B5A3-F393-E0A9-E50E24DCCA9E
     var receiveCharacteristic:CBCharacteristic?//6E400003-B5A3-F393-E0A9-E50E24DCCA9E
@@ -48,7 +47,8 @@ import zlib
     @objc dynamic public internal(set) var isSyncOtaData = false
     var syncOtaReconnectComplete:(()->())?
     var peripheralStateChange:((CBPeripheralState)->())?
-        
+    var isReadSendDataBlock:(()->())?
+    
     override init() {
         self.scanInterval = 30
         super.init()
@@ -72,6 +72,10 @@ import zlib
     /// - Parameter state: <#state description#>
     @objc public func peripheralStateChange(state:@escaping((CBPeripheralState)->())) {
         self.peripheralStateChange = state
+    }
+    
+    @objc public func peripheralIsReadSendData(state:@escaping(()->())) {
+        self.isReadSendDataBlock = state
     }
     
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
@@ -104,15 +108,6 @@ import zlib
                 //命令信号量重置
                 ZyCommandModule.shareInstance.resetCommandSemaphore()
                 //同步健康数据相关方法重置
-                if ZyCommandModule.shareInstance.isStepDetailData || ZyCommandModule.shareInstance.isSleepDetailData || ZyCommandModule.shareInstance.isHrDetailData {
-                    //取消定时器
-                    ZyCommandModule.shareInstance.healthDataDetectionTimerInvalid()
-                    //此次健康数据接收结束
-                    ZyCommandModule.shareInstance.currentReceiveCommandEndOver = true
-                    //取消延时的方法直接调用
-                    NSObject.cancelPreviousPerformRequests(withTarget: ZyCommandModule.shareInstance, selector: #selector(ZyCommandModule.shareInstance.receiveHealthDataTimeOut), object: nil)
-                    ZyCommandModule.shareInstance.receiveHealthDataTimeOut()
-                }
             }else if bleState == .unknown {
                 ZySDKLog.writeStringToSDKLog(string: "系统蓝牙状态:unknown")
             }else if bleState == .resetting {
@@ -136,7 +131,7 @@ import zlib
         printLog("定时器方法")
         let userDefault = UserDefaults.standard
         let isNeedReconnect = userDefault.bool(forKey: "Zy_ReconnectKey")
-        let reconeectString = userDefault.string(forKey: "Zy_ReconnectIdentifierKey") ?? (userDefault.string(forKey: "Ant_ReconnectIdentifierKey") ?? "")
+        let reconeectString = userDefault.string(forKey: "Zy_ReconnectIdentifierKey") ?? ""
         printLog("isNeedReconnect = ",isNeedReconnect,"reconeectString =",reconeectString,"state =",ZyBleManager.shareInstance.getBlePowerState().rawValue)
         
         var blePower = ""
@@ -315,7 +310,7 @@ import zlib
             if !peripheralArray.contains(where: { item in
                 if item.uuidString == model.uuidString {
                     if item.macString?.count ?? 0 == 0 && model.macString?.count ?? 0 > 0 {
-                        print("scan-> item.macString = \(item.macString),item.name = \(item.name) model.macString = \(model.macString),model.name = \(model.name)")
+                        //print("scan-> item.macString = \(item.macString),item.name = \(item.name) model.macString = \(model.macString),model.name = \(model.name)")
                         item.macString = model.macString
                         scanModel(model)
                     }
@@ -427,12 +422,8 @@ import zlib
     }
     
     /// 断开连接
-    @objc public func disconnect() {
-        if self.functionListModel?.functionList_bind == true {
-            ZyCommandModule.shareInstance.setUnbind { _ in
-            }
-        }
-        self.functionListModel = nil
+    @objc public func disconnect(complete:(()->Void)? = nil) {
+
         //此方法只能让外部调用，此方法会删除重连标识，如果SDK内部调用会影响重连，重连只调用一次就自动取消。内部调用断开连接用if的判断
         if self.peripheral != nil && self.peripheral?.state != .disconnected{
             ZyBleManager.shareInstance.disconnect(peripheral: self.peripheral!)
@@ -440,7 +431,6 @@ import zlib
         
         let userDefault = UserDefaults.standard
         userDefault.removeObject(forKey: "Zy_ReconnectIdentifierKey")
-        userDefault.removeObject(forKey: "Ant_ReconnectIdentifierKey")
         userDefault.synchronize()
         
         ZyBleManager.shareInstance.CentralDisonnectPeripheral { (central, peripheral, error) in
@@ -463,15 +453,8 @@ import zlib
             self.peripheral = nil
             //命令信号量重置
             ZyCommandModule.shareInstance.resetCommandSemaphore()
-            //同步健康数据相关方法重置
-            if ZyCommandModule.shareInstance.isStepDetailData || ZyCommandModule.shareInstance.isSleepDetailData || ZyCommandModule.shareInstance.isHrDetailData {
-                //取消定时器
-                ZyCommandModule.shareInstance.healthDataDetectionTimerInvalid()
-                //此次健康数据接收结束
-                ZyCommandModule.shareInstance.currentReceiveCommandEndOver = true
-                //取消延时的方法直接调用
-                NSObject.cancelPreviousPerformRequests(withTarget: ZyCommandModule.shareInstance, selector: #selector(ZyCommandModule.shareInstance.receiveHealthDataTimeOut), object: nil)
-                ZyCommandModule.shareInstance.receiveHealthDataTimeOut()
+            if let complete = complete {
+                complete()
             }
         }
 
@@ -506,21 +489,60 @@ import zlib
         
         ZyBleManager.shareInstance.PeripheralDiscoverCharacteristic { (peripheral, service, error) in
             currentIndex += 1
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "service:%@",service.uuid))
-            for characteristic in service.characteristics ?? [] {
-                ZySDKLog.writeStringToSDKLog(string: String.init(format: "characteristic:%@",characteristic.uuid))
-                printLog("characteristic:",characteristic)
-                if String.init(format: "%@", characteristic.uuid) == "6E400002-B5A3-F393-E0A9-E50E24DCCA9E" || String.init(format: "%@", characteristic.uuid) == "FF02" {
-                    peripheral.setNotifyValue(true, for: characteristic)
-                    
-                    self.writeCharacteristic = characteristic
-                }
-                if String.init(format: "%@", characteristic.uuid) == "6E400003-B5A3-F393-E0A9-E50E24DCCA9E" || String.init(format: "%@", characteristic.uuid) == "FF03" {
-                    peripheral.setNotifyValue(true, for: characteristic)
-                    
-                    self.receiveCharacteristic = characteristic
+            print("service = \(service)")
+            if String.init(format: "%@", service.uuid) == "53527AA4-29F7-AE11-4E74-997334782568" {
+                ZySDKLog.writeStringToSDKLog(string: String.init(format: "service:%@",service.uuid))
+                for characteristic in service.characteristics ?? [] {
+                    ZySDKLog.writeStringToSDKLog(string: String.init(format: "characteristic:%@",characteristic.uuid))
+                    print("characteristic:",characteristic)
+                    print("characteristic.properties = \(characteristic.properties)")
+                    if characteristic.properties == .write {
+                        self.writeCharacteristic = characteristic
+                    }
+                    if characteristic.properties == [.notify , .read]{
+                        peripheral.setNotifyValue(true, for: characteristic)
+                        self.receiveCharacteristic = characteristic
+                    }
+//                    if String.init(format: "%@", characteristic.uuid) == "EE684B1A-1E9B-ED3E-EE55-F894667E92AC"{
+//                        peripheral.setNotifyValue(true, for: characteristic)
+//                        
+//                        self.writeCharacteristic = characteristic
+//                    }
+//                    if String.init(format: "%@", characteristic.uuid) == "654B749C-E37F-AE1F-EBAB-40CA133E3690"{
+//                        peripheral.setNotifyValue(true, for: characteristic)
+//                        
+//                        self.receiveCharacteristic = characteristic
+//                    }
                 }
             }
+            if String.init(format: "%@", service.uuid) == "EC00D102-11E1-9B23-0002-5B00C0C1A8A8" {
+                for characteristic in service.characteristics ?? [] {
+                    ZySDKLog.writeStringToSDKLog(string: String.init(format: "characteristic:%@",characteristic.uuid))
+                    print("characteristic.uuid:",characteristic.uuid,"characteristic:",characteristic)
+                    if characteristic.properties == [.write,.writeWithoutResponse] {
+                        self.writeCharacteristic = characteristic
+                    }
+                    if characteristic.properties == [.notify]{
+                        peripheral.setNotifyValue(true, for: characteristic)
+                        self.receiveCharacteristic = characteristic
+                    }
+                }
+            }
+            
+//            for characteristic in service.characteristics ?? [] {
+//                ZySDKLog.writeStringToSDKLog(string: String.init(format: "characteristic:%@",characteristic.uuid))
+//                printLog("characteristic:",characteristic)
+//                if String.init(format: "%@", characteristic.uuid) == "6E400002-B5A3-F393-E0A9-E50E24DCCA9E" || String.init(format: "%@", characteristic.uuid) == "FF02" {
+//                    peripheral.setNotifyValue(true, for: characteristic)
+//                    
+//                    self.writeCharacteristic = characteristic
+//                }
+//                if String.init(format: "%@", characteristic.uuid) == "6E400003-B5A3-F393-E0A9-E50E24DCCA9E" || String.init(format: "%@", characteristic.uuid) == "FF03" {
+//                    peripheral.setNotifyValue(true, for: characteristic)
+//                    
+//                    self.receiveCharacteristic = characteristic
+//                }
+//            }
             
             if currentIndex == serviceCount {
                 
@@ -533,87 +555,10 @@ import zlib
                 userDefault.synchronize()
                 
                 if let block = self.connectCompleteBlock {
-                    //这里是升级过程中异常断开还保存未发完的ota数据，那么检测升级，拿到回调之后会继续升级
-                    //有升级也要优先发设备的uuid命令。不发会导致设备端bt连不上
-                    if ZyCommandModule.shareInstance.otaData != nil {
-                        //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
-                        self.perform(#selector(self.functionListCommandNoSupport), with:nil, afterDelay: 30)
-                        print("获取功能列表getDeviceSupportList otaData != nil")
-                        ZyCommandModule.shareInstance.getDeviceSupportList { model, error in
-                            print("获取功能列表getDeviceSupportList 有回复 error = \(error.rawValue)")
-                            NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(self.functionListCommandNoSupport), object: nil)
-                            if error == .none {
-                                printLog("连接成功")
-                                self.functionListModel = model
-                                if let _ = model?.functionList_addressBook {
-                                    //固件需要设备类型在uuid的命令之后，否则会出现蓝牙bt(通讯录)连接异常
-                                    ZyCommandModule.shareInstance.setDeviceUUID { _ in
-                                    }
-                                }else{
-                                }
-                                ZyCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
-                                }
-                                ZyCommandModule.shareInstance.getDeviceOtaVersionInfo { _, _ in
-                                }
-                                ZyCommandModule.shareInstance.getMac { _, _ in
-                                }
-                                if model?.functionList_bind == true {
-                                    ZyCommandModule.shareInstance.setBind { _ in
-                                    }
-                                }
-                                ZyCommandModule.shareInstance.checkUpgradeState { success, error in
-                                    if error == .none {
-                                        if success.keys.count > 0 {
-                                            
-                                        }else{
-                                            printLog("没有升级")
-                                            ZyCommandModule.shareInstance.otaData = nil
-                                        }
-                                    }
-                                    block(true)
-                                }
-                            }else{
-                                printLog("连接成功")
-                                block(false)
-                            }
-                        }
-                        
-                    }else{
-                        //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
-                        self.perform(#selector(self.functionListCommandNoSupport), with: nil, afterDelay: 30)
-                        print("获取功能列表getDeviceSupportList")
-                        ZyCommandModule.shareInstance.getDeviceSupportList { model, error in
-                            print("获取功能列表getDeviceSupportList 有回复 error = \(error.rawValue)")
-                            NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(self.functionListCommandNoSupport), object: nil)
-                            if error == .none {
-                                printLog("连接成功")
-                                self.functionListModel = model
-                                if let _ = model?.functionList_addressBook {
-                                    //固件需要设备类型在uuid的命令之后，否则会出现蓝牙bt(通讯录)连接异常
-                                    ZyCommandModule.shareInstance.setDeviceUUID { _ in
-//                                        ZyCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
-//                                        }
-                                    }
-                                }else{
-//                                    ZyCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
-//                                    }
-                                }
-                                ZyCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
-                                }
-                                ZyCommandModule.shareInstance.getDeviceOtaVersionInfo { _, _ in
-                                }
-                                ZyCommandModule.shareInstance.getMac { _, _ in
-                                }
-                                if model?.functionList_bind == true {
-                                    ZyCommandModule.shareInstance.setBind { _ in
-                                    }
-                                }
-                                block(true)
-                            }else{
-                                printLog("连接失败")
-                                block(false)
-                            }
-                        }
+                    printLog("连接成功")
+                    block(true)
+                    if let block = self.isReadSendDataBlock {
+                        block()
                     }
                 }
             }
@@ -725,6 +670,34 @@ import zlib
         return ((((value) & 0xf0) >> 4) * 10 + ((value) & 0x0f))
     }
     
+    // MARK: - CRC8校验 x8+x5+x4+1
+    public func CRC8(data:Data) -> UInt8 {
+        
+        let val = data.withUnsafeBytes { (byte) -> [UInt8] in
+            let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+            return [UInt8](UnsafeBufferPointer.init(start: b, count: data.count))
+        }
+        
+        return CRC8(val: val)
+    }
+    
+    public func CRC8(val:[UInt8]) -> UInt8 {
+        var crc:UInt8 = 0x00
+        
+        for i in 0..<val.count {
+            crc ^= val[i]
+            for _ in 0..<8 {
+                if (crc & 0x01) != 0 {
+                    crc = (crc >> 1) ^ 0x8c
+                }else {
+                    crc >>= 1
+                }
+            }
+        }
+        return crc
+    }
+    
+    
     public func CRC16(data:Data) -> UInt16 {
         
         let val = data.withUnsafeBytes { (byte) -> [UInt8] in
@@ -734,7 +707,7 @@ import zlib
         
         return CRC16(val: val)
     }
-    
+
     //CRC16校验
     public func CRC16(val: [UInt8])-> UInt16 {
         var crc:UInt16 = 0xFFFF
@@ -805,113 +778,6 @@ import zlib
         return [UInt8((newColor >> 8) & 0xff),UInt8(newColor & 0xff)]
     }
     
-    @objc public func getNotificationExtensionTypeArrayWithIntString(countString:String) -> [ZyNotificationExtensionType.RawValue] {
-        var array = [Int].init()
-        let count = UInt32(countString) ?? 0
-        printLog("count =",count)
-        for i in stride(from: 0, to: 32, by: 1) {
-            if (((count >> i) & 0x01) != 0) {
-                switch i {
-                case 0:array.append(ZyNotificationExtensionType.Alipay.rawValue)
-                    break
-                case 1:array.append(ZyNotificationExtensionType.TaoBao.rawValue)
-                    break
-                case 2:array.append(ZyNotificationExtensionType.DouYin.rawValue)
-                    break
-                case 3:array.append(ZyNotificationExtensionType.DingDing.rawValue)
-                    break
-                case 4:array.append(ZyNotificationExtensionType.JingDong.rawValue)
-                    break
-                case 5:array.append(ZyNotificationExtensionType.Gmail.rawValue)
-                    break
-                case 6:array.append(ZyNotificationExtensionType.Viber.rawValue)
-                    break
-                case 7:array.append(ZyNotificationExtensionType.YouTube.rawValue)
-                    break
-                case 8:array.append(ZyNotificationExtensionType.KakaoTalk.rawValue)
-                    break
-                case 9:array.append(ZyNotificationExtensionType.Telegram.rawValue)
-                    break
-                case 10:array.append(ZyNotificationExtensionType.Hangouts.rawValue)
-                    break
-                case 11:array.append(ZyNotificationExtensionType.Vkontakte.rawValue)
-                    break
-                case 12:array.append(ZyNotificationExtensionType.Flickr.rawValue)
-                    break
-                case 13:array.append(ZyNotificationExtensionType.Tumblr.rawValue)
-                    break
-                case 14:array.append(ZyNotificationExtensionType.Pinterest.rawValue)
-                    break
-                case 15:array.append(ZyNotificationExtensionType.Truecaller.rawValue)
-                    break
-                case 16:array.append(ZyNotificationExtensionType.Paytm.rawValue)
-                    break
-                case 17:array.append(ZyNotificationExtensionType.Zalo.rawValue)
-                    break
-                case 18:array.append(ZyNotificationExtensionType.MicrosoftTeams.rawValue)
-                    break
-                default:
-                    break
-                }
-            }
-        }
-        return array
-    }
-    
-    @objc public func getNotificationTypeArrayWithIntString(countString:String) -> [ZyNotificationType.RawValue] {
-        var array = [Int].init()
-        let count = UInt16(countString) ?? 0
-        printLog("count =",count)
-        for i in stride(from: 0, to: 16, by: 1) {
-            if (((count >> i) & 0x01) != 0) {
-                switch i {
-                case 0:
-
-                    break
-                case 1:
-                    array.append(ZyNotificationType.Call.rawValue)
-                    break
-                case 2:
-                    array.append(ZyNotificationType.SMS.rawValue)
-                    break
-                case 3:
-                    array.append(ZyNotificationType.Instagram.rawValue)
-                    break
-                case 4:
-                    array.append(ZyNotificationType.Wechat.rawValue)
-                    break
-                case 5:array.append(ZyNotificationType.QQ.rawValue)
-                    break
-                case 6:array.append(ZyNotificationType.Line.rawValue)
-                    break
-                case 7:array.append(ZyNotificationType.LinkedIn.rawValue)
-                    break
-                case 8:array.append(ZyNotificationType.WhatsApp.rawValue)
-                    break
-                case 9:array.append(ZyNotificationType.Twitter.rawValue)
-                    break
-                case 10:array.append(ZyNotificationType.Facebook.rawValue)
-                    break
-                case 11:array.append(ZyNotificationType.Messenger.rawValue)
-                    break
-                case 12:array.append(ZyNotificationType.Skype.rawValue)
-                    break
-                case 13:array.append(ZyNotificationType.Snapchat.rawValue)
-                    break
-                case 14:array.append(ZyNotificationType.ExtensionNotificationType.rawValue)
-                    break
-                case 15:
-                    array.append(ZyNotificationType.Other.rawValue)
-                    break
-
-                    break
-                default:
-                    break
-                }
-            }
-        }
-        return array
-    }
 }
 
 extension Date {

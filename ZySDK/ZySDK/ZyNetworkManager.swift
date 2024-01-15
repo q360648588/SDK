@@ -11,7 +11,7 @@ import Alamofire
 
 class ZyNetworkManager: NSObject {
     
-    var basicUrl = "http://www.zhenyiwulian.com"//"https://zmoofit-api.zhenyiwulian.com"//
+    var basicUrl = "https://www.zhenyiwulian.com"//"https://zmoofit-api.zhenyiwulian.com"//
 //    let basicUrl = "http://192.168.1.21:8080"
     
     public static let shareInstance = ZyNetworkManager()
