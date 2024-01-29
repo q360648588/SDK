@@ -4947,7 +4947,7 @@ import CoreLocation
             }
         }
         
-        let calendar = NSCalendar.current
+        let calendar = Calendar.init(identifier: Foundation.Calendar.Identifier.gregorian)
         let year = calendar.component(.year, from: date)
         let month = calendar.component(.month, from: date)
         let day = calendar.component(.day, from: date)
@@ -5292,7 +5292,7 @@ import CoreLocation
                 date = timeFormatter.date(from: time) ?? .init()
             }
 
-            let calendar = NSCalendar.current
+            let calendar = Calendar.init(identifier: Foundation.Calendar.Identifier.gregorian)
             let year = calendar.component(.year, from: date)
             let month = calendar.component(.month, from: date)
             let day = calendar.component(.day, from: date)
@@ -6808,7 +6808,7 @@ import CoreLocation
         let data = imageFileData
         
         let date = Date.init()
-        let calendar = NSCalendar.current
+        let calendar = Calendar.init(identifier: Foundation.Calendar.Identifier.gregorian)
         let year = calendar.component(.year, from: date)
         let month = calendar.component(.month, from: date)
         let day = calendar.component(.day, from: date)
@@ -6874,7 +6874,7 @@ import CoreLocation
         let data = self.createSendImageFile(image: image)
         
         let date = Date.init()
-        let calendar = NSCalendar.current
+        let calendar = Calendar.init(identifier: Foundation.Calendar.Identifier.gregorian)
         var year = calendar.component(.year, from: date)
         if year < 2000 {
             year = 2022
@@ -8849,7 +8849,7 @@ import CoreLocation
         var headArray:[UInt8] = Array.init()
          
         let date = Date.init()
-        let calendar = NSCalendar.current
+        let calendar = Calendar.init(identifier: Foundation.Calendar.Identifier.gregorian)
         var year = calendar.component(.year, from: date)
         if year < 2000 {
             year = 2022
@@ -9011,7 +9011,7 @@ import CoreLocation
         let data = data
         
         let date = Date.init()
-        let calendar = NSCalendar.current
+        let calendar = Calendar.init(identifier: Foundation.Calendar.Identifier.gregorian)
         var year = calendar.component(.year, from: date)
         if year < 2000 {
             year = 2022
@@ -10772,7 +10772,7 @@ import CoreLocation
             date = timeFormatter.date(from: time) ?? .init()
         }
 
-        let calendar = NSCalendar.current
+        let calendar = Calendar.init(identifier: Foundation.Calendar.Identifier.gregorian)
         let year = calendar.component(.year, from: date)
         let month = calendar.component(.month, from: date)
         let day = calendar.component(.day, from: date)
@@ -12324,7 +12324,7 @@ import CoreLocation
         var headArray:[UInt8] = Array.init()
          
         let date = Date.init()
-        let calendar = NSCalendar.current
+        let calendar = Calendar.init(identifier: Foundation.Calendar.Identifier.gregorian)
         var year = calendar.component(.year, from: date)
         if year < 2000 {
             year = 2022
@@ -12413,7 +12413,7 @@ import CoreLocation
         var headArray:[UInt8] = Array.init()
          
         let date = Date.init()
-        let calendar = NSCalendar.current
+        let calendar = Calendar.init(identifier: Foundation.Calendar.Identifier.gregorian)
         var year = calendar.component(.year, from: date)
         if year < 2000 {
             year = 2022

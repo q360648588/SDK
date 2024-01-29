@@ -84,6 +84,7 @@ import CoreBluetooth
     private var receiveGetOwsShakeSongMode:((Bool,ZyError) -> Void)?
     private var receiveGetOwsSupportFunction:((Int,Int,ZyError) -> Void)?
     private var receiveGetOwsDeviceOriginalName:((String?,ZyError) -> Void)?
+    private var receiveGetOwsAlarmArray:((_ modelArray:[ZyOwsAlarmModel],_ error:ZyError)->Void)?
     private var receiveSetOwsClearPairingRecord:((ZyError) -> Void)?
     private var receiveSetOwsResetFactory:((ZyError) -> Void)?
     private var receiveSetOwsTouchButtonFunction:((ZyError) -> Void)?
@@ -99,6 +100,11 @@ import CoreBluetooth
     private var receiveSetOwsNoiseReductionMode:((ZyError) -> Void)?
     private var receiveSetOwsShakeSong:((ZyError) -> Void)?
     private var receiveSetOwsShakeSongMode:((ZyError) -> Void)?
+    private var receiveSetOwsTime:((ZyError) -> Void)?
+    private var receiveSetOwsLanguage:((ZyError) -> Void)?
+    private var receiveSetOwsAlarmArray:((ZyError) -> Void)?
+    private var receiveSetOwsOperationSong:((ZyError) -> Void)?
+    private var receiveSetOwsWeather:((ZyError) -> Void)?
     private var receiveReportOwsMediaVoiceVolume:((Int,ZyError) -> Void)?
     private var receiveReportOwsBattery:((Int,Int,Int,ZyError) -> Void)?
     private var receiveGetOwsEqMode:((Bool,Int,ZyError) -> Void)?
@@ -589,6 +595,23 @@ import CoreBluetooth
                         }
                     }
                     
+                    //获取闹钟
+                    if val[4] == 0x01 && val[5] == 0x0e {
+                        if self.checkOwsLength(val: val) {
+                            if let block = self.receiveGetOwsAlarmArray {
+                                self.parseGetOwsAlarmArray(val: dealVal, success: block)
+                            }
+                        }else{
+                            
+                            if let block = self.receiveGetOwsAlarmArray {
+                                block([],.invalidLength)
+                            }
+                            //printLog("第\(#line)行" , "\(#function)")
+                            self.signalCommandSemaphore()
+                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsAlarmArray长度校验出错"))
+                        }
+                    }
+                    
                     //清除耳机配对记录
                     if val[4] == 0x02 && val[5] == 0x01 {
                         if self.checkOwsLength(val: val) {
@@ -841,6 +864,91 @@ import CoreBluetooth
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
                             ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsShakeSong长度校验出错"))
+                        }
+                    }
+                    
+                    //设置当前时间
+                    if val[4] == 0x02 && val[5] == 0x10{
+                        if self.checkOwsLength(val: val) {
+                            if let block = self.receiveSetOwsTime {
+                                self.parseSetGeneralSettingsReply(val: dealVal, success: block)
+                            }
+                        }else{
+                            
+                            if let block = self.receiveSetOwsTime {
+                                block(.invalidLength)
+                            }
+                            //printLog("第\(#line)行" , "\(#function)")
+                            self.signalCommandSemaphore()
+                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsTime长度校验出错"))
+                        }
+                    }
+                    
+                    //设置当前语言
+                    if val[4] == 0x02 && val[5] == 0x11{
+                        if self.checkOwsLength(val: val) {
+                            if let block = self.receiveSetOwsLanguage {
+                                self.parseSetGeneralSettingsReply(val: dealVal, success: block)
+                            }
+                        }else{
+                            
+                            if let block = self.receiveSetOwsLanguage {
+                                block(.invalidLength)
+                            }
+                            //printLog("第\(#line)行" , "\(#function)")
+                            self.signalCommandSemaphore()
+                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsLanguage长度校验出错"))
+                        }
+                    }
+                    
+                    //设置闹钟
+                    if val[4] == 0x02 && val[5] == 0x13{
+                        if self.checkOwsLength(val: val) {
+                            if let block = self.receiveSetOwsAlarmArray {
+                                self.parseSetGeneralSettingsReply(val: dealVal, success: block)
+                            }
+                        }else{
+                            
+                            if let block = self.receiveSetOwsAlarmArray {
+                                block(.invalidLength)
+                            }
+                            //printLog("第\(#line)行" , "\(#function)")
+                            self.signalCommandSemaphore()
+                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsAlarmArray长度校验出错"))
+                        }
+                    }
+                    
+                    //设置歌曲
+                    if val[4] == 0x02 && val[5] == 0x14{
+                        if self.checkOwsLength(val: val) {
+                            if let block = self.receiveSetOwsOperationSong {
+                                self.parseSetGeneralSettingsReply(val: dealVal, success: block)
+                            }
+                        }else{
+                            
+                            if let block = self.receiveSetOwsOperationSong {
+                                block(.invalidLength)
+                            }
+                            //printLog("第\(#line)行" , "\(#function)")
+                            self.signalCommandSemaphore()
+                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsOperationSong长度校验出错"))
+                        }
+                    }
+                    
+                    //设置天气
+                    if val[4] == 0x02 && val[5] == 0x14{
+                        if self.checkOwsLength(val: val) {
+                            if let block = self.receiveSetOwsWeather {
+                                self.parseSetGeneralSettingsReply(val: dealVal, success: block)
+                            }
+                        }else{
+                            
+                            if let block = self.receiveSetOwsWeather {
+                                block(.invalidLength)
+                            }
+                            //printLog("第\(#line)行" , "\(#function)")
+                            self.signalCommandSemaphore()
+                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsWeather长度校验出错"))
                         }
                     }
                     
@@ -2914,6 +3022,52 @@ import CoreBluetooth
         self.signalCommandSemaphore()
     }
     
+    // MARK: - 获取闹钟
+    /*
+     方向         SOF     Gaia    Length      CommandID       Key     PDUtype    Payloadsize    Payload   crc
+     APP→DEV     0xA8    0x03     0x0006        0x01         0x0e       0x00        0x01        0x00     1byte
+     DEV→APP     0xA8    0x03                   0x01         0x0e       0x02                             1byte
+     
+     其中数据域 Payload:
+     Byte1  闹钟数量
+     备注（Byte2～Byte6为一个闹钟5个字节，如果有N组就是N*5）
+     Byte2 闹钟类型 （0普通闹钟，1喝水闹钟，2吃药闹钟，3.会议闹钟）
+     Byte3 闹钟开关  (0关闭，1开启)
+     Byte4 小时
+     Byte5 分钟
+     Byte6 重复 （bit0～bit6，周一～周日 ，0关闭，1开启）
+     */
+    @objc public func getOwsAlarmArray(_ success:@escaping((_ modelArray:[ZyOwsAlarmModel],_ error:ZyError)->Void)) {
+        var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x01,0x0d,0x00,0x01,0x00]
+        let data = self.owsCrc8Data(val: val)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveGetOwsAlarmArray = success
+        }else{
+            success([],state)
+        }
+    }
+    
+    func parseGetOwsAlarmArray(val:[UInt8],success:@escaping((_ modelArray:[ZyOwsAlarmModel],_ error:ZyError)->Void)) {
+        
+        var alarmArray = [ZyOwsAlarmModel]()
+        let alarmCount = Int(val[0])
+        if val.count == alarmCount * 5 + 1 {
+            for i in 0..<alarmCount {
+                let model = ZyOwsAlarmModel.init()
+                model.type = Int(val[i*5+1])
+                model.isOpen = val[i*5+2] == 0 ? false : true
+                model.hour = Int(val[i*5+3])
+                model.minute = Int(val[i*5+4])
+                model.repeatCount = Int(val[i*5+5])
+            }
+        }else{
+            success([],.invalidLength)
+        }
+        self.signalCommandSemaphore()
+    }
+    
     // MARK: - 清除耳机的配对记录
     /*
      方向         SOF     Gaia    Length    CommandID    Key    PDUtype    Payloadsize    Payload      crc
@@ -3049,7 +3203,7 @@ import CoreBluetooth
      */
     @objc public func setOwsBleName(name:String,_ success:@escaping((_ error:ZyError)->Void)) {
         if let nameData = name.data(using: .utf8) {
-            var val:[UInt8] = [0xA8,0x03,0x00,UInt8(nameData.count+4),0x02,0x06,0x00,UInt8(nameData.count)]
+            var val:[UInt8] = [0xA8,0x03,0x00,UInt8(nameData.count+6),0x02,0x06,0x00,UInt8(nameData.count)]
             let nameVal = nameData.withUnsafeBytes { (byte) -> [UInt8] in
                 let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
                 return [UInt8](UnsafeBufferPointer.init(start: b, count: nameData.count))
@@ -3258,6 +3412,234 @@ import CoreBluetooth
         }
     }
 
+    // MARK: - 设置(同步)当前时间
+    /*
+     方向         SOF     Gaia    Length    CommandID    Key    PDUtype    Payloadsize    Payload     crc
+     APP→DEV     0xA8    0x03    0x0006    0x02         0x10    0x00        0x06                    1byte
+     DEV→APP     0xA8    0x03    0x0006    0x02         0x10    0x02        0x01          0xRR      1byte
+     
+     其中数据域 Payload：(举例2023年1月23日10点10分30秒)
+     Byte1～Byte2: 0x07，0xe8
+     Byte3:0x01
+     Byte4:0x17
+     Byte5:0x0a
+     Byte6:0x0a
+     Byte7:0x1e
+     */
+    @objc public func setOwsTime(time:Any? = nil,success:@escaping((ZyError) -> Void)) {
+        
+        var date = Date.init()
+        
+        if time is Date {
+            
+            date = time as! Date
+            
+        }else if time is String {
+            
+            let format = DateFormatter.init()
+            format.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            
+            let timeArray = (time as! String).components(separatedBy: " ")
+            if timeArray.count == 2 {
+                
+                date = format.date(from: time as! String) ?? .init()
+                
+            }else if timeArray.count == 3 {
+                
+                let newTime:String = timeArray[0] + timeArray[1]
+                date = format.date(from: newTime) ?? .init()
+                
+            }else{
+                
+                
+            }
+        }
+        
+        let calendar = Calendar.init(identifier: Foundation.Calendar.Identifier.gregorian)
+        let year = calendar.component(.year, from: date)
+        let month = calendar.component(.month, from: date)
+        let day = calendar.component(.day, from: date)
+        let hour = calendar.component(.hour, from: date)
+        let minute = calendar.component(.minute, from: date)
+        let second = calendar.component(.second, from: date)
+        
+        var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x02,0x10,0x00,0x06,0x00,UInt8(year),UInt8(year >> 8),UInt8(month),UInt8(day),UInt8(hour),UInt8(minute),UInt8(second)]
+        let data = self.owsCrc8Data(val: val)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetOwsTime = success
+        }else{
+            success(state)
+        }
+        
+    }
+    
+    // MARK: - 设置(同步)当前时间
+    /*
+     方向         SOF     Gaia    Length    CommandID    Key    PDUtype    Payloadsize    Payload     crc
+     APP→DEV     0xA8    0x03    0x0006    0x02         0x11    0x00        0x01                    1byte
+     DEV→APP     0xA8    0x03    0x0006    0x02         0x11    0x02        0x01          0xRR      1byte
+     
+     其中数据域 Payload：
+     Byte1
+     英文 0x00
+     中文简体 0x01
+     中文繁体 0x02
+     德语 0x03
+     法语 0x04
+     俄语 0x05
+     西班牙语 0x06
+     意大利语 0x07
+     葡萄牙语 0x08
+     阿拉伯语 0x09
+     */
+    @objc public func setOwsLanguage(type:Int,success:@escaping((ZyError) -> Void)) {
+        var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x02,0x11,0x00,0x01,UInt8(type)]
+        let data = self.owsCrc8Data(val: val)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetOwsLanguage = success
+        }else{
+            success(state)
+        }
+    }
+    
+    // MARK: - 设置闹钟
+    /*
+     方向         SOF     Gaia    Length    CommandID    Key    PDUtype    Payloadsize    Payload     crc
+     APP→DEV     0xA8    0x03              0x02         0x13    0x00                                1byte
+     DEV→APP     0xA8    0x03    0x0006    0x02         0x13    0x02        0x01          0xRR      1byte
+     
+     其中数据域 Payload：
+     Byte1 闹钟数量 （不超过12个）
+     备注 如果闹钟数量设为0，表示删除所有闹钟 (0xa80300060213000100+crc)
+     备注（Byte2～Byte6为一个闹钟5个字节，如果有N组就是N*5）
+     备注 （Byte6 重复中，如果bit0～bit6全部为关闭则表示单次闹钟）
+     Byte2 闹钟类型 （0普通闹钟，1喝水闹钟，2吃药闹钟，3.会议闹钟）
+     Byte3 闹钟开关  (0关闭，1开启)
+     Byte4 小时
+     Byte5 分钟
+     Byte6 重复 （bit0～bit6，周一～周日 ，0关闭，1开启）
+     */
+    @objc public func setOwsAlarmArray(modelArray:[ZyOwsAlarmModel],success:@escaping((ZyError) -> Void)) {
+        
+        var val:[UInt8] = .init()
+        
+        if modelArray.count > 0 {
+            var modelVal:[UInt8] = .init()
+            modelVal.append(UInt8(modelArray.count))
+            for item in modelArray {
+                modelVal.append(UInt8(item.type))
+                modelVal.append(UInt8(item.isOpen ? 0x01 : 0x00))
+                modelVal.append(UInt8(item.hour))
+                modelVal.append(UInt8(item.minute))
+                modelVal.append(UInt8(item.repeatCount))
+            }
+            val = [0xA8,0x03,0x00,UInt8(modelVal.count+6),0x02,0x06,0x00,UInt8(modelVal.count)]
+        }else {
+            val = [0xA8,0x03,0x00,0x06,0x02,0x13,0x00,0x01,0x00]
+        }
+
+        let data = self.owsCrc8Data(val: val)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetOwsAlarmArray = success
+        }else{
+            success(state)
+        }
+    }
+    
+    // MARK: - 设置(操作)歌曲
+    /*
+     方向         SOF     Gaia    Length    CommandID    Key    PDUtype    Payloadsize    Payload     crc
+     APP→DEV     0xA8    0x03    0x0006    0x02         0x14    0x00        0x01                    1byte
+     DEV→APP     0xA8    0x03    0x0006    0x02         0x14    0x02        0x01          0xRR      1byte
+     
+     其中数据域 Payload：
+     Byte1
+     暂停 0
+     播放 1
+     上一曲 2
+     下一曲 3
+     */
+    @objc public func setOwsOperationSong(type:Int,success:@escaping((ZyError) -> Void)) {
+        var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x02,0x14,0x00,0x01,UInt8(type)]
+        let data = self.owsCrc8Data(val: val)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetOwsOperationSong = success
+        }else{
+            success(state)
+        }
+    }
+    
+    // MARK: - 设置(同步)天气
+    /*
+     方向         SOF     Gaia    Length    CommandID    Key    PDUtype    Payloadsize    Payload     crc
+     APP→DEV     0xA8    0x03              0x02         0x15    0x00                                1byte
+     DEV→APP     0xA8    0x03    0x0006    0x02         0x15    0x02        0x01          0xRR      1byte
+     
+     其中数据域 Payload：
+     Byte1 城市名称长度
+     Byte2～ByteN 城市名称  （UTF8格式）
+     ByteN+1 天气数量 （一般会设置7天）
+     备注（ByteN+2～ByteN+6为一组天气5个字节，如果有N组就是N*5）
+     备注 第一天为当天天气，后面的属于未来天气
+     ByteN+2 天气状态（0多云，1雾，2阴天，3雨，4雪，5晴，6沙尘暴，7霾）
+     ByteN+3 实时温度值 （摄氏度）
+     ByteN+4 PM2.5  （0～35优，35～75良，75～115轻度污染，大于115严重污染）
+     ByteN+5 最低温
+     ByteN+6 最高温
+     */
+    @objc public func setOwsWeather(city:String? = nil,modelArray:[ZyOwsWeatherModel],success:@escaping((ZyError) -> Void)) {
+        
+        var modelVal:[UInt8] = .init()
+        
+        if let city = city {
+            if let cityData = city.data(using: .utf8) {
+                modelVal.append(UInt8(cityData.count))
+                let cityVal = cityData.withUnsafeBytes { (byte) -> [UInt8] in
+                    let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+                    return [UInt8](UnsafeBufferPointer.init(start: b, count: cityData.count))
+                }
+                modelVal.append(contentsOf: cityVal)
+            }
+        }else{
+            if let cityData = " ".data(using: .utf8) {
+                modelVal.append(UInt8(cityData.count))
+                let cityVal = cityData.withUnsafeBytes { (byte) -> [UInt8] in
+                    let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+                    return [UInt8](UnsafeBufferPointer.init(start: b, count: cityData.count))
+                }
+                modelVal.append(contentsOf: cityVal)
+            }
+        }
+        modelVal.append(UInt8(modelArray.count))
+        for item in modelArray {
+            modelVal.append(UInt8(item.type))
+            modelVal.append(UInt8(item.temperature))
+            modelVal.append(UInt8(item.pmValue))
+            modelVal.append(UInt8(item.minTemp))
+            modelVal.append(UInt8(item.maxTemp))
+        }
+        
+        
+        var val:[UInt8] = [0xA8,0x03,0x00,UInt8(modelVal.count + 6),0x02,0x15,0x00,UInt8(modelVal.count)]
+        val.append(contentsOf: modelVal)
+        let data = self.owsCrc8Data(val: val)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetOwsWeather = success
+        }else{
+            success(state)
+        }
+    }
+    
     // MARK: - 设置的通用回复
     func parseSetGeneralSettingsReply(val:[UInt8],success:@escaping((_ error:ZyError)->Void)) {
         if val.count >= 1 {
@@ -3393,7 +3775,7 @@ import CoreBluetooth
      当前用户自定义 EQ 模式十个频点的值, 请将-12DB 到 12DB 量化到
      0~240(十进制)发送给 DEV, 比如 0DB 对应 60 。如果用户没有设置全部填    入0x00
      */
-    @objc public func getOwsCustomEq(_ success:@escaping((_ index:Int,_ valueArray:[Int],_ error:ZyError)->Void)) {
+    @objc public func getOwsCustomEq(_ success:@escaping((_ type:Int,_ valueArray:[Int],_ error:ZyError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x04,0x03,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -3405,7 +3787,7 @@ import CoreBluetooth
         }
     }
     
-    func parseGetOwsCustomEq(val:[UInt8],success:@escaping((_ index:Int,_ valueArray:[Int],_ error:ZyError)->Void)) {
+    func parseGetOwsCustomEq(val:[UInt8],success:@escaping((_ type:Int,_ valueArray:[Int],_ error:ZyError)->Void)) {
         if val.count >= 11 {
             let index = Int(val[0])
             var valueArray = Array<Int>()
