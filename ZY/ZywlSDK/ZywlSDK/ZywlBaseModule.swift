@@ -9,7 +9,7 @@ import UIKit
 import CoreBluetooth
 import zlib
 
-@objc public class ZyBaseModule: NSObject {
+@objc public class ZywlBaseModule: NSObject {
     
     /// 已配对设备的UUID数组，用来获取被手机系统配对的设备。默认不获取已被手机配对的设备
     @objc public var matchingUUIDArray:[CBUUID]? = nil
@@ -20,57 +20,83 @@ import zlib
     /// 扫描时间
     @objc dynamic public var scanInterval:Int
 
-    @objc dynamic public internal(set) var peripheral:CBPeripheral? {
+    @objc dynamic public internal(set) var headphonePeripheral:CBPeripheral? {
         willSet {
             //printLog("旧值 ->",self.peripheral as Any)
-            if self.peripheral != nil {
-                self.peripheral!.removeObserver(self, forKeyPath: "state")
+            if self.headphonePeripheral != nil {
+                self.headphonePeripheral!.removeObserver(self, forKeyPath: "state")
             }
         }
         didSet {
             //printLog("新值 ->",self.peripheral as Any)
-            if self.peripheral != nil {
-                self.peripheral!.addObserver(self, forKeyPath: "state", options: [.new,.old], context: nil)
+            if self.headphonePeripheral != nil {
+                self.headphonePeripheral!.addObserver(self, forKeyPath: "state", options: [.new,.old], context: nil)
+            }
+        }
+    }
+    
+    @objc dynamic public internal(set) var chargingBoxPeripheral:CBPeripheral? {
+        willSet {
+            //printLog("旧值 ->",self.peripheral as Any)
+            if self.chargingBoxPeripheral != nil {
+                self.chargingBoxPeripheral!.removeObserver(self, forKeyPath: "state")
+            }
+        }
+        didSet {
+            //printLog("新值 ->",self.peripheral as Any)
+            if self.chargingBoxPeripheral != nil {
+                self.chargingBoxPeripheral!.addObserver(self, forKeyPath: "state", options: [.new,.old], context: nil)
             }
         }
     }
     
     @objc dynamic public internal(set) var blePowerState:CBCentralManagerState = .unknown
     
-    var writeCharacteristic:CBCharacteristic?//6E400002-B5A3-F393-E0A9-E50E24DCCA9E
-    var receiveCharacteristic:CBCharacteristic?//6E400003-B5A3-F393-E0A9-E50E24DCCA9E
-    
-    var ant_ReconnectTimer:Timer?
-    
+    var headphoneWriteCharacteristic:CBCharacteristic?//6E400002-B5A3-F393-E0A9-E50E24DCCA9E
+    var headphoneRceiveCharacteristic:CBCharacteristic?//6E400003-B5A3-F393-E0A9-E50E24DCCA9E
+    var chargingBoxWriteCharacteristic:CBCharacteristic?
+    var chargingBoxRceiveCharacteristic:CBCharacteristic?
+    var headphoneReconnectTimer:Timer?
+    var chargingBoxReconnectTimer:Timer?
     var connectCompleteBlock:((Bool)->())?
-    var reconnectComplete:(()->())?
+    var reconnectComplete:((Bool)->())?
     @objc dynamic public internal(set) var isSyncOtaData = false
     var syncOtaReconnectComplete:(()->())?
-    var peripheralStateChange:((CBPeripheralState)->())?
+    var peripheralStateChange:((Bool,CBPeripheralState)->())?
     var isReadSendDataBlock:(()->())?
     
     override init() {
         self.scanInterval = 30
         super.init()
-        let antManager = ZyBleManager.shareInstance
+        let antManager = ZywlBleManager.shareInstance
         self.blePowerState = antManager.getBlePowerState()
-        self.ant_ReconnectTimer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(reconnectMethod), userInfo: nil, repeats: true)
-        RunLoop.current.add(self.ant_ReconnectTimer!, forMode: RunLoop.Mode.default)
+        self.headphoneReconnectTimer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(headphoneReconnectMethod), userInfo: nil, repeats: true)
+        RunLoop.current.add(self.headphoneReconnectTimer!, forMode: RunLoop.Mode.default)
+        
+        self.chargingBoxReconnectTimer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(chargingBoxReconnectMethod), userInfo: nil, repeats: true)
+        RunLoop.current.add(self.chargingBoxReconnectTimer!, forMode: RunLoop.Mode.default)
         
         antManager.DeviceNeedReconnectMothed {
             let userDefault = UserDefaults.standard
             let isNeedReconnect = userDefault.bool(forKey: "Zy_ReconnectKey")
             
             if isNeedReconnect {
-                self.ant_ReconnectTimer?.fireDate = .distantPast
-                ZyCommandModule.shareInstance.resetCommandSemaphore()
+                self.headphoneReconnectTimer?.fireDate = .distantPast
+                ZywlCommandModule.shareInstance.resetCommandSemaphore()
             }
+            
+            let isNeedBoxReconnect = userDefault.bool(forKey: "Zy_BoxReconnectKey")
+            if isNeedBoxReconnect {
+                self.chargingBoxReconnectTimer?.fireDate = .distantPast
+                ZywlCommandModule.shareInstance.resetCommandSemaphore()
+            }
+            
         }
     }
     // MARK: - 外设连接状态变化回调
     /// 外设连接状态变化回调
     /// - Parameter state: <#state description#>
-    @objc public func peripheralStateChange(state:@escaping((CBPeripheralState)->())) {
+    @objc public func peripheralStateChange(state:@escaping((Bool,CBPeripheralState)->())) {
         self.peripheralStateChange = state
     }
     
@@ -79,12 +105,19 @@ import zlib
     }
     
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-//        printLog("keyPath = \(String(describing: keyPath)),object = \(String(describing: object)),change.new = \(change?[NSKeyValueChangeKey(rawValue: "new")]),change.old = \(change?[NSKeyValueChangeKey(rawValue: "old")]),context = \(String(describing: context))")//
+        print("keyPath = \(String(describing: keyPath)),object = \(String(describing: object)),change.new = \(change?[NSKeyValueChangeKey(rawValue: "new")]),change.old = \(change?[NSKeyValueChangeKey(rawValue: "old")]),context = \(String(describing: context))")//
         if keyPath == "state" {
             let state:CBPeripheralState = CBPeripheralState.init(rawValue: change?[NSKeyValueChangeKey(rawValue: "new")] as! Int) ?? .disconnected
 
             if let block = self.peripheralStateChange {
-                block(state)
+                if object as? NSObject == self.headphonePeripheral {
+                    print("headphonePeripheral")
+                    block(true,state)
+                }
+                if object as? NSObject == self.chargingBoxPeripheral {
+                    print("chargingBoxPeripheral")
+                    block(false,state)
+                }
             }
             
             if state == .disconnected {
@@ -98,24 +131,25 @@ import zlib
     /// 蓝牙状态变化回调
     /// - Parameter state: <#state description#>
     @objc public func bluetoothPowerStateChange(state:@escaping((CBCentralManagerState)->())) {
-        ZyBleManager.shareInstance.getBlePowerDidUpdateState { bleState in
+        ZywlBleManager.shareInstance.getBlePowerDidUpdateState { bleState in
             state(bleState)
             if bleState == .poweredOn {
-                ZySDKLog.writeStringToSDKLog(string: "系统蓝牙状态:poweredOn")
-                self.ant_ReconnectTimer?.fireDate = .distantPast
+                ZywlSDKLog.writeStringToSDKLog(string: "系统蓝牙状态:poweredOn")
+                self.headphoneReconnectTimer?.fireDate = .distantPast
+                self.chargingBoxReconnectTimer?.fireDate = .distantPast
             }else if bleState == .poweredOff {
-                ZySDKLog.writeStringToSDKLog(string: "系统蓝牙状态:poweredOff")
+                ZywlSDKLog.writeStringToSDKLog(string: "系统蓝牙状态:poweredOff")
                 //命令信号量重置
-                ZyCommandModule.shareInstance.resetCommandSemaphore()
+                ZywlCommandModule.shareInstance.resetCommandSemaphore()
                 //同步健康数据相关方法重置
             }else if bleState == .unknown {
-                ZySDKLog.writeStringToSDKLog(string: "系统蓝牙状态:unknown")
+                ZywlSDKLog.writeStringToSDKLog(string: "系统蓝牙状态:unknown")
             }else if bleState == .resetting {
-                ZySDKLog.writeStringToSDKLog(string: "系统蓝牙状态:resetting")
+                ZywlSDKLog.writeStringToSDKLog(string: "系统蓝牙状态:resetting")
             }else if bleState == .unsupported {
-                ZySDKLog.writeStringToSDKLog(string: "系统蓝牙状态:unsupported")
+                ZywlSDKLog.writeStringToSDKLog(string: "系统蓝牙状态:unsupported")
             }else if bleState == .unauthorized {
-                ZySDKLog.writeStringToSDKLog(string: "系统蓝牙状态:unauthorized")
+                ZywlSDKLog.writeStringToSDKLog(string: "系统蓝牙状态:unauthorized")
             }
         }
     }
@@ -124,18 +158,18 @@ import zlib
     /// ancs共享通知变化回调
     /// - Parameter state: iOS13及以上才会正常返回
     @objc public func bluetoothAncsStateChange(state:@escaping((Bool)->())) {
-        ZyBleManager.shareInstance.getAncsDidUpdateState(value: state)
+        ZywlBleManager.shareInstance.getAncsDidUpdateState(value: state)
     }
     
-    @objc func reconnectMethod() {
+    @objc func headphoneReconnectMethod() {
         printLog("定时器方法")
         let userDefault = UserDefaults.standard
         let isNeedReconnect = userDefault.bool(forKey: "Zy_ReconnectKey")
         let reconeectString = userDefault.string(forKey: "Zy_ReconnectIdentifierKey") ?? ""
-        printLog("isNeedReconnect = ",isNeedReconnect,"reconeectString =",reconeectString,"state =",ZyBleManager.shareInstance.getBlePowerState().rawValue)
+        printLog("isNeedReconnect = ",isNeedReconnect,"reconeectString =",reconeectString,"state =",ZywlBleManager.shareInstance.getBlePowerState().rawValue)
         
         var blePower = ""
-        let bleState = ZyBleManager.shareInstance.getBlePowerState()
+        let bleState = ZywlBleManager.shareInstance.getBlePowerState()
         if bleState == .poweredOn {
             blePower = "系统蓝牙状态:poweredOn"
         }else if bleState == .poweredOff {
@@ -149,27 +183,27 @@ import zlib
         }else if bleState == .unauthorized {
             blePower = "系统蓝牙状态:unauthorized"
         }
-        ZySDKLog.writeStringToSDKLog(string: "重连 blePower = \(blePower)")
-        ZySDKLog.writeStringToSDKLog(string: "重连 reconeectString = \(reconeectString)")
-        ZySDKLog.writeStringToSDKLog(string: "重连 isNeedReconnect = \(isNeedReconnect)")
+        ZywlSDKLog.writeStringToSDKLog(string: "重连 blePower = \(blePower)")
+        ZywlSDKLog.writeStringToSDKLog(string: "重连 reconeectString = \(reconeectString)")
+        ZywlSDKLog.writeStringToSDKLog(string: "重连 isNeedReconnect = \(isNeedReconnect)")
         
-        if ZyBleManager.shareInstance.getBlePowerState() == .poweredOn && isNeedReconnect && reconeectString.count > 0 {
-            if self.peripheral?.state == .connected {
+        if ZywlBleManager.shareInstance.getBlePowerState() == .poweredOn && isNeedReconnect && reconeectString.count > 0 {
+            if self.headphonePeripheral?.state == .connected {
                 printLog("已连接、重连定时器关闭")
-                ZySDKLog.writeStringToSDKLog(string: "重连 已连接关闭重连定时器")
-                self.ant_ReconnectTimer?.fireDate = .distantFuture
+                ZywlSDKLog.writeStringToSDKLog(string: "重连 已连接关闭重连定时器")
+                self.headphoneReconnectTimer?.fireDate = .distantFuture
             }else{
-                self.connectDevice(peripheral: reconeectString) { result in
+                self.connectHeadphoneDevice(peripheral: reconeectString) { result in
                     if result {
                         if !self.isSyncOtaData {
                             if let block = self.reconnectComplete {
-                                ZySDKLog.writeStringToSDKLog(string: "重连 reconnectComplete")
-                                block()
+                                ZywlSDKLog.writeStringToSDKLog(string: "重连 reconnectComplete")
+                                block(true)
                             }
                         }else {
                             //在ZyCommandModule类调用服务器升级接口之后会通过此回调重连继续升级
                             if let block = self.syncOtaReconnectComplete {
-                                ZySDKLog.writeStringToSDKLog(string: "重连 syncOtaReconnectComplete")
+                                ZywlSDKLog.writeStringToSDKLog(string: "重连 syncOtaReconnectComplete")
                                 block()
                             }
                         }
@@ -178,9 +212,65 @@ import zlib
             }
         }else{
             printLog("重连标识相关状态不对、重连定时器关闭")
-            self.ant_ReconnectTimer?.fireDate = .distantFuture
+            self.headphoneReconnectTimer?.fireDate = .distantFuture
         }
     }
+    
+    @objc func chargingBoxReconnectMethod() {
+        printLog("定时器方法")
+        let userDefault = UserDefaults.standard
+        let isNeedReconnect = userDefault.bool(forKey: "Zy_BoxReconnectKey")
+        let reconeectString = userDefault.string(forKey: "Zy_BoxReconnectIdentifierKey") ?? ""
+        printLog("isNeedReconnect = ",isNeedReconnect,"reconeectString =",reconeectString,"state =",ZywlBleManager.shareInstance.getBlePowerState().rawValue)
+        
+        var blePower = ""
+        let bleState = ZywlBleManager.shareInstance.getBlePowerState()
+        if bleState == .poweredOn {
+            blePower = "系统蓝牙状态:poweredOn"
+        }else if bleState == .poweredOff {
+            blePower = "系统蓝牙状态:poweredOff"
+        }else if bleState == .unknown {
+            blePower = "系统蓝牙状态:unknown"
+        }else if bleState == .resetting {
+            blePower = "系统蓝牙状态:resetting"
+        }else if bleState == .unsupported {
+            blePower = "系统蓝牙状态:unsupported"
+        }else if bleState == .unauthorized {
+            blePower = "系统蓝牙状态:unauthorized"
+        }
+        ZywlSDKLog.writeStringToSDKLog(string: "重连 blePower = \(blePower)")
+        ZywlSDKLog.writeStringToSDKLog(string: "重连 reconeectString = \(reconeectString)")
+        ZywlSDKLog.writeStringToSDKLog(string: "重连 isNeedReconnect = \(isNeedReconnect)")
+        
+        if ZywlBleManager.shareInstance.getBlePowerState() == .poweredOn && isNeedReconnect && reconeectString.count > 0 {
+            if self.headphonePeripheral?.state == .connected {
+                printLog("已连接、重连定时器关闭")
+                ZywlSDKLog.writeStringToSDKLog(string: "重连 已连接关闭重连定时器")
+                self.chargingBoxReconnectTimer?.fireDate = .distantFuture
+            }else{
+                self.connectHeadphoneDevice(peripheral: reconeectString) { result in
+                    if result {
+                        if !self.isSyncOtaData {
+                            if let block = self.reconnectComplete {
+                                ZywlSDKLog.writeStringToSDKLog(string: "重连 reconnectComplete")
+                                block(false)
+                            }
+                        }else {
+                            //在ZyCommandModule类调用服务器升级接口之后会通过此回调重连继续升级
+                            if let block = self.syncOtaReconnectComplete {
+                                ZywlSDKLog.writeStringToSDKLog(string: "重连 syncOtaReconnectComplete")
+                                block()
+                            }
+                        }
+                    }
+                }
+            }
+        }else{
+            printLog("重连标识相关状态不对、重连定时器关闭")
+            self.chargingBoxReconnectTimer?.fireDate = .distantFuture
+        }
+    }
+    
     // MARK: - 设置是否需要重连
     /// 设置是否需要重连
     /// - Parameter state: true:重连 false:不重连
@@ -188,12 +278,13 @@ import zlib
         printLog("setIsNeedReconnect =",state)
         let userDefault = UserDefaults.standard
         userDefault.setValue(state, forKey: "Zy_ReconnectKey")
+        userDefault.setValue(state, forKey: "Zy_BoxReconnectKey")
         userDefault.synchronize()
     }
     // MARK: - 重连成功回调
     /// 重连成功回调
     /// - Parameter complete: <#complete description#>
-    @objc public func reconnectDevice(complete:@escaping(()->())) {
+    @objc public func reconnectDevice(complete:@escaping((Bool)->())) {
         self.reconnectComplete = complete
     }
     @objc public func setTestEnvironment(state:Bool) {
@@ -206,31 +297,43 @@ import zlib
         self.syncOtaReconnectComplete = complete
     }
     
-    func setReconnectIdentifier(identifier:String) {
+    func setHeadphoneReconnectIdentifier(identifier:String) {
         let userDefault = UserDefaults.standard
         userDefault.setValue(identifier, forKey: "Zy_ReconnectIdentifierKey")
+        userDefault.synchronize()
+    }
+    
+    func setChargingBoxReconnectIdentifier(identifier:String) {
+        let userDefault = UserDefaults.standard
+        userDefault.setValue(identifier, forKey: "Zy_BoxReconnectIdentifierKey")
         userDefault.synchronize()
     }
     
     // MARK: - 获取重连标识
     /// 获取重连标识
     /// - Returns: 外设唯一标识
-    @objc public func getReconnectIdentifier() -> String {
+    @objc public func getHeadphoneReconnectIdentifier() -> String {
         let userDefault = UserDefaults.standard
         let idString:String = userDefault.string(forKey: "Zy_ReconnectIdentifierKey") ?? ""
+        
+        return idString
+    }
+    @objc public func getChargingBoxReconnectIdentifier() -> String {
+        let userDefault = UserDefaults.standard
+        let idString:String = userDefault.string(forKey: "Zy_BoxReconnectIdentifierKey") ?? ""
         
         return idString
     }
     // MARK: - 获取系统蓝牙列表的设备
     /// 获取系统列表的设备
     /// - Parameter modelArray: <#modelArray description#>
-    @objc open func getSystemListPeripheral(modelArray:@escaping(([ZyScanModel])->(Void))) {
-        var peripheralArray = [ZyScanModel].init()
+    @objc open func getSystemListPeripheral(modelArray:@escaping(([ZywlScanModel])->(Void))) {
+        var peripheralArray = [ZywlScanModel].init()
         
-        let connectedArray = ZyBleManager.shareInstance.getListConnectPeripheras(serviceArray: self.matchingUUIDArray ?? [])
+        let connectedArray = ZywlBleManager.shareInstance.getListConnectPeripheras(serviceArray: self.matchingUUIDArray ?? [])
         if connectedArray.count > 0 {
             for item in connectedArray {
-                let model:ZyScanModel = ZyScanModel.init()
+                let model:ZywlScanModel = ZywlScanModel.init()
                 model.name = item.name
                 model.rssi = 0
                 model.peripheral = item
@@ -246,15 +349,15 @@ import zlib
     ///   - scanModel: 扫描到的设备
     ///   - modelArray: 所有扫描到的设备数组，包括系统蓝牙列表已连接的
     /// - Returns:
-    @objc open func scanDevice(scanModel:@escaping((ZyScanModel)->(Void)),modelArray:@escaping(([ZyScanModel])->(Void))) {
-        var peripheralArray = [ZyScanModel].init()
+    @objc open func scanDevice(scanModel:@escaping((ZywlScanModel)->(Void)),modelArray:@escaping(([ZywlScanModel])->(Void))) {
+        var peripheralArray = [ZywlScanModel].init()
         
         self.stopScan()
         
-        let connectedArray = ZyBleManager.shareInstance.getListConnectPeripheras(serviceArray: self.matchingUUIDArray ?? [])
+        let connectedArray = ZywlBleManager.shareInstance.getListConnectPeripheras(serviceArray: self.matchingUUIDArray ?? [])
         if connectedArray.count > 0 {
             for item in connectedArray {
-                let model:ZyScanModel = ZyScanModel.init()
+                let model:ZywlScanModel = ZywlScanModel.init()
                 model.name = item.name
                 model.rssi = 0
                 model.peripheral = item
@@ -265,9 +368,9 @@ import zlib
             modelArray(peripheralArray)
         }
         
-        ZyBleManager.shareInstance.scanPeripheralWithServices()
-        ZyBleManager.shareInstance.CentralDiscoverPeripheral { (manager, peripheral, advertisementData, rssi) in
-            let model:ZyScanModel = ZyScanModel.init()
+        ZywlBleManager.shareInstance.scanPeripheralWithServices()
+        ZywlBleManager.shareInstance.CentralDiscoverPeripheral { (manager, peripheral, advertisementData, rssi) in
+            let model:ZywlScanModel = ZywlScanModel.init()
             model.name = peripheral.name
             model.rssi = Int(truncating: rssi)
             model.peripheral = peripheral
@@ -335,7 +438,7 @@ import zlib
     
     /// 停止扫描
     @objc public func stopScan() {
-        ZyBleManager.shareInstance.stopScanPeripheral()
+        ZywlBleManager.shareInstance.stopScanPeripheral()
         NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(stopScan), object: nil)
     }
     
@@ -344,62 +447,129 @@ import zlib
     ///   - peripheral: 支持String跟CBPeripheral两种
     ///   - connectState: 连接状态
     /// - Returns:
-    @objc public func connectDevice(peripheral:Any,connectState:@escaping((Bool)->())) {
-        if self.peripheral != nil && self.peripheral?.state != .disconnected{
+    @objc public func connectHeadphoneDevice(peripheral:Any,connectState:@escaping((Bool)->())) {
+        if self.headphonePeripheral != nil && self.headphonePeripheral?.state != .disconnected{
             let userDefault = UserDefaults.standard
             let isNeedReconnect = userDefault.bool(forKey: "Zy_ReconnectKey")
             if !isNeedReconnect {
-                printLog("当前有正在连接或正在断开的设备。同时操作多个设备会有异常，此处开发者需要自行处理，保证在连接过程中只有唯一连接")
+                print("当前有正在连接或正在断开的设备。同时操作多个设备会有异常，此处开发者需要自行处理，保证在连接过程中只有唯一连接")
             }
         }
         self.stopScan()
         if peripheral is String {
-            let p = ZyBleManager.shareInstance.getPeripheral(string: peripheral as! String)
+            let p = ZywlBleManager.shareInstance.getPeripheral(string: peripheral as! String)
             if p != nil {
-                if self.peripheral != p! {
-                    self.peripheral = p!
+                if self.headphonePeripheral != p! {
+                    self.headphonePeripheral = p!
                 }
                 if #available(iOS 13.0, *) {
-                    ZyBleManager.shareInstance.connect(peripheral: p!, options: [CBConnectPeripheralOptionRequiresANCS:true,
+                    ZywlBleManager.shareInstance.connect(peripheral: p!, options: [CBConnectPeripheralOptionRequiresANCS:true,
                                                                       CBConnectPeripheralOptionNotifyOnDisconnectionKey:true,
                                                                     CBConnectPeripheralOptionEnableTransportBridgingKey:true,
                                                                                  ])
                 } else {
-                    ZyBleManager.shareInstance.connect(peripheral: p!, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey:true])
+                    ZywlBleManager.shareInstance.connect(peripheral: p!, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey:true])
                 }
             }else{
                 connectState(false)
             }
         }else if peripheral is CBPeripheral {
-            if self.peripheral != peripheral as? CBPeripheral {
-                self.peripheral = peripheral as? CBPeripheral
+            if self.headphonePeripheral != peripheral as? CBPeripheral {
+                self.headphonePeripheral = peripheral as? CBPeripheral
             }
             if #available(iOS 13.0, *) {
-                ZyBleManager.shareInstance.connect(peripheral: peripheral as! CBPeripheral, options: [CBConnectPeripheralOptionRequiresANCS:true,CBConnectPeripheralOptionNotifyOnDisconnectionKey:true,CBConnectPeripheralOptionEnableTransportBridgingKey:true])
+                ZywlBleManager.shareInstance.connect(peripheral: peripheral as! CBPeripheral, options: [CBConnectPeripheralOptionRequiresANCS:true,CBConnectPeripheralOptionNotifyOnDisconnectionKey:true,CBConnectPeripheralOptionEnableTransportBridgingKey:true])
             } else {
-                ZyBleManager.shareInstance.connect(peripheral: peripheral as! CBPeripheral, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey:true])
+                ZywlBleManager.shareInstance.connect(peripheral: peripheral as! CBPeripheral, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey:true])
             }
-        }else if peripheral is ZyScanModel {
-            if self.peripheral != (peripheral as! ZyScanModel).peripheral {
-                self.peripheral = (peripheral as! ZyScanModel).peripheral
+        }else if peripheral is ZywlScanModel {
+            if self.headphonePeripheral != (peripheral as! ZywlScanModel).peripheral {
+                self.headphonePeripheral = (peripheral as! ZywlScanModel).peripheral
             }
             if #available(iOS 13.0, *) {
-                ZyBleManager.shareInstance.connect(peripheral: (peripheral as! ZyScanModel).peripheral!, options: [CBConnectPeripheralOptionRequiresANCS:true,
+                ZywlBleManager.shareInstance.connect(peripheral: (peripheral as! ZywlScanModel).peripheral!, options: [CBConnectPeripheralOptionRequiresANCS:true,
                                                                                                          CBConnectPeripheralOptionNotifyOnDisconnectionKey:true,
                                                                                                        CBConnectPeripheralOptionEnableTransportBridgingKey:true,
                                                                                                                     ])
             } else {
-                ZyBleManager.shareInstance.connect(peripheral: (peripheral as! ZyScanModel).peripheral!, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey:true])
+                ZywlBleManager.shareInstance.connect(peripheral: (peripheral as! ZywlScanModel).peripheral!, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey:true])
             }
             
         }else{
             connectState(false)
         }
         
-        ZyBleManager.shareInstance.CentralConnectPeripheralState { (result, central, peripheral, error) in
+        ZywlBleManager.shareInstance.CentralConnectPeripheralState { (result, central, peripheral, error) in
             if result {
                 printLog("CentralConnectPeripheralState")
-                ZySDKLog.clear()
+                ZywlSDKLog.clear()
+                self.discoverServices(peripheral: peripheral)
+                self.connectCompleteBlock = connectState
+                
+            }else{
+                
+                connectState(false)
+            
+            }
+        }
+    }
+    
+    @objc public func connectChargingBoxDevice(peripheral:Any,connectState:@escaping((Bool)->())) {
+        if self.chargingBoxPeripheral != nil && self.chargingBoxPeripheral?.state != .disconnected{
+            let userDefault = UserDefaults.standard
+            let isNeedReconnect = userDefault.bool(forKey: "Zy_BoxReconnectIdentifierKey")
+            if !isNeedReconnect {
+                print("当前有正在连接或正在断开的设备。同时操作多个设备会有异常，此处开发者需要自行处理，保证在连接过程中只有唯一连接")
+            }
+        }
+        self.stopScan()
+        if peripheral is String {
+            let p = ZywlBleManager.shareInstance.getPeripheral(string: peripheral as! String)
+            if p != nil {
+                if self.chargingBoxPeripheral != p! {
+                    self.chargingBoxPeripheral = p!
+                }
+                if #available(iOS 13.0, *) {
+                    ZywlBleManager.shareInstance.connect(peripheral: p!, options: [CBConnectPeripheralOptionRequiresANCS:true,
+                                                                      CBConnectPeripheralOptionNotifyOnDisconnectionKey:true,
+                                                                    CBConnectPeripheralOptionEnableTransportBridgingKey:true,
+                                                                                 ])
+                } else {
+                    ZywlBleManager.shareInstance.connect(peripheral: p!, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey:true])
+                }
+            }else{
+                connectState(false)
+            }
+        }else if peripheral is CBPeripheral {
+            if self.chargingBoxPeripheral != peripheral as? CBPeripheral {
+                self.chargingBoxPeripheral = peripheral as? CBPeripheral
+            }
+            if #available(iOS 13.0, *) {
+                ZywlBleManager.shareInstance.connect(peripheral: peripheral as! CBPeripheral, options: [CBConnectPeripheralOptionRequiresANCS:true,CBConnectPeripheralOptionNotifyOnDisconnectionKey:true,CBConnectPeripheralOptionEnableTransportBridgingKey:true])
+            } else {
+                ZywlBleManager.shareInstance.connect(peripheral: peripheral as! CBPeripheral, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey:true])
+            }
+        }else if peripheral is ZywlScanModel {
+            if self.chargingBoxPeripheral != (peripheral as! ZywlScanModel).peripheral {
+                self.chargingBoxPeripheral = (peripheral as! ZywlScanModel).peripheral
+            }
+            if #available(iOS 13.0, *) {
+                ZywlBleManager.shareInstance.connect(peripheral: (peripheral as! ZywlScanModel).peripheral!, options: [CBConnectPeripheralOptionRequiresANCS:true,
+                                                                                                         CBConnectPeripheralOptionNotifyOnDisconnectionKey:true,
+                                                                                                       CBConnectPeripheralOptionEnableTransportBridgingKey:true,
+                                                                                                                    ])
+            } else {
+                ZywlBleManager.shareInstance.connect(peripheral: (peripheral as! ZywlScanModel).peripheral!, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey:true])
+            }
+            
+        }else{
+            connectState(false)
+        }
+        
+        ZywlBleManager.shareInstance.CentralConnectPeripheralState { (result, central, peripheral, error) in
+            if result {
+                printLog("CentralConnectPeripheralState")
+                ZywlSDKLog.clear()
                 self.discoverServices(peripheral: peripheral)
                 self.connectCompleteBlock = connectState
                 
@@ -413,46 +583,85 @@ import zlib
     
     @objc public func otaDisconnect() {
         //断开连接并打开正常的重连方法
-        if let peripheral = self.peripheral {
-            ZyBleManager.shareInstance.disconnect(peripheral: peripheral)
+        if let peripheral = self.headphonePeripheral {
+            ZywlBleManager.shareInstance.disconnect(peripheral: peripheral)
         }
         DispatchQueue.main.asyncAfter(deadline: .now()+3) {
-            self.ant_ReconnectTimer?.fireDate = .distantPast
+            self.headphoneReconnectTimer?.fireDate = .distantPast
+            self.chargingBoxReconnectTimer?.fireDate = .distantPast
         }
     }
     
     /// 断开连接
-    @objc public func disconnect(complete:(()->Void)? = nil) {
+    @objc public func disconnectHeadphone(complete:(()->Void)? = nil) {
 
         //此方法只能让外部调用，此方法会删除重连标识，如果SDK内部调用会影响重连，重连只调用一次就自动取消。内部调用断开连接用if的判断
-        if self.peripheral != nil && self.peripheral?.state != .disconnected{
-            ZyBleManager.shareInstance.disconnect(peripheral: self.peripheral!)
+        if self.headphonePeripheral != nil && self.headphonePeripheral?.state != .disconnected{
+            ZywlBleManager.shareInstance.disconnect(peripheral: self.headphonePeripheral!)
         }
         
         let userDefault = UserDefaults.standard
         userDefault.removeObject(forKey: "Zy_ReconnectIdentifierKey")
         userDefault.synchronize()
         
-        ZyBleManager.shareInstance.CentralDisonnectPeripheral { (central, peripheral, error) in
+        ZywlBleManager.shareInstance.CentralDisonnectPeripheral { (central, peripheral, error) in
             printLog("----------设备已断开----------")
             if error == nil {
                 //蓝牙列表忽略设备，error是nil  该重连的还是要继续
                 if let identifierString = UserDefaults.standard.string(forKey: "Zy_ReconnectIdentifierKey") {
                     if identifierString.count > 0 {
                         printLog("----------蓝牙列表忽略设备---------- ")
-                        ZySDKLog.writeStringToSDKLog(string: "----------蓝牙列表忽略设备----------")
+                        ZywlSDKLog.writeStringToSDKLog(string: "----------蓝牙列表忽略设备----------")
                     }else{
                         printLog("----------设备已主动断开----------")
-                        ZySDKLog.writeStringToSDKLog(string: "----------设备已主动断开----------")
+                        ZywlSDKLog.writeStringToSDKLog(string: "----------设备已主动断开----------")
                     }
                 }else{
                     printLog("----------设备已主动断开----------")
-                    ZySDKLog.writeStringToSDKLog(string: "----------设备已主动断开----------")
+                    ZywlSDKLog.writeStringToSDKLog(string: "----------设备已主动断开----------")
                 }
             }
-            self.peripheral = nil
+            self.headphonePeripheral = nil
             //命令信号量重置
-            ZyCommandModule.shareInstance.resetCommandSemaphore()
+            ZywlCommandModule.shareInstance.resetCommandSemaphore()
+            if let complete = complete {
+                complete()
+            }
+        }
+
+    }
+    
+    @objc public func disconnectChargingBox(complete:(()->Void)? = nil) {
+
+        //此方法只能让外部调用，此方法会删除重连标识，如果SDK内部调用会影响重连，重连只调用一次就自动取消。内部调用断开连接用if的判断
+        if self.chargingBoxPeripheral != nil && self.chargingBoxPeripheral?.state != .disconnected{
+            ZywlBleManager.shareInstance.disconnect(peripheral: self.chargingBoxPeripheral!)
+        }
+        
+        let userDefault = UserDefaults.standard
+        userDefault.removeObject(forKey: "Zy_BoxReconnectIdentifierKey")
+        userDefault.synchronize()
+        
+        ZywlBleManager.shareInstance.CentralDisonnectPeripheral { (central, peripheral, error) in
+            printLog("----------设备已断开----------")
+            if error == nil {
+                //蓝牙列表忽略设备，error是nil  该重连的还是要继续
+                if let identifierString = UserDefaults.standard.string(forKey: "Zy_BoxReconnectIdentifierKey") {
+                    if identifierString.count > 0 {
+                        printLog("----------蓝牙列表忽略设备---------- ")
+                        ZywlSDKLog.writeStringToSDKLog(string: "----------蓝牙列表忽略设备----------")
+                    }else{
+                        printLog("----------设备已主动断开----------")
+                        ZywlSDKLog.writeStringToSDKLog(string: "----------设备已主动断开----------")
+                    }
+                }else{
+                    printLog("----------设备已主动断开----------")
+                    ZywlSDKLog.writeStringToSDKLog(string: "----------设备已主动断开----------")
+                }
+            }
+            self.chargingBoxPeripheral = nil
+            //命令信号量重置
+            ZywlCommandModule.shareInstance.resetCommandSemaphore()
             if let complete = complete {
                 complete()
             }
@@ -464,10 +673,10 @@ import zlib
     /// - Parameter peripheral: peripheral
     func discoverServices(peripheral:CBPeripheral) {
         printLog("发现服务")
-        peripheral.delegate = ZyBleManager.shareInstance
+        peripheral.delegate = ZywlBleManager.shareInstance
         peripheral.discoverServices(nil)
         
-        ZyBleManager.shareInstance.PeripheralDiscoverService { (peripheral, error) in
+        ZywlBleManager.shareInstance.PeripheralDiscoverService { (peripheral, error) in
             if error == nil {
                 for service in peripheral.services ?? [] {
                     printLog("Service found with UUID:",service.uuid)
@@ -487,21 +696,22 @@ import zlib
         
         var currentIndex = 0
         
-        ZyBleManager.shareInstance.PeripheralDiscoverCharacteristic { (peripheral, service, error) in
+        ZywlBleManager.shareInstance.PeripheralDiscoverCharacteristic { (peripheral, service, error) in
             currentIndex += 1
             print("service = \(service)")
+            print("service.uuid = \(service.uuid)")
             if String.init(format: "%@", service.uuid) == "53527AA4-29F7-AE11-4E74-997334782568" {
-                ZySDKLog.writeStringToSDKLog(string: String.init(format: "service:%@",service.uuid))
+                ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "service:%@",service.uuid))
                 for characteristic in service.characteristics ?? [] {
-                    ZySDKLog.writeStringToSDKLog(string: String.init(format: "characteristic:%@",characteristic.uuid))
+                    ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "characteristic:%@",characteristic.uuid))
                     print("characteristic:",characteristic)
                     print("characteristic.properties = \(characteristic.properties)")
                     if characteristic.properties == .write {
-                        self.writeCharacteristic = characteristic
+                        self.headphoneWriteCharacteristic = characteristic
                     }
                     if characteristic.properties == [.notify , .read]{
                         peripheral.setNotifyValue(true, for: characteristic)
-                        self.receiveCharacteristic = characteristic
+                        self.headphoneRceiveCharacteristic = characteristic
                     }
 //                    if String.init(format: "%@", characteristic.uuid) == "EE684B1A-1E9B-ED3E-EE55-F894667E92AC"{
 //                        peripheral.setNotifyValue(true, for: characteristic)
@@ -515,16 +725,32 @@ import zlib
 //                    }
                 }
             }
-            if String.init(format: "%@", service.uuid) == "EC00D102-11E1-9B23-0002-5B00C0C1A8A8" {
+            if String.init(format: "%@", service.uuid) == "EC00D102-11E1-9B23-0002-5B00C0C1A8A8"{
                 for characteristic in service.characteristics ?? [] {
-                    ZySDKLog.writeStringToSDKLog(string: String.init(format: "characteristic:%@",characteristic.uuid))
+                    ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "characteristic:%@",characteristic.uuid))
                     print("characteristic.uuid:",characteristic.uuid,"characteristic:",characteristic)
                     if characteristic.properties == [.write,.writeWithoutResponse] {
-                        self.writeCharacteristic = characteristic
+                        self.headphoneWriteCharacteristic = characteristic
                     }
                     if characteristic.properties == [.notify]{
                         peripheral.setNotifyValue(true, for: characteristic)
-                        self.receiveCharacteristic = characteristic
+                        self.headphoneRceiveCharacteristic = characteristic
+                    }
+                }
+            }
+            
+            if String.init(format: "%@", service.uuid) == "AE00" {
+                for characteristic in service.characteristics ?? [] {
+                    ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "characteristic:%@",characteristic.uuid))
+                    print("characteristic.uuid:",characteristic.uuid,"characteristic:",characteristic)
+                    if characteristic.properties == [.writeWithoutResponse] {
+                        print("headphoneWriteCharacteristic")
+                        self.headphoneWriteCharacteristic = characteristic
+                    }
+                    if characteristic.properties == [.notify]{
+                        print("headphoneRceiveCharacteristic")
+                        peripheral.setNotifyValue(true, for: characteristic)
+                        self.headphoneRceiveCharacteristic = characteristic
                     }
                 }
             }
@@ -546,7 +772,7 @@ import zlib
             
             if currentIndex == serviceCount {
                 
-                ZySDKLog.writeStringToSDKLog(string: "----------连接成功:\(peripheral.name ?? "")----------")
+                ZywlSDKLog.writeStringToSDKLog(string: "----------连接成功:\(peripheral.name ?? "")----------")
 
                 self.deviceReceivedData()
                 
@@ -566,14 +792,14 @@ import zlib
     }
     
     @objc func functionListCommandNoSupport() {
-        printLog("functionListCommandNoSupport,self.peripheral = \(self.peripheral)")
+        printLog("functionListCommandNoSupport,self.peripheral = \(self.headphonePeripheral)")
         if let block = self.connectCompleteBlock {
-            block(self.peripheral?.state == .connected ? true:false)
+            block(self.headphonePeripheral?.state == .connected ? true:false)
         }
     }
     
     func deviceReceivedData() {
-        ZyBleManager.shareInstance.PeripheralUpdateValue { (peripheral, characteristic, error) in
+        ZywlBleManager.shareInstance.PeripheralUpdateValue { (peripheral, characteristic, error) in
 //            printLog(("characteristic.value =",String.init(format: "%@", characteristic.value! as CVarArg)))
         }
     }

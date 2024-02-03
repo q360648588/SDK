@@ -7,14 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		67661CD526291D120004B197 /* ZySDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67661CCB26291D110004B197 /* ZySDK.framework */; };
-		67661CDC26291D120004B197 /* ZySDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 67661CCE26291D110004B197 /* ZySDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		67661CE82629209A0004B197 /* ZyBleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661CE72629209A0004B197 /* ZyBleManager.swift */; };
-		67661D4326296C700004B197 /* ZyBaseModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661D4226296C700004B197 /* ZyBaseModule.swift */; };
-		67661D7B262A7D7A0004B197 /* ZySDKLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661D7A262A7D7A0004B197 /* ZySDKLog.swift */; };
-		676D384526DE36C000471098 /* ZyCrashHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 676D384426DE36C000471098 /* ZyCrashHandler.swift */; };
-		67883F152826127800ADDE99 /* ZyModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67883F142826127800ADDE99 /* ZyModel.swift */; };
-		679FD5532A41525F00A32A54 /* ZyCommandModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 679FD5522A41525F00A32A54 /* ZyCommandModule.swift */; };
+		67661CD526291D120004B197 /* ZywlSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67661CCB26291D110004B197 /* ZywlSDK.framework */; };
+		67661CDC26291D120004B197 /* ZywlSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 67661CCE26291D110004B197 /* ZywlSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		67661CE82629209A0004B197 /* ZywlBleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661CE72629209A0004B197 /* ZywlBleManager.swift */; };
+		67661D4326296C700004B197 /* ZywlBaseModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661D4226296C700004B197 /* ZywlBaseModule.swift */; };
+		67661D7B262A7D7A0004B197 /* ZywlSDKLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661D7A262A7D7A0004B197 /* ZywlSDKLog.swift */; };
+		676D384526DE36C000471098 /* ZywlCrashHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 676D384426DE36C000471098 /* ZywlCrashHandler.swift */; };
+		67883F152826127800ADDE99 /* ZywlModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67883F142826127800ADDE99 /* ZywlModel.swift */; };
+		679FD5532A41525F00A32A54 /* ZywlCommandModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 679FD5522A41525F00A32A54 /* ZywlCommandModule.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -28,16 +28,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		67661CCB26291D110004B197 /* ZySDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ZySDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		67661CCE26291D110004B197 /* ZySDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZySDK.h; sourceTree = "<group>"; };
+		67661CCB26291D110004B197 /* ZywlSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ZywlSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		67661CCE26291D110004B197 /* ZywlSDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZywlSDK.h; sourceTree = "<group>"; };
 		67661CCF26291D110004B197 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		67661CD426291D120004B197 /* ZySDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZySDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		67661CE72629209A0004B197 /* ZyBleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZyBleManager.swift; sourceTree = "<group>"; };
-		67661D4226296C700004B197 /* ZyBaseModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZyBaseModule.swift; sourceTree = "<group>"; };
-		67661D7A262A7D7A0004B197 /* ZySDKLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZySDKLog.swift; sourceTree = "<group>"; };
-		676D384426DE36C000471098 /* ZyCrashHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZyCrashHandler.swift; sourceTree = "<group>"; };
-		67883F142826127800ADDE99 /* ZyModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZyModel.swift; sourceTree = "<group>"; };
-		679FD5522A41525F00A32A54 /* ZyCommandModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZyCommandModule.swift; sourceTree = "<group>"; };
+		67661CD426291D120004B197 /* ZywlSDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZywlSDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		67661CE72629209A0004B197 /* ZywlBleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZywlBleManager.swift; sourceTree = "<group>"; };
+		67661D4226296C700004B197 /* ZywlBaseModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZywlBaseModule.swift; sourceTree = "<group>"; };
+		67661D7A262A7D7A0004B197 /* ZywlSDKLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZywlSDKLog.swift; sourceTree = "<group>"; };
+		676D384426DE36C000471098 /* ZywlCrashHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZywlCrashHandler.swift; sourceTree = "<group>"; };
+		67883F142826127800ADDE99 /* ZywlModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZywlModel.swift; sourceTree = "<group>"; };
+		679FD5522A41525F00A32A54 /* ZywlCommandModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZywlCommandModule.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,7 +52,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				67661CD526291D120004B197 /* ZySDK.framework in Frameworks */,
+				67661CD526291D120004B197 /* ZywlSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -62,7 +62,7 @@
 		67661CC126291D110004B197 = {
 			isa = PBXGroup;
 			children = (
-				67661CCD26291D110004B197 /* ZySDK */,
+				67661CCD26291D110004B197 /* ZywlSDK */,
 				67661CCC26291D110004B197 /* Products */,
 				92F9CE25C350B08B264D7480 /* Frameworks */,
 			);
@@ -71,25 +71,25 @@
 		67661CCC26291D110004B197 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				67661CCB26291D110004B197 /* ZySDK.framework */,
-				67661CD426291D120004B197 /* ZySDKTests.xctest */,
+				67661CCB26291D110004B197 /* ZywlSDK.framework */,
+				67661CD426291D120004B197 /* ZywlSDKTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		67661CCD26291D110004B197 /* ZySDK */ = {
+		67661CCD26291D110004B197 /* ZywlSDK */ = {
 			isa = PBXGroup;
 			children = (
-				67661CCE26291D110004B197 /* ZySDK.h */,
-				67661CE72629209A0004B197 /* ZyBleManager.swift */,
-				67883F142826127800ADDE99 /* ZyModel.swift */,
-				67661D4226296C700004B197 /* ZyBaseModule.swift */,
-				679FD5522A41525F00A32A54 /* ZyCommandModule.swift */,
-				67661D7A262A7D7A0004B197 /* ZySDKLog.swift */,
-				676D384426DE36C000471098 /* ZyCrashHandler.swift */,
+				67661CCE26291D110004B197 /* ZywlSDK.h */,
+				67661CE72629209A0004B197 /* ZywlBleManager.swift */,
+				67883F142826127800ADDE99 /* ZywlModel.swift */,
+				67661D4226296C700004B197 /* ZywlBaseModule.swift */,
+				679FD5522A41525F00A32A54 /* ZywlCommandModule.swift */,
+				67661D7A262A7D7A0004B197 /* ZywlSDKLog.swift */,
+				676D384426DE36C000471098 /* ZywlCrashHandler.swift */,
 				67661CCF26291D110004B197 /* Info.plist */,
 			);
-			path = ZySDK;
+			path = ZywlSDK;
 			sourceTree = "<group>";
 		};
 		92F9CE25C350B08B264D7480 /* Frameworks */ = {
@@ -106,16 +106,16 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				67661CDC26291D120004B197 /* ZySDK.h in Headers */,
+				67661CDC26291D120004B197 /* ZywlSDK.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		67661CCA26291D110004B197 /* ZySDK */ = {
+		67661CCA26291D110004B197 /* ZywlSDK */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 67661CDF26291D120004B197 /* Build configuration list for PBXNativeTarget "ZySDK" */;
+			buildConfigurationList = 67661CDF26291D120004B197 /* Build configuration list for PBXNativeTarget "ZywlSDK" */;
 			buildPhases = (
 				67661CC626291D110004B197 /* Headers */,
 				67661CC726291D110004B197 /* Sources */,
@@ -126,14 +126,14 @@
 			);
 			dependencies = (
 			);
-			name = ZySDK;
+			name = ZywlSDK;
 			productName = ZySDK;
-			productReference = 67661CCB26291D110004B197 /* ZySDK.framework */;
+			productReference = 67661CCB26291D110004B197 /* ZywlSDK.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		67661CD326291D120004B197 /* ZySDKTests */ = {
+		67661CD326291D120004B197 /* ZywlSDKTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 67661CE226291D120004B197 /* Build configuration list for PBXNativeTarget "ZySDKTests" */;
+			buildConfigurationList = 67661CE226291D120004B197 /* Build configuration list for PBXNativeTarget "ZywlSDKTests" */;
 			buildPhases = (
 				5A0DFAFE4E3E0FA6F857B89D /* [CP] Check Pods Manifest.lock */,
 				67661CD026291D120004B197 /* Sources */,
@@ -146,9 +146,9 @@
 			dependencies = (
 				67661CD726291D120004B197 /* PBXTargetDependency */,
 			);
-			name = ZySDKTests;
+			name = ZywlSDKTests;
 			productName = ZySDKTests;
-			productReference = 67661CD426291D120004B197 /* ZySDKTests.xctest */;
+			productReference = 67661CD426291D120004B197 /* ZywlSDKTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -169,7 +169,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 67661CC526291D110004B197 /* Build configuration list for PBXProject "ZySDK" */;
+			buildConfigurationList = 67661CC526291D110004B197 /* Build configuration list for PBXProject "ZywlSDK" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -182,8 +182,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				67661CCA26291D110004B197 /* ZySDK */,
-				67661CD326291D120004B197 /* ZySDKTests */,
+				67661CCA26291D110004B197 /* ZywlSDK */,
+				67661CD326291D120004B197 /* ZywlSDKTests */,
 			);
 		};
 /* End PBXProject section */
@@ -252,12 +252,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				67883F152826127800ADDE99 /* ZyModel.swift in Sources */,
-				676D384526DE36C000471098 /* ZyCrashHandler.swift in Sources */,
-				67661D7B262A7D7A0004B197 /* ZySDKLog.swift in Sources */,
-				67661D4326296C700004B197 /* ZyBaseModule.swift in Sources */,
-				679FD5532A41525F00A32A54 /* ZyCommandModule.swift in Sources */,
-				67661CE82629209A0004B197 /* ZyBleManager.swift in Sources */,
+				67883F152826127800ADDE99 /* ZywlModel.swift in Sources */,
+				676D384526DE36C000471098 /* ZywlCrashHandler.swift in Sources */,
+				67661D7B262A7D7A0004B197 /* ZywlSDKLog.swift in Sources */,
+				67661D4326296C700004B197 /* ZywlBaseModule.swift in Sources */,
+				679FD5532A41525F00A32A54 /* ZywlCommandModule.swift in Sources */,
+				67661CE82629209A0004B197 /* ZywlBleManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -273,7 +273,7 @@
 /* Begin PBXTargetDependency section */
 		67661CD726291D120004B197 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 67661CCA26291D110004B197 /* ZySDK */;
+			target = 67661CCA26291D110004B197 /* ZywlSDK */;
 			targetProxy = 67661CD626291D120004B197 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -424,9 +424,9 @@
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/ZySDK",
+					"$(PROJECT_DIR)/ZywlSDK",
 				);
-				INFOPLIST_FILE = ZySDK/Info.plist;
+				INFOPLIST_FILE = ZywlSDK/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -464,9 +464,9 @@
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/ZySDK",
+					"$(PROJECT_DIR)/ZywlSDK",
 				);
-				INFOPLIST_FILE = ZySDK/Info.plist;
+				INFOPLIST_FILE = ZywlSDK/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -525,7 +525,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		67661CC526291D110004B197 /* Build configuration list for PBXProject "ZySDK" */ = {
+		67661CC526291D110004B197 /* Build configuration list for PBXProject "ZywlSDK" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				67661CDD26291D120004B197 /* Debug */,
@@ -534,7 +534,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		67661CDF26291D120004B197 /* Build configuration list for PBXNativeTarget "ZySDK" */ = {
+		67661CDF26291D120004B197 /* Build configuration list for PBXNativeTarget "ZywlSDK" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				67661CE026291D120004B197 /* Debug */,
@@ -543,7 +543,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		67661CE226291D120004B197 /* Build configuration list for PBXNativeTarget "ZySDKTests" */ = {
+		67661CE226291D120004B197 /* Build configuration list for PBXNativeTarget "ZywlSDKTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				67661CE326291D120004B197 /* Debug */,

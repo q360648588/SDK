@@ -8,9 +8,9 @@
 import UIKit
 import CoreBluetooth
 
-class ZyBleManager: NSObject {
+class ZywlBleManager: NSObject {
 
-    public static let shareInstance = ZyBleManager()
+    public static let shareInstance = ZywlBleManager()
     
     /// 蓝牙开关状态
 //    fileprivate(set) var blePowerState:CBManagerState = .unknown
@@ -20,7 +20,7 @@ class ZyBleManager: NSObject {
     
     private var bleCentralDiscoverBlock:((CBCentralManager,CBPeripheral,[String : Any],NSNumber)->())?
     private var bleCentralConnectPeripheralBlock:((_ state: Bool,_ central: CBCentralManager, _ peripheral: CBPeripheral, _ error: Error?)->())?
-    private var bleCentralDisconnectBlock:((_ central: CBCentralManager, _ peripheral: CBPeripheral, _ error: Error?)->())?
+    private var bleCentralDisconnectBlock:((_ central: CBCentralManager, _ peripheral: CBPeripheral, _ error: Error?)->())? 
     
     private var blePeripheralDiscoverServiceBlock:((_ peripheral: CBPeripheral,_ error: Error?)->())?
     private var blePeripheralDiscoverCharacteristicBlock:((_ peripheral: CBPeripheral,_ service: CBService, _ error: Error?)->())?
@@ -116,7 +116,7 @@ class ZyBleManager: NSObject {
     
 }
 
-extension ZyBleManager:CBCentralManagerDelegate {
+extension ZywlBleManager:CBCentralManagerDelegate {
     // MARK: - 蓝牙开关状态
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         if let block = self.blePowerBlock {
@@ -190,7 +190,7 @@ extension ZyBleManager:CBCentralManagerDelegate {
     
 }
 
-extension ZyBleManager:CBPeripheralDelegate{
+extension ZywlBleManager:CBPeripheralDelegate{
     // MARK: - 发现服务
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         if let block = self.blePeripheralDiscoverServiceBlock {

@@ -9,7 +9,7 @@ import Foundation
 import CoreBluetooth
 import UIKit
 
-@objc public class ZyScanModel: NSObject {
+@objc public class ZywlScanModel: NSObject {
     @objc public var name:String?
     @objc public var rssi:Int = 0
     @objc public var peripheral:CBPeripheral?
@@ -17,7 +17,7 @@ import UIKit
     @objc public var macString:String?
 }
 
-@objc public class ZyOwsL04DeviceInformationModel:NSObject {
+@objc public class ZywlOwsL04DeviceInformationModel:NSObject {
     
     @objc public var voiceVolume = 0                    //音量 0x00~0x0a(0~10)
     @objc public var noiseControl = 0                   //噪声控制（0x00 轻度降噪，0x01 中度降噪，0x02 重度降噪，0x03 关闭降噪，0x04 通透模式）
@@ -45,7 +45,7 @@ import UIKit
     @objc public var deviceType = 0                     //设备类型（1表示耳机，2表示仓）
 }
 
-@objc public class ZyOwsAlarmModel:NSObject {
+@objc public class ZywlOwsAlarmModel:NSObject {
     @objc public var type = 0                      //0普通闹钟，1喝水闹钟，2吃药闹钟，3.会议闹钟
     @objc public var isOpen = false                  //0关闭，1开启
     @objc public var hour = 0
@@ -53,7 +53,7 @@ import UIKit
     @objc public var repeatCount = 0                    //bit0～bit6，周一～周日 ，0关闭，1开启
 }
 
-@objc public class ZyOwsWeatherModel:NSObject {
+@objc public class ZywlOwsWeatherModel:NSObject {
     @objc public var type:Int = 0                   //0多云，1雾，2阴天，3雨，4雪，5晴，6沙尘暴，7霾
     @objc public var temperature = 0                //摄氏度
     @objc public var pmValue = 0                    //0～35优，35～75良，75～115轻度污染，大于115严重污染

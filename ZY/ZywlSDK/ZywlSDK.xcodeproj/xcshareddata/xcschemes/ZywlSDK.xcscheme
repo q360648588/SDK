@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "67661CCA26291D110004B197"
-               BuildableName = "ZySDK.framework"
-               BlueprintName = "ZySDK"
-               ReferencedContainer = "container:ZySDK.xcodeproj">
+               BuildableName = "ZywlSDK.framework"
+               BlueprintName = "ZywlSDK"
+               ReferencedContainer = "container:ZywlSDK.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "67661CD326291D120004B197"
-               BuildableName = "ZySDKTests.xctest"
-               BlueprintName = "ZySDKTests"
-               ReferencedContainer = "container:ZySDK.xcodeproj">
+               BuildableName = "ZywlSDKTests.xctest"
+               BlueprintName = "ZywlSDKTests"
+               ReferencedContainer = "container:ZywlSDK.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -61,9 +61,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "67661CCA26291D110004B197"
-            BuildableName = "ZySDK.framework"
-            BlueprintName = "ZySDK"
-            ReferencedContainer = "container:ZySDK.xcodeproj">
+            BuildableName = "ZywlSDK.framework"
+            BlueprintName = "ZywlSDK"
+            ReferencedContainer = "container:ZywlSDK.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>

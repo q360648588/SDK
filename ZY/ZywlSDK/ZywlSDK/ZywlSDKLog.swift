@@ -7,9 +7,9 @@
 
 import UIKit
 
-public class ZySDKLog: NSObject {
+public class ZywlSDKLog: NSObject {
     
-    static let shareInstance = ZySDKLog()
+    static let shareInstance = ZywlSDKLog()
     
     var logString = ""
     var allString = ""

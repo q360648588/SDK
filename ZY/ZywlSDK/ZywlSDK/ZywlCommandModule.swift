@@ -8,7 +8,7 @@
 import UIKit
 import CoreBluetooth
 
-@objc public enum ZyError : Int {
+@objc public enum ZywlError : Int {
     case none
     case disconnected
     case invalidCharacteristic
@@ -20,9 +20,9 @@ import CoreBluetooth
     case fail
 }
 
-@objc public class ZyCommandModule: ZyBaseModule {
+@objc public class ZywlCommandModule: ZywlBaseModule {
     
-    @objc public static let shareInstance = ZyCommandModule()
+    @objc public static let shareInstance = ZywlCommandModule()
     
     private var semaphoreCount = 1
     private var signalValue = 1
@@ -37,91 +37,91 @@ import CoreBluetooth
     private var macString:String?
     
     
-    private var receiveGetHeadphoneBattery:((Int,Int,ZyError) -> Void)?
-    private var receiveGetBoxBattery:((Int,ZyError) -> Void)?
-    private var receiveSetFindHeadphoneDevice:((ZyError) -> Void)?
-    private var receiveGetMac:((String?,String?,ZyError) -> Void)?
-    private var receiveGetFirmwareVersion:((String?,String?,ZyError) -> Void)?
-    private var receiveGetCustomButton:((Int,Int,Int,ZyError) -> Void)?
-    private var receiveSetCustomButton:((ZyError) -> Void)?
-    private var receiveGetLowLatencyMode:((Int,ZyError) -> Void)?
-    private var receiveSetLowLatencyMode:((ZyError) -> Void)?
-    private var receiveGetInEarDetection:((Int,ZyError) -> Void)?
-    private var receiveSetInEarDetection:((ZyError) -> Void)?
-    private var receiveGetEqMode:((Int,ZyError) -> Void)?
-    private var receiveSetEqMode:((ZyError) -> Void)?
-    private var receiveGetAmbientSound:((Int,ZyError) -> Void)?
-    private var receiveSetAmbientSound:((ZyError) -> Void)?
-    private var receiveGetHeadsetWearingStatus:((Int,ZyError) -> Void)?
-    private var receiveSetResetFactory:((ZyError) -> Void)?
-    private var receiveGetDesktopMode:((Int,ZyError) -> Void)?
-    private var receiveSetDesktopMode:((ZyError) -> Void)?
-    private var receiveGetPanoramicSound:((Int,ZyError) -> Void)?
-    private var receiveSetPanoramicSound:((ZyError) -> Void)?
-    private var receiveGetLhdcMode:((Int,ZyError) -> Void)?
-    private var receiveGetSpeedMode:((Int,ZyError) -> Void)?
-    private var receiveSetSpeedMode:((ZyError) -> Void)?
-    private var receiveGetResistanceWindNoise:((Int,ZyError) -> Void)?
-    private var receiveSetResistanceWindNoise:((ZyError) -> Void)?
-    private var receiveGetBassToneEnhancement:((Int,ZyError) -> Void)?
-    private var receiveSetBassToneEnhancement:((ZyError) -> Void)?
-    private var receiveGetLowFrequencyEnhancement:((Int,ZyError) -> Void)?
-    private var receiveSetLowFrequencyEnhancement:((ZyError) -> Void)?
-    private var receiveGetCoupletPattern:((Int,ZyError) -> Void)?
-    private var receiveSetCoupletPattern:((ZyError) -> Void)?
+    private var receiveGetHeadphoneBattery:((Int,Int,ZywlError) -> Void)?
+    private var receiveGetBoxBattery:((Int,ZywlError) -> Void)?
+    private var receiveSetFindHeadphoneDevice:((ZywlError) -> Void)?
+    private var receiveGetMac:((String?,String?,ZywlError) -> Void)?
+    private var receiveGetFirmwareVersion:((String?,String?,ZywlError) -> Void)?
+    private var receiveGetCustomButton:((Int,Int,Int,ZywlError) -> Void)?
+    private var receiveSetCustomButton:((ZywlError) -> Void)?
+    private var receiveGetLowLatencyMode:((Int,ZywlError) -> Void)?
+    private var receiveSetLowLatencyMode:((ZywlError) -> Void)?
+    private var receiveGetInEarDetection:((Int,ZywlError) -> Void)?
+    private var receiveSetInEarDetection:((ZywlError) -> Void)?
+    private var receiveGetEqMode:((Int,ZywlError) -> Void)?
+    private var receiveSetEqMode:((ZywlError) -> Void)?
+    private var receiveGetAmbientSound:((Int,ZywlError) -> Void)?
+    private var receiveSetAmbientSound:((ZywlError) -> Void)?
+    private var receiveGetHeadsetWearingStatus:((Int,ZywlError) -> Void)?
+    private var receiveSetResetFactory:((ZywlError) -> Void)?
+    private var receiveGetDesktopMode:((Int,ZywlError) -> Void)?
+    private var receiveSetDesktopMode:((ZywlError) -> Void)?
+    private var receiveGetPanoramicSound:((Int,ZywlError) -> Void)?
+    private var receiveSetPanoramicSound:((ZywlError) -> Void)?
+    private var receiveGetLhdcMode:((Int,ZywlError) -> Void)?
+    private var receiveGetSpeedMode:((Int,ZywlError) -> Void)?
+    private var receiveSetSpeedMode:((ZywlError) -> Void)?
+    private var receiveGetResistanceWindNoise:((Int,ZywlError) -> Void)?
+    private var receiveSetResistanceWindNoise:((ZywlError) -> Void)?
+    private var receiveGetBassToneEnhancement:((Int,ZywlError) -> Void)?
+    private var receiveSetBassToneEnhancement:((ZywlError) -> Void)?
+    private var receiveGetLowFrequencyEnhancement:((Int,ZywlError) -> Void)?
+    private var receiveSetLowFrequencyEnhancement:((ZywlError) -> Void)?
+    private var receiveGetCoupletPattern:((Int,ZywlError) -> Void)?
+    private var receiveSetCoupletPattern:((ZywlError) -> Void)?
     
     //OWS
-    private var receiveGetOwsDeviceAllInformation:((ZyOwsL04DeviceInformationModel?,ZyError) -> Void)?
-    private var receiveGetOwsBoxScreenSize:((Int,Int,ZyError) -> Void)?
-    private var receiveGetOwsBleName:((String?,ZyError) -> Void)?
-    private var receiveGetOwsMediaVoiceVolume:((Int,ZyError) -> Void)?
-    private var receiveGetOwsScreenOutTimeLength:((Int,ZyError) -> Void)?
-    private var receiveGetOwsLocalDialIndex:((Int,Int,ZyError) -> Void)?
-    private var receiveGetOwsMessageRemind:((Bool,Bool,Bool,ZyError) -> Void)?
-    private var receiveGetOwsGameMode:((Bool,ZyError) -> Void)?
-    private var receiveGetOwsNoiseControlMode:((Int,ZyError) -> Void)?
-    private var receiveGetOwsNoiseReductionMode:((Int,ZyError) -> Void)?
-    private var receiveGetOwsShakeSongMode:((Bool,ZyError) -> Void)?
-    private var receiveGetOwsSupportFunction:((Int,Int,ZyError) -> Void)?
-    private var receiveGetOwsDeviceOriginalName:((String?,ZyError) -> Void)?
-    private var receiveGetOwsAlarmArray:((_ modelArray:[ZyOwsAlarmModel],_ error:ZyError)->Void)?
-    private var receiveSetOwsClearPairingRecord:((ZyError) -> Void)?
-    private var receiveSetOwsResetFactory:((ZyError) -> Void)?
-    private var receiveSetOwsTouchButtonFunction:((ZyError) -> Void)?
-    private var receiveSetOwsAllTouchButtonReset:((ZyError) -> Void)?
-    private var receiveSetOwsFindHeadphones:((ZyError) -> Void)?
-    private var receiveSetOwsBleName:((ZyError) -> Void)?
-    private var receiveSetOwsMediaVoiceVolume:((ZyError) -> Void)?
-    private var receiveSetOwsScreenOutTimeLength:((ZyError) -> Void)?
-    private var receiveSetOwsLocalDialIndex:((ZyError) -> Void)?
-    private var receiveSetOwsMessageRemind:((ZyError) -> Void)?
-    private var receiveSetOwsGameMode:((ZyError) -> Void)?
-    private var receiveSetOwsNoiseControlMode:((ZyError) -> Void)?
-    private var receiveSetOwsNoiseReductionMode:((ZyError) -> Void)?
-    private var receiveSetOwsShakeSong:((ZyError) -> Void)?
-    private var receiveSetOwsShakeSongMode:((ZyError) -> Void)?
-    private var receiveSetOwsTime:((ZyError) -> Void)?
-    private var receiveSetOwsLanguage:((ZyError) -> Void)?
-    private var receiveSetOwsAlarmArray:((ZyError) -> Void)?
-    private var receiveSetOwsOperationSong:((ZyError) -> Void)?
-    private var receiveSetOwsWeather:((ZyError) -> Void)?
-    private var receiveReportOwsMediaVoiceVolume:((Int,ZyError) -> Void)?
-    private var receiveReportOwsBattery:((Int,Int,Int,ZyError) -> Void)?
-    private var receiveGetOwsEqMode:((Bool,Int,ZyError) -> Void)?
-    private var receiveSetOwsEqMode:((ZyError) -> Void)?
-    private var receiveGetOwsCustomEq:((Int,[Int],ZyError) -> Void)?
-    private var receiveSetOwsCustomEq:((ZyError) -> Void)?
+    private var receiveGetOwsDeviceAllInformation:((ZywlOwsL04DeviceInformationModel?,ZywlError) -> Void)?
+    private var receiveGetOwsBoxScreenSize:((Int,Int,ZywlError) -> Void)?
+    private var receiveGetOwsBleName:((String?,ZywlError) -> Void)?
+    private var receiveGetOwsMediaVoiceVolume:((Int,ZywlError) -> Void)?
+    private var receiveGetOwsScreenOutTimeLength:((Int,ZywlError) -> Void)?
+    private var receiveGetOwsLocalDialIndex:((Int,Int,ZywlError) -> Void)?
+    private var receiveGetOwsMessageRemind:((Bool,Bool,Bool,ZywlError) -> Void)?
+    private var receiveGetOwsGameMode:((Bool,ZywlError) -> Void)?
+    private var receiveGetOwsNoiseControlMode:((Int,ZywlError) -> Void)?
+    private var receiveGetOwsNoiseReductionMode:((Int,ZywlError) -> Void)?
+    private var receiveGetOwsShakeSongMode:((Bool,ZywlError) -> Void)?
+    private var receiveGetOwsSupportFunction:((Int,Int,ZywlError) -> Void)?
+    private var receiveGetOwsDeviceOriginalName:((String?,ZywlError) -> Void)?
+    private var receiveGetOwsAlarmArray:((_ modelArray:[ZywlOwsAlarmModel],_ error:ZywlError)->Void)?
+    private var receiveSetOwsClearPairingRecord:((ZywlError) -> Void)?
+    private var receiveSetOwsResetFactory:((ZywlError) -> Void)?
+    private var receiveSetOwsTouchButtonFunction:((ZywlError) -> Void)?
+    private var receiveSetOwsAllTouchButtonReset:((ZywlError) -> Void)?
+    private var receiveSetOwsFindHeadphones:((ZywlError) -> Void)?
+    private var receiveSetOwsBleName:((ZywlError) -> Void)?
+    private var receiveSetOwsMediaVoiceVolume:((ZywlError) -> Void)?
+    private var receiveSetOwsScreenOutTimeLength:((ZywlError) -> Void)?
+    private var receiveSetOwsLocalDialIndex:((ZywlError) -> Void)?
+    private var receiveSetOwsMessageRemind:((ZywlError) -> Void)?
+    private var receiveSetOwsGameMode:((ZywlError) -> Void)?
+    private var receiveSetOwsNoiseControlMode:((ZywlError) -> Void)?
+    private var receiveSetOwsNoiseReductionMode:((ZywlError) -> Void)?
+    private var receiveSetOwsShakeSong:((ZywlError) -> Void)?
+    private var receiveSetOwsShakeSongMode:((ZywlError) -> Void)?
+    private var receiveSetOwsTime:((ZywlError) -> Void)?
+    private var receiveSetOwsLanguage:((ZywlError) -> Void)?
+    private var receiveSetOwsAlarmArray:((ZywlError) -> Void)?
+    private var receiveSetOwsOperationSong:((ZywlError) -> Void)?
+    private var receiveSetOwsWeather:((ZywlError) -> Void)?
+    private var receiveReportOwsMediaVoiceVolume:((Int,ZywlError) -> Void)?
+    private var receiveReportOwsBattery:((Int,Int,Int,ZywlError) -> Void)?
+    private var receiveGetOwsEqMode:((Bool,Int,ZywlError) -> Void)?
+    private var receiveSetOwsEqMode:((ZywlError) -> Void)?
+    private var receiveGetOwsCustomEq:((Int,[Int],ZywlError) -> Void)?
+    private var receiveSetOwsCustomEq:((ZywlError) -> Void)?
     
     
-    private var reportOwsModel:((ZyOwsL04DeviceInformationModel?) -> Void)?
+    private var reportOwsModel:((ZywlOwsL04DeviceInformationModel?) -> Void)?
     var currentReceiveCommandEndOver = false //当前接收命令状态是否结束   5s没有接收到回复数据默认结束，赋值true
     var sendFailState = false  //命令发送失败状态，true时在信号量需要发命令的地方return待发送的命令
-    var owsModel:ZyOwsL04DeviceInformationModel? = nil //设备信息模型
+    var owsModel:ZywlOwsL04DeviceInformationModel? = nil //设备信息模型
     
     private override init() {
         super.init()
         
-        ZyCrashHandler.setup { (stackTrace, completion) in
+        ZywlCrashHandler.setup { (stackTrace, completion) in
             
             printLog("CrashHandler",stackTrace);
             
@@ -129,7 +129,7 @@ import CoreBluetooth
             let timeFormatter = DateFormatter()
             timeFormatter.dateFormat = "YYYY/MM/dd hh:mm:ss SS"
             let strNowTime = timeFormatter.string(from: date as Date) as String
-            let url:String = String.init(format: "========异常错误报告========\ntime:%@\n%@\n\n\n\n\n%@",strNowTime,stackTrace,ZySDKLog.showLog())
+            let url:String = String.init(format: "========异常错误报告========\ntime:%@\n%@\n\n\n\n\n%@",strNowTime,stackTrace,ZywlSDKLog.showLog())
             
             let errorPath = NSHomeDirectory() + "/Documents/ZyCrashLog"
             let fileManager = FileManager.default
@@ -156,11 +156,11 @@ import CoreBluetooth
     }
     
     override func deviceReceivedData() {
-        self.writeCharacteristic = super.writeCharacteristic
-        self.receiveCharacteristic = super.receiveCharacteristic
-        self.peripheral = super.peripheral
+        self.headphoneWriteCharacteristic = super.headphoneWriteCharacteristic
+        self.headphoneRceiveCharacteristic = super.headphoneRceiveCharacteristic
+        self.headphonePeripheral = super.headphonePeripheral
                 
-        ZyBleManager.shareInstance.PeripheralUpdateValue { (peripheral, characteristic, error) in
+        ZywlBleManager.shareInstance.PeripheralUpdateValue { (peripheral, characteristic, error) in
             
             let data = characteristic.value ?? Data.init()
             
@@ -174,7 +174,7 @@ import CoreBluetooth
                 return
             }
             
-            if characteristic == self.receiveCharacteristic {
+            if characteristic == self.headphoneRceiveCharacteristic {
                 printLog("characteristic =",characteristic)
                 if characteristic.value?.count ?? 0 > 20 {
                     let dataString = String.init(format: "%@", self.convertDataToSpaceHexStr(data: characteristic.value ?? Data.init(),isSend: true))
@@ -393,7 +393,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsDeviceAllInformation长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsDeviceAllInformation长度校验出错"))
                         }
                     }
                     
@@ -410,7 +410,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsBoxScreenSize长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsBoxScreenSize长度校验出错"))
                         }
                     }
                     
@@ -427,7 +427,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsBleName长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsBleName长度校验出错"))
                         }
                     }
                     //获取媒体音量
@@ -443,7 +443,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsMediaVoiceVolume长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsMediaVoiceVolume长度校验出错"))
                         }
                     }
                     //获取熄屏时长
@@ -459,7 +459,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsScreenOutTimeLength长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsScreenOutTimeLength长度校验出错"))
                         }
                     }
                     //获取本地表盘索引
@@ -475,7 +475,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsLocalDialIndex长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsLocalDialIndex长度校验出错"))
                         }
                     }
                     //获取本地表盘索引
@@ -491,7 +491,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "OwsMessageRemind长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "OwsMessageRemind长度校验出错"))
                         }
                     }
                     //获取游戏模式开关
@@ -507,7 +507,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "OwsGameMode长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "OwsGameMode长度校验出错"))
                         }
                     }
                     //获取降噪模式
@@ -523,7 +523,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsNoiseControlMode长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsNoiseControlMode长度校验出错"))
                         }
                     }
                     
@@ -540,7 +540,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsNoiseReductionMode长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsNoiseReductionMode长度校验出错"))
                         }
                     }
                     
@@ -557,7 +557,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsShakeSongMode长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsShakeSongMode长度校验出错"))
                         }
                     }
                     
@@ -574,7 +574,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsSupportFunction长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsSupportFunction长度校验出错"))
                         }
                     }
                     
@@ -591,7 +591,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsDeviceOriginalName长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsDeviceOriginalName长度校验出错"))
                         }
                     }
                     
@@ -608,7 +608,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsAlarmArray长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsAlarmArray长度校验出错"))
                         }
                     }
                     
@@ -625,7 +625,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsClearPairingRecord长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsClearPairingRecord长度校验出错"))
                         }
                     }
                     
@@ -642,7 +642,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsResetFactory长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsResetFactory长度校验出错"))
                         }
                     }
                     
@@ -659,7 +659,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsTouchButtonFunction长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsTouchButtonFunction长度校验出错"))
                         }
                     }
                     
@@ -676,7 +676,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsAllTouchButtonReset长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsAllTouchButtonReset长度校验出错"))
                         }
                     }
                     
@@ -693,7 +693,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsFindHeadphones长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsFindHeadphones长度校验出错"))
                         }
                     }
                     
@@ -710,7 +710,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsBleName长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsBleName长度校验出错"))
                         }
                     }
                     
@@ -727,7 +727,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsMediaVoiceVolume长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsMediaVoiceVolume长度校验出错"))
                         }
                     }
                     
@@ -744,7 +744,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsScreenOutTimeLength长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsScreenOutTimeLength长度校验出错"))
                         }
                     }
                     
@@ -761,7 +761,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsLocalDialIndex长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsLocalDialIndex长度校验出错"))
                         }
                     }
                     
@@ -778,7 +778,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsMessageRemind长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsMessageRemind长度校验出错"))
                         }
                     }
                     
@@ -795,7 +795,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsGameMode长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsGameMode长度校验出错"))
                         }
                     }
                     
@@ -812,7 +812,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsNoiseControlMode长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsNoiseControlMode长度校验出错"))
                         }
                     }
 
@@ -829,7 +829,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsNoiseReductionMode长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsNoiseReductionMode长度校验出错"))
                         }
                     }
                     
@@ -846,7 +846,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsShakeSong长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsShakeSong长度校验出错"))
                         }
                     }
                     
@@ -863,7 +863,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsShakeSong长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsShakeSong长度校验出错"))
                         }
                     }
                     
@@ -880,7 +880,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsTime长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsTime长度校验出错"))
                         }
                     }
                     
@@ -897,7 +897,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsLanguage长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsLanguage长度校验出错"))
                         }
                     }
                     
@@ -914,7 +914,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsAlarmArray长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsAlarmArray长度校验出错"))
                         }
                     }
                     
@@ -931,7 +931,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsOperationSong长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsOperationSong长度校验出错"))
                         }
                     }
                     
@@ -948,7 +948,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsWeather长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsWeather长度校验出错"))
                         }
                     }
                     
@@ -965,7 +965,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "ReportOwsMediaVoiceVolume长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "ReportOwsMediaVoiceVolume长度校验出错"))
                         }
                     }
                     
@@ -982,7 +982,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "ReportOwsMediaVoiceVolume长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "ReportOwsMediaVoiceVolume长度校验出错"))
                         }
                     }
                     
@@ -999,7 +999,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsEqMode长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsEqMode长度校验出错"))
                         }
                     }
                     //设置EQ
@@ -1015,7 +1015,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsEqMode长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsEqMode长度校验出错"))
                         }
                     }
                     
@@ -1032,7 +1032,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsCustomEq长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetOwsCustomEq长度校验出错"))
                         }
                     }
                     
@@ -1049,7 +1049,7 @@ import CoreBluetooth
                             }
                             //printLog("第\(#line)行" , "\(#function)")
                             self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsCustomEq长度校验出错"))
+                            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetOwsCustomEq长度校验出错"))
                         }
                     }
                 }
@@ -1083,15 +1083,15 @@ import CoreBluetooth
     
     func writeData(data:Data) {
         //此方法目前是升级在用 不做信号量等待
-        if self.writeCharacteristic != nil {
+        if self.headphoneWriteCharacteristic != nil {
             
             let dataString = String.init(format: "%@", self.convertDataToSpaceHexStr(data: data,isSend: true))
-            ZySDKLog.writeStringToSDKLog(string: "发送:"+dataString)
+            ZywlSDKLog.writeStringToSDKLog(string: "发送:"+dataString)
             printLog("send",dataString)
-            self.peripheral?.writeValue(data, for: self.writeCharacteristic!, type: ((self.writeCharacteristic!.properties.rawValue & CBCharacteristicProperties.writeWithoutResponse.rawValue) != 0) ? .withoutResponse : .withResponse)
+            self.headphonePeripheral?.writeValue(data, for: self.headphoneWriteCharacteristic!, type: ((self.headphoneWriteCharacteristic!.properties.rawValue & CBCharacteristicProperties.writeWithoutResponse.rawValue) != 0) ? .withoutResponse : .withResponse)
         }else{
             
-            ZySDKLog.writeStringToSDKLog(string: "发送失败:写特征为空")
+            ZywlSDKLog.writeStringToSDKLog(string: "发送失败:写特征为空")
             printLog("写特征为空")
             
         }
@@ -1103,14 +1103,14 @@ import CoreBluetooth
         return self.commandListArray.count <= 0 ? false : true
     }
     
-    func writeDataAndBackError(data:Data) -> ZyError {
-        if self.peripheral?.state != .connected {
+    func writeDataAndBackError(data:Data) -> ZywlError {
+        if self.headphonePeripheral?.state != .connected {
             
             return .disconnected
             
         }else{
             
-            if self.writeCharacteristic != nil && self.peripheral != nil {
+            if self.headphoneWriteCharacteristic != nil && self.headphonePeripheral != nil {
 
                 self.commandListArray.append(data)
                 if !self.isCommandSendState {
@@ -1121,7 +1121,7 @@ import CoreBluetooth
                 return .none
             }else{
                 
-                ZySDKLog.writeStringToSDKLog(string: "发送失败:写特征为空")
+                ZywlSDKLog.writeStringToSDKLog(string: "发送失败:写特征为空")
                 printLog("写特征为空")
                 
                 return .invalidCharacteristic
@@ -1134,7 +1134,7 @@ import CoreBluetooth
         if self.commandListArray.count > 0 {
             //取出数组第一条data
             if let data = self.commandListArray.first {
-                if self.peripheral?.state == .connected && self.writeCharacteristic != nil && self.peripheral != nil {
+                if self.headphonePeripheral?.state == .connected && self.headphoneWriteCharacteristic != nil && self.headphonePeripheral != nil {
                     DispatchQueue.global().async {
 
                         self.semaphoreCount -= 1
@@ -1143,18 +1143,18 @@ import CoreBluetooth
                             self.semaphoreCount += 1
                             let lastString = String.init(format: "%@", self.convertDataToSpaceHexStr(data: self.lastSendData ?? .init(),isSend: true))
                             printLog("result = \(result) , self.lastSendData = \(lastString)")
-                            ZySDKLog.writeStringToSDKLog(string: "发送超时的命令:"+lastString)
+                            ZywlSDKLog.writeStringToSDKLog(string: "发送超时的命令:"+lastString)
                             printLog("timedOut -> self.semaphoreCount =",self.semaphoreCount)
                         }
                         
                         let dataString = String.init(format: "%@", self.convertDataToSpaceHexStr(data: data,isSend: true))
-                        ZySDKLog.writeStringToSDKLog(string: "发送:"+dataString)
+                        ZywlSDKLog.writeStringToSDKLog(string: "发送:"+dataString)
                                             
                         DispatchQueue.main.async {
 
                             printLog("send",dataString)
                             printLog("发送命令 -> self.semaphoreCount =",self.semaphoreCount)
-                            self.peripheral?.writeValue(data, for: self.writeCharacteristic!, type: ((self.writeCharacteristic!.properties.rawValue & CBCharacteristicProperties.writeWithoutResponse.rawValue) != 0) ? .withoutResponse : .withResponse)
+                            self.headphonePeripheral?.writeValue(data, for: self.headphoneWriteCharacteristic!, type: ((self.headphoneWriteCharacteristic!.properties.rawValue & CBCharacteristicProperties.writeWithoutResponse.rawValue) != 0) ? .withoutResponse : .withResponse)
                             self.lastSendData = data
                             
                             //定时器计数重置
@@ -1219,9 +1219,9 @@ import CoreBluetooth
         //目前SDK内部重置会在重连、断开连接、关闭蓝牙三个地方调用
         let resetCount = 1-self.semaphoreCount
         if showLog == true {
-            ZySDKLog.writeStringToSDKLog(string: "同步异常处理，取消后续命令发送")
+            ZywlSDKLog.writeStringToSDKLog(string: "同步异常处理，取消后续命令发送")
         }else{
-            ZySDKLog.writeStringToSDKLog(string: "重连、断开连接、关闭蓝牙，取消后续命令发送")
+            ZywlSDKLog.writeStringToSDKLog(string: "重连、断开连接、关闭蓝牙，取消后续命令发送")
         }
         
         //ZySDKLog.writeStringToSDKLog(string: "resetCommandSemaphore 恢复之前值:\(self.semaphoreCount)")
@@ -1251,7 +1251,7 @@ import CoreBluetooth
     }
     
     // MARK: - 获取耳机电量
-    @objc public func getHeadphoneBattery(_ success:@escaping((_ leftHeadphone:Int,_ rightHeadphone:Int,ZyError)->Void)) {
+    @objc public func getHeadphoneBattery(_ success:@escaping((_ leftHeadphone:Int,_ rightHeadphone:Int,ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x02]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -1270,12 +1270,12 @@ import CoreBluetooth
          */
     }
     
-    private func parseGetHeadphoneBattery(val:[UInt8],success:@escaping((_ leftHeadphone:Int,_ rightHeadphone:Int,ZyError)->Void)) {
+    private func parseGetHeadphoneBattery(val:[UInt8],success:@escaping((_ leftHeadphone:Int,_ rightHeadphone:Int,ZywlError)->Void)) {
 
         if val.count >= 6 {
             let leftBattery = Int(val[2])
             let rightBattery = Int(val[4])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "leftBattery:%d,rightBattery:%d", leftBattery,rightBattery))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "leftBattery:%d,rightBattery:%d", leftBattery,rightBattery))
             success(leftBattery,rightBattery,.none)
         }else{
             success(0,0,.invalidLength)
@@ -1285,7 +1285,7 @@ import CoreBluetooth
     }
     
     // MARK: - 获取充电仓电量
-    @objc public func getBoxBattery(_ success:@escaping((_ boxBattery:Int,ZyError)->Void)) {
+    @objc public func getBoxBattery(_ success:@escaping((_ boxBattery:Int,ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x27]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -1304,11 +1304,11 @@ import CoreBluetooth
          */
     }
     
-    private func parseGetBoxBattery(val:[UInt8],success:@escaping((_ value:Int,ZyError)->Void)) {
+    private func parseGetBoxBattery(val:[UInt8],success:@escaping((_ value:Int,ZywlError)->Void)) {
 
         if val.count >= 6 {
             let batteryValue = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "batteryValue:%d", batteryValue))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "batteryValue:%d", batteryValue))
             success(batteryValue,.none)
         }else{
             success(0,.invalidLength)
@@ -1318,7 +1318,7 @@ import CoreBluetooth
     }
     
     // MARK: - 查找设备
-    @objc public func setFindHeadphoneDevice(type:Int,isOpen:Bool,success:@escaping((ZyError)->Void)) {
+    @objc public func setFindHeadphoneDevice(type:Int,isOpen:Bool,success:@escaping((ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x10,UInt8(type),UInt8(isOpen ? 1 : 0)]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -1341,7 +1341,7 @@ import CoreBluetooth
          */
     }
     
-    private func parseSetFindHeadphoneDevice(val:[UInt8],success:@escaping((ZyError)->Void)) {
+    private func parseSetFindHeadphoneDevice(val:[UInt8],success:@escaping((ZywlError)->Void)) {
 
         if val.count >= 3 {
             let state = Int(val[2])
@@ -1350,7 +1350,7 @@ import CoreBluetooth
             }else{
                 success(.fail)
             }
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d", state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d", state))
         }else{
             success(.invalidLength)
         }
@@ -1359,7 +1359,7 @@ import CoreBluetooth
     }
     
     // MARK: - 获取mac
-    @objc public func getMac(_ success:@escaping((_ leftMac:String?,_ rightMac:String?,ZyError)->Void)) {
+    @objc public func getMac(_ success:@escaping((_ leftMac:String?,_ rightMac:String?,ZywlError)->Void)) {
         
         var val:[UInt8] = [0xBA,0x12]
         let data = Data.init(bytes: &val, count: val.count)
@@ -1381,7 +1381,7 @@ import CoreBluetooth
          */
     }
     
-    private func privateGetMac(val:[UInt8],success:@escaping((_ leftMac:String?,_ rightMac:String?,ZyError)->Void)) {
+    private func privateGetMac(val:[UInt8],success:@escaping((_ leftMac:String?,_ rightMac:String?,ZywlError)->Void)) {
         let state = String.init(format: "%02x", val[4])
         if val.count >= 14 {
             
@@ -1402,7 +1402,7 @@ import CoreBluetooth
                     rightString += ":"
                 }
             }
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "leftString:%@,rightString:%@", leftString,rightString))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "leftString:%@,rightString:%@", leftString,rightString))
             success(leftString,rightString,.none)
             
         }else{
@@ -1413,7 +1413,7 @@ import CoreBluetooth
     }
     
     // MARK: - 获取固件版本号
-    @objc public func getFirmwareVersion(_ success:@escaping((_ leftVersion:String?,_ rightVersion:String?,ZyError)->Void)) {
+    @objc public func getFirmwareVersion(_ success:@escaping((_ leftVersion:String?,_ rightVersion:String?,ZywlError)->Void)) {
         
         var val:[UInt8] = [0xBA,0x19]
         let data = Data.init(bytes: &val, count: val.count)
@@ -1444,7 +1444,7 @@ import CoreBluetooth
          */
     }
     
-    private func parseGetFirmwareVersion(val:[UInt8],success:@escaping((_ leftVersion:String?,_ rightVersion:String?,ZyError)->Void)) {
+    private func parseGetFirmwareVersion(val:[UInt8],success:@escaping((_ leftVersion:String?,_ rightVersion:String?,ZywlError)->Void)) {
 
         if val.count >= 7 {
             
@@ -1460,7 +1460,7 @@ import CoreBluetooth
             let rightLowString = String.init(format: "%d", rightValue % 16)
             let rightAlternateString = String.init(format: "%d", val[6])
             let rightVersion = String.init(format: "%@.%@.%@", rightHightString,rightLowString,rightAlternateString)
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "leftVersion:%@,rightVersion:%@", leftVersion,rightVersion))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "leftVersion:%@,rightVersion:%@", leftVersion,rightVersion))
             success(leftVersion == "0.0.0" ? nil : leftVersion,rightVersion == "0.0.0" ? nil : rightVersion,.none)
             
         }else{
@@ -1471,7 +1471,7 @@ import CoreBluetooth
     }
     
     // MARK: - 获取自定义按键
-    @objc public func getCustomButton(handGestureId:Int,success:@escaping((_ handGestureId:Int,_ leftFuncId:Int,_ rightFuncId:Int,ZyError)->Void)) {
+    @objc public func getCustomButton(handGestureId:Int,success:@escaping((_ handGestureId:Int,_ leftFuncId:Int,_ rightFuncId:Int,ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x21,UInt8(handGestureId)]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -1513,7 +1513,7 @@ import CoreBluetooth
          */
     }
     
-    private func parseGetCustomButton(val:[UInt8],success:@escaping((_ handGestureId:Int,_ leftFuncId:Int,_ rightFuncId:Int,ZyError)->Void)) {
+    private func parseGetCustomButton(val:[UInt8],success:@escaping((_ handGestureId:Int,_ leftFuncId:Int,_ rightFuncId:Int,ZywlError)->Void)) {
         if val.count >= 5 {
             let handGestureId = Int(val[2])
             let leftFuncId = Int(val[3])
@@ -1526,7 +1526,7 @@ import CoreBluetooth
     }
     
     // MARK: - 设置自定义按键
-    @objc public func setCustomButton(handGestureId:Int,leftFuncId:Int,rightFuncId:Int,success:@escaping((ZyError)->Void)) {
+    @objc public func setCustomButton(handGestureId:Int,leftFuncId:Int,rightFuncId:Int,success:@escaping((ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x22,UInt8(handGestureId),UInt8(leftFuncId),UInt8(rightFuncId)]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -1544,10 +1544,10 @@ import CoreBluetooth
          */
     }
     
-    private func parseSetCustomButton(val:[UInt8],success:@escaping((ZyError)->Void)) {
+    private func parseSetCustomButton(val:[UInt8],success:@escaping((ZywlError)->Void)) {
         if val.count >= 3 {
             let state = val[2]
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 0x01 {
                 success(.none)
             }else{
@@ -1560,7 +1560,7 @@ import CoreBluetooth
     }
     
     // MARK: - 低延迟模式查询
-    @objc public func getLowLatencyMode(_ success:@escaping((_ type:Int,ZyError)->Void)) {
+    @objc public func getLowLatencyMode(_ success:@escaping((_ type:Int,ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x23]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -1577,10 +1577,10 @@ import CoreBluetooth
          */
     }
     
-    private func parseGetLowLatencyMode(val:[UInt8],success:@escaping((_ type:Int,ZyError)->Void)) {
+    private func parseGetLowLatencyMode(val:[UInt8],success:@escaping((_ type:Int,ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             success(state,.none)
         }else{
             success(0,.invalidLength)
@@ -1589,7 +1589,7 @@ import CoreBluetooth
     }
     
     // MARK: - 低延迟模式设置
-    @objc public func setLowLatencyMode(type:Int,success:@escaping((ZyError)->Void)) {
+    @objc public func setLowLatencyMode(type:Int,success:@escaping((ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x24,UInt8(type)]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -1608,10 +1608,10 @@ import CoreBluetooth
          */
     }
     
-    private func parseSetLowLatencyMode(val:[UInt8],success:@escaping((ZyError)->Void)) {
+    private func parseSetLowLatencyMode(val:[UInt8],success:@escaping((ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1 {
                 success(.none)
             }else{
@@ -1625,7 +1625,7 @@ import CoreBluetooth
     }
     
     // MARK: - 入耳检测查询
-    @objc public func getInEarDetection(_ success:@escaping((_ type:Int,ZyError)->Void)) {
+    @objc public func getInEarDetection(_ success:@escaping((_ type:Int,ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x25]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -1642,10 +1642,10 @@ import CoreBluetooth
          XX: 01-成功 00-失败
          */
     }
-    private func parseGetInEarDetection(val:[UInt8],success:@escaping((_ type:Int,ZyError)->Void)) {
+    private func parseGetInEarDetection(val:[UInt8],success:@escaping((_ type:Int,ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             success(state,.none)
         }else{
             success(0,.invalidLength)
@@ -1654,7 +1654,7 @@ import CoreBluetooth
     }
     
     // MARK: - 入耳检测设置
-    @objc public func setInEarDetection(type:Int,success:@escaping((ZyError)->Void)) {
+    @objc public func setInEarDetection(type:Int,success:@escaping((ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x26,UInt8(type)]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -1672,10 +1672,10 @@ import CoreBluetooth
          */
     }
     
-    private func parseSetInEarDetection(val:[UInt8],success:@escaping((ZyError)->Void)) {
+    private func parseSetInEarDetection(val:[UInt8],success:@escaping((ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1 {
                 success(.none)
             }else{
@@ -1689,7 +1689,7 @@ import CoreBluetooth
     }
     
     // MARK: - 获取EQ类型
-    @objc public func getEqMode(_ success:@escaping((_ type:Int,ZyError)->Void)) {
+    @objc public func getEqMode(_ success:@escaping((_ type:Int,ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x30]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -1720,10 +1720,10 @@ import CoreBluetooth
          EQ_TYPE对应上⾯EQ类型
          */
     }
-    private func parseGetEqMode(val:[UInt8],success:@escaping((Int,ZyError)->Void)) {
+    private func parseGetEqMode(val:[UInt8],success:@escaping((Int,ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             success(state,.none)
             
         }else{
@@ -1733,7 +1733,7 @@ import CoreBluetooth
     }
     
     // MARK: - 设置EQ类型
-    @objc public func setEqMode(type:Int,customEqValue:[Float],success:@escaping((ZyError)->Void)) {
+    @objc public func setEqMode(type:Int,customEqValue:[Float],success:@escaping((ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x31,UInt8(type)]
         let startFreq = 100
         for i in 0..<customEqValue.count {
@@ -1791,10 +1791,10 @@ import CoreBluetooth
          */
     }
     
-    private func parseSetEqMode(val:[UInt8],success:@escaping((ZyError)->Void)) {
+    private func parseSetEqMode(val:[UInt8],success:@escaping((ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(.none)
             }else{
@@ -1808,7 +1808,7 @@ import CoreBluetooth
     }
     
     // MARK: - 环境音获取
-    @objc public func getAmbientSound(_ success:@escaping((_ type:Int,ZyError)->Void)) {
+    @objc public func getAmbientSound(_ success:@escaping((_ type:Int,ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x33]
         let data = Data.init(bytes: &val, count: val.count)
 
@@ -1833,10 +1833,10 @@ import CoreBluetooth
          */
     }
     
-    private func parseGetAmbientSound(val:[UInt8],success:@escaping((_ type:Int,ZyError)->Void)) {
+    private func parseGetAmbientSound(val:[UInt8],success:@escaping((_ type:Int,ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             success(state,.none)
         }else{
             success(0,.invalidLength)
@@ -1845,7 +1845,7 @@ import CoreBluetooth
     }
     
     // MARK: - 环境音设置
-    @objc public func setAmbientSound(type:Int ,success:@escaping((ZyError)->Void)) {
+    @objc public func setAmbientSound(type:Int ,success:@escaping((ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x34,UInt8(type),0xFF]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -1861,10 +1861,10 @@ import CoreBluetooth
          */
     }
     
-    private func parseSetAmbientSound(val:[UInt8],success:@escaping((ZyError)->Void)) {
+    private func parseSetAmbientSound(val:[UInt8],success:@escaping((ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(.none)
             }else{
@@ -1878,7 +1878,7 @@ import CoreBluetooth
     }
     
     // MARK: - 耳机佩戴状态查询
-    @objc public func getHeadsetWearingStatus(_ success:@escaping((_ type:Int,ZyError)->Void)) {
+    @objc public func getHeadsetWearingStatus(_ success:@escaping((_ type:Int,ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x35]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -1895,10 +1895,10 @@ import CoreBluetooth
          */
     }
     
-    private func parseGetHeadsetWearingStatus(val:[UInt8],success:@escaping((_ type:Int,ZyError)->Void)) {
+    private func parseGetHeadsetWearingStatus(val:[UInt8],success:@escaping((_ type:Int,ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(state,.none)
             }else{
@@ -1911,7 +1911,7 @@ import CoreBluetooth
     }
     
     // MARK: - 设置恢复出厂
-    @objc public func setResetFactory(_ success:@escaping((ZyError)->Void)) {
+    @objc public func setResetFactory(_ success:@escaping((ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x37]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -1931,10 +1931,10 @@ import CoreBluetooth
          */
     }
     
-    private func parseSetResetFactory(val:[UInt8],success:@escaping((ZyError)->Void)) {
+    private func parseSetResetFactory(val:[UInt8],success:@escaping((ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(.none)
             }else{
@@ -1947,7 +1947,7 @@ import CoreBluetooth
     }
     
     // MARK: - 桌面模式获取
-    @objc public func getDesktopMode(_ success:@escaping((_ type:Int,ZyError)->Void)) {
+    @objc public func getDesktopMode(_ success:@escaping((_ type:Int,ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x38]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -1963,10 +1963,10 @@ import CoreBluetooth
          */
     }
     
-    private func parseGetDesktopMode(val:[UInt8],success:@escaping((_ type:Int,ZyError)->Void)) {
+    private func parseGetDesktopMode(val:[UInt8],success:@escaping((_ type:Int,ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(state,.none)
             }else{
@@ -1979,7 +1979,7 @@ import CoreBluetooth
     }
     
     // MARK: - 桌面模式设置
-    @objc public func setDesktopMode(type:Int ,success:@escaping((ZyError)->Void)) {
+    @objc public func setDesktopMode(type:Int ,success:@escaping((ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x39,UInt8(type)]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -1994,10 +1994,10 @@ import CoreBluetooth
          BA 39 XX(01:开启 00:关闭)  AA 39 XX(01:成功 00:失败)   ---
          */
     }
-    private func parseSetDesktopMode(val:[UInt8],success:@escaping((ZyError)->Void)) {
+    private func parseSetDesktopMode(val:[UInt8],success:@escaping((ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(.none)
             }else{
@@ -2010,7 +2010,7 @@ import CoreBluetooth
     }
     
     // MARK: - 全景声获取
-    @objc public func getPanoramicSound(_ success:@escaping((_ type:Int,ZyError)->Void)) {
+    @objc public func getPanoramicSound(_ success:@escaping((_ type:Int,ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x42]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -2033,10 +2033,10 @@ import CoreBluetooth
          */
     }
     
-    private func parseGetPanoramicSound(val:[UInt8],success:@escaping((_ type:Int,ZyError)->Void)) {
+    private func parseGetPanoramicSound(val:[UInt8],success:@escaping((_ type:Int,ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             success(state,.none)
         }else{
             success(0,.invalidLength)
@@ -2045,7 +2045,7 @@ import CoreBluetooth
     }
     
     // MARK: - 全景声设置
-    @objc public func setPanoramicSound(type:Int ,success:@escaping((ZyError)->Void)) {
+    @objc public func setPanoramicSound(type:Int ,success:@escaping((ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x43,UInt8(type)]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -2060,10 +2060,10 @@ import CoreBluetooth
          BA 43 SOUND_MODEL  AA 43 XX(01:成功 00:失败)   ---
          */
     }
-    private func parseSetPanoramicSound(val:[UInt8],success:@escaping((ZyError)->Void)) {
+    private func parseSetPanoramicSound(val:[UInt8],success:@escaping((ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(.none)
             }else{
@@ -2076,7 +2076,7 @@ import CoreBluetooth
     }
     
     // MARK: - LHDC模式查询
-    @objc public func getLhdcMode(_ success:@escaping((_ type:Int,ZyError)->Void)) {
+    @objc public func getLhdcMode(_ success:@escaping((_ type:Int,ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x48]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -2092,10 +2092,10 @@ import CoreBluetooth
          */
     }
     
-    private func parseGetLhdcMode(val:[UInt8],success:@escaping((_ type:Int,ZyError)->Void)) {
+    private func parseGetLhdcMode(val:[UInt8],success:@escaping((_ type:Int,ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(state,.none)
             }else{
@@ -2108,7 +2108,7 @@ import CoreBluetooth
     }
     
     // MARK: - 极速模式获取
-    @objc public func getSpeedMode(_ success:@escaping((_ type:Int,ZyError)->Void)) {
+    @objc public func getSpeedMode(_ success:@escaping((_ type:Int,ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x49]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -2128,10 +2128,10 @@ import CoreBluetooth
         
     }
     
-    private func parseGetSpeedMode(val:[UInt8],success:@escaping((_ type:Int,ZyError)->Void)) {
+    private func parseGetSpeedMode(val:[UInt8],success:@escaping((_ type:Int,ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(state,.none)
             }else{
@@ -2144,7 +2144,7 @@ import CoreBluetooth
     }
     
     // MARK: - 桌面模式设置
-    @objc public func setSpeedMode(type:Int ,success:@escaping((ZyError)->Void)) {
+    @objc public func setSpeedMode(type:Int ,success:@escaping((ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x49,UInt8(type)]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -2159,10 +2159,10 @@ import CoreBluetooth
          BA 50 XX(01:开启 00:关闭) AA 50 YY(01:成功 00:失败) ---
          */
     }
-    private func parseSetSpeedMode(val:[UInt8],success:@escaping((ZyError)->Void)) {
+    private func parseSetSpeedMode(val:[UInt8],success:@escaping((ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(.none)
             }else{
@@ -2175,7 +2175,7 @@ import CoreBluetooth
     }
     
     // MARK: - 抗风噪模式获取
-    @objc public func getResistanceWindNoise(_ success:@escaping((_ type:Int,ZyError)->Void)) {
+    @objc public func getResistanceWindNoise(_ success:@escaping((_ type:Int,ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x51]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -2195,10 +2195,10 @@ import CoreBluetooth
          */
     }
     
-    private func parseGetResistanceWindNoise(val:[UInt8],success:@escaping((_ type:Int,ZyError)->Void)) {
+    private func parseGetResistanceWindNoise(val:[UInt8],success:@escaping((_ type:Int,ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(state,.none)
             }else{
@@ -2211,7 +2211,7 @@ import CoreBluetooth
     }
     
     // MARK: - 抗风噪设置
-    @objc public func setResistanceWindNoise(type:Int ,success:@escaping((ZyError)->Void)) {
+    @objc public func setResistanceWindNoise(type:Int ,success:@escaping((ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x52,UInt8(type)]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -2226,10 +2226,10 @@ import CoreBluetooth
          BA 34 MODEL_TYPE MODEL_LEVEL   AA 34 XX(01:成功 00:失败)   模式设置
          */
     }
-    private func parseSetResistanceWindNoise(val:[UInt8],success:@escaping((ZyError)->Void)) {
+    private func parseSetResistanceWindNoise(val:[UInt8],success:@escaping((ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(.none)
             }else{
@@ -2242,7 +2242,7 @@ import CoreBluetooth
     }
     
     // MARK: - 低音增强获取
-    @objc public func getBassToneEnhancement(_ success:@escaping((_ type:Int,ZyError)->Void)) {
+    @objc public func getBassToneEnhancement(_ success:@escaping((_ type:Int,ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x53]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -2262,10 +2262,10 @@ import CoreBluetooth
          */
     }
     
-    private func parseGetBassToneEnhancement(val:[UInt8],success:@escaping((_ type:Int,ZyError)->Void)) {
+    private func parseGetBassToneEnhancement(val:[UInt8],success:@escaping((_ type:Int,ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(state,.none)
             }else{
@@ -2278,7 +2278,7 @@ import CoreBluetooth
     }
     
     // MARK: - 低音增强设置
-    @objc public func setBassToneEnhancement(type:Int ,success:@escaping((ZyError)->Void)) {
+    @objc public func setBassToneEnhancement(type:Int ,success:@escaping((ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x54,UInt8(type)]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -2293,10 +2293,10 @@ import CoreBluetooth
          BA 54 XX(01:开启 00:关闭)  AA 54 YY(01:成功 00:失败)   ---
          */
     }
-    private func parseSetBassToneEnhancement(val:[UInt8],success:@escaping((ZyError)->Void)) {
+    private func parseSetBassToneEnhancement(val:[UInt8],success:@escaping((ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(.none)
             }else{
@@ -2309,7 +2309,7 @@ import CoreBluetooth
     }
     
     // MARK: - 低频增强获取
-    @objc public func getLowFrequencyEnhancement(_ success:@escaping((_ type:Int,ZyError)->Void)) {
+    @objc public func getLowFrequencyEnhancement(_ success:@escaping((_ type:Int,ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x55]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -2329,10 +2329,10 @@ import CoreBluetooth
          */
     }
     
-    private func parseGetLowFrequencyEnhancement(val:[UInt8],success:@escaping((_ type:Int,ZyError)->Void)) {
+    private func parseGetLowFrequencyEnhancement(val:[UInt8],success:@escaping((_ type:Int,ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(state,.none)
             }else{
@@ -2345,7 +2345,7 @@ import CoreBluetooth
     }
     
     // MARK: - 低频增强设置
-    @objc public func setLowFrequencyEnhancement(type:Int ,success:@escaping((ZyError)->Void)) {
+    @objc public func setLowFrequencyEnhancement(type:Int ,success:@escaping((ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x56,UInt8(type)]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -2360,10 +2360,10 @@ import CoreBluetooth
          BA 56 XX   AA 56 YY    XX=MODEL_STATE YY=(01:成功 00:失败)
          */
     }
-    private func parseSetLowFrequencyEnhancement(val:[UInt8],success:@escaping((ZyError)->Void)) {
+    private func parseSetLowFrequencyEnhancement(val:[UInt8],success:@escaping((ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(.none)
             }else{
@@ -2376,7 +2376,7 @@ import CoreBluetooth
     }
     
     // MARK: - 对联模式获取
-    @objc public func getCoupletPattern(_ success:@escaping((_ type:Int,ZyError)->Void)) {
+    @objc public func getCoupletPattern(_ success:@escaping((_ type:Int,ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x57]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -2388,10 +2388,10 @@ import CoreBluetooth
         }
     }
     
-    private func parseGetCoupletPattern(val:[UInt8],success:@escaping((_ type:Int,ZyError)->Void)) {
+    private func parseGetCoupletPattern(val:[UInt8],success:@escaping((_ type:Int,ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(state,.none)
             }else{
@@ -2404,7 +2404,7 @@ import CoreBluetooth
     }
     
     // MARK: - 对联模式设置
-    @objc public func setCoupletPattern(type:Int ,success:@escaping((ZyError)->Void)) {
+    @objc public func setCoupletPattern(type:Int ,success:@escaping((ZywlError)->Void)) {
         var val:[UInt8] = [0xBA,0x58,UInt8(type)]
         let data = Data.init(bytes: &val, count: val.count)
         
@@ -2419,10 +2419,10 @@ import CoreBluetooth
          BA 34 MODEL_TYPE MODEL_LEVEL   AA 34 XX(01:成功 00:失败)   模式设置
          */
     }
-    private func parseSetCoupletPattern(val:[UInt8],success:@escaping((ZyError)->Void)) {
+    private func parseSetCoupletPattern(val:[UInt8],success:@escaping((ZywlError)->Void)) {
         if val.count >= 3 {
             let state = Int(val[2])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
+            ZywlSDKLog.writeStringToSDKLog(string: String.init(format: "state:%d",state))
             if state == 1{
                 success(.none)
             }else{
@@ -2542,7 +2542,7 @@ import CoreBluetooth
      Byte30~Byte41：蓝牙地址；（字符串格式 12bytes）
      
      */
-    @objc public func getOwsDeviceAllInformation(_ success:@escaping((_ model:ZyOwsL04DeviceInformationModel?,ZyError)->Void)) {
+    @objc public func getOwsDeviceAllInformation(_ success:@escaping((_ model:ZywlOwsL04DeviceInformationModel?,ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x01,0x01,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -2554,10 +2554,10 @@ import CoreBluetooth
         }
     }
     
-    private func parseGetOwsDeviceAllInformation(val:[UInt8],success:@escaping((ZyOwsL04DeviceInformationModel?,ZyError)->Void)) {
+    private func parseGetOwsDeviceAllInformation(val:[UInt8],success:@escaping((ZywlOwsL04DeviceInformationModel?,ZywlError)->Void)) {
         
         if val.count >= 44 {
-            let model = ZyOwsL04DeviceInformationModel()
+            let model = ZywlOwsL04DeviceInformationModel()
             model.voiceVolume = Int(val[0])
             model.noiseControl = Int(val[1])
             model.noiseReduction = Int(val[2])
@@ -2619,7 +2619,7 @@ import CoreBluetooth
        Byte3和Byte4 表示高  如240  则0x00,0xf0
      
      */
-    @objc public func getOwsBoxScreenSize(_ success:@escaping((_ width:Int,_ height:Int,_ error:ZyError)->Void)) {
+    @objc public func getOwsBoxScreenSize(_ success:@escaping((_ width:Int,_ height:Int,_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x01,0x02,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -2631,7 +2631,7 @@ import CoreBluetooth
         }
     }
     
-    func parseGetOwsBoxScreenSize(val:[UInt8],success:@escaping((_ width:Int,_ height:Int,_ error:ZyError)->Void)) {
+    func parseGetOwsBoxScreenSize(val:[UInt8],success:@escaping((_ width:Int,_ height:Int,_ error:ZywlError)->Void)) {
         if val.count >= 4 {
             let width = (Int(val[0]) << 8 | Int(val[1]))
             let height = (Int(val[2]) << 8 | Int(val[3]))
@@ -2650,7 +2650,7 @@ import CoreBluetooth
      
      其中数据域 Payload：,最多 30 个字节
      */
-    @objc public func getOwsBleName(_ success:@escaping((_ name:String?,_ error:ZyError)->Void)) {
+    @objc public func getOwsBleName(_ success:@escaping((_ name:String?,_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x01,0x03,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -2662,7 +2662,7 @@ import CoreBluetooth
         }
     }
     
-    func parseGetOwsBleName(val:[UInt8],success:@escaping((_ name:String?,_ error:ZyError)->Void)) {
+    func parseGetOwsBleName(val:[UInt8],success:@escaping((_ name:String?,_ error:ZywlError)->Void)) {
         let bleNameData = val.withUnsafeBufferPointer({ (bytes) -> Data in
             let byte = bytes.baseAddress!
             return Data.init(bytes: byte, count: val.count)
@@ -2683,7 +2683,7 @@ import CoreBluetooth
      其中数据域 Payload：
      Byte1:Volume 变化范围 0x00~0x0a(0~10)
      */
-    @objc public func getOwsMediaVoiceVolume(_ success:@escaping((_ value:Int,_ error:ZyError)->Void)) {
+    @objc public func getOwsMediaVoiceVolume(_ success:@escaping((_ value:Int,_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x01,0x04,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -2695,7 +2695,7 @@ import CoreBluetooth
         }
     }
     
-    func parseGetOwsMediaVoiceVolume(val:[UInt8],success:@escaping((_ value:Int,_ error:ZyError)->Void)) {
+    func parseGetOwsMediaVoiceVolume(val:[UInt8],success:@escaping((_ value:Int,_ error:ZywlError)->Void)) {
         if val.count >= 1 {
             let value = Int(val[0])
             self.owsModel?.voiceVolume = value
@@ -2718,7 +2718,7 @@ import CoreBluetooth
      Byte1:亮度值 0x05,0x0a,0x0f,0x14,0x19,0x1e
            解析后 5s，10s, 15s, 20s, 25s, 30s
     */
-    @objc public func getOwsScreenOutTimeLength(_ success:@escaping((_ value:Int,_ error:ZyError)->Void)) {
+    @objc public func getOwsScreenOutTimeLength(_ success:@escaping((_ value:Int,_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x01,0x05,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -2730,7 +2730,7 @@ import CoreBluetooth
         }
     }
     
-    func parseGetOwsScreenOutTimeLength(val:[UInt8],success:@escaping((_ value:Int,_ error:ZyError)->Void)) {
+    func parseGetOwsScreenOutTimeLength(val:[UInt8],success:@escaping((_ value:Int,_ error:ZywlError)->Void)) {
         if val.count >= 1 {
             let value = Int(val[0])
             success(value,.none)
@@ -2750,7 +2750,7 @@ import CoreBluetooth
      Byte1:本地表盘的总数量，如5个，则0x05
      Byte2:当前仓背景的索引序号，如第二个，则0x02
      */
-    @objc public func getOwsLocalDialIndex(_ success:@escaping((_ index:Int,_ totalCount:Int,_ error:ZyError)->Void)) {
+    @objc public func getOwsLocalDialIndex(_ success:@escaping((_ index:Int,_ totalCount:Int,_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x01,0x06,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -2762,7 +2762,7 @@ import CoreBluetooth
         }
     }
     
-    func parseGetOwsLocalDialIndex(val:[UInt8],success:@escaping((_ index:Int,_ totalCount:Int,_ error:ZyError)->Void)) {
+    func parseGetOwsLocalDialIndex(val:[UInt8],success:@escaping((_ index:Int,_ totalCount:Int,_ error:ZywlError)->Void)) {
         if val.count >= 2 {
             let totalCount = Int(val[0])
             let index = Int(val[1])
@@ -2784,7 +2784,7 @@ import CoreBluetooth
      Byte2:短信提醒，0是关，1是开
      Byte3:其它app提醒，0是关，1是开
      */
-    @objc public func getOwsMessageRemind(_ success:@escaping((_ isOpencall:Bool,_ isOpenSms:Bool,_ isOpenOther:Bool,_ error:ZyError)->Void)) {
+    @objc public func getOwsMessageRemind(_ success:@escaping((_ isOpencall:Bool,_ isOpenSms:Bool,_ isOpenOther:Bool,_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x01,0x07,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -2796,7 +2796,7 @@ import CoreBluetooth
         }
     }
     
-    func parseGetOwsMessageRemind(val:[UInt8],success:@escaping((_ isOpencall:Bool,_ isOpenSms:Bool,_ isOpenOther:Bool,_ error:ZyError)->Void)) {
+    func parseGetOwsMessageRemind(val:[UInt8],success:@escaping((_ isOpencall:Bool,_ isOpenSms:Bool,_ isOpenOther:Bool,_ error:ZywlError)->Void)) {
         if val.count >= 3 {
             let isOpencall = val[0] == 0 ? false:true
             let isOpenSms = val[1] == 0 ? false:true
@@ -2817,7 +2817,7 @@ import CoreBluetooth
      其中数据域 Payload：
      Byte1:游戏模式开关，0x00关，0x01开
      */
-    @objc public func getOwsGameMode(_ success:@escaping((_ isOpen:Bool,_ error:ZyError)->Void)) {
+    @objc public func getOwsGameMode(_ success:@escaping((_ isOpen:Bool,_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x01,0x08,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -2829,7 +2829,7 @@ import CoreBluetooth
         }
     }
     
-    func parseGetOwsGameMode(val:[UInt8],success:@escaping((_ isOpen:Bool,_ error:ZyError)->Void)) {
+    func parseGetOwsGameMode(val:[UInt8],success:@escaping((_ isOpen:Bool,_ error:ZywlError)->Void)) {
         if val.count >= 1 {
             let isOpen = val[0] == 0 ? false:true
             success(isOpen,.none)
@@ -2852,7 +2852,7 @@ import CoreBluetooth
      其中数据域 Payload：
      Byte1: 噪声控制（0x00 轻度降噪，0x01 中度降噪，0x02 重度降噪，0x03 关闭降噪，0x04 通透模式，0xff 不支持）
      */
-    @objc public func getOwsNoiseControlMode(_ success:@escaping((_ type:Int,_ error:ZyError)->Void)) {
+    @objc public func getOwsNoiseControlMode(_ success:@escaping((_ type:Int,_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x01,0x09,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -2864,7 +2864,7 @@ import CoreBluetooth
         }
     }
     
-    func parseGetOwsNoiseControlMode(val:[UInt8],success:@escaping((_ type:Int,_ error:ZyError)->Void)) {
+    func parseGetOwsNoiseControlMode(val:[UInt8],success:@escaping((_ type:Int,_ error:ZywlError)->Void)) {
         if val.count >= 1 {
             let type = Int(val[0])
             success(type,.none)
@@ -2887,7 +2887,7 @@ import CoreBluetooth
      其中数据域 Payload：
      Byte1: 噪声环境（0x00 室内，0x01 室外，0x02 交通，0xff 不支持）
      */
-    @objc public func getOwsNoiseReductionMode(_ success:@escaping((_ type:Int,_ error:ZyError)->Void)) {
+    @objc public func getOwsNoiseReductionMode(_ success:@escaping((_ type:Int,_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x01,0x0a,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -2899,7 +2899,7 @@ import CoreBluetooth
         }
     }
     
-    func parseGetOwsNoiseReductionMode(val:[UInt8],success:@escaping((_ type:Int,_ error:ZyError)->Void)) {
+    func parseGetOwsNoiseReductionMode(val:[UInt8],success:@escaping((_ type:Int,_ error:ZywlError)->Void)) {
         if val.count >= 1 {
             let type = Int(val[0])
             success(type,.none)
@@ -2922,7 +2922,7 @@ import CoreBluetooth
      其中数据域 Payload：
      Byte1:摇一摇开关，0x00关，0x01开
      */
-    @objc public func getOwsShakeSongMode(_ success:@escaping((_ isOpen:Bool,_ error:ZyError)->Void)) {
+    @objc public func getOwsShakeSongMode(_ success:@escaping((_ isOpen:Bool,_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x01,0x0b,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -2934,7 +2934,7 @@ import CoreBluetooth
         }
     }
     
-    func parseGetOwsShakeSongMode(val:[UInt8],success:@escaping((_ isOpen:Bool,_ error:ZyError)->Void)) {
+    func parseGetOwsShakeSongMode(val:[UInt8],success:@escaping((_ isOpen:Bool,_ error:ZywlError)->Void)) {
         if val.count >= 1 {
             let isOpen = val[0] == 0 ? false : true
             success(isOpen,.none)
@@ -2966,7 +2966,7 @@ import CoreBluetooth
             bit7 是否支持查找设备
      Byte2: bit0 是否支持与仓的交互
      */
-    @objc public func getOwsSupportFunction(_ success:@escaping((_ functionCount1:Int,_ functionCount2:Int,_ error:ZyError)->Void)) {
+    @objc public func getOwsSupportFunction(_ success:@escaping((_ functionCount1:Int,_ functionCount2:Int,_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x01,0x0c,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -2978,7 +2978,7 @@ import CoreBluetooth
         }
     }
     
-    func parseGetOwsSupportFunction(val:[UInt8],success:@escaping((_ functionCount1:Int,_ functionCount2:Int,_ error:ZyError)->Void)) {
+    func parseGetOwsSupportFunction(val:[UInt8],success:@escaping((_ functionCount1:Int,_ functionCount2:Int,_ error:ZywlError)->Void)) {
         if val.count >= 2 {
             let functionCount1 = Int(val[0])
             let functionCount2 = Int(val[1])
@@ -2997,7 +2997,7 @@ import CoreBluetooth
      
      其中数据域 Payload：,最多 30 个字节
      */
-    @objc public func getOwsDeviceOriginalName(_ success:@escaping((_ name:String?,_ error:ZyError)->Void)) {
+    @objc public func getOwsDeviceOriginalName(_ success:@escaping((_ name:String?,_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x01,0x0d,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -3009,7 +3009,7 @@ import CoreBluetooth
         }
     }
     
-    func parseGetOwsDeviceOriginalName(val:[UInt8],success:@escaping((_ name:String?,_ error:ZyError)->Void)) {
+    func parseGetOwsDeviceOriginalName(val:[UInt8],success:@escaping((_ name:String?,_ error:ZywlError)->Void)) {
         let bleNameData = val.withUnsafeBufferPointer({ (bytes) -> Data in
             let byte = bytes.baseAddress!
             return Data.init(bytes: byte, count: val.count)
@@ -3037,7 +3037,7 @@ import CoreBluetooth
      Byte5 分钟
      Byte6 重复 （bit0～bit6，周一～周日 ，0关闭，1开启）
      */
-    @objc public func getOwsAlarmArray(_ success:@escaping((_ modelArray:[ZyOwsAlarmModel],_ error:ZyError)->Void)) {
+    @objc public func getOwsAlarmArray(_ success:@escaping((_ modelArray:[ZywlOwsAlarmModel],_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x01,0x0d,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -3049,13 +3049,13 @@ import CoreBluetooth
         }
     }
     
-    func parseGetOwsAlarmArray(val:[UInt8],success:@escaping((_ modelArray:[ZyOwsAlarmModel],_ error:ZyError)->Void)) {
+    func parseGetOwsAlarmArray(val:[UInt8],success:@escaping((_ modelArray:[ZywlOwsAlarmModel],_ error:ZywlError)->Void)) {
         
-        var alarmArray = [ZyOwsAlarmModel]()
+        var alarmArray = [ZywlOwsAlarmModel]()
         let alarmCount = Int(val[0])
         if val.count == alarmCount * 5 + 1 {
             for i in 0..<alarmCount {
-                let model = ZyOwsAlarmModel.init()
+                let model = ZywlOwsAlarmModel.init()
                 model.type = Int(val[i*5+1])
                 model.isOpen = val[i*5+2] == 0 ? false : true
                 model.hour = Int(val[i*5+3])
@@ -3079,7 +3079,7 @@ import CoreBluetooth
      0xRR = 0x02 crc校验失败,
      下面指令中0xRR同上
      */
-    @objc public func setOwsClearPairingRecord(_ success:@escaping((_ error:ZyError)->Void)) {
+    @objc public func setOwsClearPairingRecord(_ success:@escaping((_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x02,0x01,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -3102,7 +3102,7 @@ import CoreBluetooth
      0xRR = 0x02 crc校验失败,
      下面指令中0xRR同上
      */
-    @objc public func setOwsResetFactory(_ success:@escaping((_ error:ZyError)->Void)) {
+    @objc public func setOwsResetFactory(_ success:@escaping((_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x02,0x02,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -3136,7 +3136,7 @@ import CoreBluetooth
             0x07 表示: 音量+,
             0x08 表示: 音量-,
      */
-    @objc public func setOwsTouchButtonFunction(handId:Int,touchId:Int,functionId:Int,_ success:@escaping((_ error:ZyError)->Void)) {
+    @objc public func setOwsTouchButtonFunction(handId:Int,touchId:Int,functionId:Int,_ success:@escaping((_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x08,0x02,0x03,0x00,0x03,UInt8(handId),UInt8(touchId),UInt8(functionId)]
         let data = self.owsCrc8Data(val: val)
         
@@ -3159,7 +3159,7 @@ import CoreBluetooth
      0xRR = 0x02 crc校验失败,
      下面指令中0xRR同上
      */
-    @objc public func setOwsAllTouchButtonReset(_ success:@escaping((_ error:ZyError)->Void)) {
+    @objc public func setOwsAllTouchButtonReset(_ success:@escaping((_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x02,0x04,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -3180,7 +3180,7 @@ import CoreBluetooth
      其中数据域 Payload：
      Byte1：0x00 表示开始，0x01 表示结束
      */
-    @objc public func setOwsFindHeadphones(isOpen:Bool,_ success:@escaping((_ error:ZyError)->Void)) {
+    @objc public func setOwsFindHeadphones(isOpen:Bool,_ success:@escaping((_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x02,0x05,0x00,0x01,UInt8(isOpen == true ? 0 : 1)]
         let data = self.owsCrc8Data(val: val)
         
@@ -3201,7 +3201,7 @@ import CoreBluetooth
      其中数据域 Payload：
      Byte1：0x00 表示开始，0x01 表示结束
      */
-    @objc public func setOwsBleName(name:String,_ success:@escaping((_ error:ZyError)->Void)) {
+    @objc public func setOwsBleName(name:String,_ success:@escaping((_ error:ZywlError)->Void)) {
         if let nameData = name.data(using: .utf8) {
             var val:[UInt8] = [0xA8,0x03,0x00,UInt8(nameData.count+6),0x02,0x06,0x00,UInt8(nameData.count)]
             let nameVal = nameData.withUnsafeBytes { (byte) -> [UInt8] in
@@ -3232,7 +3232,7 @@ import CoreBluetooth
      其中数据域 Payload：
      Byte1:Volume 变化范围 0x00~0x10(0~16)
      */
-    @objc public func setOwsMediaVoiceVolume(value:Int,_ success:@escaping((_ error:ZyError)->Void)) {
+    @objc public func setOwsMediaVoiceVolume(value:Int,_ success:@escaping((_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x02,0x07,0x00,0x01,UInt8(value)]
         let data = self.owsCrc8Data(val: val)
         
@@ -3254,7 +3254,7 @@ import CoreBluetooth
      Byte1:亮度值 0x05,0x0a,0x0f,0x14,0x19,0x1e
            解析后 5s，10s, 15s, 20s, 25s, 30s
      */
-    @objc public func setOwsScreenOutTimeLength(value:Int,_ success:@escaping((_ error:ZyError)->Void)) {
+    @objc public func setOwsScreenOutTimeLength(value:Int,_ success:@escaping((_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x02,0x08,0x00,0x01,UInt8(value)]
         let data = self.owsCrc8Data(val: val)
         
@@ -3275,7 +3275,7 @@ import CoreBluetooth
      其中数据域 Payload：
      Byte1:设置仓当前背景的索引序号，如第二个，则0x02
      */
-    @objc public func setOwsLocalDialIndex(_ value:Int,_ success:@escaping((_ error:ZyError)->Void)) {
+    @objc public func setOwsLocalDialIndex(_ value:Int,_ success:@escaping((_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x02,0x09,0x00,0x01,UInt8(value)]
         let data = self.owsCrc8Data(val: val)
         
@@ -3298,7 +3298,7 @@ import CoreBluetooth
      Byte2:短信提醒，0是关，1是开
      Byte3:其它app提醒，0是关，1是开
      */
-    @objc public func setOwsMessageRemind(isOpencall:Bool,isOpenSms:Bool,isOpenOther:Bool,success:@escaping((_ error:ZyError)->Void)) {
+    @objc public func setOwsMessageRemind(isOpencall:Bool,isOpenSms:Bool,isOpenOther:Bool,success:@escaping((_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x08,0x02,0x0a,0x00,0x03,UInt8(isOpencall ? 1 : 0),UInt8(isOpenSms ? 1 : 0),UInt8(isOpenOther ? 1 : 0)]
         let data = self.owsCrc8Data(val: val)
         
@@ -3319,7 +3319,7 @@ import CoreBluetooth
      其中数据域 Payload：
      Byte1:0x00关闭，0x01开启
      */
-    @objc public func setOwsGameMode(isOpen:Bool,success:@escaping((_ error:ZyError)->Void)) {
+    @objc public func setOwsGameMode(isOpen:Bool,success:@escaping((_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x02,0x0b,0x00,0x01,UInt8(isOpen ? 1 : 0)]
         let data = self.owsCrc8Data(val: val)
         
@@ -3340,7 +3340,7 @@ import CoreBluetooth
      其中数据域 Payload：
      Byte1: 噪声控制（0x00 轻度降噪，0x01 中度降噪，0x02 重度降噪，0x03 关闭降噪，0x04 通透模式，0xff 不支持）
      */
-    @objc public func setOwsNoiseControlMode(type:Int, success:@escaping((_ error:ZyError)->Void)) {
+    @objc public func setOwsNoiseControlMode(type:Int, success:@escaping((_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x02,0x0c,0x00,0x01,UInt8(type)]
         let data = self.owsCrc8Data(val: val)
         
@@ -3361,7 +3361,7 @@ import CoreBluetooth
      其中数据域 Payload：
      Byte1: 噪声环境（0x00 室内，0x01 室外，0x02 交通，0xff 不支持）
      */
-    @objc public func getOwsNoiseReductionMode(type:Int, success:@escaping((_ error:ZyError)->Void)) {
+    @objc public func getOwsNoiseReductionMode(type:Int, success:@escaping((_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x02,0x0d,0x00,0x01,UInt8(type)]
         let data = self.owsCrc8Data(val: val)
         
@@ -3379,7 +3379,7 @@ import CoreBluetooth
      APP→DEV     0xA8    0x03    0x0006    0x02         0x0e    0x00        0x01          0x00      1byte
      DEV→APP     0xA8    0x03    0x0006    0x02         0x0e    0x02        0x01          0xRR      1byte
      */
-    @objc public func setOwsShakeSong(_ success:@escaping((_ error:ZyError)->Void)) {
+    @objc public func setOwsShakeSong(_ success:@escaping((_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x02,0x0e,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -3400,7 +3400,7 @@ import CoreBluetooth
      其中数据域 Payload：
      Byte1:摇一摇开关，0x00关，0x01开
      */
-    @objc public func setOwsShakeSongMode(isOpen:Bool, success:@escaping((_ error:ZyError)->Void)) {
+    @objc public func setOwsShakeSongMode(isOpen:Bool, success:@escaping((_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x02,0x0f,0x00,0x01,UInt8(isOpen ? 1 : 0)]
         let data = self.owsCrc8Data(val: val)
         
@@ -3426,7 +3426,7 @@ import CoreBluetooth
      Byte6:0x0a
      Byte7:0x1e
      */
-    @objc public func setOwsTime(time:Any? = nil,success:@escaping((ZyError) -> Void)) {
+    @objc public func setOwsTime(time:Any? = nil,success:@escaping((ZywlError) -> Void)) {
         
         var date = Date.init()
         
@@ -3494,7 +3494,7 @@ import CoreBluetooth
      葡萄牙语 0x08
      阿拉伯语 0x09
      */
-    @objc public func setOwsLanguage(type:Int,success:@escaping((ZyError) -> Void)) {
+    @objc public func setOwsLanguage(type:Int,success:@escaping((ZywlError) -> Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x02,0x11,0x00,0x01,UInt8(type)]
         let data = self.owsCrc8Data(val: val)
         
@@ -3523,7 +3523,7 @@ import CoreBluetooth
      Byte5 分钟
      Byte6 重复 （bit0～bit6，周一～周日 ，0关闭，1开启）
      */
-    @objc public func setOwsAlarmArray(modelArray:[ZyOwsAlarmModel],success:@escaping((ZyError) -> Void)) {
+    @objc public func setOwsAlarmArray(modelArray:[ZywlOwsAlarmModel],success:@escaping((ZywlError) -> Void)) {
         
         var val:[UInt8] = .init()
         
@@ -3565,7 +3565,7 @@ import CoreBluetooth
      上一曲 2
      下一曲 3
      */
-    @objc public func setOwsOperationSong(type:Int,success:@escaping((ZyError) -> Void)) {
+    @objc public func setOwsOperationSong(type:Int,success:@escaping((ZywlError) -> Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x02,0x14,0x00,0x01,UInt8(type)]
         let data = self.owsCrc8Data(val: val)
         
@@ -3595,7 +3595,7 @@ import CoreBluetooth
      ByteN+5 最低温
      ByteN+6 最高温
      */
-    @objc public func setOwsWeather(city:String? = nil,modelArray:[ZyOwsWeatherModel],success:@escaping((ZyError) -> Void)) {
+    @objc public func setOwsWeather(city:String? = nil,modelArray:[ZywlOwsWeatherModel],success:@escaping((ZywlError) -> Void)) {
         
         var modelVal:[UInt8] = .init()
         
@@ -3641,7 +3641,7 @@ import CoreBluetooth
     }
     
     // MARK: - 设置的通用回复
-    func parseSetGeneralSettingsReply(val:[UInt8],success:@escaping((_ error:ZyError)->Void)) {
+    func parseSetGeneralSettingsReply(val:[UInt8],success:@escaping((_ error:ZywlError)->Void)) {
         if val.count >= 1 {
             let state = val[0]
             if state == 0 {
@@ -3662,7 +3662,7 @@ import CoreBluetooth
      其中数据域 Payload：
      Byte1:Volume 变化范围 0x00~0x0a(0~10)
      */
-    @objc public func reportOwsMediaVoiceVolume(success:@escaping((_ volume:Int,_ error:ZyError) -> Void)) {
+    @objc public func reportOwsMediaVoiceVolume(success:@escaping((_ volume:Int,_ error:ZywlError) -> Void)) {
         self.receiveReportOwsMediaVoiceVolume = success
     }
     
@@ -3675,11 +3675,11 @@ import CoreBluetooth
      Byte2：表示右耳电量（0%~100%电量表示 0x00~0x64）
      Byte3：表示耳机仓电量（0%~100%电量表示 0x00~0x64）
      */
-    @objc public func reportOwsBattery(success:@escaping((_ leftBattery:Int,_ rightBattery:Int,_ boxBattery:Int,_ error:ZyError) -> Void)) {
+    @objc public func reportOwsBattery(success:@escaping((_ leftBattery:Int,_ rightBattery:Int,_ boxBattery:Int,_ error:ZywlError) -> Void)) {
         self.receiveReportOwsBattery = success
     }
     
-    func parseReportOwsBattery(val:[UInt8],success:@escaping((_ leftBattery:Int,_ rightBattery:Int,_ boxBattery:Int,_ error:ZyError) -> Void)) {
+    func parseReportOwsBattery(val:[UInt8],success:@escaping((_ leftBattery:Int,_ rightBattery:Int,_ boxBattery:Int,_ error:ZywlError) -> Void)) {
         if val.count >= 3 {
             let leftBattery = Int(val[0])
             let rightBattery = Int(val[0])
@@ -3697,7 +3697,7 @@ import CoreBluetooth
         }
     }
     
-    @objc public func reportOwsModel(success:@escaping((_ owsModel:ZyOwsL04DeviceInformationModel?) -> Void)) {
+    @objc public func reportOwsModel(success:@escaping((_ owsModel:ZywlOwsL04DeviceInformationModel?) -> Void)) {
         self.reportOwsModel = success
     }
     
@@ -3719,7 +3719,7 @@ import CoreBluetooth
      0x05 表示经典,
      0x11 用户自定义模式
      */
-    @objc public func getOwsEqMode(_ success:@escaping((_ isOpen:Bool,_ type:Int,_ error:ZyError)->Void)) {
+    @objc public func getOwsEqMode(_ success:@escaping((_ isOpen:Bool,_ type:Int,_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x04,0x01,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -3731,7 +3731,7 @@ import CoreBluetooth
         }
     }
     
-    func parseGetOwsEqMode(val:[UInt8],success:@escaping((_ isOpen:Bool,_ type:Int,_ error:ZyError)->Void)) {
+    func parseGetOwsEqMode(val:[UInt8],success:@escaping((_ isOpen:Bool,_ type:Int,_ error:ZywlError)->Void)) {
         if val.count >= 2 {
             let isOpen = val[0] == 0 ? false : true
             let type = Int(val[1])
@@ -3752,7 +3752,7 @@ import CoreBluetooth
      APP→DEV     0xA8    0x03    0x0006    0x04         0x02    0x00        0x01                     1byte
      DEV→APP     0xA8    0x03    0x0006    0x04         0x02    0x02        0x03          0x00       1byte
      */
-    @objc public func setOwsEqMode(isOpen:Bool,type:Int,success:@escaping((_ error:ZyError)->Void)) {
+    @objc public func setOwsEqMode(isOpen:Bool,type:Int,success:@escaping((_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x07,0x04,0x02,0x00,0x02,UInt8(isOpen ? 1 : 0),UInt8(type)]
         let data = self.owsCrc8Data(val: val)
         
@@ -3775,7 +3775,7 @@ import CoreBluetooth
      当前用户自定义 EQ 模式十个频点的值, 请将-12DB 到 12DB 量化到
      0~240(十进制)发送给 DEV, 比如 0DB 对应 60 。如果用户没有设置全部填    入0x00
      */
-    @objc public func getOwsCustomEq(_ success:@escaping((_ type:Int,_ valueArray:[Int],_ error:ZyError)->Void)) {
+    @objc public func getOwsCustomEq(_ success:@escaping((_ type:Int,_ valueArray:[Int],_ error:ZywlError)->Void)) {
         var val:[UInt8] = [0xA8,0x03,0x00,0x06,0x04,0x03,0x00,0x01,0x00]
         let data = self.owsCrc8Data(val: val)
         
@@ -3787,7 +3787,7 @@ import CoreBluetooth
         }
     }
     
-    func parseGetOwsCustomEq(val:[UInt8],success:@escaping((_ type:Int,_ valueArray:[Int],_ error:ZyError)->Void)) {
+    func parseGetOwsCustomEq(val:[UInt8],success:@escaping((_ type:Int,_ valueArray:[Int],_ error:ZywlError)->Void)) {
         if val.count >= 11 {
             let index = Int(val[0])
             var valueArray = Array<Int>()
@@ -3811,7 +3811,7 @@ import CoreBluetooth
      当前用户自定义 EQ 模式十个频点的值, 请将-12DB 到 12DB 量化到
      0~240(十进制)发送给 DEV, 比如 0DB 对应 60
      */
-    @objc public func setOwsCustomEq(valueArray:[Float],success:@escaping((_ error:ZyError)->Void)) {
+    @objc public func setOwsCustomEq(valueArray:[Float],success:@escaping((_ error:ZywlError)->Void)) {
         
         let intArray = valueArray.map({Int($0 * 10) + 120})
         var newArray = [UInt8]()

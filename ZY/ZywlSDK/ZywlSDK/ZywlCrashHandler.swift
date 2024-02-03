@@ -89,7 +89,7 @@ func printLog(_ items: Any..., separator: String = " ",terminator: String = "\n"
     #endif
 }
 
- class ZyCrashHandler
+ class ZywlCrashHandler
 {
      static func setup(callBack:@escaping CrashCallback){
         crashCallBack = callBack;
