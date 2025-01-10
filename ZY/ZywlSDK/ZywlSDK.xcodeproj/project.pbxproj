@@ -7,14 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		67309E002D23A50C005AF722 /* JL_OTALib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67309DFF2D23A50C005AF722 /* JL_OTALib.framework */; };
+		67309E012D23A50C005AF722 /* JL_BLEKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67309DFE2D23A50C005AF722 /* JL_BLEKit.framework */; };
+		67309E022D23A50C005AF722 /* JL_AdvParse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67309DFD2D23A50C005AF722 /* JL_AdvParse.framework */; };
 		67661CD526291D120004B197 /* ZywlSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67661CCB26291D110004B197 /* ZywlSDK.framework */; };
 		67661CDC26291D120004B197 /* ZywlSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 67661CCE26291D110004B197 /* ZywlSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		67661CE82629209A0004B197 /* ZywlBleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661CE72629209A0004B197 /* ZywlBleManager.swift */; };
-		67661D4326296C700004B197 /* ZywlBaseModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661D4226296C700004B197 /* ZywlBaseModule.swift */; };
-		67661D7B262A7D7A0004B197 /* ZywlSDKLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661D7A262A7D7A0004B197 /* ZywlSDKLog.swift */; };
-		676D384526DE36C000471098 /* ZywlCrashHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 676D384426DE36C000471098 /* ZywlCrashHandler.swift */; };
-		67883F152826127800ADDE99 /* ZywlModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67883F142826127800ADDE99 /* ZywlModel.swift */; };
-		679FD5532A41525F00A32A54 /* ZywlCommandModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 679FD5522A41525F00A32A54 /* ZywlCommandModule.swift */; };
+		67661CE82629209A0004B197 /* ZywlBleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661CE72629209A0004B197 /* ZywlBleManager.swift */; settings = {ATTRIBUTES = (Public, ); }; };
+		67661D4326296C700004B197 /* ZywlBaseModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661D4226296C700004B197 /* ZywlBaseModule.swift */; settings = {ATTRIBUTES = (Public, ); }; };
+		67661D7B262A7D7A0004B197 /* ZywlSDKLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661D7A262A7D7A0004B197 /* ZywlSDKLog.swift */; settings = {ATTRIBUTES = (Public, ); }; };
+		676D384526DE36C000471098 /* ZywlCrashHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 676D384426DE36C000471098 /* ZywlCrashHandler.swift */; settings = {ATTRIBUTES = (Public, ); }; };
+		67883F152826127800ADDE99 /* ZywlModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67883F142826127800ADDE99 /* ZywlModel.swift */; settings = {ATTRIBUTES = (Public, ); }; };
+		679FD5532A41525F00A32A54 /* ZywlCommandModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 679FD5522A41525F00A32A54 /* ZywlCommandModule.swift */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -28,6 +31,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		67309DFD2D23A50C005AF722 /* JL_AdvParse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JL_AdvParse.framework; sourceTree = "<group>"; };
+		67309DFE2D23A50C005AF722 /* JL_BLEKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JL_BLEKit.framework; sourceTree = "<group>"; };
+		67309DFF2D23A50C005AF722 /* JL_OTALib.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JL_OTALib.framework; sourceTree = "<group>"; };
 		67661CCB26291D110004B197 /* ZywlSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ZywlSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		67661CCE26291D110004B197 /* ZywlSDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZywlSDK.h; sourceTree = "<group>"; };
 		67661CCF26291D110004B197 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -45,6 +51,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				67309E002D23A50C005AF722 /* JL_OTALib.framework in Frameworks */,
+				67309E012D23A50C005AF722 /* JL_BLEKit.framework in Frameworks */,
+				67309E022D23A50C005AF722 /* JL_AdvParse.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -87,6 +96,9 @@
 				679FD5522A41525F00A32A54 /* ZywlCommandModule.swift */,
 				67661D7A262A7D7A0004B197 /* ZywlSDKLog.swift */,
 				676D384426DE36C000471098 /* ZywlCrashHandler.swift */,
+				67309DFD2D23A50C005AF722 /* JL_AdvParse.framework */,
+				67309DFE2D23A50C005AF722 /* JL_BLEKit.framework */,
+				67309DFF2D23A50C005AF722 /* JL_OTALib.framework */,
 				67661CCF26291D110004B197 /* Info.plist */,
 			);
 			path = ZywlSDK;
@@ -421,7 +433,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				ENABLE_BITCODE = NO;
+				ENABLE_BITCODE = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ZywlSDK",
@@ -461,7 +473,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				ENABLE_BITCODE = NO;
+				ENABLE_BITCODE = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ZywlSDK",

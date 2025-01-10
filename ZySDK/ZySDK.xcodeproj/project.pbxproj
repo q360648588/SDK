@@ -8,8 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		2AA316FCA4D503550842BD25 /* Pods_ZySDK_ZySDKTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 91894DCBFE4A25D3526B4BEC /* Pods_ZySDK_ZySDKTests.framework */; };
+		67309DEC2D2389EF005AF722 /* JL_OTALib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67309DEB2D2389EF005AF722 /* JL_OTALib.framework */; };
+		67309DED2D2389EF005AF722 /* JL_BLEKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67309DEA2D2389EF005AF722 /* JL_BLEKit.framework */; };
+		67309DEE2D2389EF005AF722 /* JL_AdvParse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67309DE92D2389EF005AF722 /* JL_AdvParse.framework */; };
 		6730B32D2797B48500979375 /* ZyNetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6730B32C2797B48500979375 /* ZyNetworkManager.swift */; };
-		6746B8F629A479C400204DEC /* JL_BLEKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6746B8F529A479C300204DEC /* JL_BLEKit.framework */; };
 		67661CD526291D120004B197 /* ZySDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67661CCB26291D110004B197 /* ZySDK.framework */; };
 		67661CDA26291D120004B197 /* ZySDKTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67661CD926291D120004B197 /* ZySDKTests.swift */; };
 		67661CDC26291D120004B197 /* ZySDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 67661CCE26291D110004B197 /* ZySDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -36,8 +38,10 @@
 		019D5413B5F60FEBA4D46332 /* Pods-ZySDK-ZySDKTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZySDK-ZySDKTests.release.xcconfig"; path = "Target Support Files/Pods-ZySDK-ZySDKTests/Pods-ZySDK-ZySDKTests.release.xcconfig"; sourceTree = "<group>"; };
 		10A4217F883D3CB6B4E040EB /* Pods-ZySDK.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZySDK.debug.xcconfig"; path = "Target Support Files/Pods-ZySDK/Pods-ZySDK.debug.xcconfig"; sourceTree = "<group>"; };
 		483B05549787D896A70329D2 /* Pods-ZySDK.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZySDK.release.xcconfig"; path = "Target Support Files/Pods-ZySDK/Pods-ZySDK.release.xcconfig"; sourceTree = "<group>"; };
+		67309DE92D2389EF005AF722 /* JL_AdvParse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JL_AdvParse.framework; sourceTree = "<group>"; };
+		67309DEA2D2389EF005AF722 /* JL_BLEKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JL_BLEKit.framework; sourceTree = "<group>"; };
+		67309DEB2D2389EF005AF722 /* JL_OTALib.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JL_OTALib.framework; sourceTree = "<group>"; };
 		6730B32C2797B48500979375 /* ZyNetworkManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZyNetworkManager.swift; sourceTree = "<group>"; };
-		6746B8F529A479C300204DEC /* JL_BLEKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JL_BLEKit.framework; sourceTree = "<group>"; };
 		67661CCB26291D110004B197 /* ZySDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ZySDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		67661CCE26291D110004B197 /* ZySDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZySDK.h; sourceTree = "<group>"; };
 		67661CCF26291D110004B197 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -64,7 +68,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6746B8F629A479C400204DEC /* JL_BLEKit.framework in Frameworks */,
+				67309DEC2D2389EF005AF722 /* JL_OTALib.framework in Frameworks */,
+				67309DED2D2389EF005AF722 /* JL_BLEKit.framework in Frameworks */,
+				67309DEE2D2389EF005AF722 /* JL_AdvParse.framework in Frameworks */,
 				9FEBFADEACE3A38EB6215288 /* Pods_ZySDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -127,7 +133,9 @@
 				6730B32C2797B48500979375 /* ZyNetworkManager.swift */,
 				67661D7A262A7D7A0004B197 /* ZySDKLog.swift */,
 				676D384426DE36C000471098 /* ZyCrashHandler.swift */,
-				6746B8F529A479C300204DEC /* JL_BLEKit.framework */,
+				67309DE92D2389EF005AF722 /* JL_AdvParse.framework */,
+				67309DEA2D2389EF005AF722 /* JL_BLEKit.framework */,
+				67309DEB2D2389EF005AF722 /* JL_OTALib.framework */,
 				67661CCF26291D110004B197 /* Info.plist */,
 			);
 			path = ZySDK;

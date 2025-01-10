@@ -11,7 +11,17 @@ import Alamofire
 
 class ZyNetworkManager: NSObject {
     
-    var basicUrl = "https://www.zhenyiwulian.com"//"https://zmoofit-api.zhenyiwulian.com"//
+    var basicUrl:String {
+        if UserDefaults.standard.bool(forKey: "Zy_TestEnvironment") == true {
+            return "https://zmoofit-api.zhenyiwulian.com"
+        }
+        if let AppBundleId = Bundle.main.infoDictionary!["CFBundleIdentifier"] as? String {
+            if AppBundleId == "com.buzz.wapik" {
+                return "https://www.zhenyiwulian.fun"
+            }
+        }
+        return "https://www.zhenyiwulian.com"
+    }//"https://zmoofit-api.zhenyiwulian.com"//
 //    let basicUrl = "http://192.168.1.21:8080"
     
     public static let shareInstance = ZyNetworkManager()
@@ -19,9 +29,14 @@ class ZyNetworkManager: NSObject {
     private override init() {
         super.init()
         
-        if UserDefaults.standard.bool(forKey: "Zy_TestEnvironment") == true {
-            basicUrl = "https://zmoofit-api.zhenyiwulian.com"
-        }
+//        if UserDefaults.standard.bool(forKey: "Zy_TestEnvironment") == true {
+//            basicUrl = "https://zmoofit-api.zhenyiwulian.com"
+//        }
+//        if let AppBundleId = Bundle.main.infoDictionary!["CFBundleIdentifier"] as? String {
+//            if AppBundleId == "com.buzz.wapik" {
+//                basicUrl.replacingOccurrences(of: ".com", with: ".fun")
+//            }
+//        }
         
         let net = NetworkReachabilityManager()
         net?.listener = { status in

@@ -139,9 +139,9 @@ extension ZywlBleManager:CBCentralManagerDelegate {
     
     // MARK: - 扫描到蓝牙设备
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        printLog("\n--------------------------------------------------------------------------\n")
-        printLog("peripheral ->",peripheral,"\nadvertisementData ->",advertisementData)
-        printLog("\n--------------------------------------------------------------------------\n")
+//        printLog("\n--------------------------------------------------------------------------\n")
+//        printLog("peripheral ->",peripheral,"\nadvertisementData ->",advertisementData)
+//        printLog("\n--------------------------------------------------------------------------\n")
         if let block = self.bleCentralDiscoverBlock {
             block(central,peripheral,advertisementData,RSSI)
         }
@@ -172,7 +172,15 @@ extension ZywlBleManager:CBCentralManagerDelegate {
             }
         }else{
             //蓝牙列表忽略设备，error是nil  该重连的还是要继续
-            if let identifierString = UserDefaults.standard.string(forKey: "Zy_ReconnectIdentifierKey") {
+            if let identifierString = UserDefaults.standard.string(forKey: "Zycx_BoxReconnectKey") {
+                if identifierString.count > 0 {
+                    printLog("----------蓝牙列表忽略设备---------- ")
+                    if let block = self.bleReconnectBlock {
+                        block()
+                    }
+                }
+            }
+            if let identifierString = UserDefaults.standard.string(forKey: "Zycx_ReconnectKey") {
                 if identifierString.count > 0 {
                     printLog("----------蓝牙列表忽略设备---------- ")
                     if let block = self.bleReconnectBlock {

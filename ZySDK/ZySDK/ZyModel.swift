@@ -126,6 +126,12 @@ import CoreLocation
     @objc public private(set) var functionList_timeZone = false
     @objc public private(set) var functionList_sleepDataVersion = false
     @objc public private(set) var functionList_bleNameSetup = false
+    @objc public private(set) var functionList_CustomDialAllPositionType = false
+    @objc public private(set) var functionList_CustomDialImagePositionConfiguration = false
+    @objc public private(set) var functionList_CustomBloodSugar = false
+    @objc public private(set) var functionList_heartrateNew = false
+    @objc public private(set) var functionList_notificationAlertMode = false
+    @objc public private(set) var functionList_businessCard = false
     
     @objc public private(set) var functionDetail_exercise:ZyFunctionModel_exercise?
     @objc public private(set) var functionDetail_notification:ZyFunctionModel_notification?
@@ -153,6 +159,11 @@ import CoreLocation
     @objc public private(set) var functionDetail_customSports:ZyFunctionModel_customSports?
     @objc public private(set) var functionDetail_sleepDataVersion:ZyFunctionModel_sleepDataVersion?
     @objc public private(set) var functionDetail_bleNameSetup:ZyFunctionModel_bleNameSetup?
+    @objc public private(set) var functionDetail_CustomDialImagePositionConfiguration:ZyFunctionModel_CustomDialImagePositionConfiguration?
+    @objc public private(set) var functionDetail_CustomBloodSugar:ZyFunctionModel_CustomBloodSugar?
+    @objc public private(set) var functionDetail_heartrateNew:ZyFunctionModel_supportMeasurementDataTypeModel?
+    @objc public private(set) var functionDetail_notificationAlertMode:ZyFunctionModel_notificationAlertMode?
+    @objc public private(set) var functionDetail_businessCard:ZyFunctionModel_businessCard?
     
     init(val:[UInt8]) {
         
@@ -266,7 +277,7 @@ import CoreLocation
             case 18:
                 break
             case 19:
-                self.functionDetail_customDial = ZyFunctionModel_customDial.init(result: functionCount)
+                self.functionDetail_customDial = ZyFunctionModel_customDial.init(val: functionVal)
                 break
             case 20:
                 self.functionDetail_localDial = ZyFunctionModel_localDial.init(result: functionCount)
@@ -353,6 +364,24 @@ import CoreLocation
             case 57:
                 self.functionDetail_bleNameSetup = ZyFunctionModel_bleNameSetup(val: functionVal)
                 break
+            case 58:
+                break
+            case 59:
+                self.functionDetail_CustomDialImagePositionConfiguration = ZyFunctionModel_CustomDialImagePositionConfiguration(val: functionVal)
+                break
+            case 60:
+                self.functionDetail_CustomBloodSugar = ZyFunctionModel_CustomBloodSugar(val: functionVal)
+                break
+            case 61:
+                self.functionDetail_heartrateNew = ZyFunctionModel_supportMeasurementDataTypeModel(val: functionVal)
+                break
+            case 62:
+                self.functionDetail_notificationAlertMode = ZyFunctionModel_notificationAlertMode(result: functionCount)
+                break
+            case 63:
+                self.functionDetail_businessCard = ZyFunctionModel_businessCard(val: functionVal)
+                break
+                
             default:
                 break
             }
@@ -484,6 +513,19 @@ import CoreLocation
                 break
             case 57:self.functionList_bleNameSetup = state == 0 ? false:true
                 break
+            case 58:self.functionList_CustomDialAllPositionType = state == 0 ? false:true
+                break
+            case 59:self.functionList_CustomDialImagePositionConfiguration = state == 0 ? false:true
+                break
+            case 60:self.functionList_CustomBloodSugar = state == 0 ? false:true
+                break
+            case 61:self.functionList_heartrateNew = state == 0 ? false:true
+                break
+            case 62:self.functionList_notificationAlertMode = state == 0 ? false:true
+                break
+            case 63:self.functionList_businessCard = state == 0 ? false:true
+                break
+                
             default:
                 break
             }
@@ -902,6 +944,14 @@ import CoreLocation
             log += "\n自定义表盘"
             if let model = self.functionDetail_customDial {
                 log += "\n      \(model.isSupportfontColor ? "支持":"不支持")字体颜色设置"
+                log += "\n      bigWidth:\(model.dialSize.bigWidth)"
+                log += "\n      bigHeight:\(model.dialSize.bigHeight)"
+                log += "\n      smallWidth:\(model.dialSize.smallWidth)"
+                log += "\n      smallHeight:\(model.dialSize.smallHeight)"
+                for item in model.supportPositionTypeArray {
+                    log += "\n      支持的位置类型:\(item)"
+                }
+                log += "\n      自定义Y轴起始点:\(model.offsetY)"
             }
         }
         if self.functionList_localDial {
@@ -995,7 +1045,7 @@ import CoreLocation
         if self.functionList_platformType {
             log += "\n手表平台类型"
             if let model = self.functionDetail_platformType {
-                log += "\n平台类型:\(model.platform)"
+                log += "\n      平台类型:\(model.platform)"
             }
         }
         if self.functionList_bloodSugar {
@@ -1057,11 +1107,14 @@ import CoreLocation
                 if model.isSupportAG3352Q {
                     log += "\n      AG3352Q"
                 }
+                log += "\n      GPS信息长度\(model.supportGpsLenght)"
             }
         }
         if self.functionList_customSports {
             log += "\n自定义百种运动"
             if let model = self.functionDetail_customSports {
+                log += "\n      bigSize:\(model.bigWidth):\(model.bigHeight)"
+                log += "\n      smallSize:\(model.smallWidth):\(model.smallHeight)"
                 if model.isSupportFitness {
                     log += "\n      健走"
                 }
@@ -1370,6 +1423,48 @@ import CoreLocation
                 log += "\n      名称最大长度:\(model.nameMaxLength)"
             }
         }
+        if self.functionList_CustomDialAllPositionType {
+            log += "\n自定义表盘支持9种位置类型"
+        }
+        if self.functionList_CustomDialImagePositionConfiguration {
+            log += "\n自定义表盘配置"
+            if let model = self.functionDetail_CustomDialImagePositionConfiguration {
+                log += "\n      \(model.isHiddenTimePosition ? "隐藏":"显示")时间位置"
+                log += "\n      \(model.isHiddenTimeUp ? "隐藏":"显示")时间上方内容"
+                log += "\n      \(model.isHiddenTimeDown ? "隐藏":"显示")时间下方内容"
+            }
+        }
+        if self.functionList_CustomBloodSugar {
+            log += "\n自定义血糖"
+            if let model = self.functionDetail_CustomBloodSugar {
+                log += "\n      最多支持 \(model.maxCount) 组"
+                log += "\n      设备端\(model.isSupportEdit ? "支持":"不支持")增加/删除"
+            }
+        }
+        if self.functionList_heartrateNew {
+            log += "\n(新)心率检测"
+            if let model = self.functionDetail_heartrateNew {
+                log += "\n      \(model.isSupportSingleClickData ? "":"不")支持点击测量数据存储"
+                log += "\n      \(model.isSupportAllDayData ? "":"不")支持全天测量数据存储"
+                log += "\n      一天点击测量存储总条数:\(model.singleClickDataCount)"
+                log += "\n      全天测量时间间隔:\(model.allDayDataTimeInterval)分钟"
+            }
+        }
+        if self.functionList_notificationAlertMode {
+            log += "\n消息弹框方式"
+            if let model = self.functionDetail_notificationAlertMode {
+                log += "\n      弹框方式:\(model.supportCount)"
+            }
+        }
+        if self.functionList_businessCard {
+            log += "\n二维码名片"
+            if let model = self.functionDetail_businessCard {
+                log += "\n      支持最大个数:\(model.maxCount)"
+                log += "\n      标题最大长度:\(model.titleLength)"
+                log += "\n      二维码最大长度:\(model.qrLength)"
+            }
+        }
+        
         return log
     }
 }
@@ -1473,6 +1568,10 @@ import CoreLocation
 }
 
 @objc public class ZyFunctionModel_customSports:NSObject {
+    @objc public private(set) var bigWidth = 0
+    @objc public private(set) var bigHeight = 0
+    @objc public private(set) var smallWidth = 0
+    @objc public private(set) var smallHeight = 0
     @objc public private(set) var isSupportFitness = false                      //0 健走
     @objc public private(set) var isSupportTrailRunning = false                 //1 越野跑
     @objc public private(set) var isSupportDumbbells = false                    //2 哑铃
@@ -1574,206 +1673,213 @@ import CoreLocation
         
         super.init()
         
-        for i in 0..<val.count {
+        self.bigWidth = Int(val[0])
+        self.bigHeight = Int(val[1])
+        self.smallWidth = Int(val[2])
+        self.smallHeight = Int(val[3])
+        
+        let newVal = Array(val[4..<(val.count-4)])
+        
+        for i in 0..<newVal.count {
             var state:UInt8 = 0
-            let result = val[i]
+            let result = newVal[i]
             for j in 0..<8 {
                 state = (result >> i) & 0x01
                 
                 switch i*8+j {
-                case 0:self.isSupportFitness = state == 0 ? false:true
+                case 0:self.isSupportFitness = state == 1 ? true:false
                     break
-                case 1:self.isSupportTrailRunning = state == 0 ? false:true
+                case 1:self.isSupportTrailRunning = state == 1 ? true:false
                     break
-                case 2:self.isSupportDumbbells = state == 0 ? false:true
+                case 2:self.isSupportDumbbells = state == 1 ? true:false
                     break
-                case 3:self.isSupportRowingMachine = state == 0 ? false:true
+                case 3:self.isSupportRowingMachine = state == 1 ? true:false
                     break
-                case 4:self.isSupportEllipticalMachine = state == 0 ? false:true
+                case 4:self.isSupportEllipticalMachine = state == 1 ? true:false
                     break
-                case 5:self.isSupportAerobics = state == 0 ? false:true
+                case 5:self.isSupportAerobics = state == 1 ? true:false
                     break
-                case 6:self.isSupportKayak = state == 0 ? false:true
+                case 6:self.isSupportKayak = state == 1 ? true:false
                     break
-                case 7:self.isSupportRollerSkating = state == 0 ? false:true
+                case 7:self.isSupportRollerSkating = state == 1 ? true:false
                     break
-                case 8:self.isSupportPlaygroundRunning = state == 0 ? false:true
+                case 8:self.isSupportPlaygroundRunning = state == 1 ? true:false
                     break
-                case 9:self.isSupportRunToLoseFat = state == 0 ? false:true
+                case 9:self.isSupportRunToLoseFat = state == 1 ? true:false
                     break
-                case 10:self.isSupportOutdoorCycling = state == 0 ? false:true
+                case 10:self.isSupportOutdoorCycling = state == 1 ? true:false
                     break
-                case 11:self.isSupportIndoorCycling = state == 0 ? false:true
+                case 11:self.isSupportIndoorCycling = state == 1 ? true:false
                     break
-                case 12:self.isSupportMountainBiking = state == 0 ? false:true
+                case 12:self.isSupportMountainBiking = state == 1 ? true:false
                     break
-                case 13:self.isSupportOrienteering = state == 0 ? false:true
+                case 13:self.isSupportOrienteering = state == 1 ? true:false
                     break
-                case 14:self.isSupportMixedAerobic = state == 0 ? false:true
+                case 14:self.isSupportMixedAerobic = state == 1 ? true:false
                     break
-                case 15:self.isSupportCombatExercises = state == 0 ? false:true
+                case 15:self.isSupportCombatExercises = state == 1 ? true:false
                     break
-                case 16:self.isSupportCoreTraining = state == 0 ? false:true
+                case 16:self.isSupportCoreTraining = state == 1 ? true:false
                     break
-                case 17:self.isSupportCrossTraining = state == 0 ? false:true
+                case 17:self.isSupportCrossTraining = state == 1 ? true:false
                     break
-                case 18:self.isSupportTeamGymnastics = state == 0 ? false:true
+                case 18:self.isSupportTeamGymnastics = state == 1 ? true:false
                     break
-                case 19:self.isSupportStrengthTraining = state == 0 ? false:true
+                case 19:self.isSupportStrengthTraining = state == 1 ? true:false
                     break
-                case 20:self.isSupportIntervalTraining = state == 0 ? false:true
+                case 20:self.isSupportIntervalTraining = state == 1 ? true:false
                     break
-                case 21:self.isSupportFlexibilityTraining = state == 0 ? false:true
+                case 21:self.isSupportFlexibilityTraining = state == 1 ? true:false
                     break
-                case 22:self.isSupportStretching = state == 0 ? false:true
+                case 22:self.isSupportStretching = state == 1 ? true:false
                     break
-                case 23:self.isSupportFitnessExercises = state == 0 ? false:true
+                case 23:self.isSupportFitnessExercises = state == 1 ? true:false
                     break
-                case 24:self.isSupportBalanceTraining = state == 0 ? false:true
+                case 24:self.isSupportBalanceTraining = state == 1 ? true:false
                     break
-                case 25:self.isSupportStepTraining = state == 0 ? false:true
+                case 25:self.isSupportStepTraining = state == 1 ? true:false
                     break
-                case 26:self.isSupportBattleRope = state == 0 ? false:true
+                case 26:self.isSupportBattleRope = state == 1 ? true:false
                     break
-                case 27:self.isSupportFreeTraining = state == 0 ? false:true
+                case 27:self.isSupportFreeTraining = state == 1 ? true:false
                     break
-                case 28:self.isSupportSkiing = state == 0 ? false:true
+                case 28:self.isSupportSkiing = state == 1 ? true:false
                     break
-                case 29:self.isSupportRockClimbing = state == 0 ? false:true
+                case 29:self.isSupportRockClimbing = state == 1 ? true:false
                     break
-                case 30:self.isSupportFishing = state == 0 ? false:true
+                case 30:self.isSupportFishing = state == 1 ? true:false
                     break
-                case 31:self.isSupportHunting = state == 0 ? false:true
+                case 31:self.isSupportHunting = state == 1 ? true:false
                     break
-                case 32:self.isSupportSkateboard = state == 0 ? false:true
+                case 32:self.isSupportSkateboard = state == 1 ? true:false
                     break
-                case 33:self.isSupportParkour = state == 0 ? false:true
+                case 33:self.isSupportParkour = state == 1 ? true:false
                     break
-                case 34:self.isSupportDuneBuggy = state == 0 ? false:true
+                case 34:self.isSupportDuneBuggy = state == 1 ? true:false
                     break
-                case 35:self.isSupportDirtBike = state == 0 ? false:true
+                case 35:self.isSupportDirtBike = state == 1 ? true:false
                     break
-                case 36:self.isSupportHandRollingCar = state == 0 ? false:true
+                case 36:self.isSupportHandRollingCar = state == 1 ? true:false
                     break
-                case 37:self.isSupportPilates = state == 0 ? false:true
+                case 37:self.isSupportPilates = state == 1 ? true:false
                     break
-                case 38:self.isSupportFlyingDarts = state == 0 ? false:true
+                case 38:self.isSupportFlyingDarts = state == 1 ? true:false
                     break
-                case 39:self.isSupportSnowboarding = state == 0 ? false:true
+                case 39:self.isSupportSnowboarding = state == 1 ? true:false
                     break
-                case 40:self.isSupportWalkingMachine = state == 0 ? false:true
+                case 40:self.isSupportWalkingMachine = state == 1 ? true:false
                     break
-                case 41:self.isSupportSkydiving = state == 0 ? false:true
+                case 41:self.isSupportSkydiving = state == 1 ? true:false
                     break
-                case 42:self.isSupportCrossCountrySkiing = state == 0 ? false:true
+                case 42:self.isSupportCrossCountrySkiing = state == 1 ? true:false
                     break
-                case 43:self.isSupportBungeeJumping = state == 0 ? false:true
+                case 43:self.isSupportBungeeJumping = state == 1 ? true:false
                     break
-                case 44:self.isSupportTheSwing = state == 0 ? false:true
+                case 44:self.isSupportTheSwing = state == 1 ? true:false
                     break
-                case 45:self.isSupportFlyingKite = state == 0 ? false:true
+                case 45:self.isSupportFlyingKite = state == 1 ? true:false
                     break
-                case 46:self.isSupportHulaHoops = state == 0 ? false:true
+                case 46:self.isSupportHulaHoops = state == 1 ? true:false
                     break
-                case 47:self.isSupportArchery = state == 0 ? false:true
+                case 47:self.isSupportArchery = state == 1 ? true:false
                     break
-                case 48:self.isSupportRaceWalking = state == 0 ? false:true
+                case 48:self.isSupportRaceWalking = state == 1 ? true:false
                     break
-                case 49:self.isSupportRacingCars = state == 0 ? false:true
+                case 49:self.isSupportRacingCars = state == 1 ? true:false
                     break
-                case 50:self.isSupportMarathon = state == 0 ? false:true
+                case 50:self.isSupportMarathon = state == 1 ? true:false
                     break
-                case 51:self.isSupportObstacleCourse = state == 0 ? false:true
+                case 51:self.isSupportObstacleCourse = state == 1 ? true:false
                     break
-                case 52:self.isSupportTugOfWar = state == 0 ? false:true
+                case 52:self.isSupportTugOfWar = state == 1 ? true:false
                     break
-                case 53:self.isSupportDragonBoat = state == 0 ? false:true
+                case 53:self.isSupportDragonBoat = state == 1 ? true:false
                     break
-                case 54:self.isSupportHighJump = state == 0 ? false:true
+                case 54:self.isSupportHighJump = state == 1 ? true:false
                     break
-                case 55:self.isSupportSailing = state == 0 ? false:true
+                case 55:self.isSupportSailing = state == 1 ? true:false
                     break
-                case 56:self.isSupportTriathlon = state == 0 ? false:true
+                case 56:self.isSupportTriathlon = state == 1 ? true:false
                     break
-                case 57:self.isSupportHorseRacing = state == 0 ? false:true
+                case 57:self.isSupportHorseRacing = state == 1 ? true:false
                     break
-                case 58:self.isSupportBMX = state == 0 ? false:true
+                case 58:self.isSupportBMX = state == 1 ? true:false
                     break
-                case 59:self.isSupportParallelBar = state == 0 ? false:true
+                case 59:self.isSupportParallelBar = state == 1 ? true:false
                     break
-                case 60:self.isSupportGolf = state == 0 ? false:true
+                case 60:self.isSupportGolf = state == 1 ? true:false
                     break
-                case 61:self.isSupportBowlingBall = state == 0 ? false:true
+                case 61:self.isSupportBowlingBall = state == 1 ? true:false
                     break
-                case 62:self.isSupportSquash = state == 0 ? false:true
+                case 62:self.isSupportSquash = state == 1 ? true:false
                     break
-                case 63:self.isSupportPolo = state == 0 ? false:true
+                case 63:self.isSupportPolo = state == 1 ? true:false
                     break
-                case 64:self.isSupportWallBall = state == 0 ? false:true
+                case 64:self.isSupportWallBall = state == 1 ? true:false
                     break
-                case 65:self.isSupportBilliards = state == 0 ? false:true
+                case 65:self.isSupportBilliards = state == 1 ? true:false
                     break
-                case 66:self.isSupportWaterBalloon = state == 0 ? false:true
+                case 66:self.isSupportWaterBalloon = state == 1 ? true:false
                     break
-                case 67:self.isSupportShuttlecock = state == 0 ? false:true
+                case 67:self.isSupportShuttlecock = state == 1 ? true:false
                     break
-                case 68:self.isSupportIndoorFootball = state == 0 ? false:true
+                case 68:self.isSupportIndoorFootball = state == 1 ? true:false
                     break
-                case 69:self.isSupportSandbagBall = state == 0 ? false:true
+                case 69:self.isSupportSandbagBall = state == 1 ? true:false
                     break
-                case 70:self.isSupportToTheBall = state == 0 ? false:true
+                case 70:self.isSupportToTheBall = state == 1 ? true:false
                     break
-                case 71:self.isSupportJaiAlai = state == 0 ? false:true
+                case 71:self.isSupportJaiAlai = state == 1 ? true:false
                     break
-                case 72:self.isSupportFloorball = state == 0 ? false:true
+                case 72:self.isSupportFloorball = state == 1 ? true:false
                     break
-                case 73:self.isSupportPicogramBalls = state == 0 ? false:true
+                case 73:self.isSupportPicogramBalls = state == 1 ? true:false
                     break
-                case 74:self.isSupportBeachVolleyball = state == 0 ? false:true
+                case 74:self.isSupportBeachVolleyball = state == 1 ? true:false
                     break
-                case 75:self.isSupportSoftball = state == 0 ? false:true
+                case 75:self.isSupportSoftball = state == 1 ? true:false
                     break
-                case 76:self.isSupportSquareDance = state == 0 ? false:true
+                case 76:self.isSupportSquareDance = state == 1 ? true:false
                     break
-                case 77:self.isSupportBellyDance = state == 0 ? false:true
+                case 77:self.isSupportBellyDance = state == 1 ? true:false
                     break
-                case 78:self.isSupportBallet = state == 0 ? false:true
+                case 78:self.isSupportBallet = state == 1 ? true:false
                     break
-                case 79:self.isSupportStreetDance = state == 0 ? false:true
+                case 79:self.isSupportStreetDance = state == 1 ? true:false
                     break
-                case 80:self.isSupportLatinDance = state == 0 ? false:true
+                case 80:self.isSupportLatinDance = state == 1 ? true:false
                     break
-                case 81:self.isSupportJazzDance = state == 0 ? false:true
+                case 81:self.isSupportJazzDance = state == 1 ? true:false
                     break
-                case 82:self.isSupportPoleDancing = state == 0 ? false:true
+                case 82:self.isSupportPoleDancing = state == 1 ? true:false
                     break
-                case 83:self.isSupportTheDisco = state == 0 ? false:true
+                case 83:self.isSupportTheDisco = state == 1 ? true:false
                     break
-                case 84:self.isSupportTapDance = state == 0 ? false:true
+                case 84:self.isSupportTapDance = state == 1 ? true:false
                     break
-                case 85:self.isSupportOtherDances = state == 0 ? false:true
+                case 85:self.isSupportOtherDances = state == 1 ? true:false
                     break
-                case 86:self.isSupportBoxing = state == 0 ? false:true
+                case 86:self.isSupportBoxing = state == 1 ? true:false
                     break
-                case 87:self.isSupportWrestling = state == 0 ? false:true
+                case 87:self.isSupportWrestling = state == 1 ? true:false
                     break
-                case 88:self.isSupportMartialArts = state == 0 ? false:true
+                case 88:self.isSupportMartialArts = state == 1 ? true:false
                     break
-                case 89:self.isSupportTaiChi = state == 0 ? false:true
+                case 89:self.isSupportTaiChi = state == 1 ? true:false
                     break
-                case 90:self.isSupportThaiBoxing = state == 0 ? false:true
+                case 90:self.isSupportThaiBoxing = state == 1 ? true:false
                     break
-                case 91:self.isSupportJudo = state == 0 ? false:true
+                case 91:self.isSupportJudo = state == 1 ? true:false
                     break
-                case 92:self.isSupportTaekwondo = state == 0 ? false:true
+                case 92:self.isSupportTaekwondo = state == 1 ? true:false
                     break
-                case 93:self.isSupportKarate = state == 0 ? false:true
+                case 93:self.isSupportKarate = state == 1 ? true:false
                     break
-                case 94:self.isSupportKickboxing = state == 0 ? false:true
+                case 94:self.isSupportKickboxing = state == 1 ? true:false
                     break
-                case 95:self.isSupportSwordFighting = state == 0 ? false:true
+                case 95:self.isSupportSwordFighting = state == 1 ? true:false
                     break
-                case 96:self.isSupportJiuJitsu = state == 0 ? false:true
+                case 96:self.isSupportJiuJitsu = state == 1 ? true:false
                     break
                 case 97:
                     break
@@ -2191,10 +2297,81 @@ class ZyFunctionModel_newPortocol:NSObject {
 @objc public class ZyFunctionModel_customDial:NSObject {
     
     @objc public private(set) var isSupportfontColor = true       //0:不支持,1:支持
-    @objc public private(set) var isSupportLocationInfomation = true    //0:不支持，1支持
+    @objc public private(set) var dialSize = ZyDialFrameSizeModel()
+    @objc public private(set) var supportPositionTypeArray:[Int] = .init()
+    @objc public private(set) var offsetY = 0
     
     init(result:Int) {
         self.isSupportfontColor = result == 0 ? false:true
+        super.init()
+    }
+    
+    init(val:[UInt8]) {
+        
+        self.isSupportfontColor = val[0] == 0 ? false : true
+        if val.count > 8 {
+            self.dialSize = ZyDialFrameSizeModel.init(dic: ["bigWidth":"\(Int(val[2]) << 8 | Int(val[1]))","bigHeight":"\(Int(val[4]) << 8 | Int(val[3]))","smallWidth":"\(Int(val[6]) << 8 | Int(val[5]))","smallHeight":"\(Int(val[8]) << 8 | Int(val[7]))"])
+        }
+        if val.count > 10 {
+            let supportCount = (Int(val[10]) << 8 | Int(val[9]))
+            for i in 0..<16 {
+                let state = (supportCount >> i) & 0x01
+                
+                switch i {
+                case 0:
+                    if state == 1 {
+                        self.supportPositionTypeArray.append(ZyPositionType.leftTop.rawValue)
+                    }
+                    break
+                case 1:
+                    if state == 1 {
+                        self.supportPositionTypeArray.append(ZyPositionType.leftMiddle.rawValue)
+                    }
+                    break
+                case 2:
+                    if state == 1 {
+                        self.supportPositionTypeArray.append(ZyPositionType.letfBottom.rawValue)
+                    }
+                    break
+                case 3:
+                    if state == 1 {
+                        self.supportPositionTypeArray.append(ZyPositionType.centerTop.rawValue)
+                    }
+                    break
+                case 4:
+                    if state == 1 {
+                        self.supportPositionTypeArray.append(ZyPositionType.centerMiddle.rawValue)
+                    }
+                    break
+                case 5:
+                    if state == 1 {
+                        self.supportPositionTypeArray.append(ZyPositionType.centerBottom.rawValue)
+                    }
+                    break
+                case 6:
+                    if state == 1 {
+                        self.supportPositionTypeArray.append(ZyPositionType.rightTop.rawValue)
+                    }
+                    break
+                case 7:
+                    if state == 1 {
+                        self.supportPositionTypeArray.append(ZyPositionType.rightMiddle.rawValue)
+                    }
+                    break
+                case 8:
+                    if state == 1 {
+                        self.supportPositionTypeArray.append(ZyPositionType.rightBottom.rawValue)
+                    }
+                    break
+                default:
+                    break
+                }
+            }
+        }
+        if val.count > 11 {
+            self.offsetY = Int(val[11])
+        }
+
         super.init()
     }
 }
@@ -2221,8 +2398,12 @@ class ZyFunctionModel_newPortocol:NSObject {
                 break
             }
         }
-        self.singleClickDataCount = Int(val[1])
-        self.allDayDataTimeInterval = Int(val[2])
+        if val.count > 1 {
+            self.singleClickDataCount = Int(val[1])
+        }
+        if val.count > 2 {
+            self.allDayDataTimeInterval = Int(val[2])
+        }
         super.init()
     }
 }
@@ -2574,8 +2755,8 @@ class ZyFunctionModel_newPortocol:NSObject {
 }
 
 
-@objc public class ZyOnlineDialModel:NSObject {
-    @objc public var dialId:Int = -1 
+@objc public class ZyOnlineDialModel:NSObject,Codable {
+    @objc public var dialId:Int = -1
     @objc public var dialImageUrl:String?
     @objc public var dialFileUrl:String?
     @objc public var dialName:String?
@@ -3073,6 +3254,13 @@ class ZyFunctionModel_newPortocol:NSObject {
     }
 }
 
+@objc public class ZyExerciseBasicModel:NSObject {
+    @objc public var index = 0
+    @objc public var gpsLength = 0
+    @objc public var type:ZyExerciseType = .runOutside
+    @objc public var startTime:String = ""
+}
+
 @objc public enum ZyMeasurementType : Int {
     case heartrate = 1                      //心率
     case bloodOxygen                        //血氧
@@ -3094,9 +3282,17 @@ class ZyFunctionModel_newPortocol:NSObject {
 }
 
 @objc public class ZyMeasurementValueModel:NSObject {
+    @objc public var dayIndex:Int = 0
     @objc public var time:String = "00:00"
     @objc public var value_1:Int = 0
     @objc public var value_2:Int = 0
+}
+
+@objc public class ZyCycleMeasurementModel:NSObject {
+    @objc public var type:ZyMeasurementType = .heartrate
+    @objc public var isOpen = false
+    @objc public var timeInterval:Int = 0
+    @objc public var timeModel = ZyStartEndTimeModel.init()
 }
 
 @objc public class ZyStartEndTimeModel:NSObject {
@@ -3253,7 +3449,7 @@ class ZyFunctionModel_newPortocol:NSObject {
 
 @objc public class ZyFunctionModel_locationGps:NSObject {
     @objc public private(set) var isSupportAG3352Q = false
-    
+    @objc public private(set) var supportGpsLenght = 0
     init(val:[UInt8]) {
         
         for i in 0..<8 {
@@ -3261,6 +3457,24 @@ class ZyFunctionModel_newPortocol:NSObject {
 
             switch i {
             case 0:self.isSupportAG3352Q = state == 0 ? false:true
+                break
+            default:
+                break
+            }
+        }
+        if val.count > 1 {
+            let maxCount = val[1]
+            switch maxCount {
+            case 0:
+                break
+            case 1:
+                self.supportGpsLenght = 512
+                break
+            case 2:
+                self.supportGpsLenght = 1024
+                break
+            case 3:
+                self.supportGpsLenght = 2048
                 break
             default:
                 break
@@ -3322,3 +3536,201 @@ class ZyFunctionModel_newPortocol:NSObject {
     }
 }
 
+@objc public class ZyFunctionModel_CustomDialImagePositionConfiguration:NSObject {
+    @objc public private(set) var isHiddenTimePosition = false
+    @objc public private(set) var isHiddenTimeUp = false
+    @objc public private(set) var isHiddenTimeDown = false
+    
+    init(val:[UInt8]) {
+        
+        for i in 0..<8 {
+            let state = (val[0] >> i) & 0x01
+
+            switch i {
+            case 0:self.isHiddenTimePosition = state == 0 ? false:true
+                break
+            case 1:self.isHiddenTimeUp = state == 0 ? false:true
+                break
+            case 2:self.isHiddenTimeDown = state == 0 ? false:true
+                break
+            default:
+                break
+            }
+        }
+        super.init()
+    }
+}
+
+@objc public class ZyFunctionModel_CustomBloodSugar:NSObject {
+    @objc public private(set) var maxCount = 10              //最多支持多少组
+    @objc public private(set) var isSupportEdit = false     //是否支持增删
+    
+    init(val:[UInt8]) {
+        self.maxCount = Int(val[0])
+        if val.count > 1 {
+            self.isSupportEdit = Int(val[1]) == 0 ? false:true
+        }
+        super.init()
+    }
+}
+
+@objc public class ZyCustomBloodSugar:NSObject {
+    @objc public var indexId:Int = -1 {
+        didSet {
+            if self.indexId < UInt8.min || self.indexId > UInt8.max {
+                self.indexId = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var isOpen:Bool = false
+    @objc public var startHour:Int = -1 {
+        didSet {
+            if self.startHour < UInt8.min || self.startHour > UInt8.max {
+                self.startHour = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var startMinute = -1 {
+        didSet {
+            if self.startMinute < UInt8.min || self.startMinute > UInt8.max {
+                self.startMinute = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var endHour:Int = -1 {
+        didSet {
+            if self.endHour < UInt8.min || self.endHour > UInt8.max {
+                self.endHour = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var endMinute = -1 {
+        didSet {
+            if self.endMinute < UInt8.min || self.endMinute > UInt8.max {
+                self.endMinute = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var maxValue = -1 {
+        didSet {
+            if self.maxValue < UInt8.min || self.maxValue > UInt8.max {
+                self.maxValue = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    @objc public var minValue = -1 {
+        didSet {
+            if self.minValue < UInt8.min || self.minValue > UInt8.max {
+                self.minValue = 0
+                print("输入参数超过范围,改为默认值0")
+            }
+        }
+    }
+    
+    public override init() {
+        super.init()
+    }
+    
+    @objc public init(dic:[String:Any]) {
+        super.init()
+        
+        if dic.keys.contains("indexId") {
+            if let index = dic["indexId"] as? String {
+                self.indexId = Int(UInt8(index) ?? 0)
+            }
+        }
+        
+        if dic.keys.contains("isOpen") {
+            if let index = dic["isOpen"] as? String {
+                self.isOpen = (UInt8(index) ?? 0) == 0 ? false : true
+            }
+        }
+        
+        if dic.keys.contains("startHour") {
+            if let index = dic["startHour"] as? String {
+                self.startHour = Int(UInt8(index) ?? 0)
+            }
+        }
+        
+        if dic.keys.contains("startMinute") {
+            if let index = dic["startMinute"] as? String {
+                self.startMinute = Int(UInt8(index) ?? 0)
+            }
+        }
+        
+        if dic.keys.contains("endHour") {
+            if let index = dic["endHour"] as? String {
+                self.endHour = Int(UInt8(index) ?? 0)
+            }
+        }
+        
+        if dic.keys.contains("endMinute") {
+            if let index = dic["endMinute"] as? String {
+                self.endMinute = Int(UInt8(index) ?? 0)
+            }
+        }
+        
+        if dic.keys.contains("maxValue") {
+            if let index = dic["maxValue"] as? String {
+                self.maxValue = Int(UInt8(index) ?? 0)
+            }
+        }
+        
+        if dic.keys.contains("minValue") {
+            if let index = dic["minValue"] as? String {
+                self.minValue = Int(UInt8(index) ?? 0)
+            }
+        }
+    }
+}
+
+@objc public class ZyFunctionModel_notificationAlertMode:NSObject {
+    
+    @objc public private(set) var supportCount = 0 //0不显示 1震动 2亮屏 3震动+亮屏
+    init(result:Int) {
+        self.supportCount = result
+        super.init()
+    }
+}
+
+
+@objc public class ZyFunctionModel_businessCard:NSObject {
+    @objc public private(set) var maxCount = 0
+    @objc public private(set) var titleLength = 30
+    @objc public private(set) var qrLength = 256
+    
+    init(val:[UInt8]) {
+        self.maxCount = Int(val[0])
+        self.titleLength = Int(val[1])
+        self.qrLength = Int(val[2])
+        if val.count > 3 {
+            self.maxCount = Int(val[0])
+            self.titleLength = Int(val[1])
+            self.qrLength = (Int(val[2]) | Int(val[3]) << 8)
+        }
+        super.init()
+    }
+}
+
+@objc public class ZyBusinessCardModel:NSObject {
+    @objc public var index = 0
+    @objc public var titleString = ""
+    @objc public var qrString = ""
+    
+    public override init() {
+        super.init()
+    }
+}
+
+@objc public class ZyTreatmentModel:NSObject {
+    @objc public var type = 0                       //0降脂1降压2降糖
+    @objc public var isOpen = false                 //0关1开
+    @objc public var timeDic = [String:String]()    //key:时间 value:时长
+    @objc public var dateDic = [String:String]()    //key:日期 value:天数
+}

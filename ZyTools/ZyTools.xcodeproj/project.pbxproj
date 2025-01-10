@@ -1,0 +1,609 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 63;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		67309E062D23A544005AF722 /* JL_AdvParse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67309E032D23A544005AF722 /* JL_AdvParse.framework */; };
+		67309E072D23A544005AF722 /* JL_HashPair.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67309E042D23A544005AF722 /* JL_HashPair.framework */; };
+		67309E082D23A544005AF722 /* JL_OTALib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67309E052D23A544005AF722 /* JL_OTALib.framework */; };
+		677506902BDA514900769C8C /* WatchCommandVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6775068F2BDA514900769C8C /* WatchCommandVC.swift */; };
+		677506922BDA515700769C8C /* HeadphoneCommandVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 677506912BDA515700769C8C /* HeadphoneCommandVC.swift */; };
+		677506962BDA52D100769C8C /* HeadphoneScanVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 677506952BDA52D100769C8C /* HeadphoneScanVC.swift */; };
+		6775069C2BDA59CE00769C8C /* ZywlSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6775069B2BDA59CE00769C8C /* ZywlSDK.framework */; };
+		677506D72BDA611700769C8C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 67DECB2F2BD748D40043161A /* Main.storyboard */; };
+		677506D92BDB42FB00769C8C /* HeadphoneConfigurationVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 677506D82BDB42FB00769C8C /* HeadphoneConfigurationVC.swift */; };
+		677506DD2BDB436F00769C8C /* ChargingBoxConfigurationVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 677506DC2BDB436F00769C8C /* ChargingBoxConfigurationVC.swift */; };
+		677506DF2BDB437A00769C8C /* ChargingBoxScanVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 677506DE2BDB437A00769C8C /* ChargingBoxScanVC.swift */; };
+		677506E12BDB470000769C8C /* ExtensionFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 677506E02BDB470000769C8C /* ExtensionFile.swift */; };
+		677506E42BDB47E600769C8C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 677506E22BDB47E600769C8C /* Localizable.strings */; };
+		677506E92BDB4FB900769C8C /* ChargingBoxCommandVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 677506E82BDB4FB900769C8C /* ChargingBoxCommandVC.swift */; };
+		67758EAB2BFB33E6005A3E0A /* WatchConfigurationVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67758EAA2BFB33E6005A3E0A /* WatchConfigurationVC.swift */; };
+		67758EAD2BFB33F6005A3E0A /* WatchScanVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67758EAC2BFB33F6005A3E0A /* WatchScanVC.swift */; };
+		67758EB02BFB4281005A3E0A /* ZySDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67758EAE2BFB3869005A3E0A /* ZySDK.framework */; };
+		67758EB52BFB49E9005A3E0A /* WatchFactoryConfigurationVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67758EB42BFB49E9005A3E0A /* WatchFactoryConfigurationVC.swift */; };
+		67758EB72BFB49FD005A3E0A /* WatchFactoryCommandVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67758EB62BFB49FD005A3E0A /* WatchFactoryCommandVC.swift */; };
+		67758EBA2BFB526F005A3E0A /* BoxFactoryCommandVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67758EB92BFB526F005A3E0A /* BoxFactoryCommandVC.swift */; };
+		67758EBC2BFB5283005A3E0A /* BoxFactoryConfigurationVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67758EBB2BFB5283005A3E0A /* BoxFactoryConfigurationVC.swift */; };
+		6782B0FF2BEB534A0025CF92 /* FileVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6782B0FC2BEB534A0025CF92 /* FileVC.swift */; };
+		6782B1002BEB534A0025CF92 /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6782B0FD2BEB534A0025CF92 /* LogViewController.swift */; };
+		6782B1012BEB534A0025CF92 /* ShowLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6782B0FE2BEB534A0025CF92 /* ShowLogView.swift */; };
+		67A553B62C37A78A001317D0 /* JL_BLEKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67A553B52C37A78A001317D0 /* JL_BLEKit.framework */; };
+		67DECB2A2BD748D40043161A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67DECB292BD748D40043161A /* AppDelegate.swift */; };
+		67DECB2E2BD748D40043161A /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67DECB2D2BD748D40043161A /* ViewController.swift */; };
+		67DECB332BD748DF0043161A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67DECB322BD748DF0043161A /* Assets.xcassets */; };
+		E9F8F5FDBABC7F655879BD85 /* Pods_ZyTools.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 160AA93E269198321447CBFB /* Pods_ZyTools.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		160AA93E269198321447CBFB /* Pods_ZyTools.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ZyTools.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		405CF9E918075CBCB1E8F487 /* Pods-ZyTools.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZyTools.debug.xcconfig"; path = "Target Support Files/Pods-ZyTools/Pods-ZyTools.debug.xcconfig"; sourceTree = "<group>"; };
+		5C3DEB9EE13FE4596E109194 /* Pods-ZyTools.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZyTools.release.xcconfig"; path = "Target Support Files/Pods-ZyTools/Pods-ZyTools.release.xcconfig"; sourceTree = "<group>"; };
+		67309E032D23A544005AF722 /* JL_AdvParse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JL_AdvParse.framework; sourceTree = "<group>"; };
+		67309E042D23A544005AF722 /* JL_HashPair.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JL_HashPair.framework; sourceTree = "<group>"; };
+		67309E052D23A544005AF722 /* JL_OTALib.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JL_OTALib.framework; sourceTree = "<group>"; };
+		6775068F2BDA514900769C8C /* WatchCommandVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCommandVC.swift; sourceTree = "<group>"; };
+		677506912BDA515700769C8C /* HeadphoneCommandVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadphoneCommandVC.swift; sourceTree = "<group>"; };
+		677506952BDA52D100769C8C /* HeadphoneScanVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadphoneScanVC.swift; sourceTree = "<group>"; };
+		6775069B2BDA59CE00769C8C /* ZywlSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ZywlSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		677506D82BDB42FB00769C8C /* HeadphoneConfigurationVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadphoneConfigurationVC.swift; sourceTree = "<group>"; };
+		677506DC2BDB436F00769C8C /* ChargingBoxConfigurationVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChargingBoxConfigurationVC.swift; sourceTree = "<group>"; };
+		677506DE2BDB437A00769C8C /* ChargingBoxScanVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChargingBoxScanVC.swift; sourceTree = "<group>"; };
+		677506E02BDB470000769C8C /* ExtensionFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionFile.swift; sourceTree = "<group>"; };
+		677506E32BDB47E600769C8C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		677506E52BDB480900769C8C /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		677506E82BDB4FB900769C8C /* ChargingBoxCommandVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChargingBoxCommandVC.swift; sourceTree = "<group>"; };
+		67758EAA2BFB33E6005A3E0A /* WatchConfigurationVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchConfigurationVC.swift; sourceTree = "<group>"; };
+		67758EAC2BFB33F6005A3E0A /* WatchScanVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchScanVC.swift; sourceTree = "<group>"; };
+		67758EAE2BFB3869005A3E0A /* ZySDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ZySDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		67758EB42BFB49E9005A3E0A /* WatchFactoryConfigurationVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchFactoryConfigurationVC.swift; sourceTree = "<group>"; };
+		67758EB62BFB49FD005A3E0A /* WatchFactoryCommandVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchFactoryCommandVC.swift; sourceTree = "<group>"; };
+		67758EB92BFB526F005A3E0A /* BoxFactoryCommandVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxFactoryCommandVC.swift; sourceTree = "<group>"; };
+		67758EBB2BFB5283005A3E0A /* BoxFactoryConfigurationVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxFactoryConfigurationVC.swift; sourceTree = "<group>"; };
+		6782B0FC2BEB534A0025CF92 /* FileVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileVC.swift; sourceTree = "<group>"; };
+		6782B0FD2BEB534A0025CF92 /* LogViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
+		6782B0FE2BEB534A0025CF92 /* ShowLogView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShowLogView.swift; sourceTree = "<group>"; };
+		67A553B52C37A78A001317D0 /* JL_BLEKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JL_BLEKit.framework; sourceTree = "<group>"; };
+		67DECB262BD748D40043161A /* ZyTools.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZyTools.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		67DECB292BD748D40043161A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		67DECB2D2BD748D40043161A /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		67DECB302BD748D40043161A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		67DECB322BD748DF0043161A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		67DECB352BD748DF0043161A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		67DECB372BD748DF0043161A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		67DECB232BD748D40043161A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				67758EB02BFB4281005A3E0A /* ZySDK.framework in Frameworks */,
+				6775069C2BDA59CE00769C8C /* ZywlSDK.framework in Frameworks */,
+				67309E062D23A544005AF722 /* JL_AdvParse.framework in Frameworks */,
+				67309E072D23A544005AF722 /* JL_HashPair.framework in Frameworks */,
+				67309E082D23A544005AF722 /* JL_OTALib.framework in Frameworks */,
+				E9F8F5FDBABC7F655879BD85 /* Pods_ZyTools.framework in Frameworks */,
+				67A553B62C37A78A001317D0 /* JL_BLEKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		677506DA2BDB430F00769C8C /* Headphone */ = {
+			isa = PBXGroup;
+			children = (
+				677506D82BDB42FB00769C8C /* HeadphoneConfigurationVC.swift */,
+				677506952BDA52D100769C8C /* HeadphoneScanVC.swift */,
+				677506912BDA515700769C8C /* HeadphoneCommandVC.swift */,
+			);
+			path = Headphone;
+			sourceTree = "<group>";
+		};
+		677506DB2BDB434000769C8C /* ChargingBox */ = {
+			isa = PBXGroup;
+			children = (
+				677506DC2BDB436F00769C8C /* ChargingBoxConfigurationVC.swift */,
+				677506DE2BDB437A00769C8C /* ChargingBoxScanVC.swift */,
+				677506E82BDB4FB900769C8C /* ChargingBoxCommandVC.swift */,
+			);
+			path = ChargingBox;
+			sourceTree = "<group>";
+		};
+		67758EA92BFB33A8005A3E0A /* Watch */ = {
+			isa = PBXGroup;
+			children = (
+				67758EAA2BFB33E6005A3E0A /* WatchConfigurationVC.swift */,
+				67758EAC2BFB33F6005A3E0A /* WatchScanVC.swift */,
+				6775068F2BDA514900769C8C /* WatchCommandVC.swift */,
+			);
+			path = Watch;
+			sourceTree = "<group>";
+		};
+		67758EB12BFB49A1005A3E0A /* WatchFactory */ = {
+			isa = PBXGroup;
+			children = (
+				67758EB42BFB49E9005A3E0A /* WatchFactoryConfigurationVC.swift */,
+				67758EB62BFB49FD005A3E0A /* WatchFactoryCommandVC.swift */,
+			);
+			path = WatchFactory;
+			sourceTree = "<group>";
+		};
+		67758EB82BFB524C005A3E0A /* BoxFactory */ = {
+			isa = PBXGroup;
+			children = (
+				67758EBB2BFB5283005A3E0A /* BoxFactoryConfigurationVC.swift */,
+				67758EB92BFB526F005A3E0A /* BoxFactoryCommandVC.swift */,
+			);
+			path = BoxFactory;
+			sourceTree = "<group>";
+		};
+		67DECB1D2BD748D40043161A = {
+			isa = PBXGroup;
+			children = (
+				67DECB282BD748D40043161A /* ZyTools */,
+				67DECB272BD748D40043161A /* Products */,
+				C4FAC2A71AE523E40E7D423A /* Pods */,
+				B0F67E6A1C33E070C9BB2F77 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		67DECB272BD748D40043161A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				67DECB262BD748D40043161A /* ZyTools.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		67DECB282BD748D40043161A /* ZyTools */ = {
+			isa = PBXGroup;
+			children = (
+				67DECB292BD748D40043161A /* AppDelegate.swift */,
+				67DECB2D2BD748D40043161A /* ViewController.swift */,
+				6782B0FC2BEB534A0025CF92 /* FileVC.swift */,
+				6782B0FD2BEB534A0025CF92 /* LogViewController.swift */,
+				6782B0FE2BEB534A0025CF92 /* ShowLogView.swift */,
+				677506E22BDB47E600769C8C /* Localizable.strings */,
+				677506E02BDB470000769C8C /* ExtensionFile.swift */,
+				67758EB12BFB49A1005A3E0A /* WatchFactory */,
+				67758EA92BFB33A8005A3E0A /* Watch */,
+				677506DB2BDB434000769C8C /* ChargingBox */,
+				67758EB82BFB524C005A3E0A /* BoxFactory */,
+				677506DA2BDB430F00769C8C /* Headphone */,
+				67A553B52C37A78A001317D0 /* JL_BLEKit.framework */,
+				67309E032D23A544005AF722 /* JL_AdvParse.framework */,
+				67309E042D23A544005AF722 /* JL_HashPair.framework */,
+				67309E052D23A544005AF722 /* JL_OTALib.framework */,
+				67DECB2F2BD748D40043161A /* Main.storyboard */,
+				67DECB322BD748DF0043161A /* Assets.xcassets */,
+				67DECB342BD748DF0043161A /* LaunchScreen.storyboard */,
+				67DECB372BD748DF0043161A /* Info.plist */,
+			);
+			path = ZyTools;
+			sourceTree = "<group>";
+		};
+		B0F67E6A1C33E070C9BB2F77 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				67758EAE2BFB3869005A3E0A /* ZySDK.framework */,
+				6775069B2BDA59CE00769C8C /* ZywlSDK.framework */,
+				160AA93E269198321447CBFB /* Pods_ZyTools.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C4FAC2A71AE523E40E7D423A /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				405CF9E918075CBCB1E8F487 /* Pods-ZyTools.debug.xcconfig */,
+				5C3DEB9EE13FE4596E109194 /* Pods-ZyTools.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		67DECB252BD748D40043161A /* ZyTools */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 67DECB3A2BD748DF0043161A /* Build configuration list for PBXNativeTarget "ZyTools" */;
+			buildPhases = (
+				DC43FD77039899BD4616999A /* [CP] Check Pods Manifest.lock */,
+				67DECB222BD748D40043161A /* Sources */,
+				67DECB232BD748D40043161A /* Frameworks */,
+				67DECB242BD748D40043161A /* Resources */,
+				664E951FCF4D6412628E6956 /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ZyTools;
+			productName = ZyTools;
+			productReference = 67DECB262BD748D40043161A /* ZyTools.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		67DECB1E2BD748D40043161A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1530;
+				LastUpgradeCheck = 1530;
+				TargetAttributes = {
+					67DECB252BD748D40043161A = {
+						CreatedOnToolsVersion = 15.3;
+					};
+				};
+			};
+			buildConfigurationList = 67DECB212BD748D40043161A /* Build configuration list for PBXProject "ZyTools" */;
+			compatibilityVersion = "Xcode 15.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				"zh-Hans",
+			);
+			mainGroup = 67DECB1D2BD748D40043161A;
+			productRefGroup = 67DECB272BD748D40043161A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				67DECB252BD748D40043161A /* ZyTools */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		67DECB242BD748D40043161A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				677506D72BDA611700769C8C /* Main.storyboard in Resources */,
+				677506E42BDB47E600769C8C /* Localizable.strings in Resources */,
+				67DECB332BD748DF0043161A /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		664E951FCF4D6412628E6956 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ZyTools/Pods-ZyTools-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ZyTools/Pods-ZyTools-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ZyTools/Pods-ZyTools-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		DC43FD77039899BD4616999A /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ZyTools-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		67DECB222BD748D40043161A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				677506DD2BDB436F00769C8C /* ChargingBoxConfigurationVC.swift in Sources */,
+				67758EBA2BFB526F005A3E0A /* BoxFactoryCommandVC.swift in Sources */,
+				677506E12BDB470000769C8C /* ExtensionFile.swift in Sources */,
+				6782B0FF2BEB534A0025CF92 /* FileVC.swift in Sources */,
+				67758EAD2BFB33F6005A3E0A /* WatchScanVC.swift in Sources */,
+				67758EB52BFB49E9005A3E0A /* WatchFactoryConfigurationVC.swift in Sources */,
+				6782B1002BEB534A0025CF92 /* LogViewController.swift in Sources */,
+				677506962BDA52D100769C8C /* HeadphoneScanVC.swift in Sources */,
+				677506DF2BDB437A00769C8C /* ChargingBoxScanVC.swift in Sources */,
+				677506D92BDB42FB00769C8C /* HeadphoneConfigurationVC.swift in Sources */,
+				67DECB2E2BD748D40043161A /* ViewController.swift in Sources */,
+				67DECB2A2BD748D40043161A /* AppDelegate.swift in Sources */,
+				67758EB72BFB49FD005A3E0A /* WatchFactoryCommandVC.swift in Sources */,
+				67758EAB2BFB33E6005A3E0A /* WatchConfigurationVC.swift in Sources */,
+				677506E92BDB4FB900769C8C /* ChargingBoxCommandVC.swift in Sources */,
+				677506902BDA514900769C8C /* WatchCommandVC.swift in Sources */,
+				67758EBC2BFB5283005A3E0A /* BoxFactoryConfigurationVC.swift in Sources */,
+				677506922BDA515700769C8C /* HeadphoneCommandVC.swift in Sources */,
+				6782B1012BEB534A0025CF92 /* ShowLogView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		677506E22BDB47E600769C8C /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				677506E32BDB47E600769C8C /* en */,
+				677506E52BDB480900769C8C /* zh-Hans */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		67DECB2F2BD748D40043161A /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				67DECB302BD748D40043161A /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		67DECB342BD748DF0043161A /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				67DECB352BD748DF0043161A /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		67DECB382BD748DF0043161A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		67DECB392BD748DF0043161A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		67DECB3B2BD748DF0043161A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 405CF9E918075CBCB1E8F487 /* Pods-ZyTools.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 0;
+				DEVELOPMENT_TEAM = QDV38ZSMUA;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ZyTools",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ZyTools/Info.plist;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "如果不允许,应用将无法读取蓝牙设备数据";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "如果不允许,应用将无法连接到蓝牙设备";
+				INFOPLIST_KEY_NSCameraUsageDescription = "如果不允许,应用将无法使用拍照功能";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "如果不允许,应用将无法正常使用相册功能";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "如果不允许,应用将无法使用相册功能";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.0.5;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zycx.zyfactorydemo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		67DECB3C2BD748DF0043161A /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5C3DEB9EE13FE4596E109194 /* Pods-ZyTools.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 0;
+				DEVELOPMENT_TEAM = QDV38ZSMUA;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ZyTools",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ZyTools/Info.plist;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "如果不允许,应用将无法读取蓝牙设备数据";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "如果不允许,应用将无法连接到蓝牙设备";
+				INFOPLIST_KEY_NSCameraUsageDescription = "如果不允许,应用将无法使用拍照功能";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "如果不允许,应用将无法正常使用相册功能";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "如果不允许,应用将无法使用相册功能";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.0.5;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zycx.zyfactorydemo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		67DECB212BD748D40043161A /* Build configuration list for PBXProject "ZyTools" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				67DECB382BD748DF0043161A /* Debug */,
+				67DECB392BD748DF0043161A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		67DECB3A2BD748DF0043161A /* Build configuration list for PBXNativeTarget "ZyTools" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				67DECB3B2BD748DF0043161A /* Debug */,
+				67DECB3C2BD748DF0043161A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 67DECB1E2BD748D40043161A /* Project object */;
+}

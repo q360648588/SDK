@@ -39,47 +39,47 @@ class ZyVC: UIViewController {
     var timestamp:Int?
 
     func test() {
-        return
-        ZyCommandModule.shareInstance.getDeviceSupportList { _, _ in
-            
-        }
-        
-        ZyCommandModule.shareInstance.setReportRealtimeData(isOpen: 1) { _ in
-            
-        }
-        
-        ZyCommandModule.shareInstance.setNotificationRemind(isOpen: "65535", extensionOpen: "0") { _ in
-            
-        }
-        
-        ZyCommandModule.shareInstance.setLightScreen(isOpen: 1) { _ in
-            
-        }
-        
-        ZyCommandModule.shareInstance.set24HrMonitor(isOpen: 1) { _ in
-            
-        }
-        
-        ZyCommandModule.shareInstance.setTime { _ in
-            
-        }
-        
-        ZyCommandModule.shareInstance.getCustonDialFrameSize { _, _ in
-            
-        }
-        
-        ZyCommandModule.shareInstance.setMetricSystem(metric: 0) { error in
-            
-        }
-        
-        for i in stride(from: 0, to: 3, by: 1) {
-
-            ZyCommandModule.shareInstance.getAlarm(index: i) { _, _ in
-                                    
-            }
-        }
-        
-        return
+//        return
+//        ZyCommandModule.shareInstance.getDeviceSupportList { _, _ in
+//            
+//        }
+//        
+//        ZyCommandModule.shareInstance.setReportRealtimeData(isOpen: 1) { _ in
+//            
+//        }
+//        
+//        ZyCommandModule.shareInstance.setNotificationRemind(isOpen: "65535", extensionOpen: "0") { _ in
+//            
+//        }
+//        
+//        ZyCommandModule.shareInstance.setLightScreen(isOpen: 1) { _ in
+//            
+//        }
+//        
+//        ZyCommandModule.shareInstance.set24HrMonitor(isOpen: 1) { _ in
+//            
+//        }
+//        
+//        ZyCommandModule.shareInstance.setTime { _ in
+//            
+//        }
+//        
+//        ZyCommandModule.shareInstance.getCustonDialFrameSize { _, _ in
+//            
+//        }
+//        
+//        ZyCommandModule.shareInstance.setMetricSystem(metric: 0) { error in
+//            
+//        }
+//        
+//        for i in stride(from: 0, to: 3, by: 1) {
+//
+//            ZyCommandModule.shareInstance.getAlarm(index: i) { _, _ in
+//                                    
+//            }
+//        }
+//        
+//        return
         ZyCommandModule.shareInstance.checkUpgradeState { _, _ in
             
         }

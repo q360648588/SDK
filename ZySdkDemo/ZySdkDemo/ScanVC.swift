@@ -18,7 +18,7 @@ class ScanVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        ZyCommandModule.shareInstance.matchingUUIDArray = [CBUUID.init(string: "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"),CBUUID.init(string: "000001FF-3C17-D293-8E48-14FE2E4DA212")]//6E400001-B5A3-F393-E0A9-E50E24DCCA9E
+        ZyCommandModule.shareInstance.matchingUUIDArray = [CBUUID.init(string: "53527AA4-29F7-AE11-4E74-997334782568"),CBUUID.init(string: "EC00D102-11E1-9B23-0002-5B00C0C1A8A8"),CBUUID.init(string: "AE00"),CBUUID.init(string: "00000800-3C17-D293-8E48-14FE2E4DA212"),CBUUID.init(string: "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"),CBUUID.init(string: "000001FF-3C17-D293-8E48-14FE2E4DA212")]//6E400001-B5A3-F393-E0A9-E50E24DCCA9E
         
         ZyCommandModule.shareInstance.getSystemListPeripheral { modelArray in
             print("modelArray =",modelArray)

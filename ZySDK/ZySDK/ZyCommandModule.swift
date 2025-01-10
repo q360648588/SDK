@@ -167,6 +167,7 @@ import CoreLocation
     var receiveSetSosContactPersonBlock:((ZyError) -> Void)?
     var receiveGetSosContactPersonBlock:((ZyAddressBookModel?,ZyError) -> Void)?
     var receiveCycleMeasurementParameters:((ZyError) -> Void)?
+    var receiveGetCycleMeasurementParametersBlock:(([ZyCycleMeasurementModel]?,ZyError) -> Void)?
     var receiveGetWorshipStartTimeBlock:((String?,Int,ZyError) -> Void)?
     var receiveReportWorshipStartTime:((String?,Int,ZyError) -> Void)?
     var receiveSetTimeZoneBlock:((ZyError) -> Void)?
@@ -183,6 +184,7 @@ import CoreLocation
     var receiveGetMotorShakeFunctionSingleBlock:((ZyMotorFunctionModel?,ZyError) -> Void)?
     var receiveSetPowerConsumptionDataBlock:((ZyError) -> Void)?
     var receiveReportPowerConsumptionData:(([String:String],ZyError) -> Void)?
+    var receiveReportTreatmentStatus:((Int,ZyError) -> Void)?
     var receiveReportAssistedPositioning:((Int,ZyError) -> Void)?
     var receiveGetCustomSportsModeBlock:((ZyExerciseType,ZyError) -> Void)?
     var receiveReportLanguageType:((Int,ZyError) -> Void)?
@@ -191,6 +193,14 @@ import CoreLocation
     var receiveGetMotorShakeCustomBlock:((ZyMotorFunctionModel?,ZyError) -> Void)?
     var receiveSetMotorShakeCustomBlock:((ZyError) -> Void)?
     var receiveSetBleNameBlock:((ZyError) -> Void)?
+    var receiveSetCustomBloodSugarScopeBlock:((ZyError) -> Void)?
+    var receiveGetCustomBloodSugarScopeBlock:(([ZyCustomBloodSugar],ZyError) -> Void)?
+    var receiveSetMessageRemindTypeBlock:((ZyError) -> Void)?
+    var receiveGetMessageRemindTypeBlock:((Int,ZyError) -> Void)?
+    var receiveSetBusinessCardBlock:((ZyError) -> Void)?
+    var receiveGetBusinessCardBlock:(([ZyBusinessCardModel],ZyError) -> Void)?
+    var receiveSetTreatmentInfomationBlock:((ZyError) -> Void)?
+    var receiveGetTreatmentInfomationBlock:((ZyTreatmentModel?,ZyError) -> Void)?
     
     var stepMaxData:Data?
     var isStepDetailData = false
@@ -237,6 +247,7 @@ import CoreLocation
     var failCheckCount = 0
     var currentReceiveCommandEndOver = false //当前接收命令状态是否结束   5s没有接收到回复数据默认结束，赋值true
     var sendFailState = false  //命令发送失败状态，true时在信号量需要发命令的地方return待发送的命令
+    var serverVersionInfoDic = [String:Any]()
     
     private override init() {
         super.init()
@@ -279,7 +290,7 @@ import CoreLocation
         self.writeCharacteristic = super.writeCharacteristic
         self.receiveCharacteristic = super.receiveCharacteristic
         self.peripheral = super.peripheral
-                
+        
         ZyBleManager.shareInstance.PeripheralUpdateValue { (peripheral, characteristic, error) in
                         
             let data = characteristic.value ?? Data.init()
@@ -2276,14 +2287,16 @@ import CoreLocation
                 if val[0] == 0x03 && val[1] == 0x84 {
                     
                     if self.checkLength(val: [UInt8](val)) {
-                        if val[4] == 0 {
-                            
-                            if let block = self.receiveGetDeviceSupportListBlock {
-                                block(nil,.noMoreData)
+                        if val.count > 4 {
+                            if val[4] == 0 {
+                                
+                                if let block = self.receiveGetDeviceSupportListBlock {
+                                    block(nil,.noMoreData)
+                                }
+                                self.signalCommandSemaphore()
+                                ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetDeviceSupportList 数据状态错误"))
+                                return
                             }
-                            self.signalCommandSemaphore()
-                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetDeviceSupportList 数据状态错误"))
-                            return
                         }
                     }
                     
@@ -2954,58 +2967,88 @@ import CoreLocation
                                 }
                                 
                                 if val[1] == 0x04 {
-                                    var currentIndex = 5
+                                    var currentIndex = 1
                                     while currentIndex < val.count - 2 {
-                                        let cmd_id = (Int(val[currentIndex]) | Int(val[currentIndex+1]) << 8)
-                                        let cmd_length = (Int(val[currentIndex+2]) | Int(val[currentIndex+3]) << 8)
+                                        let cmd_id = (Int(newVal[currentIndex]) | Int(newVal[currentIndex+1]) << 8)
+                                        let cmd_length = (Int(newVal[currentIndex+2]) | Int(newVal[currentIndex+3]) << 8)
                                         
                                         switch cmd_id {
                                         case 5:
-                                            let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            let newVal = Array(newVal[(currentIndex+4)..<(currentIndex+4+cmd_length)])
                                             if let block = self.receiveNewGetAlarmArrayBlock {
                                                 self.parseGetNewAlarmArray(val: newVal, success: block)
                                             }
                                             break
                                         case 0x18:
-                                            let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            let newVal = Array(newVal[(currentIndex+4)..<(currentIndex+4+cmd_length)])
                                             if let block = self.receiveGetDoNotDisturbBlock {
                                                 self.parseGetDoNotDisturb(val: newVal, success: block)
                                             }
                                             break
                                         case 0x19:
-                                            let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            let newVal = Array(newVal[(currentIndex+4)..<(currentIndex+4+cmd_length)])
                                             if let block = self.receiveGetSleepGoalBlock {
                                                 self.parseGetSleepGoal(val: newVal, success: block)
                                             }
                                             break
                                         case 0x1a:
-                                            let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            let newVal = Array(newVal[(currentIndex+4)..<(currentIndex+4+cmd_length)])
                                             if let block = self.receiveGetSosContactPersonBlock {
                                                 self.parseGetSosContactPerson(val: newVal, success: block)
                                             }
                                             break
+                                        case 0x1b:
+                                            let newVal = Array(newVal[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            if let block = self.receiveGetCycleMeasurementParametersBlock {
+                                                self.parseGetCycleMeasurementParameters(val: newVal, success: block)
+                                            }
+                                            break
                                         case 0x1d:
-                                            let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            let newVal = Array(newVal[(currentIndex+4)..<(currentIndex+4+cmd_length)])
                                             if let block = self.receiveGetWorshipStartTimeBlock {
                                                 self.parseGetWorshipStartTime(val: newVal, success: block)
                                             }
                                             break
                                         case 0x1e:
-                                            let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            let newVal = Array(newVal[(currentIndex+4)..<(currentIndex+4+cmd_length)])
                                             if let block = self.receiveGetLedSetupBlock {
                                                 self.parseGetLedSetup(val: newVal, success: block)
                                             }
                                             break
                                         case 0x1f:
-                                            let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            let newVal = Array(newVal[(currentIndex+4)..<(currentIndex+4+cmd_length)])
                                             if let block = self.receiveGetMotorShakeFunctionBlock {
                                                 self.parseGetMotorShakeFunction(val: newVal, success: block)
                                             }
                                             break
                                         case 0x20:
-                                            let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            let newVal = Array(newVal[(currentIndex+4)..<(currentIndex+4+cmd_length)])
                                             if let block = self.receiveGetCustomSportsModeBlock {
                                                 self.parseGetCustomSportsMode(val: newVal, success: block)
+                                            }
+                                            break
+                                        case 0x22:
+                                            let newVal = Array(newVal[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            if let block = self.receiveGetCustomBloodSugarScopeBlock {
+                                                self.parseGetCustomBloodSugarScope(val: newVal, success: block)
+                                            }
+                                            break
+                                        case 0x23:
+                                            let newVal = Array(newVal[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            if let block = self.receiveGetMessageRemindTypeBlock {
+                                                self.parseGetMessageRemindType(val: newVal, success: block)
+                                            }
+                                            break
+                                        case 0x24:
+                                            let newVal = Array(newVal[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            if let block = self.receiveGetBusinessCardBlock {
+                                                self.parseGetBusinessCard(val: newVal, success: block)
+                                            }
+                                            break
+                                        case 0x25:
+                                            let newVal = Array(newVal[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            if let block = self.receiveGetTreatmentInfomationBlock {
+                                                self.parseGetTreatmentInfomation(val: newVal, success: block)
                                             }
                                             break
                                             
@@ -3075,6 +3118,26 @@ import CoreLocation
                                             break
                                         case 0x21:
                                             if let block = self.receiveSetBleNameBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x22:
+                                            if let block = self.receiveSetCustomBloodSugarScopeBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x23:
+                                            if let block = self.receiveSetMessageRemindTypeBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x24:
+                                            if let block = self.receiveSetBusinessCardBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x25:
+                                            if let block = self.receiveSetTreatmentInfomationBlock {
                                                 self.parseNewProtocolUniversalResponse(result: result, success: block)
                                             }
                                             break
@@ -3215,7 +3278,12 @@ import CoreLocation
                                             self.parseReportPowerConsumptionData(val: powerVal/*, success: ((_ dataDic:[String:String],_ error:ZyError) -> Void)*/)
                                         //}
                                         break
-                                    
+                                    case 0x09:
+                                        let stateVal = Array(newVal[1..<2])
+                                        if let block = self.receiveReportTreatmentStatus {
+                                            self.parseReportTreatmentStatus(val: stateVal, success: block)
+                                        }
+                                        break
                                     default:
                                         break
                                     }
@@ -3287,6 +3355,9 @@ import CoreLocation
                                     if let block = self.receiveGetSosContactPersonBlock {
                                         block(nil,.invalidLength)
                                     }
+                                    if let block = self.receiveGetCycleMeasurementParametersBlock {
+                                        block(nil,.invalidLength)
+                                    }
                                     if let block = self.receiveGetWorshipStartTimeBlock {
                                         block(nil,0,.invalidLength)
                                     }
@@ -3299,8 +3370,19 @@ import CoreLocation
                                     if let block = self.receiveGetCustomSportsModeBlock {
                                         block(.runIndoor,.invalidLength)
                                     }
+                                    if let block = self.receiveGetCustomBloodSugarScopeBlock {
+                                        block([],.invalidLength)
+                                    }
+                                    if let block = self.receiveGetMessageRemindTypeBlock {
+                                        block(-1,.invalidLength)
+                                    }
+                                    if let block = self.receiveGetBusinessCardBlock {
+                                        block([],.invalidLength)
+                                    }
+                                    if let block = self.receiveGetTreatmentInfomationBlock {
+                                        block(nil,.invalidLength)
+                                    }
                                 }
-                                
                                 if val[1] == 0x03 {
                                     
                                     let resultArray = Array(val[4..<val.count-2])
@@ -3359,6 +3441,26 @@ import CoreLocation
                                             break
                                         case 0x21:
                                             if let block = self.receiveSetBleNameBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x22:
+                                            if let block = self.receiveSetCustomBloodSugarScopeBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x23:
+                                            if let block = self.receiveSetMessageRemindTypeBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x24:
+                                            if let block = self.receiveSetBusinessCardBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x25:
+                                            if let block = self.receiveSetTreatmentInfomationBlock {
                                                 self.parseNewProtocolUniversalResponse(result: result, success: block)
                                             }
                                             break
@@ -3540,6 +3642,12 @@ import CoreLocation
                                             self.parseGetSosContactPerson(val: newVal, success: block)
                                         }
                                         break
+                                    case 0x1b:
+                                        let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                        if let block = self.receiveGetCycleMeasurementParametersBlock {
+                                            self.parseGetCycleMeasurementParameters(val: newVal, success: block)
+                                        }
+                                        break
                                     case 0x1d:
                                         let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
                                         if let block = self.receiveGetWorshipStartTimeBlock {
@@ -3562,6 +3670,30 @@ import CoreLocation
                                         let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
                                         if let block = self.receiveGetCustomSportsModeBlock {
                                             self.parseGetCustomSportsMode(val: newVal, success: block)
+                                        }
+                                        break
+                                    case 0x22:
+                                        let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                        if let block = self.receiveGetCustomBloodSugarScopeBlock {
+                                            self.parseGetCustomBloodSugarScope(val: newVal, success: block)
+                                        }
+                                        break
+                                    case 0x23:
+                                        let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                        if let block = self.receiveGetMessageRemindTypeBlock {
+                                            self.parseGetMessageRemindType(val: newVal, success: block)
+                                        }
+                                        break
+                                    case 0x24:
+                                        let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                        if let block = self.receiveGetBusinessCardBlock {
+                                            self.parseGetBusinessCard(val: newVal, success: block)
+                                        }
+                                        break
+                                    case 0x25:
+                                        let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                        if let block = self.receiveGetTreatmentInfomationBlock {
+                                            self.parseGetTreatmentInfomation(val: newVal, success: block)
                                         }
                                         break
                                     default:
@@ -3630,6 +3762,26 @@ import CoreLocation
                                         break
                                     case 0x21:
                                         if let block = self.receiveSetBleNameBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x22:
+                                        if let block = self.receiveSetCustomBloodSugarScopeBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x23:
+                                        if let block = self.receiveSetMessageRemindTypeBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x24:
+                                        if let block = self.receiveSetBusinessCardBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x25:
+                                        if let block = self.receiveSetTreatmentInfomationBlock {
                                             self.parseNewProtocolUniversalResponse(result: result, success: block)
                                         }
                                         break
@@ -3767,6 +3919,12 @@ import CoreLocation
                                         self.parseReportPowerConsumptionData(val: powerVal/*, success: ((_ dataDic:[String:String],_ error:ZyError) -> Void)*/)
                                     //}
                                     break
+                                case 0x09:
+                                    let stateVal = Array(newVal[1..<2])
+                                    if let block = self.receiveReportTreatmentStatus {
+                                        self.parseReportTreatmentStatus(val: stateVal, success: block)
+                                    }
+                                    break
                                 
                                 default:
                                     break
@@ -3841,6 +3999,9 @@ import CoreLocation
                                 if let block = self.receiveGetSosContactPersonBlock {
                                     block(nil,.invalidLength)
                                 }
+                                if let block = self.receiveGetCycleMeasurementParametersBlock {
+                                    block(nil,.invalidLength)
+                                }
                                 if let block = self.receiveGetWorshipStartTimeBlock {
                                     block(nil,0,.invalidLength)
                                 }
@@ -3852,6 +4013,18 @@ import CoreLocation
                                 }
                                 if let block = self.receiveGetCustomSportsModeBlock {
                                     block(.runIndoor,.invalidLength)
+                                }
+                                if let block = self.receiveGetCustomBloodSugarScopeBlock {
+                                    block([],.invalidLength)
+                                }
+                                if let block = self.receiveGetMessageRemindTypeBlock {
+                                    block(-1,.invalidLength)
+                                }
+                                if let block = self.receiveGetBusinessCardBlock {
+                                    block([],.invalidLength)
+                                }
+                                if let block = self.receiveGetTreatmentInfomationBlock {
+                                    block(nil,.invalidLength)
                                 }
                             }
                             
@@ -3914,6 +4087,26 @@ import CoreLocation
                                     case 0x21:
                                         if let block = self.receiveSetBleNameBlock {
                                             block(.invalidLength)
+                                        }
+                                        break
+                                    case 0x22:
+                                        if let block = self.receiveSetCustomBloodSugarScopeBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x23:
+                                        if let block = self.receiveSetMessageRemindTypeBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x24:
+                                        if let block = self.receiveSetBusinessCardBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x25:
+                                        if let block = self.receiveSetTreatmentInfomationBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
                                         }
                                         break
                                     default:
@@ -4080,7 +4273,7 @@ import CoreLocation
     
     func writeDataAndBackError(data:Data) -> ZyError {
         if self.peripheral?.state != .connected {
-            
+            print("writeDataAndBackError self.peripheral = \(self.peripheral)")
             return .disconnected
             
         }else{
@@ -4689,6 +4882,7 @@ import CoreLocation
     // MARK: - 检测命令信号量重置
     func resetCommandSemaphore(showLog:Bool? = false) {
         self.otaVersionInfo = nil
+        self.serverVersionInfoDic.removeAll()
         self.macString = nil
         self.receiveGetDeviceOtaVersionInfo = nil
         //目前SDK内部重置会在重连、断开连接、关闭蓝牙三个地方调用
@@ -6778,13 +6972,13 @@ import CoreLocation
         if FileManager.createFile(filePath: bigBinPath).isSuccess {
             var input: [CChar] = bigBmpPath.cString(using: .utf8)!
             var output : [CChar] = bigBinPath.cString(using: .utf8)!
-            let result = br28_btm_to_res_path(&input, Int32(self.screenBigWidth), Int32(self.screenBigHeight),&output)
+            let result = br28_btm_to_res_path_with_alpha(&input, Int32(self.screenBigWidth), Int32(self.screenBigHeight), &output)
             print("result big = \(result)")
         }
         if FileManager.createFile(filePath: smallBinPath).isSuccess {
             var input: [CChar] = smallBmpPath.cString(using: .utf8)!
             var output : [CChar] = smallBinPath.cString(using: .utf8)!
-            let result = br28_btm_to_res_path(&input, Int32(self.screenSmallWidth), Int32(self.screenSmallHeight),&output)
+            let result = br28_btm_to_res_path_with_alpha(&input, Int32(self.screenSmallWidth), Int32(self.screenSmallHeight), &output)
             print("result small = \(result)")
         }
 
@@ -6867,6 +7061,61 @@ import CoreLocation
             startCount = endCount
         }
         return finalData
+    }
+    
+    func createSendJLdeviceDialOtaFile(image:UIImage,bigSize:CGSize,smallSize:CGSize) -> Data {
+        
+        var smallImage = image.changeSize(size: smallSize)
+        //smallImage = smallImage.addShadowLayer(shadowWidth: 10)
+        var bigImage = image.changeSize(size: bigSize)
+        
+        let data_80Val = smallImage.toByteArray(rgba: "bgra")
+        let data_80_80:Data = Data.init(bytes: data_80Val, count: data_80Val.count)
+        let data_240Val = bigImage.toByteArray(rgba: "bgra")
+        let data_240_240:Data = Data.init(bytes: data_240Val, count: data_240Val.count)
+        
+        let bigBmpPath = NSTemporaryDirectory() + "test_big.bmp"
+        let bigBinPath = NSTemporaryDirectory() + "test_bigBin"
+        let smallBmpPath = NSTemporaryDirectory() + "test_small.bmp"
+        let smallBinPath = NSTemporaryDirectory() + "test_smallBin"
+        
+        if FileManager.createFile(filePath: bigBmpPath).isSuccess {
+            FileManager.default.createFile(atPath: bigBmpPath, contents: data_240_240, attributes: nil)
+        }
+        if FileManager.createFile(filePath: smallBmpPath).isSuccess {
+            FileManager.default.createFile(atPath: smallBmpPath, contents: data_80_80, attributes: nil)
+        }
+        if FileManager.createFile(filePath: bigBinPath).isSuccess {
+            var input: [CChar] = bigBmpPath.cString(using: .utf8)!
+            var output : [CChar] = bigBinPath.cString(using: .utf8)!
+            let result = br28_btm_to_res_path_with_alpha(&input, Int32(bigSize.width), Int32(bigSize.height), &output)
+            print("result big = \(result)")
+        }
+        if FileManager.createFile(filePath: smallBinPath).isSuccess {
+            var input: [CChar] = smallBmpPath.cString(using: .utf8)!
+            var output : [CChar] = smallBinPath.cString(using: .utf8)!
+            let result = br28_btm_to_res_path_with_alpha(&input, Int32(smallSize.width), Int32(smallSize.height), &output)
+            print("result small = \(result)")
+        }
+
+        var imageFileData = Data()
+
+        let bigUrl = URL.init(fileURLWithPath: bigBinPath)
+        let smallUrl = URL.init(fileURLWithPath: smallBinPath)
+        if let bigFileData = try? Data.init(contentsOf: bigUrl) {
+            if let smallFileData = try? Data.init(contentsOf: smallUrl) {
+                let bigFileLength = [UInt8((bigFileData.count ) & 0xff),UInt8((bigFileData.count >> 8) & 0xff),UInt8((bigFileData.count >> 16) & 0xff),UInt8((bigFileData.count >> 24) & 0xff)]
+                imageFileData.append(Data.init(bytes: bigFileLength, count: 4))
+                let smallFileLength = [UInt8((smallFileData.count ) & 0xff),UInt8((smallFileData.count >> 8) & 0xff),UInt8((smallFileData.count >> 16) & 0xff),UInt8((smallFileData.count >> 24) & 0xff)]
+                imageFileData.append(Data.init(bytes: smallFileLength, count: 4))
+                imageFileData.append(bigFileData)
+                imageFileData.append(smallFileData)
+            }
+        }
+
+        printLog("imageFileData.count =",imageFileData.count)
+
+        return imageFileData
     }
 
     func createSendDialOtaFile(image:UIImage) -> Data {
@@ -6975,6 +7224,105 @@ import CoreLocation
 //        }
 //        if FileManager.createFile(filePath: smallPath).isSuccess {
 //            
+//            FileManager.default.createFile(atPath: smallPath, contents: data_80_80, attributes: nil)
+//        }
+        
+        let bgCount = 1372+data_80_80.count
+        
+        var imageFileHeadData:[UInt8] = Array.init()
+        
+        //3.1.1、配置信息(长度:372字节)
+        //固定数据    0xA4,0x96,0x16,0xE6,0x84,0x87,0x57,0x00
+        let imgHead:[UInt8] = [0xA4,0x96,0x16,0xE6,0x84,0x87,0x57,0x00]
+        //表盘ID    2字节，小端
+        let idArr:[UInt8] = [0x00,0x00]
+        //固定数据    0x01,0x02,0x01,0x01,0x00,0x00,0x00,0x00,0x00,0x00
+        let fixedArr:[UInt8] = [0x01,0x02,0x01,0x01,0x00,0x00,0x00,0x00,0x00,0x00]
+        //图片宽度    2字节，小端
+        let width:[UInt8] = [UInt8((self.screenBigWidth) & 0xff),UInt8((self.screenBigWidth >> 8) & 0xff)]
+        //图片高度    2字节，小端
+        let height:[UInt8] = [UInt8((self.screenBigHeight) & 0xff),UInt8((self.screenBigHeight >> 8) & 0xff)]
+        //固定数据    固定348个0xFF
+        var arrLength_348:[UInt8] = Array.init()
+        for _ in 0..<348 {
+            arrLength_348.append(0xff)
+        }
+        
+        //3.1.2、图片地址数组(长度:1000字节)
+        //固定数据    0x5C,0x05,0x00,0x00
+        let addrHead:[UInt8] = [0x5C,0x05,0x00,0x00]
+        //背景地址    4字节，小端 背景地址=1372+缩略图大小
+        let bgAddr:[UInt8] = [UInt8((bgCount ) & 0xff),UInt8((bgCount >> 8) & 0xff),UInt8((bgCount >> 16) & 0xff),UInt8((bgCount >> 24) & 0xff)]
+        //固定数据    固定992个0xFF
+        var arrLength_992:[UInt8] = Array.init()
+        for _ in 0..<992 {
+            arrLength_992.append(0xff)
+        }
+        
+        imageFileHeadData.append(contentsOf: imgHead)
+        imageFileHeadData.append(contentsOf: idArr)
+        imageFileHeadData.append(contentsOf: fixedArr)
+        imageFileHeadData.append(contentsOf: width)
+        imageFileHeadData.append(contentsOf: height)
+        imageFileHeadData.append(contentsOf: arrLength_348)
+        imageFileHeadData.append(contentsOf: addrHead)
+        imageFileHeadData.append(contentsOf: bgAddr)
+        imageFileHeadData.append(contentsOf: arrLength_992)
+        
+        var finalData = Data.init(bytes: &imageFileHeadData, count: imageFileHeadData.count)
+        finalData.append(data_80_80)
+        finalData.append(data_240_240)
+        printLog("finalData.count =",finalData.count)
+        
+//        let count = finalData.count/1024+((finalData.count%1024) != 0 ? 1:0)
+//        var startCount = 0
+//        for i in stride(from: 0, to: count, by: 1) {
+//            let endCount = (i+1)*1024 < finalData.count ? (i+1)*1024 : finalData.count
+//            let subData = finalData[startCount..<endCount]
+//            printLog("imageFile =",self.convertDataToHexStr(data: subData))
+//            startCount = endCount
+//        }
+
+        return finalData
+    }
+    
+    func createSendImageFile(image:UIImage,bigSize:CGSize,smallSize:CGSize) -> Data {
+                
+//        let smallImagePath = NSHomeDirectory() + "/Documents/smallImage.png"
+//        let smallImageShadowPath = NSHomeDirectory() + "/Documents/smallImageShadow.png"
+//        let bigImagePath = NSHomeDirectory() + "/Documents/bigImage.png"
+        
+        var smallImage = image.changeSize(size: smallSize)
+//        if FileManager.createFile(filePath: smallImagePath).isSuccess {
+//            FileManager.default.createFile(atPath: smallImagePath, contents: smallImage.pngData(), attributes: nil)
+//        }
+//        smallImage = smallImage.addCornerRadius(radiusWidth: 20)
+//        smallImage = smallImage.addShadowLayer(shadowWidth: 15)
+//        if FileManager.createFile(filePath: smallImageShadowPath).isSuccess {
+//            FileManager.default.createFile(atPath: smallImageShadowPath, contents: smallImage.pngData(), attributes: nil)
+//        }
+        var bigImage = image.changeSize(size: bigSize)
+//        if FileManager.createFile(filePath: bigImagePath).isSuccess {
+//            FileManager.default.createFile(atPath: bigImagePath, contents: bigImage.pngData(), attributes: nil)
+//        }
+//        if let screenType = self.functionListModel?.functionDetail_screenType {
+//            if screenType.supportType == 1 {
+//                smallImage = smallImage.changeCircle(fillColor: .black)
+//                bigImage = bigImage.changeCircle(fillColor: .black)
+//            }
+//        }
+        
+        let data_80_80:Data = self.createImageBin(image: smallImage)
+        let data_240_240:Data = self.createImageBin(image: bigImage)
+        
+//        let bigPath = NSHomeDirectory() + "/Documents/test_big.bin"
+//        let smallPath = NSHomeDirectory() + "/Documents/test_small.bin"
+//        if FileManager.createFile(filePath: bigPath).isSuccess {
+//
+//            FileManager.default.createFile(atPath: bigPath, contents: data_240_240, attributes: nil)
+//        }
+//        if FileManager.createFile(filePath: smallPath).isSuccess {
+//
 //            FileManager.default.createFile(atPath: smallPath, contents: data_80_80, attributes: nil)
 //        }
         
@@ -7536,7 +7884,7 @@ import CoreLocation
         
         var switchCount = UInt16(isOpen) ?? 0
         if self.functionListModel?.functionDetail_notification?.isSupportExtensionNotification == true {
-            if switchCount >> 14 == 0 {
+            if (switchCount >> 14 & 0x01) == 0 {
                 switchCount = switchCount + (1 << 14)
             }
         }
@@ -7550,7 +7898,7 @@ import CoreLocation
             UInt8((switchCount >> 8) & 0xff)
         ]
         
-        if extensionCount > 0 && self.functionListModel?.functionDetail_notification?.isSupportExtensionNotification == true {
+        if self.functionListModel?.functionDetail_notification?.isSupportExtensionNotification == true {
         val = [
             0x02,
             0x01,
@@ -7600,7 +7948,7 @@ import CoreLocation
             switchCount += 1 << (array[i])
         }
         if self.functionListModel?.functionDetail_notification?.isSupportExtensionNotification == true {
-            if switchCount >> 14 == 0 {
+            if (switchCount >> 14 & 0x01) == 0 {
                 switchCount = switchCount + (1 << 14)
             }
         }
@@ -7618,7 +7966,8 @@ import CoreLocation
             UInt8(switchCount & 0xff),
             UInt8((switchCount >> 8) & 0xff)
         ]
-        if extensionCount > 0 && self.functionListModel?.functionDetail_notification?.isSupportExtensionNotification == true {
+        //2024.4.3何工P5X设备去掉 extensionCount > 0 && 的判断，因为后续拓展的开关关掉如果不发4byte的长度拓展设置无法更改。不确定此操作在之前的设备是否会闪退
+        if self.functionListModel?.functionDetail_notification?.isSupportExtensionNotification == true {
         val = [
             0x02,
             0x01,
@@ -9935,14 +10284,23 @@ import CoreLocation
             var packetCount = 0
             while contentIndex < contentVal.count {
                 //分包添加总包数跟包序号
-                let maxCount =  contentVal.count / (maxMtuCount - 10)
+                let maxCount =  contentVal.count / (maxMtuCount - 10) + (contentVal.count % (maxMtuCount - 10) > 0 ? 1 : 0)
                 let packetVal:[UInt8] = [
                     UInt8((maxCount ) & 0xff),
                     UInt8((maxCount >> 8) & 0xff),
-                    UInt8((packetCount ) & 0xff),
-                    UInt8((packetCount >> 8) & 0xff)
+                    UInt8((packetCount+1 ) & 0xff),
+                    UInt8(((packetCount+1) >> 8) & 0xff)
                 ]
                 
+                //嵌入式何工把长度这部分修改为 多包也只发当前包的长度
+                if packetCount < maxCount - 1 {
+                    headVal[headVal.count-1] = UInt8(((maxMtuCount - 10) >> 8) & 0xff) + firstBit
+                    headVal[headVal.count-2] = UInt8(((maxMtuCount - 10)) & 0xff)
+                }else{
+                    let countValue = contentVal.count - packetCount * (maxMtuCount - 10)
+                    headVal[headVal.count-1] = UInt8((countValue >> 8) & 0xff) + firstBit
+                    headVal[headVal.count-2] = UInt8((countValue) & 0xff)
+                }
                 let startIndex = packetCount*(maxMtuCount - 10)
                 //print("(packetCount+1)*(maxMtuCount - 10) = \((packetCount+1)*(maxMtuCount - 10)),(startIndex + contentVal.count - packetCount*(maxMtuCount - 10)) = \((startIndex + contentVal.count - packetCount*(maxMtuCount - 10)))")
                 let endIndex = (packetCount+1)*(maxMtuCount - 10) <= contentVal.count ? (packetCount+1)*(maxMtuCount - 10) : (startIndex + contentVal.count - packetCount*(maxMtuCount - 10))
@@ -9961,6 +10319,34 @@ import CoreLocation
                 packetCount += 1
                 contentIndex = endIndex
             }
+//            {
+//                //分包添加总包数跟包序号
+//                let maxCount =  contentVal.count / (maxMtuCount - 10) + (contentVal.count % (maxMtuCount - 10) > 0 ? 1 : 0)
+//                let packetVal:[UInt8] = [
+//                    UInt8((maxCount ) & 0xff),
+//                    UInt8((maxCount >> 8) & 0xff),
+//                    UInt8((packetCount ) & 0xff),
+//                    UInt8((packetCount >> 8) & 0xff)
+//                ]
+//                
+//                let startIndex = packetCount*(maxMtuCount - 10)
+//                //print("(packetCount+1)*(maxMtuCount - 10) = \((packetCount+1)*(maxMtuCount - 10)),(startIndex + contentVal.count - packetCount*(maxMtuCount - 10)) = \((startIndex + contentVal.count - packetCount*(maxMtuCount - 10)))")
+//                let endIndex = (packetCount+1)*(maxMtuCount - 10) <= contentVal.count ? (packetCount+1)*(maxMtuCount - 10) : (startIndex + contentVal.count - packetCount*(maxMtuCount - 10))
+//                let subContentVal =  Array(contentVal[startIndex..<endIndex])
+//                                
+//                var val = headVal + packetVal + subContentVal
+//                
+//                let check = CRC16(val: val)
+//                let checkVal = [UInt8((check ) & 0xff),UInt8((check >> 8) & 0xff)]
+//                
+//                val += checkVal
+//                
+//                let data = Data.init(bytes: &val, count: val.count)
+//                dataArray.append(data)
+//                
+//                packetCount += 1
+//                contentIndex = endIndex
+//            }
             
         }else{
             var val = headVal + contentVal
@@ -10052,7 +10438,7 @@ import CoreLocation
     // MARK: - 同步数据
     /// 同步数据
     /// - Parameters:
-    ///   - type: 1：步数，2：心率，3：睡眠，4、锻炼数据
+    ///   - type: 1：步数，2：心率，3：睡眠，4、锻炼数据 5锻炼数据基础信息
     ///   - indexArray: <#indexArray description#>
     ///   - success: <#success description#>
     @objc public func setNewSyncHealthData(type:Int,indexArray:[Int],success:@escaping((Any?,ZyError) -> Void)) {
@@ -10061,7 +10447,7 @@ import CoreLocation
             return
         }
         
-        if type < 1 || type > 4 {
+        if type < 1 || type > 5 {
             print("输入参数超过范围,返回失败")
             success(nil,.fail)
             return
@@ -10116,25 +10502,38 @@ import CoreLocation
         let type = val[0]
         var count:Int = Int(val[1])
         var valIndex = 2
-
+/*{length = 58 , bytes = 0xaa 05 34 00 05 0a 00 00 00 00 00 01 00 00 00 00 02 00 00 00 00 03 00 00 00 00 04 00 00 00 00 05 00 00 00 00 06 00 00 00 00 07 00 00 00 00 08 00 00 00 00 09 00 00 00 00 fe ae}*/
         while valIndex < val.count {
             let number = val[valIndex]
-            var length:Int = Int(val[valIndex+1])
+            var length:Int = 0
             var countLength = 2
-            if type == 2 || type == 3 {
-                length = (Int(val[valIndex+1]) | Int(val[valIndex+2]) << 8)
-                countLength = 3
-            }
-            if type == 4 {
-                if Int(val[valIndex+1]) == 255 {
-                    length = (Int(val[valIndex+2]) | Int(val[valIndex+3]) << 8 | Int(val[valIndex+4]) << 16 | Int(val[valIndex+5]) << 24)
-                    countLength = 6
+            if type == 5 {
+                countLength = 5
+                let gpsLength = (Int(val[valIndex+1]) | Int(val[valIndex+2]) << 8 | Int(val[valIndex+3]) << 16 | Int(val[valIndex+4]) << 24)
+                if gpsLength > 0 {
+                    length = 4
+                    countLength = 10
+                    syncDic["\(number)"] = NSNull()
+                    let modelVal:[UInt8] = Array(val[valIndex..<(valIndex+countLength+Int(length))])
+                    syncDic["\(number)"] = self.getNewProtocalHealthModel(type: Int(type), day: Int(number), val: modelVal, isGpsLengthCheck: true)
                 }
-            }
-            syncDic["\(number)"] = NSNull()
-            if length > 0 {
-                let modelVal:[UInt8] = Array(val[valIndex+countLength..<(valIndex+countLength+Int(length))])
-                syncDic["\(number)"] = self.getNewProtocalHealthModel(type: Int(type), day: Int(number), val: modelVal, isGpsLengthCheck: true)
+            }else{
+                length = Int(val[valIndex+1])
+                if type == 2 || type == 3 {
+                    length = (Int(val[valIndex+1]) | Int(val[valIndex+2]) << 8)
+                    countLength = 3
+                }
+                if type == 4 {
+                    if Int(val[valIndex+1]) == 255 {
+                        length = (Int(val[valIndex+2]) | Int(val[valIndex+3]) << 8 | Int(val[valIndex+4]) << 16 | Int(val[valIndex+5]) << 24)
+                        countLength = 6
+                    }
+                }
+                syncDic["\(number)"] = NSNull()
+                if length > 0 {
+                    let modelVal:[UInt8] = Array(val[valIndex+countLength..<(valIndex+countLength+Int(length))])
+                    syncDic["\(number)"] = self.getNewProtocalHealthModel(type: Int(type), day: Int(number), val: modelVal, isGpsLengthCheck: true)
+                }
             }
             valIndex = (valIndex+countLength+Int(length))
         }
@@ -10315,6 +10714,18 @@ import CoreLocation
             }
             
             let model = ZyExerciseModel.init(dic: ["startTime":startTime,"type":"\(type)","hr":"\(hr)","validTimeLength":"\(validTimeLength)","step":"\(step)","endTime":"\(endTime)","calorie":"\(calorie)","distance":"\(distance)","gpsArray":gpsArray])
+            return model
+        }else if type == 5 {
+            let index = Int(val[0])
+            let gpsLength = (Int(val[1]) | Int(val[2]) << 8 | Int(val[3]) << 16 | Int(val[4]) << 24)
+            let startTime = String.init(format: "%04d-%02d-%02d %02d:%02d:%02d", (Int(val[5]) | (Int(val[6]) << 8)),val[7],val[8],val[10],val[11],val[12])
+            let type = Int(val[13])
+            print("index = \(index),gpsLength = \(gpsLength),startTime = \(startTime),type = \(type)")
+            let model = ZyExerciseBasicModel.init()
+            model.index = index
+            model.gpsLength = gpsLength
+            model.startTime = startTime
+            model.type = ZyExerciseType.init(rawValue: type) ?? .runOutside
             return model
         }
         return nil
@@ -10650,8 +11061,11 @@ import CoreLocation
         }
 
         ZySDKLog.writeStringToSDKLog(string: String.init(format: "parseSyncMeasurementData待解析数据:\nlength = %d, bytes = %@",valData.count, self.convertDataToHexStr(data: valData)))
-        var syncDic = [String:Any?]()
-        
+        if val.count <= 2 {
+            success([],.fail)
+            self.signalCommandSemaphore()
+            return
+        }
         let type = val[0]
         let measureType = val[1]
         var count:Int = Int(val[2])
@@ -10660,13 +11074,13 @@ import CoreLocation
         let model = ZyMeasurementModel()
         model.type = ZyMeasurementType.init(rawValue: Int(type)) ?? .heartrate
         model.timeInterval = Int(allDayInterval)
+        var valueModelArray:[ZyMeasurementValueModel] = .init()
         while valIndex < val.count {
             let number = val[valIndex]
             var length:Int = (Int(val[valIndex+1]) | Int(val[valIndex+2]) << 8)
             let countLength = 3
             
             if length > 0 {
-                var valueModelArray:[ZyMeasurementValueModel] = .init()
                 let modelVal:[UInt8] = Array(val[valIndex+countLength..<(valIndex+countLength+Int(length))])
                 
                 if type == 1 || type == 2 || type == 5 || type == 4 || type == 7 {
@@ -10676,6 +11090,7 @@ import CoreLocation
                                 let valueModel = ZyMeasurementValueModel()
                                 valueModel.time = String.init(format: "%02d:%02d", val[valIndex+countLength+i*3],val[valIndex+countLength+i*3+1])
                                 valueModel.value_2 = Int(val[valIndex+countLength+i*3+2])
+                                valueModel.dayIndex = Int(number)
                                 valueModelArray.append(valueModel)
                             }
                         }else{
@@ -10684,10 +11099,14 @@ import CoreLocation
                             return
                         }
                     }else if measureType == 1 {
-                        for i in 0..<modelVal.count {
+                        for i in 0..<modelVal.count/3 {
                             let valueModel = ZyMeasurementValueModel()
-                            valueModel.time = String.init(format: "%02d:%02d", i * Int(allDayInterval) / 60 , i * Int(allDayInterval) % 60)
-                            valueModel.value_2 = Int(val[valIndex+countLength+i])
+                            //valueModel.time = String.init(format: "%02d:%02d", i * Int(allDayInterval) / 60 , i * Int(allDayInterval) % 60)
+                            //valueModel.value_2 = Int(val[valIndex+countLength+i])
+                            //改成成测量数据一致的格式
+                            valueModel.time = String.init(format: "%02d:%02d", val[valIndex+countLength+i*3],val[valIndex+countLength+i*3+1])
+                            valueModel.value_2 = Int(val[valIndex+countLength+i*3+2])
+                            valueModel.dayIndex = Int(number)
                             valueModelArray.append(valueModel)
                         }
                     }
@@ -10700,6 +11119,7 @@ import CoreLocation
                                 valueModel.time = String.init(format: "%02d:%02d", val[valIndex+countLength+i*4],val[valIndex+countLength+i*4+1])
                                 valueModel.value_1 = Int(val[valIndex+countLength+i*4+2])
                                 valueModel.value_2 = Int(val[valIndex+countLength+i*4+3])
+                                valueModel.dayIndex = Int(number)
                                 valueModelArray.append(valueModel)
                             }
                         }else{
@@ -10708,11 +11128,16 @@ import CoreLocation
                             return
                         }
                     }else if measureType == 1 {
-                        for i in 0..<modelVal.count/2 {
+                        for i in 0..<modelVal.count/4 {
                             let valueModel = ZyMeasurementValueModel()
-                            valueModel.time = String.init(format: "%02d:%02d", i * Int(allDayInterval) / 60 , i * Int(allDayInterval) % 60)
-                            valueModel.value_1 = Int(val[valIndex+countLength+i])
-                            valueModel.value_2 = Int(val[valIndex+countLength+i+1])
+                            //valueModel.time = String.init(format: "%02d:%02d", i * Int(allDayInterval) / 60 , i * Int(allDayInterval) % 60)
+                            //valueModel.value_1 = Int(val[valIndex+countLength+i])
+                            //valueModel.value_2 = Int(val[valIndex+countLength+i+1])
+                            //改成成测量数据一致的格式
+                            valueModel.time = String.init(format: "%02d:%02d", val[valIndex+countLength+i*4],val[valIndex+countLength+i*4+1])
+                            valueModel.value_1 = Int(val[valIndex+countLength+i*4+2])
+                            valueModel.value_2 = Int(val[valIndex+countLength+i*4+3])
+                            valueModel.dayIndex = Int(number)
                             valueModelArray.append(valueModel)
                         }
                     }
@@ -10725,6 +11150,7 @@ import CoreLocation
                                 valueModel.time = String.init(format: "%02d:%02d", val[valIndex+countLength+i*6],val[valIndex+countLength+i*6+1])
                                 valueModel.value_1 = (Int(val[valIndex+countLength+i*6+2]) | Int(val[valIndex+countLength+i*6+3]) << 8)
                                 valueModel.value_2 = (Int(val[valIndex+countLength+i*6+4]) | Int(val[valIndex+countLength+i*6+5]) << 8)
+                                valueModel.dayIndex = Int(number)
                                 valueModelArray.append(valueModel)
                             }
                         }else{
@@ -10733,10 +11159,15 @@ import CoreLocation
                             return
                         }
                     }else if measureType == 1 {
-                        for i in 0..<modelVal.count/2 {
+                        for i in 0..<modelVal.count/6 {
                             let valueModel = ZyMeasurementValueModel()
-                            valueModel.time = String.init(format: "%02d:%02d", i * Int(allDayInterval) / 60 , i * Int(allDayInterval) % 60)
-                            valueModel.value_2 = (Int(val[valIndex+countLength+i*2]) | Int(val[valIndex+countLength+i*2+1]) << 8)
+                            //valueModel.time = String.init(format: "%02d:%02d", i * Int(allDayInterval) / 60 , i * Int(allDayInterval) % 60)
+                            //valueModel.value_2 = (Int(val[valIndex+countLength+i*2]) | Int(val[valIndex+countLength+i*2+1]) << 8)
+                            //改成成测量数据一致的格式
+                            valueModel.time = String.init(format: "%02d:%02d", val[valIndex+countLength+i*6],val[valIndex+countLength+i*6+1])
+                            valueModel.value_1 = (Int(val[valIndex+countLength+i*6+2]) | Int(val[valIndex+countLength+i*6+3]) << 8)
+                            valueModel.value_2 = (Int(val[valIndex+countLength+i*6+4]) | Int(val[valIndex+countLength+i*6+5]) << 8)
+                            valueModel.dayIndex = Int(number)
                             valueModelArray.append(valueModel)
                         }
                     }
@@ -10744,9 +11175,6 @@ import CoreLocation
                 model.listArray = valueModelArray
             }
             valIndex = (valIndex+countLength+Int(length))
-        }
-        if syncDic.keys.count != count {
-            ZySDKLog.writeStringToSDKLog(string: "数据获取条数不一致: 总数:\(count),实际接收:\(syncDic.keys.count)")
         }
         success(model,.none)
         self.signalCommandSemaphore()
@@ -10832,10 +11260,12 @@ import CoreLocation
             print("当前设备不支持此命令。请使用setAlarm")
             return
         }
+        var modelArray = modelArray
         if modelArray.count <= 0 {
-            print("输入参数超过范围,返回失败")
-            success(.fail)
-            return
+            let zyModel = ZyAlarmModel.init()
+            zyModel.isValid = false
+            zyModel.alarmIndex = 0
+            modelArray.append(zyModel)
         }
         let headVal:[UInt8] = [
             0xaa,
@@ -11059,14 +11489,29 @@ import CoreLocation
         let cmd_id = 0x1a
         
         let nameData = model.name.data(using: .utf8) ?? .init()
+        //要限制长度<=64字符
+        if nameData.count >= 64 {
+            let aData = nameData.subdata(in: 0..<64)
+            let str = NSString.init(data: aData, encoding:4)
+            print("str = \(str)")
+            
+            let strUtf8 = String.init(data: aData, encoding: .utf8)
+            print("strUtf8 = \(strUtf8)")
+            let test = String.init(data: nameData, encoding: .utf8)
+            print("nameData = \(test)")
+            print("\(model.name) 长度超过64，截取为:\(String.init(format: "%@", aData as CVarArg))")
+        }
         let nameValArray = nameData.withUnsafeBytes { (byte) -> [UInt8] in
             let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
-            return [UInt8](UnsafeBufferPointer.init(start: b, count: nameData.count))
+            return [UInt8](UnsafeBufferPointer.init(start: b, count: nameData.count >= 64 ? 64 : nameData.count))
         }
         let phoneData = model.phoneNumber.data(using: .utf8) ?? .init()
+        if phoneData.count >= 32 {
+            print("\(model.phoneNumber) 长度超过32，截取为:\(String.init(data: phoneData.subdata(in: 0..<32), encoding: .utf8))")
+        }
         let phoneValArray = phoneData.withUnsafeBytes { (byte) -> [UInt8] in
             let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
-            return [UInt8](UnsafeBufferPointer.init(start: b, count: phoneData.count))
+            return [UInt8](UnsafeBufferPointer.init(start: b, count: phoneData.count >= 32 ? 32 : phoneData.count))
         }
         //参数长度
         let modelCount = 2 + nameValArray.count + phoneValArray.count
@@ -11163,7 +11608,7 @@ import CoreLocation
     ///   - type: 1：心率，2：血氧，3：血压，4：血糖，5：压力，6.体温，7：心电，
     ///   - isOpen: 0：关 1：开
     ///   - timeInterval: 开关为开必须>0
-    @objc public func setCycleMeasurementParameters(type:Int,isOpen:Int,timeInterval:Int,success:@escaping((ZyError) -> Void)) {
+    @objc public func setCycleMeasurementParameters(type:Int,isOpen:Int,timeInterval:Int,startHour:Int,startMinute:Int,endHour:Int,endMinute:Int,success:@escaping((ZyError) -> Void)) {
         if self.functionListModel?.functionList_newPortocol == false {
             print("当前设备不支持此命令。")
             return
@@ -11183,6 +11628,26 @@ import CoreLocation
             print("输入参数超过范围,改为默认值0")
             timeInterval = 0
         }
+        var startHour = startHour
+        if startHour > UInt8.max || startHour < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            startHour = 0
+        }
+        var startMinute = startMinute
+        if startMinute > UInt8.max || startMinute < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            startMinute = 0
+        }
+        var endHour = endHour
+        if endHour > UInt8.max || endHour < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            endHour = 0
+        }
+        var endMinute = endMinute
+        if endMinute > UInt8.max || endMinute < UInt8.min {
+            print("输入参数超过范围,改为默认值0")
+            endMinute = 0
+        }
         var headVal:[UInt8] = [
             0xaa,
             0x83
@@ -11191,7 +11656,7 @@ import CoreLocation
         //参数id
         let cmd_id = 0x1b
         //参数长度
-        let modelCount = 4
+        let modelCount = 8
         
         var contentVal:[UInt8] = [
             0x01,
@@ -11203,6 +11668,10 @@ import CoreLocation
             UInt8((isOpen ) & 0xff),
             UInt8((timeInterval ) & 0xff),
             UInt8((timeInterval >> 8) & 0xff),
+            UInt8(startHour),
+            UInt8(startMinute),
+            UInt8(endHour),
+            UInt8(endMinute)
         ]
         
         self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
@@ -11212,6 +11681,59 @@ import CoreLocation
                 success(error)
             }
         }
+    }
+    
+//    // MARK: - 获取周期测量参数
+    @objc public func getCycleMeasurementParameters(_ success:@escaping(([ZyCycleMeasurementModel]?,ZyError) -> Void)) {
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。")
+            return
+        }
+
+        let headVal:[UInt8] = [
+            0xaa,
+            0x84
+        ]
+        
+        //参数id
+        let cmd_id = 0x1b
+        
+        let contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveGetCycleMeasurementParametersBlock = success
+            }else{
+                success(nil,error)
+            }
+        }
+    }
+    
+    private func parseGetCycleMeasurementParameters(val:[UInt8],success:@escaping(([ZyCycleMeasurementModel]?,ZyError) -> Void)) {
+        
+        var cycleArray:[ZyCycleMeasurementModel] = .init()
+        for i in 0..<Int(val.count)/8 {
+            if val.count > (i+1) * 8 {
+                let model = ZyCycleMeasurementModel.init()
+                model.type = ZyMeasurementType.init(rawValue: Int(val[i*8])) ?? .bloodOxygen
+                model.isOpen = val[i*8+1] == 0 ? false : true
+                model.timeInterval = (Int(val[i*8+2]) | Int(val[i*8+3]) << 8 )
+                model.timeModel.startHour = Int(val[i*8+4])
+                model.timeModel.startMinute = Int(val[i*8+5])
+                model.timeModel.endHour = Int(val[i*8+6])
+                model.timeModel.endMinute = Int(val[i*8+7])
+                cycleArray.append(model)
+            }
+        }
+        
+        success(cycleArray,.none)
+        
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
     }
             
     // MARK: - 获取朝拜闹钟数据
@@ -11470,6 +11992,22 @@ import CoreLocation
         ZySDKLog.writePowerConsumptionStringToSDKLog(string: str)
     }
     
+    // MARK: - 上报治疗状态
+    @objc public func reportTreatmentStatus(success:@escaping((_ type:Int,_ error:ZyError) -> Void)) {
+        self.receiveReportTreatmentStatus = success
+    }
+    
+    private func parseReportTreatmentStatus(val:[UInt8],success:@escaping((_ type:Int, _ error:ZyError) -> Void)) {
+        
+        if val.count >= 1 {
+            let state = Int(val[0])
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "治疗状态上报:\(state) 0开始1进行中2结束"))
+            success(state,.none)
+        }else{
+            success(0,.invalidState)
+        }
+    }
+    
     // MARK: - 上报请求定位信息
     @objc public func reportLocationInfo(success:@escaping((_ error:ZyError) -> Void)) {
         self.receiveReportLocationInfo = success
@@ -11493,7 +12031,7 @@ import CoreLocation
         //参数id
         let cmd_id = 1
         //参数长度
-        let modelCount = 12
+        let modelCount = 20
         
         var latitude:Int = Int(localtion.coordinate.latitude * 1000000)
         var longitude:Int = Int(localtion.coordinate.longitude * 1000000)
@@ -11506,6 +12044,21 @@ import CoreLocation
         //print("latitude = \(latitude),longitude = \(longitude)")
         let direction:Int = Int(localtion.course) < 0 ? 0 : Int(localtion.course)
         let speed:Int = Int(localtion.speed * 100) < 0 ? 0 : Int(localtion.speed * 100)
+        
+        let date = Date()
+        let calendar = Calendar.init(identifier: Foundation.Calendar.Identifier.gregorian)
+        let year = calendar.component(.year, from: date)
+        let month = calendar.component(.month, from: date)
+        let day = calendar.component(.day, from: date)
+        let hour = calendar.component(.hour, from: date)
+        let minute = calendar.component(.minute, from: date)
+        let second = calendar.component(.second, from: date)
+        
+        let systemZone = NSTimeZone.local.secondsFromGMT()
+        var deviceZone = systemZone / 3600
+        let timeZone = deviceZone < 0 ? (-deviceZone + 12) : deviceZone
+        print("NSTimeZone = \(NSTimeZone.default),systemZone = \(systemZone)")
+        print("系统时区:\(deviceZone),参数时区:\(timeZone)")
         
         var contentVal:[UInt8] = [
             0x01,
@@ -11524,6 +12077,14 @@ import CoreLocation
             UInt8((direction >> 8) & 0xff),
             UInt8(speed / 100),
             UInt8(speed % 100),
+            UInt8((year ) & 0xff),
+            UInt8((year >> 8) & 0xff),
+            UInt8(month),
+            UInt8(day),
+            UInt8(hour),
+            UInt8(minute),
+            UInt8(second),
+            UInt8(timeZone),
         ]
 
             var dataArray:[Data] = []
@@ -12286,7 +12847,527 @@ import CoreLocation
             }
         }
     }
+    
+    // MARK: - 设置自定义血糖
+    @objc public func setCustomBloodSugarScope(modelArray:[ZyCustomBloodSugar],success:@escaping((ZyError) -> Void)) {
+        
+        let headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 0x22
+        //参数长度
+        let modelCount = modelArray.count * 8 + 1//闹钟个数
+        
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
+            UInt8(modelArray.count)
+        ]
 
+        for model in modelArray {
+            let index = model.indexId
+
+            let isOpen = model.isOpen
+            let startHour = model.startHour
+            let startMinute = model.startMinute
+            let endHour = model.endHour
+            let endMinute = model.endMinute
+            let maxValue = model.maxValue
+            let minValue = model.minValue
+
+            contentVal.append(UInt8(0x08))
+            contentVal.append(UInt8(index))
+            contentVal.append(UInt8(isOpen ? 0x01 : 0x00))
+            contentVal.append(UInt8(startHour))
+            contentVal.append(UInt8(startMinute))
+            contentVal.append(UInt8(endHour))
+            contentVal.append(UInt8(endMinute))
+            contentVal.append(UInt8(maxValue))
+            contentVal.append(UInt8(minValue))
+        }
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetCustomBloodSugarScopeBlock = success
+            }else{
+                success(error)
+            }
+        }
+    }
+    
+    // MARK: - 获取自定义血糖
+    @objc public func getCustomBloodSugarScope(success:@escaping(([ZyCustomBloodSugar],ZyError) -> Void))  {
+
+        let headVal:[UInt8] = [
+            0xaa,
+            0x84
+        ]
+        
+        //参数id
+        let cmd_id = 0x22
+        
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveGetCustomBloodSugarScopeBlock = success
+            }else{
+                success([],error)
+            }
+        }
+    }
+    
+    func parseGetCustomBloodSugarScope(val:[UInt8],success:@escaping(([ZyCustomBloodSugar],ZyError) -> Void)) {
+        
+        let valData = val.withUnsafeBufferPointer { (v) -> Data in
+            return Data.init(buffer: v)
+        }
+
+        ZySDKLog.writeStringToSDKLog(string: String.init(format: "parseGetCustomBloodSugarScope待解析数据:\nlength = %d, bytes = %@",valData.count, self.convertDataToHexStr(data: valData)))
+        var bloodSugarArray = [ZyCustomBloodSugar]()
+
+        let bsCount = val[0]
+        var valIndex = 1
+        while valIndex < val.count {
+            let length = val[valIndex]
+            if length >= 8 {
+                let indexId = val[valIndex+1]
+                let isOpen = val[valIndex+2]
+                let startHour = val[valIndex+3]
+                let startMinute = val[valIndex+4]
+                let endHour = val[valIndex+5]
+                let endMinute = val[valIndex+6]
+                let maxValue = val[valIndex+7]
+                let minValue = val[valIndex+8]
+                let string = String.init(format: "序号:%d,开关:%d,开始时间:%02d:%02d,结束时间:%02d:%02d,最大值:%.1f,最小值:%.1f",indexId,isOpen,startHour,startMinute,endHour,endMinute,Float(maxValue)/10.0,Float(minValue)/10.0)
+                print("\(string)")
+                ZySDKLog.writeStringToSDKLog(string: string)
+                let model = ZyCustomBloodSugar.init(dic: ["indexId":"\(indexId)","isOpen":"\(isOpen)","startHour":String.init(format: "%02d", startHour),"startMinute":String.init(format: "%02d", startMinute),"endHour":String.init(format: "%02d", endHour),"endMinute":String.init(format: "%02d", endMinute),"maxValue":"\(maxValue)","minValue":"\(minValue)"])
+                bloodSugarArray.append(model)
+                valIndex += Int(length+1)
+            }
+        }
+        if bsCount == bloodSugarArray.count {
+            success(bloodSugarArray,.none)
+        }else{
+            print("获取自定义血糖个数不一致,返回失败")
+            ZySDKLog.writeStringToSDKLog(string: "获取自定义血糖个数不一致,返回失败")
+            success([],.fail)
+        }
+        
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 设置消息提醒方式
+    @objc public func setMessageRemindType(index:Int,success:@escaping((ZyError) -> Void)) {
+        
+        let headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 0x23
+        //参数长度
+        let modelCount = 1
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
+            UInt8(index),
+        ]
+
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetMessageRemindTypeBlock = success
+            }else{
+                success(error)
+            }
+        }
+    }
+
+    // MARK: - 获取消息提醒方式
+    @objc public func getMessageRemindType(success:@escaping((Int,ZyError) -> Void)) {
+        
+        let headVal:[UInt8] = [
+            0xaa,
+            0x84
+        ]
+        
+        //参数id
+        let cmd_id = 0x23
+        
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveGetMessageRemindTypeBlock = success
+            }else{
+                success(-1,error)
+            }
+        }
+    }
+    
+    func parseGetMessageRemindType(val:[UInt8],success:@escaping((Int,ZyError) -> Void)) {
+        
+        if val.count == 1 {
+            let type = Int(val[0])
+            let string = String.init(format: "%d",type)
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "解析:%@",string))
+            success(Int(type),.none)
+        }else{
+            success(-1,.invalidState)
+        }
+
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 设置治疗信息
+    @objc public func setTreatmentInfomation(model:ZyTreatmentModel,success:@escaping((ZyError) -> Void)) {
+        
+        let headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 0x25
+        var contentVal:[UInt8] = [0x01,
+                                  UInt8((cmd_id ) & 0xff),
+                                  UInt8((cmd_id >> 8) & 0xff),
+                                  0x00,
+                                  0x00]
+        contentVal.append(UInt8(model.type))
+        contentVal.append(model.isOpen ? 0x01 : 0x00)
+        contentVal.append(UInt8(model.timeDic.count))
+        for (key,value) in model.timeDic {
+            let timeArray = key.components(separatedBy: ":")
+            if let hour = timeArray.first{
+                contentVal.append(UInt8(hour) ?? 0)
+            }
+            if let minute = timeArray.last {
+                contentVal.append(UInt8(minute) ?? 0)
+            }
+            contentVal.append(UInt8((Int(value) ?? 0) & 0xff))
+            contentVal.append(UInt8(((Int(value) ?? 0) >> 8) & 0xff) ?? 0)
+        }
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "yyyy-MM-dd"
+        let calendar = Calendar.init(identifier: Foundation.Calendar.Identifier.gregorian)
+        contentVal.append(UInt8(model.dateDic.count))
+        
+        for (key,value) in model.dateDic {
+            if let date = timeFormatter.date(from: key) {
+                let year = calendar.component(.year, from: date)
+                let month = calendar.component(.month, from: date)
+                let day = calendar.component(.day, from: date)
+                
+                contentVal.append(UInt8((year ) & 0xff))
+                contentVal.append(UInt8((year >> 8) & 0xff))
+                contentVal.append(UInt8(month))
+                contentVal.append(UInt8(day))
+                contentVal.append(UInt8(value) ?? 0)
+            }
+        }
+        //参数长度
+        let modelCount = (contentVal.count - 5)
+        contentVal[3] = UInt8((modelCount) & 0xFF)
+        contentVal[4] = UInt8((modelCount >> 8) & 0xFF)
+
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetTreatmentInfomationBlock = success
+            }else{
+                success(error)
+            }
+        }
+    }
+    
+    // MARK: - 获取治疗信息
+    @objc public func getTreatmentInfomation(success:@escaping((ZyTreatmentModel?,ZyError) -> Void)) {
+        
+        let headVal:[UInt8] = [
+            0xaa,
+            0x84
+        ]
+        
+        //参数id
+        let cmd_id = 0x25
+        
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveGetTreatmentInfomationBlock = success
+            }else{
+                success(nil,error)
+            }
+        }
+    }
+    
+    func parseGetTreatmentInfomation(val:[UInt8],success:@escaping((ZyTreatmentModel?,ZyError) -> Void)) {
+        
+        if val.count > 2 {
+            
+            let type = Int(val[0])
+            let isOpen = Int(val[1])
+            let timeCount = Int(val[2])
+            var dateCount = 0
+            var timeDic:[String:String] = .init()
+            var dateDic:[String:String] = .init()
+            if timeCount * 4 + 2 < val.count {
+                let timeVal = Array(val[3..<(timeCount * 4 + 3)])
+                for i in 0..<timeCount {
+                    let hour = timeVal[i*4]
+                    let minute = timeVal[i*4 + 1]
+                    let timeLength = (Int(timeVal[i*4 + 2]) | Int(timeVal[i*4 + 3]) << 8)
+                    let key = String.init(format: "%02d:%02d", hour,minute)
+                    let value = String.init(format: "%d", timeLength)
+                    timeDic[key] = value
+                }
+                dateCount = Int(val[timeCount * 4 + 3])
+            }
+            if dateCount * 5 + 4 < val.count {
+                let dateVal = Array(val[(timeCount * 4 + 4)..<(timeCount * 4 + 4 + dateCount * 5)])
+                for i in 0..<dateCount {
+                    let year = (Int(dateVal[i*5]) | Int(dateVal[i*5 + 1]) << 8)
+                    let month = dateVal[i*5 + 2]
+                    let day = dateVal[i*5 + 3]
+                    let count = dateVal[i*5 + 4]
+                    let key = String.init(format: "%04d-%02d-%02d", year,month,day)
+                    let value = String.init(format: "%d", count)
+                    dateDic[key] = value
+                }
+            }
+            let treatmentModel = ZyTreatmentModel()
+            treatmentModel.type = type
+            treatmentModel.isOpen = isOpen == 0 ? false:true
+            treatmentModel.timeDic = timeDic
+            treatmentModel.dateDic = dateDic
+            var string = ""
+            string += String.init(format: "\n类型:%d",type)
+            string += String.init(format: "\n开关:%d",isOpen)
+            for (key,value) in timeDic {
+                string += String.init(format: "\n%@:%@",key,value)
+            }
+            for (key,value) in dateDic {
+                string += String.init(format: "\n%@:%@",key,value)
+            }
+            
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "解析:%@",string))
+            success(treatmentModel,.none)
+        }else{
+            success(nil,.invalidState)
+        }
+
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+        
+    // MARK: - 设置名片
+    @objc public func setBusinessCard(modelArray:[ZyBusinessCardModel],success:@escaping((ZyError) -> Void)) {
+        
+        let headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 0x24
+        var contentVal:[UInt8] = [0x01,
+                                  UInt8((cmd_id ) & 0xff),
+                                  UInt8((cmd_id >> 8) & 0xff),
+                                  0x00,
+                                  0x00]
+        contentVal.append(UInt8(modelArray.count))
+        for i in 0..<modelArray.count {
+            let cardModel = modelArray[i]
+            if let detailModel = self.functionListModel?.functionDetail_businessCard {
+                var titleData = cardModel.titleString.data(using: .utf8) ?? .init()
+                if titleData.count >= detailModel.titleLength {
+                    titleData = titleData.subdata(in: 0..<detailModel.titleLength)
+                }
+                let titleValArray = titleData.withUnsafeBytes { (byte) -> [UInt8] in
+                    let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+                    return [UInt8](UnsafeBufferPointer.init(start: b, count: titleData.count))
+                }
+                var qrData = cardModel.qrString.data(using: .utf8) ?? .init()
+                if qrData.count >= detailModel.qrLength {
+                    qrData = qrData.subdata(in: 0..<detailModel.qrLength)
+                }
+                let qrValArray = qrData.withUnsafeBytes { (byte) -> [UInt8] in
+                    let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+                    return [UInt8](UnsafeBufferPointer.init(start: b, count: qrData.count))
+                }
+                contentVal.append(UInt8(cardModel.index))
+                contentVal.append(UInt8(titleData.count))
+                contentVal.append(contentsOf: titleValArray)
+                contentVal.append(UInt8(qrData.count & 0xFF))
+                contentVal.append(UInt8((qrData.count >> 8) & 0xFF))
+                contentVal.append(contentsOf: qrValArray)
+            }
+        }
+        //参数长度
+        let modelCount = (contentVal.count - 5)//modelArray.count > 0 ? (contentVal.count - 5) : 0
+        contentVal[3] = UInt8((modelCount) & 0xFF)
+        contentVal[4] = UInt8((modelCount >> 8) & 0xFF)
+
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetBusinessCardBlock = success
+            }else{
+                success(error)
+            }
+        }
+    }
+    
+    // MARK: - 获取名片
+    @objc public func getBusinessCard(success:@escaping(([ZyBusinessCardModel],ZyError) -> Void)) {
+        
+        let headVal:[UInt8] = [
+            0xaa,
+            0x84
+        ]
+        
+        //参数id
+        let cmd_id = 0x24
+        var maxCount = 0
+        if let model = self.functionListModel?.functionDetail_businessCard {
+            maxCount = model.maxCount
+        }
+        
+        let contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((maxCount ) & 0xff),
+            UInt8((maxCount >> 8) & 0xff),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveGetBusinessCardBlock = success
+            }else{
+                success([],error)
+            }
+        }
+    }
+    
+    func parseGetBusinessCard(val:[UInt8],success:@escaping(([ZyBusinessCardModel],ZyError) -> Void)) {
+        
+        if val.count > 1 {
+            let arrayCount = Int(val[0])
+            
+            var modelArray:[ZyBusinessCardModel] = .init()
+            var startIndex = 1
+            while startIndex < val.count {
+                let modelIndex = val[startIndex]
+                if startIndex+1 >= val.count {
+                    print("index+1 >= val.count 长度异常 不解析")
+                    startIndex = val.count
+                    continue
+                }
+                let titleLength = (val[startIndex+1])
+                startIndex += 1
+                print("titleLength = \(titleLength),startIndex = \(startIndex)")
+                if startIndex+Int(titleLength) > val.count {
+                    print("startIndex+2+functionLength 长度异常 不解析")
+                    startIndex = val.count
+                    continue
+                }
+                let titleVal = Array.init(val[(startIndex+1)..<(startIndex+1+Int(titleLength))])
+                startIndex += (Int(titleLength))
+                if titleVal.count <= 0 {
+                    print("数据异常不解析")
+                    //success(model,.fail)
+                    startIndex = val.count
+                    continue
+                }
+                
+                let qrLength = (Int(val[startIndex+1]) | Int(val[startIndex+2]) << 8)
+                startIndex += 2
+                print("qrLength = \(qrLength),startIndex = \(startIndex)")
+                if startIndex+Int(qrLength) > val.count {
+                    print("startIndex+2+qrLength 长度异常 不解析")
+                    startIndex = val.count
+                    continue
+                }
+                let qrVal = Array.init(val[(startIndex+1)..<(startIndex+1+Int(qrLength))])
+                startIndex += (Int(qrLength))
+                if qrVal.count <= 0 {
+                    print("数据异常不解析")
+                    //success(model,.fail)
+                    startIndex = val.count
+                    continue
+                }
+                let cardModel = ZyBusinessCardModel.init()
+                cardModel.index = Int(modelIndex)
+                let titleData = titleVal.withUnsafeBufferPointer { (bytes) -> Data in
+                    return Data.init(buffer: bytes)
+                }
+                if let str = String.init(data: titleData, encoding: .utf8) {
+                    cardModel.titleString = str
+                }
+
+                let qrData = qrVal.withUnsafeBufferPointer({ (bytes) -> Data in
+                    return Data.init(buffer: bytes)
+                })
+
+                if let str = String.init(data: qrData, encoding: .utf8) {
+                    cardModel.qrString = str
+                }
+                modelArray.append(cardModel)
+                startIndex += 1
+            }
+            
+            var string = ""
+            for item in modelArray {
+                string += String.init(format: "\n序号:%d",item.index)
+                string += String.init(format: "\n标题:%@",item.titleString)
+                string += String.init(format: "\n二维码:%@",item.qrString)
+                string += "\n"
+            }
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "解析:%@",string))
+            success(modelArray,.none)
+        }else{
+            success([],.invalidState)
+        }
+
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+
+    // MARK: - 设置自定义运动图片
+    @objc public func setCustomSportsModeWithImage(_ sportsType:Int,image:UIImage,progress:@escaping((Float) -> Void),success:@escaping((ZyError) -> Void)) {
+        
+        let imageBin = self.createSendJLdeviceDialOtaFile(image: image, bigSize: .init(width: self.functionListModel?.functionDetail_customSports?.bigWidth ?? 46, height: self.functionListModel?.functionDetail_customSports?.bigHeight ?? 46), smallSize: .init(width: self.functionListModel?.functionDetail_customSports?.smallWidth ?? 30, height: self.functionListModel?.functionDetail_customSports?.smallHeight ?? 30))
+        
+        self.setCustomSportsMode(sportsType, localFile: imageBin, progress: progress, success: success)
+        
+    }
+    
     // MARK: - 设置自定义运动文件
     @objc public func setCustomSportsMode(_ sportsType:Int,localFile:Any,progress:@escaping((Float) -> Void),success:@escaping((ZyError) -> Void)){
         
@@ -12725,6 +13806,7 @@ import CoreLocation
                 //只要是有过升级，就需要重新获取固件的升级版本信息。此处把之前获取的清除掉
                 self.otaVersionInfo = nil
                 self.receiveGetDeviceOtaVersionInfo = nil
+                self.serverVersionInfoDic.removeAll()
                 self.dealUpgradeData(maxSingleCount: maxSingleCount, packageCount: packageCount, packageIndex: 0, val: otaVal,progress: progress, success: success)
             }
             
@@ -12963,17 +14045,22 @@ import CoreLocation
                     if error == .none {
                         if let string = macSuccess {
                             printLog("macSuccess =\(string)")
-                            self.isRequesting = true
-                            //此处如果在等待的时候把设备断开连接或者是解绑，命令不会再进入回调，而isRequesting是true下次请求永远都不会往下调用。断开连接之后把isRequesting置位false
-                            let url = ZyNetworkManager.shareInstance.basicUrl+"/api/ota/getNewVersionByAddress?"+String.init(format: "productId=%@&projectId=%@&firmwareId=%@&imageId=%@&fontId=%@&address=%@",product,project,firmware,library,font,string)
-                            ZyNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
-                                self.isRequesting = false
-                                printLog("getNewVersionByAddress info =",info)
-                                success(info,.none)
-                            } fail: { error in
-                                self.isRequesting = false
-                                printLog("error =",error)
-                                success([:],.fail)
+                            if self.serverVersionInfoDic.keys.count > 0 {
+                                success(self.serverVersionInfoDic,.none)
+                            }else{
+                                self.isRequesting = true
+                                //此处如果在等待的时候把设备断开连接或者是解绑，命令不会再进入回调，而isRequesting是true下次请求永远都不会往下调用。断开连接之后把isRequesting置位false
+                                let url = ZyNetworkManager.shareInstance.basicUrl+"/api/ota/getNewVersionByAddress?"+String.init(format: "productId=%@&projectId=%@&firmwareId=%@&imageId=%@&fontId=%@&address=%@",product,project,firmware,library,font,string)
+                                ZyNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
+                                    self.isRequesting = false
+                                    printLog("getNewVersionByAddress info =",info)
+                                    self.serverVersionInfoDic = info
+                                    success(info,.none)
+                                } fail: { error in
+                                    self.isRequesting = false
+                                    printLog("error =",error)
+                                    success([:],.fail)
+                                }
                             }
                         }
                     }else{
