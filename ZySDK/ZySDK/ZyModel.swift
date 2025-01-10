@@ -132,6 +132,7 @@ import CoreLocation
     @objc public private(set) var functionList_heartrateNew = false
     @objc public private(set) var functionList_notificationAlertMode = false
     @objc public private(set) var functionList_businessCard = false
+    @objc public private(set) var functionList_dive = false
     
     @objc public private(set) var functionDetail_exercise:ZyFunctionModel_exercise?
     @objc public private(set) var functionDetail_notification:ZyFunctionModel_notification?
@@ -525,7 +526,8 @@ import CoreLocation
                 break
             case 63:self.functionList_businessCard = state == 0 ? false:true
                 break
-                
+            case 64:self.functionList_dive = state == 0 ? false:true
+                break
             default:
                 break
             }
@@ -1463,6 +1465,9 @@ import CoreLocation
                 log += "\n      标题最大长度:\(model.titleLength)"
                 log += "\n      二维码最大长度:\(model.qrLength)"
             }
+        }
+        if self.functionList_dive {
+            log += "\n 潜水"
         }
         
         return log

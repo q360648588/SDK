@@ -227,6 +227,9 @@ class WatchCommandVC: UIViewController {
                 "0x3d \(NSLocalizedString("Set to clear all data", comment: "设置清除所有数据"))",
                 "0x3f \(NSLocalizedString("Binding up", comment: "绑定"))",
                 "0x41 \(NSLocalizedString("unbind", comment: "解绑"))",
+                "0x44 设置潜水深度",
+                "0x45 获取潜水深度",
+                "0x46 潜水气压转换",
             ],
             [
                 "0x00 \(NSLocalizedString("Get message alerts", comment: "获取消息提醒"))",
@@ -296,6 +299,7 @@ class WatchCommandVC: UIViewController {
                 "0x84(0x24) 获取二维码名片",
                 "0x83(0x25) 设置疗程信息",
                 "0x84(0x25) 获取疗程信息",
+                "0x83(0x26) 设置定位透传开关",
             ],
             [
                 "0x00 ",
@@ -2161,6 +2165,68 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
 
+        case "0x44 设置潜水深度":
+            let array = [
+                "深度",
+                "时长",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string:"设置潜水深度")
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("设置潜水深度", comment: ""), holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let deep = (Int(textArray[0]) ?? 0)
+                let timeLong = (Int(textArray[1]) ?? 0)
+                ZyCommandModule.shareInstance.setDiveDeep(count: deep, timeLong: timeLong) { error in
+                    self.logView.writeString(string: String.init(format: "深度:%d,时长:%d", deep,timeLong))
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        print("setDiveDeep ->","success")
+                    }
+                }
+            }
+            break
+            
+        case "0x45 获取潜水深度":
+            self.logView.clearString()
+            self.logView.writeString(string: NSLocalizedString("获取潜水深度", comment: ""))
+            
+            ZyCommandModule.shareInstance.getDiveDeep { deep, timeLong, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                self.logView.writeString(string: String.init(format: "深度:%d,时长:%d", deep,timeLong))
+                
+                if error == .none {
+                    print("getDiveDeep ->","success")
+                }
+            }
+            
+            break
+            
+        case "0x46 潜水气压转换":
+            let array = [
+                "气压",
+            ]
+            
+            self.logView.clearString()
+            self.logView.writeString(string:"设置潜水气压转换")
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("设置潜水气压转换", comment: ""), holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                let pressure = (Int(textArray[0]) ?? 0)
+
+                ZyCommandModule.shareInstance.setDivePressure(count: pressure) { value,error in
+                    self.logView.writeString(string: String.init(format: "原始气压:%d,转换后气压:%d",pressure,value))
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    
+                    if error == .none {
+                        print("setDivePressure ->","success")
+                    }
+                }
+            }
+            break
+            
         case "0x00 \(NSLocalizedString("Get message alerts", comment: "获取消息提醒"))":
             
             self.logView.clearString()
@@ -4509,6 +4575,30 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
+        case "0x83(0x26) 设置定位透传开关":
+            self.logView.clearString()
+            self.logView.writeString(string: "设置定位透传开关")
+            
+            let array = [
+                "0关1开"
+            ]
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("设置定位透传开关", comment: ""), holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                
+                let isOpen = Int(textArray[0]) ?? 0
+                self.logView.writeString(string: "\(NSLocalizedString("设置定位透传开关", comment: "")): \(isOpen)")
+                      
+                ZyCommandModule.shareInstance.setLocationPrimitiveTransmission(isOpen: isOpen) { error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    if error == .none {
+                        print("setLocationPrimitiveTransmission -> success")
+                            
+                    }
+                }
+            }
+            
+            break
         case "0x01 \(NSLocalizedString("Power off", comment: "关机"))":
             
             self.logView.clearString()
@@ -5024,7 +5114,6 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 self.logView.writeString(string: "\(NSLocalizedString("治疗类型", comment: "")):\(type)")
                 print("reportTreatmentStatus -> type = \(type)")
             }
-            
             break
             
         case NSLocalizedString("Multi-package test command", comment: "多包测试命令"):

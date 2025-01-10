@@ -185,6 +185,7 @@ import CoreLocation
     var receiveSetPowerConsumptionDataBlock:((ZyError) -> Void)?
     var receiveReportPowerConsumptionData:(([String:String],ZyError) -> Void)?
     var receiveReportTreatmentStatus:((Int,ZyError) -> Void)?
+    var receiveReportLocationPrimitiveTransmission:((String,ZyError) -> Void)?
     var receiveReportAssistedPositioning:((Int,ZyError) -> Void)?
     var receiveGetCustomSportsModeBlock:((ZyExerciseType,ZyError) -> Void)?
     var receiveReportLanguageType:((Int,ZyError) -> Void)?
@@ -201,7 +202,10 @@ import CoreLocation
     var receiveGetBusinessCardBlock:(([ZyBusinessCardModel],ZyError) -> Void)?
     var receiveSetTreatmentInfomationBlock:((ZyError) -> Void)?
     var receiveGetTreatmentInfomationBlock:((ZyTreatmentModel?,ZyError) -> Void)?
-    
+    var receiveSetLocationPrimitiveTransmissionBlock:((ZyError) -> Void)?
+    var receiveSetDiveDeepBlock:((ZyError) -> Void)?
+    var receiveGetDiveDeepBlock:((Int,Int,ZyError) -> Void)?
+    var receiveSetDivePressureBlock:((Int,ZyError) -> Void)?
     var stepMaxData:Data?
     var isStepDetailData = false
     var stepMaxIndex = 0
@@ -1393,6 +1397,57 @@ import CoreLocation
                         //printLog("第\(#line)行" , "\(#function)")
                         self.signalCommandSemaphore()
                         ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetUnbind长度校验出错"))
+                    }
+                }
+                
+                if val[0] == 0x01 && val[1] == 0xc4 {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveSetDiveDeepBlock {
+                            self.parseSetDiveDeep(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveSetDiveDeepBlock {
+                            block(.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetDiveDeep长度校验出错"))
+                    }
+                }
+                
+                if val[0] == 0x01 && val[1] == 0xc5 {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveGetDiveDeepBlock {
+                            self.parseGetDiveDeep(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveGetDiveDeepBlock {
+                            block(-1,-1,.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetDiveDeep长度校验出错"))
+                    }
+                }
+                
+                if val[0] == 0x01 && val[1] == 0xc6 {
+                    if self.checkLength(val: [UInt8](val)) {
+                        
+                        if let block = self.receiveSetDivePressureBlock {
+                            self.parseSetDivePressure(val: val, success: block)
+                        }
+                        
+                    }else{
+                        if let block = self.receiveSetDivePressureBlock {
+                            block(-1,.invalidLength)
+                        }
+                        //printLog("第\(#line)行" , "\(#function)")
+                        self.signalCommandSemaphore()
+                        ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetDivePressure长度校验出错"))
                     }
                 }
                 
@@ -3141,7 +3196,11 @@ import CoreLocation
                                                 self.parseNewProtocolUniversalResponse(result: result, success: block)
                                             }
                                             break
-                                            
+                                        case 0x26:
+                                            if let block = self.receiveSetLocationPrimitiveTransmissionBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
                                         default:
                                             break
                                         }
@@ -3260,11 +3319,12 @@ import CoreLocation
                                 }
                                 
                                 if val[1] == 0x0a {
-                                    let newVal = Array(val[4..<val.count-2])
+                                    //MARK:- 多包上报
+                                    let resultArray = Array(val[4..<val.count-2])
                                     let cmd_id:Int = Int(newVal[0])
                                     switch cmd_id {
                                     case 0x07:
-                                        let stateVal = Array(newVal[1..<2])
+                                        let stateVal = Array(resultArray[1..<2])
                                         if let block = self.receiveReportAssistedPositioning {
                                             self.parseReportAssistedPositioning(val: stateVal, success: block)
                                         }
@@ -3272,16 +3332,21 @@ import CoreLocation
                                     case 0x08:
                                         let startIndex = 1
                                         let endIndex = 24
-                                        let powerVal = Array(newVal[startIndex..<endIndex])
+                                        let powerVal = Array(resultArray[startIndex..<endIndex])
                                         
                                         //if let block = self.receiveReportPowerConsumptionData {
                                             self.parseReportPowerConsumptionData(val: powerVal/*, success: ((_ dataDic:[String:String],_ error:ZyError) -> Void)*/)
                                         //}
                                         break
                                     case 0x09:
-                                        let stateVal = Array(newVal[1..<2])
+                                        let stateVal = Array(resultArray[1..<2])
                                         if let block = self.receiveReportTreatmentStatus {
                                             self.parseReportTreatmentStatus(val: stateVal, success: block)
+                                        }
+                                        break
+                                    case 0x0a:
+                                        if let block = self.receiveReportLocationPrimitiveTransmission {
+                                            self.parseReportLocationPrimitiveTransmission(val: newVal, success: block)
                                         }
                                         break
                                     default:
@@ -3461,6 +3526,11 @@ import CoreLocation
                                             break
                                         case 0x25:
                                             if let block = self.receiveSetTreatmentInfomationBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x26:
+                                            if let block = self.receiveSetLocationPrimitiveTransmissionBlock {
                                                 self.parseNewProtocolUniversalResponse(result: result, success: block)
                                             }
                                             break
@@ -3785,6 +3855,11 @@ import CoreLocation
                                             self.parseNewProtocolUniversalResponse(result: result, success: block)
                                         }
                                         break
+                                    case 0x26:
+                                        if let block = self.receiveSetLocationPrimitiveTransmissionBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
                                     default:
                                         break
                                     }
@@ -3925,7 +4000,13 @@ import CoreLocation
                                         self.parseReportTreatmentStatus(val: stateVal, success: block)
                                     }
                                     break
-                                
+                                case 0x0a:
+                                    let stateVal = Array(newVal[1..<2])
+                                    if let block = self.receiveReportLocationPrimitiveTransmission {
+                                        self.parseReportLocationPrimitiveTransmission(val: stateVal, success: block)
+                                    }
+                                    break
+                                    
                                 default:
                                     break
                                 }
@@ -4106,6 +4187,11 @@ import CoreLocation
                                         break
                                     case 0x25:
                                         if let block = self.receiveSetTreatmentInfomationBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x26:
+                                        if let block = self.receiveSetLocationPrimitiveTransmissionBlock {
                                             self.parseNewProtocolUniversalResponse(result: result, success: block)
                                         }
                                         break
@@ -12008,6 +12094,21 @@ import CoreLocation
         }
     }
     
+    // MARK: - 上报原始定位数据
+    @objc public func reportLocationPrimitiveTransmission(success:@escaping((_ dataString:String,_ error:ZyError) -> Void)) {
+        self.receiveReportLocationPrimitiveTransmission = success
+    }
+    
+    private func parseReportLocationPrimitiveTransmission(val:[UInt8],success:@escaping((_ dataString:String,_ error:ZyError) -> Void)) {
+        
+        let data = Data.init(bytes: val, count: val.count)
+        
+        let dataString = self.convertDataToSpaceHexStr(data: data,isSend: true)
+        print("----->> dataString = \(dataString)")
+        success(dataString,.none)
+        
+    }
+    
     // MARK: - 上报请求定位信息
     @objc public func reportLocationInfo(success:@escaping((_ error:ZyError) -> Void)) {
         self.receiveReportLocationInfo = success
@@ -13185,7 +13286,86 @@ import CoreLocation
         self.signalCommandSemaphore()
     }
     
+    // MARK: - 定位原始数据透传开关
+    @objc public func setLocationPrimitiveTransmission(isOpen:Int,success:@escaping((ZyError) -> Void)) {
         
+        let headVal:[UInt8] = [
+            0xaa,
+            0x84
+        ]
+        
+        //参数id
+        let cmd_id = 0x26
+        //参数长度
+        let modelCount = 1
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
+            UInt8(isOpen),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetLocationPrimitiveTransmissionBlock = success
+                if isOpen != 0 {
+                    let date:Date = Date()
+                    let timeFormatter = DateFormatter()
+                    timeFormatter.dateFormat = "YYYY/MM/dd HH:mm:ss SS"
+                    let strNowTime = timeFormatter.string(from: date)
+                    let onceUrl:String = String.init(format: "\n保存时间:%@\n\n\n\n\n",strNowTime)
+                    let savePath = NSHomeDirectory() + "/Documents/saveLog"
+                    let fileManager = FileManager.default
+                    let exit:Bool = fileManager.fileExists(atPath: savePath)
+                    if exit == false {
+                        do{
+                            //                创建指定位置上的文件夹
+                            try fileManager.createDirectory(atPath: savePath, withIntermediateDirectories: true, attributes: nil)
+                            print("Succes to create folder")
+                        }
+                        catch{
+                            print("Error to create folder")
+                        }
+                    }
+                    let filePath = String.init(format: "%@/%@_locationLog.txt",savePath,Date.init().conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss"))
+                    if !fileManager.fileExists(atPath: filePath) {
+                        fileManager.createFile(atPath: filePath, contents: nil, attributes: nil)
+                    }
+                    do {
+                        //let url = URL(fileURLWithPath: filePath)
+                        let fileHandle = try FileHandle(forWritingAtPath: filePath)
+                        // 移动到文件末尾
+                        fileHandle?.seekToEndOfFile()
+                        
+                        // 写入新内容
+                        fileHandle?.write(onceUrl.data(using: .utf8)!)
+                    } catch {
+                        print("写入失败: \(error)")
+                    }
+                   
+                    self?.reportLocationPrimitiveTransmission(success: { dataString, error in
+                        
+                        do {
+                            //let url = URL(fileURLWithPath: filePath)
+                            let fileHandle = try FileHandle(forWritingAtPath: filePath)                                // 移动到文件末尾
+                            fileHandle?.seekToEndOfFile()
+                            // 写入新内容
+                            fileHandle?.write(dataString.data(using: .utf8)!)
+                        }catch {
+                            print("写入失败: \(error)")
+                        }
+                    })
+                }else{
+                    self?.receiveReportLocationPrimitiveTransmission = nil
+                }
+            }else{
+                success(error)
+            }
+        }
+    }
+    
     // MARK: - 设置名片
     @objc public func setBusinessCard(modelArray:[ZyBusinessCardModel],success:@escaping((ZyError) -> Void)) {
         
@@ -13358,7 +13538,119 @@ import CoreLocation
         //printLog("第\(#line)行" , "\(#function)")
         self.signalCommandSemaphore()
     }
-
+    
+    // MARK: - 潜水深度设置
+    @objc public func setDiveDeep(count:Int,timeLong:Int,success:@escaping((ZyError) -> Void)) {
+        var val:[UInt8] = [
+            0x01,
+            0x44,
+            0x0a,
+            0x00,
+            UInt8((count ) & 0xff),
+            UInt8((count >> 8) & 0xff),
+            UInt8((timeLong ) & 0xff),
+            UInt8((timeLong >> 8) & 0xff),
+            UInt8((timeLong >> 16) & 0xff),
+            UInt8((timeLong >> 24) & 0xff),
+        ]
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetDiveDeepBlock = success
+        }else{
+            success(state)
+        }
+        
+    }
+    
+    private func parseSetDiveDeep(val:[UInt8],success:@escaping((ZyError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val[4] == 1 {
+            
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@", state))
+            success(.none)
+            
+        }else{
+            success(.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 潜水深度获取
+    @objc public func getDiveDeep(success:@escaping((Int,Int,ZyError) -> Void)) {
+        
+        var val:[UInt8] = [0x01,0x45,0x04,0x00]
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveGetDiveDeepBlock = success
+        }else{
+            success(-1,-1,state)
+        }
+        
+    }
+    
+    func parseGetDiveDeep(val:[UInt8],success:@escaping((Int,Int,ZyError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val[4] == 1 {
+            
+            let deep = (Int(val[5]) | Int(val[6]) << 8)
+            let timeLong = (Int(val[7]) | Int(val[8]) << 8 | Int(val[9]) << 16 | Int(val[10]) << 24)
+            
+            let string = String.init(format: "深度:%d,时长:%d",deep,timeLong)
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
+            success(Int(deep),Int(timeLong),.none)
+            
+        }else{
+            success(-1,-1,.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 潜水气压转换
+    @objc public func setDivePressure(count:Int,success:@escaping((Int,ZyError) -> Void)) {
+        var val:[UInt8] = [
+            0x01,
+            0x46,
+            0x08,
+            0x00,
+            UInt8((count ) & 0xff),
+            UInt8((count >> 8) & 0xff),
+            UInt8((count >> 16) & 0xff),
+            UInt8((count >> 24) & 0xff),
+        ]
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetDivePressureBlock = success
+        }else{
+            success(-1,state)
+        }
+        
+    }
+    
+    private func parseSetDivePressure(val:[UInt8],success:@escaping((Int,ZyError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val.count > 8 {
+            let count = (Int(val[5]) | Int(val[6]) << 8 | Int(val[7]) << 16 | Int(val[8]) << 24)
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,转换后深度:%d", state,count))
+            success(-1,.none)
+            
+        }else{
+            success(-1,.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
     // MARK: - 设置自定义运动图片
     @objc public func setCustomSportsModeWithImage(_ sportsType:Int,image:UIImage,progress:@escaping((Float) -> Void),success:@escaping((ZyError) -> Void)) {
         
