@@ -13291,7 +13291,7 @@ import CoreLocation
         
         let headVal:[UInt8] = [
             0xaa,
-            0x84
+            0x83
         ]
         
         //参数id
@@ -13315,7 +13315,7 @@ import CoreLocation
                     let timeFormatter = DateFormatter()
                     timeFormatter.dateFormat = "YYYY/MM/dd HH:mm:ss SS"
                     let strNowTime = timeFormatter.string(from: date)
-                    let onceUrl:String = String.init(format: "\n保存时间:%@\n\n\n\n\n",strNowTime)
+                    //let onceUrl:String = String.init(format: "\n保存时间:%@\n\n\n\n\n",strNowTime)
                     let savePath = NSHomeDirectory() + "/Documents/saveLog"
                     let fileManager = FileManager.default
                     let exit:Bool = fileManager.fileExists(atPath: savePath)
@@ -13329,20 +13329,9 @@ import CoreLocation
                             print("Error to create folder")
                         }
                     }
-                    let filePath = String.init(format: "%@/%@_locationLog.txt",savePath,Date.init().conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss"))
+                    let filePath = String.init(format: "%@/%@_locationLog",savePath,Date.init().conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss"))
                     if !fileManager.fileExists(atPath: filePath) {
                         fileManager.createFile(atPath: filePath, contents: nil, attributes: nil)
-                    }
-                    do {
-                        //let url = URL(fileURLWithPath: filePath)
-                        let fileHandle = try FileHandle(forWritingAtPath: filePath)
-                        // 移动到文件末尾
-                        fileHandle?.seekToEndOfFile()
-                        
-                        // 写入新内容
-                        fileHandle?.write(onceUrl.data(using: .utf8)!)
-                    } catch {
-                        print("写入失败: \(error)")
                     }
                    
                     self?.reportLocationPrimitiveTransmission(success: { dataString, error in
@@ -13352,7 +13341,9 @@ import CoreLocation
                             let fileHandle = try FileHandle(forWritingAtPath: filePath)                                // 移动到文件末尾
                             fileHandle?.seekToEndOfFile()
                             // 写入新内容
-                            fileHandle?.write(dataString.data(using: .utf8)!)
+                            if let data = self?.convertHexStringToData(string: dataString) {
+                                fileHandle?.write(data)
+                            }
                         }catch {
                             print("写入失败: \(error)")
                         }
