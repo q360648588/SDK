@@ -185,7 +185,7 @@ import CoreLocation
     var receiveSetPowerConsumptionDataBlock:((ZyError) -> Void)?
     var receiveReportPowerConsumptionData:(([String:String],ZyError) -> Void)?
     var receiveReportTreatmentStatus:((Int,ZyError) -> Void)?
-    var receiveReportLocationPrimitiveTransmission:((String,ZyError) -> Void)?
+    var receiveReportLocationPrimitiveTransmission:((Data,ZyError) -> Void)?
     var receiveReportAssistedPositioning:((Int,ZyError) -> Void)?
     var receiveGetCustomSportsModeBlock:((ZyExerciseType,ZyError) -> Void)?
     var receiveReportLanguageType:((Int,ZyError) -> Void)?
@@ -12095,17 +12095,13 @@ import CoreLocation
     }
     
     // MARK: - 上报原始定位数据
-    @objc public func reportLocationPrimitiveTransmission(success:@escaping((_ dataString:String,_ error:ZyError) -> Void)) {
+    @objc public func reportLocationPrimitiveTransmission(success:@escaping((_ data:Data,_ error:ZyError) -> Void)) {
         self.receiveReportLocationPrimitiveTransmission = success
     }
     
-    private func parseReportLocationPrimitiveTransmission(val:[UInt8],success:@escaping((_ dataString:String,_ error:ZyError) -> Void)) {
-        
+    private func parseReportLocationPrimitiveTransmission(val:[UInt8],success:@escaping((_ data:Data,_ error:ZyError) -> Void)) {
         let data = Data.init(bytes: val, count: val.count)
-        
-        let dataString = self.convertDataToSpaceHexStr(data: data,isSend: true)
-        print("----->> dataString = \(dataString)")
-        success(dataString,.none)
+        success(data,.none)
         
     }
     
@@ -13333,17 +13329,14 @@ import CoreLocation
                     if !fileManager.fileExists(atPath: filePath) {
                         fileManager.createFile(atPath: filePath, contents: nil, attributes: nil)
                     }
-                   
-                    self?.reportLocationPrimitiveTransmission(success: { dataString, error in
+                    self?.reportLocationPrimitiveTransmission(success: { data, error in
                         
                         do {
                             //let url = URL(fileURLWithPath: filePath)
                             let fileHandle = try FileHandle(forWritingAtPath: filePath)                                // 移动到文件末尾
                             fileHandle?.seekToEndOfFile()
                             // 写入新内容
-                            if let data = self?.convertHexStringToData(string: dataString) {
-                                fileHandle?.write(data)
-                            }
+                            fileHandle?.write(data)
                         }catch {
                             print("写入失败: \(error)")
                         }
