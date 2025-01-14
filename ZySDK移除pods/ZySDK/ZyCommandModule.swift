@@ -7881,7 +7881,7 @@ import CoreLocation
         
         var switchCount = UInt16(isOpen) ?? 0
         if self.functionListModel?.functionDetail_notification?.isSupportExtensionNotification == true {
-            if switchCount >> 14 == 0 {
+            if (switchCount >> 14 & 0x01) == 0 {
                 switchCount = switchCount + (1 << 14)
             }
         }
@@ -7895,7 +7895,7 @@ import CoreLocation
             UInt8((switchCount >> 8) & 0xff)
         ]
         
-        if extensionCount > 0 && self.functionListModel?.functionDetail_notification?.isSupportExtensionNotification == true {
+        if self.functionListModel?.functionDetail_notification?.isSupportExtensionNotification == true {
         val = [
             0x02,
             0x01,
@@ -7945,7 +7945,7 @@ import CoreLocation
             switchCount += 1 << (array[i])
         }
         if self.functionListModel?.functionDetail_notification?.isSupportExtensionNotification == true {
-            if switchCount >> 14 == 0 {
+            if (switchCount >> 14 & 0x01) == 0 {
                 switchCount = switchCount + (1 << 14)
             }
         }
@@ -10997,6 +10997,174 @@ import CoreLocation
         if self.functionListModel?.functionList_newPortocol == false {
             print("当前设备不支持此命令。")
             return
+        }
+        if dataType == 1 {
+            if let model = self.functionListModel?.functionDetail_heartrateNew {
+                if measureType == 1 {
+                    if model.isSupportAllDayData {
+                        
+                    }else{
+                        print("当前设备不支持此命令")
+                        return
+                    }
+                }
+                if measureType == 2 {
+                    if model.isSupportSingleClickData {
+                        
+                    }else{
+                        print("当前设备不支持此命令")
+                        return
+                    }
+                }
+                
+            }else{
+                print("请使用setNewSyncHealthData方法")
+                return
+            }
+        }
+        if dataType == 2 {
+            if let model = self.functionListModel?.functionDetail_bloodOxygen {
+                if measureType == 1 {
+                    if model.isSupportAllDayData {
+                        
+                    }else{
+                        print("当前设备不支持此命令。")
+                        return
+                    }
+                }
+                if measureType == 2 {
+                    if model.isSupportSingleClickData {
+                        
+                    }else{
+                        print("当前设备不支持此命令。")
+                        return
+                    }
+                }
+                
+            }else{
+                print("当前设备不支持此命令。")
+                return
+            }
+        }
+        if dataType == 3 {
+            if let model = self.functionListModel?.functionDetail_bloodPressure {
+                if measureType == 1 {
+                    if model.isSupportAllDayData {
+                        
+                    }else{
+                        print("当前设备不支持此命令。")
+                        return
+                    }
+                }
+                if measureType == 2 {
+                    if model.isSupportSingleClickData {
+                        
+                    }else{
+                        print("当前设备不支持此命令。")
+                        return
+                    }
+                }
+                
+            }else{
+                print("当前设备不支持此命令。")
+                return
+            }
+        }
+        if dataType == 4 {
+            if let model = self.functionListModel?.functionDetail_bloodSugar {
+                if measureType == 1 {
+                    if model.isSupportAllDayData {
+                        
+                    }else{
+                        print("当前设备不支持此命令。")
+                        return
+                    }
+                }
+                if measureType == 2 {
+                    if model.isSupportSingleClickData {
+                        
+                    }else{
+                        print("当前设备不支持此命令。")
+                        return
+                    }
+                }
+                
+            }else{
+                print("当前设备不支持此命令。")
+                return
+            }
+        }
+        if dataType == 5 {
+            if let model = self.functionListModel?.functionDetail_pressure {
+                if measureType == 1 {
+                    if model.isSupportAllDayData {
+                        
+                    }else{
+                        print("当前设备不支持此命令。")
+                        return
+                    }
+                }
+                if measureType == 2 {
+                    if model.isSupportSingleClickData {
+                        
+                    }else{
+                        print("当前设备不支持此命令。")
+                        return
+                    }
+                }
+                
+            }else{
+                print("当前设备不支持此命令。")
+                return
+            }
+        }
+        if dataType == 6 {
+            if let model = self.functionListModel?.functionDetail_bodyTemperature {
+                if measureType == 1 {
+                    if model.isSupportAllDayData {
+                        
+                    }else{
+                        print("当前设备不支持此命令。")
+                        return
+                    }
+                }
+                if measureType == 2 {
+                    if model.isSupportSingleClickData {
+                        
+                    }else{
+                        print("当前设备不支持此命令。")
+                        return
+                    }
+                }
+                
+            }else{
+                print("当前设备不支持此命令。")
+                return
+            }
+        }
+        if dataType == 7 {
+            if let model = self.functionListModel?.functionDetail_electrocardiogram {
+                if measureType == 1 {
+                    if model.isSupportAllDayData {
+                        
+                    }else{
+                        print("当前设备不支持此命令。")
+                        return
+                    }
+                }
+                if measureType == 2 {
+                    if model.isSupportSingleClickData {
+                        
+                    }else{
+                        print("当前设备不支持此命令。")
+                        return
+                    }
+                }
+                
+            }else{
+                print("当前设备不支持此命令。")
+                return
+            }
         }
         
         if dataType < 1 || dataType > 7 {

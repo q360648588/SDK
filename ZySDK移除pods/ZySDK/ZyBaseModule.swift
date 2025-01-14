@@ -572,6 +572,10 @@ import zlib
                         //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
                         self.perform(#selector(self.functionListCommandNoSupport), with:nil, afterDelay: 30)
                         printLog("获取功能列表getDeviceSupportList otaData != nil")
+                        ZyCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
+                        }
+                        ZyCommandModule.shareInstance.getMac { _, _ in
+                        }
                         ZyCommandModule.shareInstance.getDeviceSupportList { model, error in
                             printLog("获取功能列表getDeviceSupportList 有回复 error = \(error.rawValue)")
                             NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(self.functionListCommandNoSupport), object: nil)
@@ -584,12 +588,10 @@ import zlib
                                     }
                                 }else{
                                 }
-                                ZyCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
-                                }
+                                
                                 ZyCommandModule.shareInstance.getDeviceOtaVersionInfo { _, _ in
                                 }
-                                ZyCommandModule.shareInstance.getMac { _, _ in
-                                }
+                                
                                 if model?.functionList_bind == true {
                                     ZyCommandModule.shareInstance.setBind { _ in
                                     }
@@ -615,6 +617,10 @@ import zlib
                         //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
                         self.perform(#selector(self.functionListCommandNoSupport), with: nil, afterDelay: 30)
                         printLog("获取功能列表getDeviceSupportList")
+                        ZyCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
+                        }
+                        ZyCommandModule.shareInstance.getMac { _, _ in
+                        }
                         ZyCommandModule.shareInstance.getDeviceSupportList { model, error in
                             printLog("获取功能列表getDeviceSupportList 有回复 error = \(error.rawValue)")
                             NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(self.functionListCommandNoSupport), object: nil)
@@ -631,12 +637,9 @@ import zlib
 //                                    ZyCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
 //                                    }
                                 }
-                                ZyCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
-                                }
                                 ZyCommandModule.shareInstance.getDeviceOtaVersionInfo { _, _ in
                                 }
-                                ZyCommandModule.shareInstance.getMac { _, _ in
-                                }
+                                
                                 if model?.functionList_bind == true {
                                     ZyCommandModule.shareInstance.setBind { _ in
                                     }
