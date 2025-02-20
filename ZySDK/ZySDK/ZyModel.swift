@@ -133,6 +133,8 @@ import CoreLocation
     @objc public private(set) var functionList_notificationAlertMode = false
     @objc public private(set) var functionList_businessCard = false
     @objc public private(set) var functionList_dive = false
+    @objc public private(set) var functionList_worldClock = false
+    @objc public private(set) var functionList_localTimeZoneExtension = false
     
     @objc public private(set) var functionDetail_exercise:ZyFunctionModel_exercise?
     @objc public private(set) var functionDetail_notification:ZyFunctionModel_notification?
@@ -165,16 +167,17 @@ import CoreLocation
     @objc public private(set) var functionDetail_heartrateNew:ZyFunctionModel_supportMeasurementDataTypeModel?
     @objc public private(set) var functionDetail_notificationAlertMode:ZyFunctionModel_notificationAlertMode?
     @objc public private(set) var functionDetail_businessCard:ZyFunctionModel_businessCard?
+    @objc public private(set) var functionDetail_worldClock:ZyFunctionModel_worldClockd?
     
     init(val:[UInt8]) {
         
         super.init()
 //        let val:[UInt8] = [0x07,0xff,0xd7,0xdf,0xff,0xbf,0x1f,0xff,0x00,0x04,0xff,0xfb,0x7e,0x00,0x06,0x06,0xff,0x3f,0xff,0xff,0x07,0x00,0x08,0x02,0x0a,0x01,0x0a,0x01,0x1f,0x0f,0x05,0x7f,0x1f,0x00,0x00,0x00,0x10,0x04,0x64,0x1e,0x05,0x05,0x13,0x01,0x00,0x14,0x01,0x05,0x11,0x02,0x64,0x00,0x23,0x01,0x02,0x25,0x01,0x03,0x2b,0x02,0xb6,0x00,0x2c,0x01,0x01,0x36,0x0d,0xf0,0xf1,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,0xf9,0xfa,0xfb,0xfc]
-        
         var currentIndex = 0
         
         let mainLength = val[0]
         var funcList_1 = 0
+        var funcList_2 = 0
         let mainVal = Array.init(val[1...Int(mainLength)])
         
         for i in 0...Int(mainLength)/8 {
@@ -188,8 +191,18 @@ import CoreLocation
             if i == 0 {
                 funcList_1 = listValue
             }
+            if i == 1 {
+                funcList_2 = listValue
+            }
         }
-        self.dealMainFunction(result: funcList_1)
+        var resultArray:[Int] = .init()
+        if funcList_1 != 0 {
+            resultArray.append(funcList_1)
+        }
+        if funcList_2 != 0 {
+            resultArray.append(funcList_2)
+        }
+        self.dealMainFunction(resultArray: resultArray)
         
         currentIndex = Int(1+mainLength)
         self.dealDetailFunction(index: currentIndex, val: val)
@@ -230,7 +243,8 @@ import CoreLocation
             
             switch functionId {
             case 0:
-                self.functionDetail_exercise = ZyFunctionModel_exercise.init(result: functionCount)
+                //self.functionDetail_exercise = ZyFunctionModel_exercise.init(result: functionCount)
+                self.functionDetail_exercise = ZyFunctionModel_exercise(val: functionVal)
                 break
             case 1:
                 break
@@ -382,7 +396,13 @@ import CoreLocation
             case 63:
                 self.functionDetail_businessCard = ZyFunctionModel_businessCard(val: functionVal)
                 break
-                
+            case 64:
+                break
+            case 65:
+                break
+            case 66:
+                self.functionDetail_worldClock = ZyFunctionModel_worldClockd(val: functionVal)
+                break
             default:
                 break
             }
@@ -390,147 +410,158 @@ import CoreLocation
         }
     }
     
-    func dealMainFunction(result:Int) {
+    func dealMainFunction(resultArray:[Int]) {
         
-        let count:Int = result
-        
-        for i in 0..<64 {
-            let state = (count >> i) & 0x01
-
-            switch i {
-            case 0:self.functionList_exercise = state == 0 ? false:true
-                break
-            case 1:self.functionList_step = state == 0 ? false:true
-                break
-            case 2:self.functionList_sleep = state == 0 ? false:true
-                break
-            case 3:self.functionList_heartrate = state == 0 ? false:true
-                break
-            case 4:self.functionList_bloodPressure = state == 0 ? false:true
-                break
-            case 5:self.functionList_bloodOxygen = state == 0 ? false:true
-                break
-            case 6:self.functionList_notification = state == 0 ? false:true
-                break
-            case 7:self.functionList_metricSystem = state == 0 ? false:true
-                break
-            case 8:self.functionList_alarm = state == 0 ? false:true
-                break
-            case 9:self.functionList_sedentary = state == 0 ? false:true
-                break
-            case 10:self.functionList_goal = state == 0 ? false:true
-                break
-            case 11:self.functionList_vibration = state == 0 ? false:true
-                break
-            case 12:self.functionList_noDisturb = state == 0 ? false:true
-                break
-            case 13:self.functionList_lost = state == 0 ? false:true
-                break
-            case 14:self.functionList_weather = state == 0 ? false:true
-                break
-            case 15:self.functionList_language = state == 0 ? false:true
-                break
-            case 16:self.functionList_screenConreol = state == 0 ? false:true
-                break
-            case 17:self.functionList_addressBook = state == 0 ? false:true
-                break
-            case 18:self.functionList_onlineDial = state == 0 ? false:true
-                break
-            case 19:self.functionList_customDial = state == 0 ? false:true
-                break
-            case 20:self.functionList_localDial = state == 0 ? false:true
-                break
-            case 21:self.functionList_hrWarning = state == 0 ? false:true
-                break
-            case 22:self.functionList_menstrualCycle = state == 0 ? false:true
-                break
-            case 23:self.functionList_drinkWater = state == 0 ? false:true
-                break
-            case 24:self.functionList_lightScreen = state == 0 ? false:true
-                break
-            case 25:self.functionList_hrMonitor = state == 0 ? false:true
-                break
-            case 26:self.functionList_camera = state == 0 ? false:true
-                break
-            case 27:self.functionList_musicControl = state == 0 ? false:true
-                break
-            case 28:self.functionList_findDevice = state == 0 ? false:true
-                break
-            case 29:self.functionList_powerOff = state == 0 ? false:true
-                break
-            case 30:self.functionList_restart = state == 0 ? false:true
-                break
-            case 31:self.functionList_restoreFactory = state == 0 ? false:true
-                break
-            case 32:self.functionList_ringOff = state == 0 ? false:true
-                break
-            case 33:self.functionList_answerCalls = state == 0 ? false:true
-                break
-            case 34:self.functionList_timeFormat = state == 0 ? false:true
-                break
-            case 35:self.functionList_screenType = state == 0 ? false:true
-                break
-            case 36:
-                break
-            case 37:self.functionList_sportCountdown = state == 0 ? false:true
-                break
-            case 38:self.functionList_lowBattery = state == 0 ? false:true
-                break
-            case 39:self.functionList_exerciseInteraction = state == 0 ? false:true
-                break
-            case 40:self.functionList_clearData = state == 0 ? false:true
-                break
-            case 41:self.functionList_bind = state == 0 ? false:true
-                break
-            case 42:self.functionList_weatherExtend = state == 0 ? false:true
-                break
-            case 43:self.functionList_newPortocol = state == 0 ? false:true
-                break
-            case 44:self.functionList_platformType = state == 0 ? false:true
-                break
-            case 45:
-                break
-            case 46:self.functionList_bloodSugar = state == 0 ? false:true
-                break
-            case 47:self.functionList_pressure = state == 0 ? false:true
-                break
-            case 48:self.functionList_electrocardiogram = state == 0 ? false:true
-                break
-            case 49:self.functionList_bodyTemperature = state == 0 ? false:true
-                break
-            case 50:self.functionList_sosContactPerson = state == 0 ? false:true
-                break
-            case 51:self.functionList_worshipAlarm = state == 0 ? false:true
-                break
-            case 52:self.functionList_localPlay = state == 0 ? false:true
-                break
-            case 53:self.functionList_locationGps = state == 0 ? false:true
-                break
-            case 54:self.functionList_customSports = state == 0 ? false:true
-                break
-            case 55:self.functionList_timeZone = state == 0 ? false:true
-                break
-            case 56:self.functionList_sleepDataVersion = state == 0 ? false:true
-                break
-            case 57:self.functionList_bleNameSetup = state == 0 ? false:true
-                break
-            case 58:self.functionList_CustomDialAllPositionType = state == 0 ? false:true
-                break
-            case 59:self.functionList_CustomDialImagePositionConfiguration = state == 0 ? false:true
-                break
-            case 60:self.functionList_CustomBloodSugar = state == 0 ? false:true
-                break
-            case 61:self.functionList_heartrateNew = state == 0 ? false:true
-                break
-            case 62:self.functionList_notificationAlertMode = state == 0 ? false:true
-                break
-            case 63:self.functionList_businessCard = state == 0 ? false:true
-                break
-            case 64:self.functionList_dive = state == 0 ? false:true
-                break
-            default:
-                break
+        for i in 0..<resultArray.count {
+            let count:Int = resultArray[i]
+            for j in 0..<64 {
+                let state = (count >> j) & 0x01
+                self.setFunctionValue(currentCount: i*64+j, state: state)
             }
+        }
+    }
+    
+    func setFunctionValue(currentCount:Int,state:Int) {
+        //print("setFunctionValue  -->>  currentCount = \(currentCount),state = \(state)")
+        switch currentCount {
+        case 0:self.functionList_exercise = state == 0 ? false:true
+            break
+        case 1:self.functionList_step = state == 0 ? false:true
+            break
+        case 2:self.functionList_sleep = state == 0 ? false:true
+            break
+        case 3:self.functionList_heartrate = state == 0 ? false:true
+            break
+        case 4:self.functionList_bloodPressure = state == 0 ? false:true
+            break
+        case 5:self.functionList_bloodOxygen = state == 0 ? false:true
+            break
+        case 6:self.functionList_notification = state == 0 ? false:true
+            break
+        case 7:self.functionList_metricSystem = state == 0 ? false:true
+            break
+        case 8:self.functionList_alarm = state == 0 ? false:true
+            break
+        case 9:self.functionList_sedentary = state == 0 ? false:true
+            break
+        case 10:self.functionList_goal = state == 0 ? false:true
+            break
+        case 11:self.functionList_vibration = state == 0 ? false:true
+            break
+        case 12:self.functionList_noDisturb = state == 0 ? false:true
+            break
+        case 13:self.functionList_lost = state == 0 ? false:true
+            break
+        case 14:self.functionList_weather = state == 0 ? false:true
+            break
+        case 15:self.functionList_language = state == 0 ? false:true
+            break
+        case 16:self.functionList_screenConreol = state == 0 ? false:true
+            break
+        case 17:self.functionList_addressBook = state == 0 ? false:true
+            break
+        case 18:self.functionList_onlineDial = state == 0 ? false:true
+            break
+        case 19:self.functionList_customDial = state == 0 ? false:true
+            break
+        case 20:self.functionList_localDial = state == 0 ? false:true
+            break
+        case 21:self.functionList_hrWarning = state == 0 ? false:true
+            break
+        case 22:self.functionList_menstrualCycle = state == 0 ? false:true
+            break
+        case 23:self.functionList_drinkWater = state == 0 ? false:true
+            break
+        case 24:self.functionList_lightScreen = state == 0 ? false:true
+            break
+        case 25:self.functionList_hrMonitor = state == 0 ? false:true
+            break
+        case 26:self.functionList_camera = state == 0 ? false:true
+            break
+        case 27:self.functionList_musicControl = state == 0 ? false:true
+            break
+        case 28:self.functionList_findDevice = state == 0 ? false:true
+            break
+        case 29:self.functionList_powerOff = state == 0 ? false:true
+            break
+        case 30:self.functionList_restart = state == 0 ? false:true
+            break
+        case 31:self.functionList_restoreFactory = state == 0 ? false:true
+            break
+        case 32:self.functionList_ringOff = state == 0 ? false:true
+            break
+        case 33:self.functionList_answerCalls = state == 0 ? false:true
+            break
+        case 34:self.functionList_timeFormat = state == 0 ? false:true
+            break
+        case 35:self.functionList_screenType = state == 0 ? false:true
+            break
+        case 36:
+            break
+        case 37:self.functionList_sportCountdown = state == 0 ? false:true
+            break
+        case 38:self.functionList_lowBattery = state == 0 ? false:true
+            break
+        case 39:self.functionList_exerciseInteraction = state == 0 ? false:true
+            break
+        case 40:self.functionList_clearData = state == 0 ? false:true
+            break
+        case 41:self.functionList_bind = state == 0 ? false:true
+            break
+        case 42:self.functionList_weatherExtend = state == 0 ? false:true
+            break
+        case 43:self.functionList_newPortocol = state == 0 ? false:true
+            break
+        case 44:self.functionList_platformType = state == 0 ? false:true
+            break
+        case 45:
+            break
+        case 46:self.functionList_bloodSugar = state == 0 ? false:true
+            break
+        case 47:self.functionList_pressure = state == 0 ? false:true
+            break
+        case 48:self.functionList_electrocardiogram = state == 0 ? false:true
+            break
+        case 49:self.functionList_bodyTemperature = state == 0 ? false:true
+            break
+        case 50:self.functionList_sosContactPerson = state == 0 ? false:true
+            break
+        case 51:self.functionList_worshipAlarm = state == 0 ? false:true
+            break
+        case 52:self.functionList_localPlay = state == 0 ? false:true
+            break
+        case 53:self.functionList_locationGps = state == 0 ? false:true
+            break
+        case 54:self.functionList_customSports = state == 0 ? false:true
+            break
+        case 55:self.functionList_timeZone = state == 0 ? false:true
+            break
+        case 56:self.functionList_sleepDataVersion = state == 0 ? false:true
+            break
+        case 57:self.functionList_bleNameSetup = state == 0 ? false:true
+            break
+        case 58:self.functionList_CustomDialAllPositionType = state == 0 ? false:true
+            break
+        case 59:self.functionList_CustomDialImagePositionConfiguration = state == 0 ? false:true
+            break
+        case 60:self.functionList_CustomBloodSugar = state == 0 ? false:true
+            break
+        case 61:self.functionList_heartrateNew = state == 0 ? false:true
+            break
+        case 62:self.functionList_notificationAlertMode = state == 0 ? false:true
+            break
+        case 63:self.functionList_businessCard = state == 0 ? false:true
+            break
+        case 64:self.functionList_dive = state == 0 ? false:true
+            break
+        case 65:
+            break
+        case 66:self.functionList_worldClock = state == 0 ? false:true
+            break
+        case 67:self.functionList_localTimeZoneExtension = state == 0 ? false:true
+            break
+        default:
+            break
         }
     }
 
@@ -614,6 +645,297 @@ import CoreLocation
                 }
                 if model.isSupportRugby {
                     log += "\n      橄榄球 / isSupportRugby"
+                }
+                if model.isSupportFitness {
+                    log += "\n      健身"
+                }
+                if model.isSupportTrailRunning {
+                    log += "\n      越野跑"
+                }
+                if model.isSupportDumbbells {
+                    log += "\n      哑铃"
+                }
+                if model.isSupportRowingMachine {
+                    log += "\n      划船机"
+                }
+                if model.isSupportEllipticalMachine {
+                    log += "\n      椭圆机"
+                }
+                if model.isSupportAerobics {
+                    log += "\n      健身操"
+                }
+                if model.isSupportKayak {
+                    log += "\n      皮划艇"
+                }
+                if model.isSupportRollerSkating {
+                    log += "\n      轮滑"
+                }
+                if model.isSupportPlaygroundRunning {
+                    log += "\n      操场跑步"
+                }
+                if model.isSupportRunToLoseFat {
+                    log += "\n      减脂跑步"
+                }
+                if model.isSupportOutdoorCycling {
+                    log += "\n      户外骑行"
+                }
+                if model.isSupportIndoorCycling {
+                    log += "\n      室内骑行"
+                }
+                if model.isSupportMountainBiking {
+                    log += "\n      山地骑行"
+                }
+                if model.isSupportOrienteering {
+                    log += "\n      定向越野"
+                }
+                if model.isSupportMixedAerobic {
+                    log += "\n      混合有氧"
+                }
+                if model.isSupportCombatExercises {
+                    log += "\n      搏击操"
+                }
+                if model.isSupportCoreTraining {
+                    log += "\n      核心训练"
+                }
+                if model.isSupportCrossTraining {
+                    log += "\n      交叉训练"
+                }
+                if model.isSupportTeamGymnastics {
+                    log += "\n      团体操"
+                }
+                if model.isSupportStrengthTraining {
+                    log += "\n      力量训练"
+                }
+                if model.isSupportIntervalTraining {
+                    log += "\n      间歇训练"
+                }
+                if model.isSupportFlexibilityTraining {
+                    log += "\n      柔韧训练"
+                }
+                if model.isSupportStretching {
+                    log += "\n      拉伸"
+                }
+                if model.isSupportFitnessExercises {
+                    log += "\n      健身运动"
+                }
+                if model.isSupportBalanceTraining {
+                    log += "\n      平衡训练"
+                }
+                if model.isSupportStepTraining {
+                    log += "\n      踏步训练"
+                }
+                if model.isSupportBattleRope {
+                    log += "\n      战绳"
+                }
+                if model.isSupportFreeTraining {
+                    log += "\n      自由训练"
+                }
+                if model.isSupportSkiing {
+                    log += "\n      滑雪"
+                }
+                if model.isSupportRockClimbing {
+                    log += "\n      攀岩"
+                }
+                if model.isSupportFishing {
+                    log += "\n      钓鱼"
+                }
+                if model.isSupportHunting {
+                    log += "\n      打猎"
+                }
+                if model.isSupportSkateboard {
+                    log += "\n      滑板"
+                }
+                if model.isSupportParkour {
+                    log += "\n      跑酷"
+                }
+                if model.isSupportDuneBuggy {
+                    log += "\n      沙滩车"
+                }
+                if model.isSupportDirtBike {
+                    log += "\n      越野摩托"
+                }
+                if model.isSupportHandRollingCar {
+                    log += "\n      手摇车"
+                }
+                if model.isSupportPilates {
+                    log += "\n      普拉提"
+                }
+                if model.isSupportFlyingDarts {
+                    log += "\n      飞镖"
+                }
+                if model.isSupportSnowboarding {
+                    log += "\n      双板滑雪"
+                }
+                if model.isSupportWalkingMachine {
+                    log += "\n      漫步机"
+                }
+                if model.isSupportSkydiving {
+                    log += "\n      跳伞"
+                }
+                if model.isSupportCrossCountrySkiing {
+                    log += "\n      越野滑雪"
+                }
+                if model.isSupportBungeeJumping {
+                    log += "\n      蹦极"
+                }
+                if model.isSupportTheSwing {
+                    log += "\n      秋千"
+                }
+                if model.isSupportFlyingKite {
+                    log += "\n      放风筝"
+                }
+                if model.isSupportHulaHoops {
+                    log += "\n      呼啦圈"
+                }
+                if model.isSupportArchery {
+                    log += "\n      射箭"
+                }
+                if model.isSupportRaceWalking {
+                    log += "\n      竞走"
+                }
+                if model.isSupportRacingCars {
+                    log += "\n      赛车"
+                }
+                if model.isSupportMarathon {
+                    log += "\n      马拉松"
+                }
+                if model.isSupportObstacleCourse {
+                    log += "\n      障碍赛"
+                }
+                if model.isSupportTugOfWar {
+                    log += "\n      拔河"
+                }
+                if model.isSupportDragonBoat {
+                    log += "\n      龙舟"
+                }
+                if model.isSupportHighJump {
+                    log += "\n      跳高"
+                }
+                if model.isSupportSailing {
+                    log += "\n      帆船运动"
+                }
+                if model.isSupportTriathlon {
+                    log += "\n      铁人三项"
+                }
+                if model.isSupportHorseRacing {
+                    log += "\n      赛马"
+                }
+                if model.isSupportBMX {
+                    log += "\n      小轮车"
+                }
+                if model.isSupportParallelBar {
+                    log += "\n      双杠"
+                }
+                if model.isSupportGolf {
+                    log += "\n      高尔夫"
+                }
+                if model.isSupportBowlingBall {
+                    log += "\n      保龄球"
+                }
+                if model.isSupportSquash {
+                    log += "\n      壁球"
+                }
+                if model.isSupportPolo {
+                    log += "\n      马球"
+                }
+                if model.isSupportWallBall {
+                    log += "\n      墙球"
+                }
+                if model.isSupportBilliards {
+                    log += "\n      桌球"
+                }
+                if model.isSupportWaterBalloon {
+                    log += "\n      水球"
+                }
+                if model.isSupportShuttlecock {
+                    log += "\n      毽球"
+                }
+                if model.isSupportIndoorFootball {
+                    log += "\n      室内足球"
+                }
+                if model.isSupportSandbagBall {
+                    log += "\n      沙包球"
+                }
+                if model.isSupportToTheBall {
+                    log += "\n      地掷球"
+                }
+                if model.isSupportJaiAlai {
+                    log += "\n      回力球"
+                }
+                if model.isSupportFloorball {
+                    log += "\n      地板球"
+                }
+                if model.isSupportPicogramBalls {
+                    log += "\n      匹克球"
+                }
+                if model.isSupportBeachVolleyball {
+                    log += "\n      沙滩排球"
+                }
+                if model.isSupportSoftball {
+                    log += "\n      垒球"
+                }
+                if model.isSupportSquareDance {
+                    log += "\n      广场舞"
+                }
+                if model.isSupportBellyDance {
+                    log += "\n      肚皮舞"
+                }
+                if model.isSupportBallet {
+                    log += "\n      芭蕾舞"
+                }
+                if model.isSupportStreetDance {
+                    log += "\n      街舞"
+                }
+                if model.isSupportLatinDance {
+                    log += "\n      拉丁舞"
+                }
+                if model.isSupportJazzDance {
+                    log += "\n      爵士舞"
+                }
+                if model.isSupportPoleDancing {
+                    log += "\n      钢管舞"
+                }
+                if model.isSupportTheDisco {
+                    log += "\n      迪斯科"
+                }
+                if model.isSupportTapDance {
+                    log += "\n      踢踏舞"
+                }
+                if model.isSupportOtherDances {
+                    log += "\n      其它舞蹈"
+                }
+                if model.isSupportBoxing {
+                    log += "\n      拳击"
+                }
+                if model.isSupportWrestling {
+                    log += "\n      摔跤"
+                }
+                if model.isSupportMartialArts {
+                    log += "\n      武术"
+                }
+                if model.isSupportTaiChi {
+                    log += "\n      太极"
+                }
+                if model.isSupportThaiBoxing {
+                    log += "\n      泰拳"
+                }
+                if model.isSupportJudo {
+                    log += "\n      柔道"
+                }
+                if model.isSupportTaekwondo {
+                    log += "\n      跆拳道"
+                }
+                if model.isSupportKarate {
+                    log += "\n      空手道"
+                }
+                if model.isSupportKickboxing {
+                    log += "\n      自由搏击"
+                }
+                if model.isSupportSwordFighting {
+                    log += "\n      剑术"
+                }
+                if model.isSupportJiuJitsu {
+                    log += "\n      柔术"
                 }
             }
         }
@@ -1118,7 +1440,7 @@ import CoreLocation
                 log += "\n      bigSize:\(model.bigWidth):\(model.bigHeight)"
                 log += "\n      smallSize:\(model.smallWidth):\(model.smallHeight)"
                 if model.isSupportFitness {
-                    log += "\n      健走"
+                    log += "\n      健身"
                 }
                 if model.isSupportTrailRunning {
                     log += "\n      越野跑"
@@ -1469,6 +1791,16 @@ import CoreLocation
         if self.functionList_dive {
             log += "\n 潜水"
         }
+        if self.functionList_worldClock {
+            log += "\n 世界时钟"
+            if let model = self.functionDetail_worldClock {
+                log += "\n      支持最大个数:\(model.maxCount)"
+                log += "\n      名称最大长度:\(model.cityMaxLength)"
+            }
+        }
+        if self.functionList_localTimeZoneExtension {
+            log += "\n 本地时区扩展"
+        }
         
         return log
     }
@@ -1501,6 +1833,104 @@ import CoreLocation
     @objc public private(set) var isSupportTableTennis = false
     @objc public private(set) var isSupportCricket = false
     @objc public private(set) var isSupportRugby = false
+    
+    @objc public private(set) var isSupportFitness = false                      //0 健身
+    @objc public private(set) var isSupportTrailRunning = false                 //1 越野跑
+    @objc public private(set) var isSupportDumbbells = false                    //2 哑铃
+    @objc public private(set) var isSupportRowingMachine = false                //3 划船机
+    @objc public private(set) var isSupportEllipticalMachine = false            //4 椭圆机
+    @objc public private(set) var isSupportAerobics = false                     //5 健身操
+    @objc public private(set) var isSupportKayak = false                        //6 皮划艇
+    @objc public private(set) var isSupportRollerSkating = false                //7 轮滑
+    @objc public private(set) var isSupportPlaygroundRunning = false            //8 操场跑步
+    @objc public private(set) var isSupportRunToLoseFat = false                 //9 减脂跑步
+    @objc public private(set) var isSupportOutdoorCycling = false               //10 户外骑行
+    @objc public private(set) var isSupportIndoorCycling = false                //11 室内骑行
+    @objc public private(set) var isSupportMountainBiking = false               //12 山地骑行
+    @objc public private(set) var isSupportOrienteering = false                 //13 定向越野
+    @objc public private(set) var isSupportMixedAerobic = false                 //14 混合有氧
+    @objc public private(set) var isSupportCombatExercises = false              //15 搏击操
+    @objc public private(set) var isSupportCoreTraining = false                 //16 核心训练
+    @objc public private(set) var isSupportCrossTraining = false                //17 交叉训练
+    @objc public private(set) var isSupportTeamGymnastics = false               //18 团体操
+    @objc public private(set) var isSupportStrengthTraining = false             //19 力量训练
+    @objc public private(set) var isSupportIntervalTraining = false             //20 间歇训练
+    @objc public private(set) var isSupportFlexibilityTraining = false          //21 柔韧训练
+    @objc public private(set) var isSupportStretching = false                   //22 拉伸
+    @objc public private(set) var isSupportFitnessExercises = false             //23 健身运动
+    @objc public private(set) var isSupportBalanceTraining = false              //24 平衡训练
+    @objc public private(set) var isSupportStepTraining = false                 //25 踏步训练
+    @objc public private(set) var isSupportBattleRope = false                   //26 战绳
+    @objc public private(set) var isSupportFreeTraining = false                 //27 自由训练
+    @objc public private(set) var isSupportSkiing = false                       //28 滑雪
+    @objc public private(set) var isSupportRockClimbing = false                 //29 攀岩
+    @objc public private(set) var isSupportFishing = false                      //30 钓鱼
+    @objc public private(set) var isSupportHunting = false                      //31 打猎
+    @objc public private(set) var isSupportSkateboard = false                   //32 滑板
+    @objc public private(set) var isSupportParkour = false                      //33 跑酷
+    @objc public private(set) var isSupportDuneBuggy = false                    //34 沙滩车
+    @objc public private(set) var isSupportDirtBike = false                     //35 越野摩托
+    @objc public private(set) var isSupportHandRollingCar = false               //36 手摇车
+    @objc public private(set) var isSupportPilates = false                      //37 普拉提
+    @objc public private(set) var isSupportFlyingDarts = false                  //38 飞镖
+    @objc public private(set) var isSupportSnowboarding = false                 //39 双板滑雪
+    @objc public private(set) var isSupportWalkingMachine = false               //40 漫步机
+    @objc public private(set) var isSupportSkydiving = false                    //41 跳伞
+    @objc public private(set) var isSupportCrossCountrySkiing = false           //42 越野滑雪
+    @objc public private(set) var isSupportBungeeJumping = false                //43 蹦极
+    @objc public private(set) var isSupportTheSwing = false                     //44 秋千
+    @objc public private(set) var isSupportFlyingKite = false                   //45 放风筝
+    @objc public private(set) var isSupportHulaHoops = false                    //46 呼啦圈
+    @objc public private(set) var isSupportArchery = false                      //47 射箭
+    @objc public private(set) var isSupportRaceWalking = false                  //48 竞走
+    @objc public private(set) var isSupportRacingCars = false                   //49 赛车
+    @objc public private(set) var isSupportMarathon = false                     //50 马拉松
+    @objc public private(set) var isSupportObstacleCourse = false               //51 障碍赛
+    @objc public private(set) var isSupportTugOfWar = false                     //52 拔河
+    @objc public private(set) var isSupportDragonBoat = false                   //53 龙舟
+    @objc public private(set) var isSupportHighJump = false                     //54 跳高
+    @objc public private(set) var isSupportSailing = false                      //55 帆船运动
+    @objc public private(set) var isSupportTriathlon = false                    //56 铁人三项
+    @objc public private(set) var isSupportHorseRacing = false                  //57 赛马
+    @objc public private(set) var isSupportBMX = false                          //58 小轮车
+    @objc public private(set) var isSupportParallelBar = false                  //59 双杠
+    @objc public private(set) var isSupportGolf = false                         //60 高尔夫
+    @objc public private(set) var isSupportBowlingBall = false                  //61 保龄球
+    @objc public private(set) var isSupportSquash = false                       //62 壁球
+    @objc public private(set) var isSupportPolo = false                         //63 马球
+    @objc public private(set) var isSupportWallBall = false                     //64 墙球
+    @objc public private(set) var isSupportBilliards = false                    //65 桌球
+    @objc public private(set) var isSupportWaterBalloon = false                 //66 水球
+    @objc public private(set) var isSupportShuttlecock = false                  //67 毽球
+    @objc public private(set) var isSupportIndoorFootball = false               //68 室内足球
+    @objc public private(set) var isSupportSandbagBall = false                  //69 沙包球
+    @objc public private(set) var isSupportToTheBall = false                    //70 地掷球
+    @objc public private(set) var isSupportJaiAlai = false                      //71 回力球
+    @objc public private(set) var isSupportFloorball = false                    //72 地板球
+    @objc public private(set) var isSupportPicogramBalls = false                //73 匹克球
+    @objc public private(set) var isSupportBeachVolleyball = false              //74 沙滩排球
+    @objc public private(set) var isSupportSoftball = false                     //75 垒球
+    @objc public private(set) var isSupportSquareDance = false                  //76 广场舞
+    @objc public private(set) var isSupportBellyDance = false                   //77 肚皮舞
+    @objc public private(set) var isSupportBallet = false                       //78 芭蕾舞
+    @objc public private(set) var isSupportStreetDance = false                  //79 街舞
+    @objc public private(set) var isSupportLatinDance = false                   //80 拉丁舞
+    @objc public private(set) var isSupportJazzDance = false                    //81 爵士舞
+    @objc public private(set) var isSupportPoleDancing = false                  //82 钢管舞
+    @objc public private(set) var isSupportTheDisco = false                     //83 迪斯科
+    @objc public private(set) var isSupportTapDance = false                     //84 踢踏舞
+    @objc public private(set) var isSupportOtherDances = false                  //85 其它舞蹈
+    @objc public private(set) var isSupportBoxing = false                       //86 拳击
+    @objc public private(set) var isSupportWrestling = false                    //87 摔跤
+    @objc public private(set) var isSupportMartialArts = false                  //88 武术
+    @objc public private(set) var isSupportTaiChi = false                       //89 太极
+    @objc public private(set) var isSupportThaiBoxing = false                   //90 泰拳
+    @objc public private(set) var isSupportJudo = false                         //91 柔道
+    @objc public private(set) var isSupportTaekwondo = false                    //92 跆拳道
+    @objc public private(set) var isSupportKarate = false                       //93 空手道
+    @objc public private(set) var isSupportKickboxing = false                   //94 自由搏击
+    @objc public private(set) var isSupportSwordFighting = false                //95 剑术
+    @objc public private(set) var isSupportJiuJitsu = false                     //96 柔术
     
     init(result:Int) {
         self.supportCount = result
@@ -1570,6 +2000,270 @@ import CoreLocation
             }
         }
     }
+    
+    init(val:[UInt8]) {
+        
+        let newVal = val
+        for i in 0..<newVal.count {
+            var state:UInt8 = 0
+            let result = newVal[i]
+            for j in 0..<8 {
+                state = (result >> j) & 0x01
+                let indexCount = i*8+j
+                print("indexCount = \(indexCount),result = \(result),state = \(state),i = \(i),j = \(j)")
+                switch indexCount {
+                case 0:self.isSupportRunOutside = state == 0 ? false:true
+                    break
+                case 1:self.isSupportWalk = state == 0 ? false:true
+                    break
+                case 2:self.isSupportCycling = state == 0 ? false:true
+                    break
+                case 3:self.isSupportBasketball = state == 0 ? false:true
+                    break
+                case 4:self.isSupportFootball = state == 0 ? false:true
+                    break
+                case 5:self.isSupportBadminton = state == 0 ? false:true
+                    break
+                case 6:self.isSupportJumpRope = state == 0 ? false:true
+                    break
+                case 7:self.isSupportSwimming = state == 0 ? false:true
+                    break
+                case 8:self.isSupportRunIndoor = state == 0 ? false:true
+                    break
+                case 9:self.isSupportVolleyball = state == 0 ? false:true
+                    break
+                case 10:self.isSupportWalkFast = state == 0 ? false:true
+                    break
+                case 11:self.isSupportSpinning = state == 0 ? false:true
+                    break
+                case 12:self.isSupportSitUps = state == 0 ? false:true
+                    break
+                case 13:self.isSupportMountainClimbing = state == 0 ? false:true
+                    break
+                case 14:self.isSupportYoga = state == 0 ? false:true
+                    break
+                case 15:self.isSupportDance = state == 0 ? false:true
+                    break
+                case 16:self.isSupportJumpingJacks = state == 0 ? false:true
+                    break
+                case 17:self.isSupportGymnastics = state == 0 ? false:true
+                    break
+                case 18:self.isSupportRowing = state == 0 ? false:true
+                    break
+                case 19:self.isSupportTennis = state == 0 ? false:true
+                    break
+                case 20:self.isSupportHockey = state == 0 ? false:true
+                    break
+                case 21:self.isSupportBaseball = state == 0 ? false:true
+                    break
+                case 22:self.isSupportTableTennis = state == 0 ? false:true
+                    break
+                case 23:self.isSupportCricket = state == 0 ? false:true
+                    break
+                case 24:self.isSupportRugby = state == 0 ? false:true
+                    break
+                case 25:self.isSupportFitness = state == 1 ? true:false
+                    break
+                case 26:self.isSupportTrailRunning = state == 1 ? true:false
+                    break
+                case 27:self.isSupportDumbbells = state == 1 ? true:false
+                    break
+                case 28:self.isSupportRowingMachine = state == 1 ? true:false
+                    break
+                case 29:self.isSupportEllipticalMachine = state == 1 ? true:false
+                    break
+                case 30:self.isSupportAerobics = state == 1 ? true:false
+                    break
+                case 31:self.isSupportKayak = state == 1 ? true:false
+                    break
+                case 32:self.isSupportRollerSkating = state == 1 ? true:false
+                    break
+                case 33:self.isSupportPlaygroundRunning = state == 1 ? true:false
+                    break
+                case 34:self.isSupportRunToLoseFat = state == 1 ? true:false
+                    break
+                case 35:self.isSupportOutdoorCycling = state == 1 ? true:false
+                    break
+                case 36:self.isSupportIndoorCycling = state == 1 ? true:false
+                    break
+                case 37:self.isSupportMountainBiking = state == 1 ? true:false
+                    break
+                case 38:self.isSupportOrienteering = state == 1 ? true:false
+                    break
+                case 39:self.isSupportMixedAerobic = state == 1 ? true:false
+                    break
+                case 40:self.isSupportCombatExercises = state == 1 ? true:false
+                    break
+                case 41:self.isSupportCoreTraining = state == 1 ? true:false
+                    break
+                case 42:self.isSupportCrossTraining = state == 1 ? true:false
+                    break
+                case 43:self.isSupportTeamGymnastics = state == 1 ? true:false
+                    break
+                case 44:self.isSupportStrengthTraining = state == 1 ? true:false
+                    break
+                case 45:self.isSupportIntervalTraining = state == 1 ? true:false
+                    break
+                case 46:self.isSupportFlexibilityTraining = state == 1 ? true:false
+                    break
+                case 47:self.isSupportStretching = state == 1 ? true:false
+                    break
+                case 48:self.isSupportFitnessExercises = state == 1 ? true:false
+                    break
+                case 49:self.isSupportBalanceTraining = state == 1 ? true:false
+                    break
+                case 50:self.isSupportStepTraining = state == 1 ? true:false
+                    break
+                case 51:self.isSupportBattleRope = state == 1 ? true:false
+                    break
+                case 52:self.isSupportFreeTraining = state == 1 ? true:false
+                    break
+                case 53:self.isSupportSkiing = state == 1 ? true:false
+                    break
+                case 54:self.isSupportRockClimbing = state == 1 ? true:false
+                    break
+                case 55:self.isSupportFishing = state == 1 ? true:false
+                    break
+                case 56:self.isSupportHunting = state == 1 ? true:false
+                    break
+                case 57:self.isSupportSkateboard = state == 1 ? true:false
+                    break
+                case 58:self.isSupportParkour = state == 1 ? true:false
+                    break
+                case 59:self.isSupportDuneBuggy = state == 1 ? true:false
+                    break
+                case 60:self.isSupportDirtBike = state == 1 ? true:false
+                    break
+                case 61:self.isSupportHandRollingCar = state == 1 ? true:false
+                    break
+                case 62:self.isSupportPilates = state == 1 ? true:false
+                    break
+                case 63:self.isSupportFlyingDarts = state == 1 ? true:false
+                    break
+                case 64:self.isSupportSnowboarding = state == 1 ? true:false
+                    break
+                case 65:self.isSupportWalkingMachine = state == 1 ? true:false
+                    break
+                case 66:self.isSupportSkydiving = state == 1 ? true:false
+                    break
+                case 67:self.isSupportCrossCountrySkiing = state == 1 ? true:false
+                    break
+                case 68:self.isSupportBungeeJumping = state == 1 ? true:false
+                    break
+                case 69:self.isSupportTheSwing = state == 1 ? true:false
+                    break
+                case 70:self.isSupportFlyingKite = state == 1 ? true:false
+                    break
+                case 71:self.isSupportHulaHoops = state == 1 ? true:false
+                    break
+                case 72:self.isSupportArchery = state == 1 ? true:false
+                    break
+                case 73:self.isSupportRaceWalking = state == 1 ? true:false
+                    break
+                case 74:self.isSupportRacingCars = state == 1 ? true:false
+                    break
+                case 75:self.isSupportMarathon = state == 1 ? true:false
+                    break
+                case 76:self.isSupportObstacleCourse = state == 1 ? true:false
+                    break
+                case 77:self.isSupportTugOfWar = state == 1 ? true:false
+                    break
+                case 78:self.isSupportDragonBoat = state == 1 ? true:false
+                    break
+                case 79:self.isSupportHighJump = state == 1 ? true:false
+                    break
+                case 80:self.isSupportSailing = state == 1 ? true:false
+                    break
+                case 81:self.isSupportTriathlon = state == 1 ? true:false
+                    break
+                case 82:self.isSupportHorseRacing = state == 1 ? true:false
+                    break
+                case 83:self.isSupportBMX = state == 1 ? true:false
+                    break
+                case 84:self.isSupportParallelBar = state == 1 ? true:false
+                    break
+                case 85:self.isSupportGolf = state == 1 ? true:false
+                    break
+                case 86:self.isSupportBowlingBall = state == 1 ? true:false
+                    break
+                case 87:self.isSupportSquash = state == 1 ? true:false
+                    break
+                case 88:self.isSupportPolo = state == 1 ? true:false
+                    break
+                case 89:self.isSupportWallBall = state == 1 ? true:false
+                    break
+                case 90:self.isSupportBilliards = state == 1 ? true:false
+                    break
+                case 91:self.isSupportWaterBalloon = state == 1 ? true:false
+                    break
+                case 92:self.isSupportShuttlecock = state == 1 ? true:false
+                    break
+                case 93:self.isSupportIndoorFootball = state == 1 ? true:false
+                    break
+                case 94:self.isSupportSandbagBall = state == 1 ? true:false
+                    break
+                case 95:self.isSupportToTheBall = state == 1 ? true:false
+                    break
+                case 96:self.isSupportJaiAlai = state == 1 ? true:false
+                    break
+                case 97:self.isSupportFloorball = state == 1 ? true:false
+                    break
+                case 98:self.isSupportPicogramBalls = state == 1 ? true:false
+                    break
+                case 99:self.isSupportBeachVolleyball = state == 1 ? true:false
+                    break
+                case 100:self.isSupportSoftball = state == 1 ? true:false
+                    break
+                case 101:self.isSupportSquareDance = state == 1 ? true:false
+                    break
+                case 102:self.isSupportBellyDance = state == 1 ? true:false
+                    break
+                case 103:self.isSupportBallet = state == 1 ? true:false
+                    break
+                case 104:self.isSupportStreetDance = state == 1 ? true:false
+                    break
+                case 105:self.isSupportLatinDance = state == 1 ? true:false
+                    break
+                case 106:self.isSupportJazzDance = state == 1 ? true:false
+                    break
+                case 107:self.isSupportPoleDancing = state == 1 ? true:false
+                    break
+                case 108:self.isSupportTheDisco = state == 1 ? true:false
+                    break
+                case 109:self.isSupportTapDance = state == 1 ? true:false
+                    break
+                case 110:self.isSupportOtherDances = state == 1 ? true:false
+                    break
+                case 111:self.isSupportBoxing = state == 1 ? true:false
+                    break
+                case 112:self.isSupportWrestling = state == 1 ? true:false
+                    break
+                case 113:self.isSupportMartialArts = state == 1 ? true:false
+                    break
+                case 114:self.isSupportTaiChi = state == 1 ? true:false
+                    break
+                case 115:self.isSupportThaiBoxing = state == 1 ? true:false
+                    break
+                case 116:self.isSupportJudo = state == 1 ? true:false
+                    break
+                case 117:self.isSupportTaekwondo = state == 1 ? true:false
+                    break
+                case 118:self.isSupportKarate = state == 1 ? true:false
+                    break
+                case 119:self.isSupportKickboxing = state == 1 ? true:false
+                    break
+                case 120:self.isSupportSwordFighting = state == 1 ? true:false
+                    break
+                case 121:self.isSupportJiuJitsu = state == 1 ? true:false
+                    break
+                default:
+                    break
+                }
+                
+            }
+        }
+        
+    }
 }
 
 @objc public class ZyFunctionModel_customSports:NSObject {
@@ -1577,7 +2271,7 @@ import CoreLocation
     @objc public private(set) var bigHeight = 0
     @objc public private(set) var smallWidth = 0
     @objc public private(set) var smallHeight = 0
-    @objc public private(set) var isSupportFitness = false                      //0 健走
+    @objc public private(set) var isSupportFitness = false                      //0 健身
     @objc public private(set) var isSupportTrailRunning = false                 //1 越野跑
     @objc public private(set) var isSupportDumbbells = false                    //2 哑铃
     @objc public private(set) var isSupportRowingMachine = false                //3 划船机
@@ -1689,7 +2383,7 @@ import CoreLocation
             var state:UInt8 = 0
             let result = newVal[i]
             for j in 0..<8 {
-                state = (result >> i) & 0x01
+                state = (result >> j) & 0x01
                 
                 switch i*8+j {
                 case 0:self.isSupportFitness = state == 1 ? true:false
@@ -3093,6 +3787,23 @@ class ZyFunctionModel_newPortocol:NSObject {
     }
 }
 
+@objc public class ZyDiveModel:NSObject {
+    @objc public var index = 0
+    @objc public var locationInterval = 0       //定位间隔
+    @objc public var startTime = ""
+    @objc public var endTime = ""
+    @objc public var detailsArray:[Int] = .init()
+    
+    public override init() {
+        super.init()
+    }
+}
+
+@objc public class ZyWorldTimeModel:NSObject {
+    @objc public var timeOffset = 0
+    @objc public var cityName = ""
+}
+
 @objc public enum ZyExerciseType : Int {
     case runOutside                         //跑步/户外跑
     case walk                               //走路
@@ -3119,104 +3830,104 @@ class ZyFunctionModel_newPortocol:NSObject {
     case tableTennis                        //乒乓球
     case cricket                            //板球
     case rugby                              //橄榄球
-    case onFoot                             //徒步
-    case fitness = 26                       //0 健身
-    case trailRunning = 27                  //1 越野跑
-    case dumbbells = 28                     //2 哑铃
-    case rowingMachine = 29                 //3 划船机
-    case ellipticalMachine = 30             //4 椭圆机
-    case aerobics = 31                      //5 健身操
-    case kayak = 32                         //6 皮划艇
-    case rollerSkating = 33                 //7 轮滑
-    case playgroundRunning = 34             //8 操场跑步
-    case runToLoseFat = 35                  //9 减脂跑步
-    case outdoorCycling = 36                //10 户外骑行
-    case indoorCycling = 37                 //11 室内骑行
-    case mountainBiking = 38                //12 山地骑行
-    case orienteering = 39                  //13 定向越野
-    case mixedAerobic = 40                  //14 混合有氧
-    case combatExercises = 41               //15 搏击操
-    case coreTraining = 42                  //16 核心训练
-    case crossTraining = 43                 //17 交叉训练
-    case teamGymnastics = 44                //18 团体操
-    case strengthTraining = 45              //19 力量训练
-    case intervalTraining = 46              //20 间歇训练
-    case flexibilityTraining = 47           //21 柔韧训练
-    case stretching = 48                    //22 拉伸
-    case fitnessExercises = 49              //23 健身运动
-    case balanceTraining = 50               //24 平衡训练
-    case stepTraining = 51                  //25 踏步训练
-    case battleRope = 52                    //26 战绳
-    case freeTraining = 53                  //27 自由训练
-    case skiing = 54                        //28 滑雪
-    case rockClimbing = 55                  //29 攀岩
-    case fishing = 56                       //30 钓鱼
-    case hunting = 57                       //31 打猎
-    case skateboard = 58                    //32 滑板
-    case parkour = 59                       //33 跑酷
-    case duneBuggy = 60                     //34 沙滩车
-    case dirtBike = 61                      //35 越野摩托
-    case handRollingCar = 62                //36 手摇车
-    case pilates = 63                       //37 普拉提
-    case flyingDarts = 64                   //38 飞镖
-    case snowboarding = 65                  //39 双板滑雪
-    case walkingMachine = 66                //40 漫步机
-    case skydiving = 67                     //41 跳伞
-    case crossCountrySkiing = 68            //42 越野滑雪
-    case bungeeJumping = 69                 //43 蹦极
-    case theSwing = 70                      //44 秋千
-    case flyingKite = 71                    //45 放风筝
-    case hulaHoops = 72                     //46 呼啦圈
-    case archery = 73                       //47 射箭
-    case raceWalking = 74                   //48 竞走
-    case racingCars = 75                    //49 赛车
-    case marathon = 76                      //50 马拉松
-    case obstacleCourse = 77                //51 障碍赛
-    case tugOfWar = 78                      //52 拔河
-    case dragonBoat = 79                    //53 龙舟
-    case highJump = 80                      //54 跳高
-    case sailing = 81                       //55 帆船运动
-    case triathlon = 82                     //56 铁人三项
-    case horseRacing = 83                   //57 赛马
-    case BMX = 84                           //58 小轮车
-    case PparallelBar = 85                  //59 双杠
-    case golf = 86                          //60 高尔夫
-    case bowlingBall = 87                   //61 保龄球
-    case squash = 88                        //62 壁球
-    case polo = 89                          //63 马球
-    case wallBall = 90                      //64 墙球
-    case billiards = 91                     //65 桌球
-    case waterBalloon = 92                  //66 水球
-    case shuttlecock = 93                   //67 毽球
-    case indoorFootball = 94                //68 室内足球
-    case sandbagBall = 95                   //69 沙包球
-    case toTheBall = 96                     //70 地掷球
-    case jaiAlai = 97                       //71 回力球
-    case floorball = 98                     //72 地板球
-    case picogramBalls = 99                 //73 匹克球
-    case beachVolleyball = 100              //74 沙滩排球
-    case softball = 101                     //75 垒球
-    case squareDance = 102                  //76 广场舞
-    case bellyDance = 103                   //77 肚皮舞
-    case ballet = 104                       //78 芭蕾舞
-    case streetDance = 105                  //79 街舞
-    case latinDance = 106                   //80 拉丁舞
-    case jazzDance = 107                    //81 爵士舞
-    case poleDancing = 108                  //82 钢管舞
-    case theDisco = 109                     //83 迪斯科
-    case tapDance = 110                     //84 踢踏舞
-    case otherDances = 111                  //85 其它舞蹈
-    case boxing = 112                       //86 拳击
-    case wrestling = 113                    //87 摔跤
-    case martialArts = 114                  //88 武术
-    case taiChi = 115                       //89 太极
-    case thaiBoxing = 116                   //90 泰拳
-    case judo = 117                         //91 柔道
-    case taekwondo = 118                    //92 跆拳道
-    case karate = 119                       //93 空手道
-    case kickboxing = 120                   //94 自由搏击
-    case swordFighting = 121                //95 剑术
-    case jiuJitsu = 122                     //96 柔术
+
+    case fitness = 25                       //0 健身
+    case trailRunning = 26                  //1 越野跑
+    case dumbbells = 27                     //2 哑铃
+    case rowingMachine = 28                 //3 划船机
+    case ellipticalMachine = 29             //4 椭圆机
+    case aerobics = 30                      //5 健身操
+    case kayak = 31                         //6 皮划艇
+    case rollerSkating = 32                 //7 轮滑
+    case playgroundRunning = 33             //8 操场跑步
+    case runToLoseFat = 34                  //9 减脂跑步
+    case outdoorCycling = 35                //10 户外骑行
+    case indoorCycling = 36                 //11 室内骑行
+    case mountainBiking = 37                //12 山地骑行
+    case orienteering = 38                  //13 定向越野
+    case mixedAerobic = 39                  //14 混合有氧
+    case combatExercises = 40               //15 搏击操
+    case coreTraining = 41                  //16 核心训练
+    case crossTraining = 42                 //17 交叉训练
+    case teamGymnastics = 43                //18 团体操
+    case strengthTraining = 44              //19 力量训练
+    case intervalTraining = 45              //20 间歇训练
+    case flexibilityTraining = 46           //21 柔韧训练
+    case stretching = 47                    //22 拉伸
+    case fitnessExercises = 48              //23 健身运动
+    case balanceTraining = 49               //24 平衡训练
+    case stepTraining = 50                  //25 踏步训练
+    case battleRope = 51                    //26 战绳
+    case freeTraining = 52                  //27 自由训练
+    case skiing = 53                        //28 滑雪
+    case rockClimbing = 54                  //29 攀岩
+    case fishing = 55                       //30 钓鱼
+    case hunting = 56                       //31 打猎
+    case skateboard = 57                    //32 滑板
+    case parkour = 58                       //33 跑酷
+    case duneBuggy = 59                     //34 沙滩车
+    case dirtBike = 60                      //35 越野摩托
+    case handRollingCar = 61                //36 手摇车
+    case pilates = 62                       //37 普拉提
+    case flyingDarts = 63                   //38 飞镖
+    case snowboarding = 64                  //39 双板滑雪
+    case walkingMachine = 65                //40 漫步机
+    case skydiving = 66                     //41 跳伞
+    case crossCountrySkiing = 67            //42 越野滑雪
+    case bungeeJumping = 68                 //43 蹦极
+    case theSwing = 69                      //44 秋千
+    case flyingKite = 70                    //45 放风筝
+    case hulaHoops = 71                     //46 呼啦圈
+    case archery = 72                       //47 射箭
+    case raceWalking = 73                   //48 竞走
+    case racingCars = 74                    //49 赛车
+    case marathon = 75                      //50 马拉松
+    case obstacleCourse = 76                //51 障碍赛
+    case tugOfWar = 77                      //52 拔河
+    case dragonBoat = 78                    //53 龙舟
+    case highJump = 79                      //54 跳高
+    case sailing = 80                       //55 帆船运动
+    case triathlon = 81                     //56 铁人三项
+    case horseRacing = 82                   //57 赛马
+    case BMX = 83                           //58 小轮车
+    case PparallelBar = 84                  //59 双杠
+    case golf = 85                          //60 高尔夫
+    case bowlingBall = 86                   //61 保龄球
+    case squash = 87                        //62 壁球
+    case polo = 88                          //63 马球
+    case wallBall = 89                      //64 墙球
+    case billiards = 90                     //65 桌球
+    case waterBalloon = 91                  //66 水球
+    case shuttlecock = 92                   //67 毽球
+    case indoorFootball = 93                //68 室内足球
+    case sandbagBall = 94                   //69 沙包球
+    case toTheBall = 95                     //70 地掷球
+    case jaiAlai = 96                       //71 回力球
+    case floorball = 97                     //72 地板球
+    case picogramBalls = 98                 //73 匹克球
+    case beachVolleyball = 99               //74 沙滩排球
+    case softball = 100                     //75 垒球
+    case squareDance = 101                  //76 广场舞
+    case bellyDance = 102                   //77 肚皮舞
+    case ballet = 103                       //78 芭蕾舞
+    case streetDance = 104                  //79 街舞
+    case latinDance = 105                   //80 拉丁舞
+    case jazzDance = 106                    //81 爵士舞
+    case poleDancing = 107                  //82 钢管舞
+    case theDisco = 108                     //83 迪斯科
+    case tapDance = 109                     //84 踢踏舞
+    case otherDances = 110                  //85 其它舞蹈
+    case boxing = 111                       //86 拳击
+    case wrestling = 112                    //87 摔跤
+    case martialArts = 113                  //88 武术
+    case taiChi = 114                       //89 太极
+    case thaiBoxing = 115                   //90 泰拳
+    case judo = 116                         //91 柔道
+    case taekwondo = 117                    //92 跆拳道
+    case karate = 118                       //93 空手道
+    case kickboxing = 119                   //94 自由搏击
+    case swordFighting = 120                //95 剑术
+    case jiuJitsu = 121                     //96 柔术
     
 }
 
@@ -3719,6 +4430,17 @@ class ZyFunctionModel_newPortocol:NSObject {
             self.titleLength = Int(val[1])
             self.qrLength = (Int(val[2]) | Int(val[3]) << 8)
         }
+        super.init()
+    }
+}
+
+@objc public class ZyFunctionModel_worldClockd:NSObject {
+    @objc public private(set) var maxCount = 0
+    @objc public private(set) var cityMaxLength = 32
+    
+    init(val:[UInt8]) {
+        self.maxCount = Int(val[0])
+        self.cityMaxLength = Int(val[1])
         super.init()
     }
 }

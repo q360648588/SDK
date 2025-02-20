@@ -73,7 +73,7 @@ class WatchConfigurationVC: UIViewController {
             NSLocalizedString("Disconnect and unbind", comment: "断开连接,解绑"),
             NSLocalizedString("Filter device name", comment: "过滤设备名"),
             NSLocalizedString("View Local file", comment: "查看本地文件"),
-            "\(NSLocalizedString("Date of update", comment: "更新日期")):2024-12-14",
+            "\(NSLocalizedString("Date of update", comment: "更新日期")):2025-2-13",
         ]
         DispatchQueue.main.async {
             self.tableView.reloadData()

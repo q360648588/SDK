@@ -10474,6 +10474,52 @@ import CoreLocation
         }
     }
     
+    @objc public func setNewSyncAllHealthData(typeArray:[Int],indexArray:[[Int]],success:@escaping(([Any],[Any],ZyError) -> Void)) {
+        if self.functionListModel?.functionList_newPortocol == false {
+            print("当前设备不支持此命令。请使用setSyncHealthData或setSyncExerciseData")
+            return
+        }
+        var currentCount = 0
+        for i in 0..<typeArray.count {
+            let type = typeArray[i]
+            var dataArray:[Int] = [0,1,2,3,4,5,6]
+            if i < indexArray.count {
+                dataArray = indexArray[i]
+            }else{
+                if let arr = indexArray.last {
+                    dataArray = arr
+                }
+            }
+            var modelArray:[Any?] = .init()
+            var validArray:[Any] = .init()
+            self.setNewSyncHealthData(type: type, indexArray: dataArray) { successDic, error in
+                if error == .none {
+                    //print("SetSyncHealthData ->",success)
+                    modelArray.append(successDic)
+                    
+                    if let successD:[String:Any?] = successDic as? [String : Any?] {
+                        for key in successD.keys {
+                            if let value = successD[key] {
+                                if !(value is NSNull) {
+                                    validArray.append([key:value])
+                                }
+                            }
+                        }
+                    }
+                }
+                currentCount += 1
+                if currentCount == typeArray.count {
+                    if modelArray.count > 0 {
+                        success(modelArray as [Any],validArray,.none)
+                    }else{
+                        success(modelArray as [Any],validArray,.fail)
+                    }
+                    
+                }
+            }
+        }
+    }
+    
     private func parseSetNewSyncHealthData(val:[UInt8],success:@escaping((Any?,ZyError) -> Void)) {
 
 //        var str = "03020068 01ffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff  ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aa016801 ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff  ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff fd555555 55555555 555aa955 55555556 95555556 55555555 5555556a a5555555 95555555 55555555 55ffffff ffffffff  ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff"

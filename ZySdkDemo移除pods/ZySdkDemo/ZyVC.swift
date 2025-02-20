@@ -1,16 +1,17 @@
 //
-//  WatchCommandVC.swift
-//  ZyTools
+//  ZyXuVC.swift
+//  ZySdkDemo
 //
-//  Created by 猜猜我是谁 on 2024/4/25.
+//  Created by 猜猜我是谁 on 2021/7/3.
 //
 
 import UIKit
+import ZySDK
 import CoreBluetooth
 //import Alamofire
 import Photos
 
-class WatchCommandVC: UIViewController {
+class ZyVC: UIViewController {
     //存放照片资源的标志符
     var localId:String!
     var customBgImage:UIImage?
@@ -38,7 +39,133 @@ class WatchCommandVC: UIViewController {
     var timestamp:Int?
 
     func test() {
+//        return
+//        ZyCommandModule.shareInstance.getDeviceSupportList { _, _ in
+//            
+//        }
+//        
+//        ZyCommandModule.shareInstance.setReportRealtimeData(isOpen: 1) { _ in
+//            
+//        }
+//        
+//        ZyCommandModule.shareInstance.setNotificationRemind(isOpen: "65535", extensionOpen: "0") { _ in
+//            
+//        }
+//        
+//        ZyCommandModule.shareInstance.setLightScreen(isOpen: 1) { _ in
+//            
+//        }
+//        
+//        ZyCommandModule.shareInstance.set24HrMonitor(isOpen: 1) { _ in
+//            
+//        }
+//        
+//        ZyCommandModule.shareInstance.setTime { _ in
+//            
+//        }
+//        
+//        ZyCommandModule.shareInstance.getCustonDialFrameSize { _, _ in
+//            
+//        }
+//        
+//        ZyCommandModule.shareInstance.setMetricSystem(metric: 0) { error in
+//            
+//        }
+//        
+//        for i in stride(from: 0, to: 3, by: 1) {
+//
+//            ZyCommandModule.shareInstance.getAlarm(index: i) { _, _ in
+//                                    
+//            }
+//        }
+//        
+//        return
+        ZyCommandModule.shareInstance.checkUpgradeState { _, _ in
+            
+        }
         
+        ZyCommandModule.shareInstance.setReportRealtimeData(isOpen: 1) { _ in
+            
+        }
+        
+        ZyCommandModule.shareInstance.setTime { _ in
+            
+        }
+        
+        ZyCommandModule.shareInstance.getCustonDialFrameSize { _, _ in
+            
+        }
+        
+        ZyCommandModule.shareInstance.setDeviceLanguage(index: 0) { _ in
+            
+        }
+        
+        ZyCommandModule.shareInstance.setWeatherUnit(type: 0) { _ in
+            
+        }
+        
+        ZyCommandModule.shareInstance.getMetricSystem { _, _ in
+            
+        }
+        
+        ZyCommandModule.shareInstance.getMac { _, _ in
+            
+        }
+        
+        ZyCommandModule.shareInstance.getNotificationRemind { _,_, _ in
+            
+        }
+        
+        for i in stride(from: 0, to: 3, by: 1) {
+
+            ZyCommandModule.shareInstance.getAlarm(index: i) { _, _ in
+                                    
+            }
+        }
+        
+        ZyCommandModule.shareInstance.getSedentary { _, _ in
+            
+        }
+        
+        ZyCommandModule.shareInstance.getDoNotDisturb { _, _ in
+            
+        }
+        
+        ZyCommandModule.shareInstance.getLightScreen { _, _ in
+            
+        }
+        
+        ZyCommandModule.shareInstance.get24HrMonitor { _, _ in
+            
+        }
+        
+        ZyCommandModule.shareInstance.getScreenTimeLong { _, _ in
+            
+        }
+        
+        ZyCommandModule.shareInstance.getTimeFormat { _, _ in
+            
+        }
+        
+        ZyCommandModule.shareInstance.getMetricSystem { _, _ in
+            
+        }
+        
+        ZyCommandModule.shareInstance.getDeviceLanguage { _, _ in
+            
+        }
+        
+        ZyCommandModule.shareInstance.setWeatherUnit(type: 0) { _ in
+            
+        }
+        
+        ZyCommandModule.shareInstance.getCustonDialFrameSize { _, _ in
+            
+        }
+        
+        ZyCommandModule.shareInstance.setMetricSystem(metric: 0) { error in
+            
+        }
     }
     func decimalToBcd(value:Int) -> Int {
         return ((((value) / 10) << 4) + ((value) % 10))
@@ -52,7 +179,7 @@ class WatchCommandVC: UIViewController {
         super.viewDidLoad()
         
         //e4 bd a0 e5 a5 bd e6 98 8e e5 a4 a9
-        let valArray:[UInt8] = []//[170, 5, 129, 129, 2, 0, 1, 0, 4, 1, 0, 255, 121, 1, 0, 0, 231, 7, 8, 18, 0, 10, 37, 22, 0, 0, 23, 3, 150, 0, 0, 0, 208, 7, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 105, 0, 0, 0, 87, 1, 10, 1, 0, 0, 0, 233, 161, 89, 1, 247, 183, 203, 6, 82, 0, 0, 0, 0, 0, 199, 1, 139, 4, 159, 6, 126, 9, 9, 12, 96, 13, 139, 13, 75, 15, 202, 16, 134, 17, 249, 16, 137, 16, 240, 15, 201, 14, 104, 13, 210, 11, 160, 10, 242, 8, 189, 6, 0, 0, 0, 0, 0, 0, 199, 1, 139, 4, 159, 6, 126, 9, 9, 12, 96, 13, 139, 13, 75, 15, 202, 16, 134, 17, 249, 16, 137, 16, 240, 15, 201, 14, 104, 13, 210, 11, 160, 10, 242, 8, 189, 6, 0, 0, 0, 0, 0, 0, 199, 1, 139, 4, 159, 6, 126, 9, 9, 12, 96, 13, 139, 13, 75, 15, 202, 16, 134, 17, 249, 16, 137]// [0x05,0xff,0xf7,0x3f,0xff,0xbf,0x00,0x04,0xff,0xfb,0xff,0x01,0x06,0x02,0xff,0x1f,0x08,0x02,0x0a,0x01,0x0a,0x01,0x31,0x0f,0x03,0xff,0x1f,0x00,0x10,0x03,0x05,0x08,0x03,0x14,0x01,0x03,0x15,0x02,0x96,0x32,0x11,0x02,0x1e,0x00,0x25,0x01,0x03]//[0x05,0xff,0xf7,0x3f,0xfb,0xf0,0x00,0x04,0xff,0xfb,0xff,0x01,0x06,0x02,0xff,0x1f,0x08,0x02,0x0a,0x01,0x0a,0x01,0x31,0x0f,0x03,0xff,0x1f,0x00,0x10,0x03,0x05,0x08,0x03,0x14,0x01,0x03,0x15,0x02,0x96,0x32,0x11,0x02,0x1e,0x00,0x25,0x01,0x03]//[5, 255, 247, 63, 251, 240, 0, 4, 255, 251, 255, 1, 6, 2, 255, 31, 8, 2, 10, 1, 10, 1, 49, 15, 3, 255, 31, 0, 16, 3, 5, 8, 3, 20, 1, 3, 21, 2, 150, 50, 17, 2, 30, 0, 37, 1, 3]//[0x2F, 0x00, 0x02, 0x00,0x00, 0x00, 0x06, 0x0B, 0xE5, 0xBC, 0xA0, 0xE4, 0xB8, 0x89, 0x31, 0x33, 0x37, 0x35, 0x35, 0x36, 0x36, 0x30, 0x30, 0x33, 0x33,0x01, 0x00, 0x06, 0x0C, 0xE6, 0x9D, 0x8E, 0xE5, 0x9B, 0x9B, 0x30, 0x37, 0x35, 0x35, 0x2D, 0x36,0x31, 0x32, 0x38, 0x39, 0x39, 0x38]
+        let valArray:[UInt8] = [170, 5, 129, 129, 2, 0, 1, 0, 4, 1, 0, 255, 121, 1, 0, 0, 231, 7, 8, 18, 0, 10, 37, 22, 0, 0, 23, 3, 150, 0, 0, 0, 208, 7, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 105, 0, 0, 0, 87, 1, 10, 1, 0, 0, 0, 233, 161, 89, 1, 247, 183, 203, 6, 82, 0, 0, 0, 0, 0, 199, 1, 139, 4, 159, 6, 126, 9, 9, 12, 96, 13, 139, 13, 75, 15, 202, 16, 134, 17, 249, 16, 137, 16, 240, 15, 201, 14, 104, 13, 210, 11, 160, 10, 242, 8, 189, 6, 0, 0, 0, 0, 0, 0, 199, 1, 139, 4, 159, 6, 126, 9, 9, 12, 96, 13, 139, 13, 75, 15, 202, 16, 134, 17, 249, 16, 137, 16, 240, 15, 201, 14, 104, 13, 210, 11, 160, 10, 242, 8, 189, 6, 0, 0, 0, 0, 0, 0, 199, 1, 139, 4, 159, 6, 126, 9, 9, 12, 96, 13, 139, 13, 75, 15, 202, 16, 134, 17, 249, 16, 137]// [0x05,0xff,0xf7,0x3f,0xff,0xbf,0x00,0x04,0xff,0xfb,0xff,0x01,0x06,0x02,0xff,0x1f,0x08,0x02,0x0a,0x01,0x0a,0x01,0x31,0x0f,0x03,0xff,0x1f,0x00,0x10,0x03,0x05,0x08,0x03,0x14,0x01,0x03,0x15,0x02,0x96,0x32,0x11,0x02,0x1e,0x00,0x25,0x01,0x03]//[0x05,0xff,0xf7,0x3f,0xfb,0xf0,0x00,0x04,0xff,0xfb,0xff,0x01,0x06,0x02,0xff,0x1f,0x08,0x02,0x0a,0x01,0x0a,0x01,0x31,0x0f,0x03,0xff,0x1f,0x00,0x10,0x03,0x05,0x08,0x03,0x14,0x01,0x03,0x15,0x02,0x96,0x32,0x11,0x02,0x1e,0x00,0x25,0x01,0x03]//[5, 255, 247, 63, 251, 240, 0, 4, 255, 251, 255, 1, 6, 2, 255, 31, 8, 2, 10, 1, 10, 1, 49, 15, 3, 255, 31, 0, 16, 3, 5, 8, 3, 20, 1, 3, 21, 2, 150, 50, 17, 2, 30, 0, 37, 1, 3]//[0x2F, 0x00, 0x02, 0x00,0x00, 0x00, 0x06, 0x0B, 0xE5, 0xBC, 0xA0, 0xE4, 0xB8, 0x89, 0x31, 0x33, 0x37, 0x35, 0x35, 0x36, 0x36, 0x30, 0x30, 0x33, 0x33,0x01, 0x00, 0x06, 0x0C, 0xE6, 0x9D, 0x8E, 0xE5, 0x9B, 0x9B, 0x30, 0x37, 0x35, 0x35, 0x2D, 0x36,0x31, 0x32, 0x38, 0x39, 0x39, 0x38]
                 
         var str = ""
         for item in valArray {
@@ -62,7 +189,7 @@ class WatchCommandVC: UIViewController {
         
 //        let fileData = try! Data.init(contentsOf: URL.init(fileURLWithPath: Bundle.main.path(forResource: "test_small.bin", ofType: "")!))
 //        print("\(self.convertDataToHexStr(data: fileData))")
-//
+//        
         let result = ZyCommandModule.shareInstance.CRC16(val:valArray)
         print("result =\(result),\(String.init(format: "0x%04x", result))")
 
@@ -163,7 +290,6 @@ class WatchCommandVC: UIViewController {
                 "7\(NSLocalizedString("Local music data", comment: "本地音乐数据"))",
                 "8\(NSLocalizedString("Auxiliary positioning data", comment: "辅助定位数据"))",
                 "9\(NSLocalizedString("Customize the exercise type", comment: "自定义运动类型"))",
-                "9\(NSLocalizedString("Customize the exercise type", comment: "自定义运动类型"))+imageType",
                 "0x00 \(NSLocalizedString("Get the device name", comment: "获取设备名称"))",
                 "0x02 \(NSLocalizedString("Get the firmware version", comment: "获取固件版本"))",
                 "0x04 \(NSLocalizedString("Gets the serial number", comment: "获取序列号"))",
@@ -227,9 +353,6 @@ class WatchCommandVC: UIViewController {
                 "0x3d \(NSLocalizedString("Set to clear all data", comment: "设置清除所有数据"))",
                 "0x3f \(NSLocalizedString("Binding up", comment: "绑定"))",
                 "0x41 \(NSLocalizedString("unbind", comment: "解绑"))",
-                "0x44 设置潜水深度",
-                "0x45 获取潜水深度",
-                "0x46 潜水气压转换",
             ],
             [
                 "0x00 \(NSLocalizedString("Get message alerts", comment: "获取消息提醒"))",
@@ -279,7 +402,6 @@ class WatchCommandVC: UIViewController {
                 "0x83(0x1a) \(NSLocalizedString("Set up SOS contacts", comment: "设置SOS联系人"))",
                 "0x84(0x1a) \(NSLocalizedString("Get SOS contacts", comment: "获取SOS联系人"))",
                 "0x83(0x1b) \(NSLocalizedString("Cycle measurement parameter setting", comment: "周期测量参数设置"))",
-                "0x84(0x1b) 获取周期测量参数",
                 "0x84(0x1d) \(NSLocalizedString("Get the number of days and start time of the pilgrimage alarm clock", comment: "获取朝拜闹钟天数及开始时间"))",
                 "0x83(0x0f) \(NSLocalizedString("Set the time zone", comment: "设置时区"))",
                 "\(NSLocalizedString("No response response location information", comment: "无响应 回应定位信息"))",
@@ -288,26 +410,7 @@ class WatchCommandVC: UIViewController {
                 "0x84(0x1e) \(NSLocalizedString("Get the LED light function", comment: "获取LED灯功能"))",
                 "0x84(0x1f) \(NSLocalizedString("Get motor vibration function", comment: "获取马达震动功能"))",
                 "0x84(0x20) \(NSLocalizedString("Gets a custom movement type", comment: "获取自定义运动类型"))",
-                "0x83(0x21) 设置蓝牙名",
-                "0x83(0x22) 设置自定义血糖",
-                "0x83(0x22) 获取自定义血糖",
-                "0x83(0x23) 设置消息提醒方式",
-                "0x84(0x23) 获取消息提醒方式",
-                "0x83(0x24) 设置二维码名片(单个设置)",
-                "0x83(0x24) 设置二维码名片(多个设置)",
-                "0x83(0x24) 删除所有二维码名片",
-                "0x84(0x24) 获取二维码名片",
-                "0x83(0x25) 设置疗程信息",
-                "0x84(0x25) 获取疗程信息",
-                "0x83(0x26) 设置定位透传开关",
-                "0x83(0x2C) 设置气压计透传开关",
-                "0x83(0x2D) 设置三轴传感器传开关",
-                "0x83(0x2A) 设置世界时钟(单个)",
-                "0x83(0x2A) 设置世界时钟(多个)",
-                "删除所有世界时钟",
-                "0x84(0x2A) 获取世界时钟",
-                "0x83(0x2B) 设置本地时区扩展",
-                "0x84(0x2B) 获取本地时区扩展",
+                "0x83(0x21) 设置蓝牙名"
             ],
             [
                 "0x00 ",
@@ -342,9 +445,7 @@ class WatchCommandVC: UIViewController {
                 "\(NSLocalizedString("Report request location information", comment: "上报请求定位信息"))",
                 "\(NSLocalizedString("Report the alarm clock", comment: "上报闹钟"))",
                 "\(NSLocalizedString("Language of reporting", comment: "上报语言"))",
-                "上报辅助定位",
-                "上报治疗信息",
-                "上报请求天气数据",
+                "上报辅助定位"
             ],
             [
                 "\(NSLocalizedString("Multi-package test command", comment: "多包测试命令"))",
@@ -486,7 +587,7 @@ class WatchCommandVC: UIViewController {
 
 }
 
-extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
+extension ZyVC:UITableViewDataSource,UITableViewDelegate {
     func numberOfSections(in tableView: UITableView) -> Int {
         return self.dataSourceArray.count
     }
@@ -2174,68 +2275,6 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             }
             break
 
-        case "0x44 设置潜水深度":
-            let array = [
-                "深度",
-                "时长",
-            ]
-            
-            self.logView.clearString()
-            self.logView.writeString(string:"设置潜水深度")
-            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("设置潜水深度", comment: ""), holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let deep = (Int(textArray[0]) ?? 0)
-                let timeLong = (Int(textArray[1]) ?? 0)
-                ZyCommandModule.shareInstance.setDiveDeep(count: deep, timeLong: timeLong) { error in
-                    self.logView.writeString(string: String.init(format: "深度:%d,时长:%d", deep,timeLong))
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    
-                    if error == .none {
-                        print("setDiveDeep ->","success")
-                    }
-                }
-            }
-            break
-            
-        case "0x45 获取潜水深度":
-            self.logView.clearString()
-            self.logView.writeString(string: NSLocalizedString("获取潜水深度", comment: ""))
-            
-            ZyCommandModule.shareInstance.getDiveDeep { deep, timeLong, error in
-                self.logView.writeString(string: self.getErrorCodeString(error: error))
-                self.logView.writeString(string: String.init(format: "深度:%d,时长:%d", deep,timeLong))
-                
-                if error == .none {
-                    print("getDiveDeep ->","success")
-                }
-            }
-            
-            break
-            
-        case "0x46 潜水气压转换":
-            let array = [
-                "气压",
-            ]
-            
-            self.logView.clearString()
-            self.logView.writeString(string:"设置潜水气压转换")
-            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("设置潜水气压转换", comment: ""), holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let pressure = (Int(textArray[0]) ?? 0)
-
-                ZyCommandModule.shareInstance.setDivePressure(count: pressure) { value,error in
-                    self.logView.writeString(string: String.init(format: "原始气压:%d,转换后气压:%d",pressure,value))
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    
-                    if error == .none {
-                        print("setDivePressure ->","success")
-                    }
-                }
-            }
-            break
-            
         case "0x00 \(NSLocalizedString("Get message alerts", comment: "获取消息提醒"))":
             
             self.logView.clearString()
@@ -3433,15 +3472,15 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                             let timeInterval = model.timeInterval
                             let listModelArray = model.listArray
                             
+                            print("listModelArray ->",listModelArray)
                             self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")):\(type.rawValue)")
                             self.logView.writeString(string: "\(NSLocalizedString("Length of interval", comment: "间隔时长")):\(timeInterval)")
                             for item in listModelArray {
                                 let item:ZyMeasurementValueModel = item
-                                let string = "dayIndex = \(item.dayIndex),time:\(item.time) value1:\(item.value_1),value2:\(item.value_2)\n"
-                                print(string)
-                                self.logView.writeString(string: string)
+                                self.logView.writeString(string: "time:\(item.time) value1:\(item.value_1),value2:\(item.value_2)\n")
                             }
                         }
+                        
                     }
                 }
             }
@@ -3449,38 +3488,221 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             
         case "0x85 \(NSLocalizedString("Synchronizing data", comment: "同步数据"))":
             
-            let array = [
-                "1:\(NSLocalizedString("Number of steps", comment: "步数")) 2:\(NSLocalizedString("Heart rate", comment: "心率")) 3:\(NSLocalizedString("Sleep", comment: "睡眠")) 4:\(NSLocalizedString("Exercise", comment: "锻炼")),5:锻炼数据基础信息,6:潜水数据",
-                NSLocalizedString("The input is not spaced within 10 days of x day (article)", comment: "第x天(条) 10以内输入不间隔"),
-            ]
-            
-            self.logView.clearString()
-            self.logView.writeString(string: NSLocalizedString("Synchronizing data", comment: "同步数据"))
-            
-            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Synchronizing data", comment: "同步数据"), holderStringArray: array, cancel: nil, cancelAction: {
+//            let array = [
+//                "1:\(NSLocalizedString("Number of steps", comment: "步数")) 2:\(NSLocalizedString("Heart rate", comment: "心率")) 3:\(NSLocalizedString("Sleep", comment: "睡眠")) 4:\(NSLocalizedString("Exercise", comment: "锻炼"))",
+//                NSLocalizedString("The input is not spaced within 10 days of x day (article)", comment: "第x天(条) 10以内输入不间隔"),
+//            ]
+//            
+//            self.logView.clearString()
+//            self.logView.writeString(string: NSLocalizedString("Synchronizing data", comment: "同步数据"))
+//            
+//            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Synchronizing data", comment: "同步数据"), holderStringArray: array, cancel: nil, cancelAction: {
+//                
+//            }, ok: nil) { (textArray) in
+//                let type = textArray[0]
+//                let dayCount = textArray[1]
+//                
+//                let dayNumber:String = dayCount.components(separatedBy: .decimalDigits.inverted).joined()
+//                var dayArray = [Int]()
+//                for i in dayNumber {
+//                    dayArray.append(Int(String(i)) ?? 0)
+//                }
+//                print("dayArray = \(dayArray)")
+//                
+//                ZyCommandModule.shareInstance.setNewSyncHealthData(type: Int(type) ?? 1, indexArray: dayArray) { success,error in
+//                    
+//                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+//                    
+//                    if error == .none {
+//                        //print("SetSyncHealthData ->",success)
+//                        
+//                        if let successDic:[String:Any?] = success as? [String : Any?] {
+//                            
+//                            for key in successDic.keys {
+//                                
+//                                if let value = successDic[key] {
+//                                    
+//                                    if value is ZyStepModel {
+//                                        if let model:ZyStepModel = value as? ZyStepModel {
+//                                            let detailArray = model.detailArray
+//                                            let step = model.step
+//                                            let calorie = model.calorie
+//                                            let distance = model.distance
+//                                            
+//                                            print("detailArray ->",detailArray)
+//                                            self.logView.writeString(string: "第\(key)天")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Detailed steps", comment: "详情步数")):\(detailArray)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Total number of steps", comment: "总步数")):\(step)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Total calories", comment: "总卡路里")):\(calorie)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Total distance", comment: "总距离")):\(distance)\n")
+//                                        }
+//                                    }
+//                                    
+//                                    if value is ZySleepModel {
+//                                        if let model:ZySleepModel = value as? ZySleepModel {
+//                                            let deep = model.deep
+//                                            let awake = model.awake
+//                                            let light = model.light
+//                                            let detailArray = model.detailArray
+//                                            print("deep ->",deep,"awake ->",awake,"light ->",light,"detailArray ->",detailArray)
+//                                            self.logView.writeString(string: "第\(key)天")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Deep sleep duration", comment: "深睡时长")):\(deep)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Light sleep duration", comment: "浅睡时长")):\(light)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Duration of wakefulness", comment: "清醒时长")):\(awake)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Details Sleep", comment: "详情睡眠")):\(detailArray)\n")
+//                                        }
+//                                    }
+//                                    
+//                                    if value is ZyHrModel {
+//                                        if let model:ZyHrModel = value as? ZyHrModel {
+//                                            let detailArray = model.detailArray
+//                                            print("detailArray ->",detailArray)
+//                                            self.logView.writeString(string: "第\(key)天")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Details Heart rate", comment: "详情心率")):\(detailArray)\n")
+//                                        }
+//                                    }
+//                                    
+//                                    if value is ZyExerciseModel {
+//                                        if let model:ZyExerciseModel = value as? ZyExerciseModel {
+//                                            let startTime = model.startTime
+//                                            let type = model.type
+//                                            let hr = model.heartrate
+//                                            let validTimeLength = model.validTimeLength
+//                                            let step = model.step
+//                                            let endTime = model.endTime
+//                                            let calorie = model.calorie
+//                                            let distance = model.distance
+//                                            self.logView.writeString(string: "第\(key)条")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Time to start", comment: "开始时间")):\(startTime)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")):\(type.rawValue)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Heart rate", comment: "心率")):\(hr)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Duration of exercise", comment: "运动时长")):\(validTimeLength)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Number of steps", comment: "步数")):\(step)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("End of period", comment: "结束时间")):\(endTime)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Calories", comment: "卡路里")):\(calorie)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Distance", comment: "距离")):\(distance)\n")
+//                                            let gpsArray = model.gpsArray
+//                                            if gpsArray.count > 0 {
+//                                                var logArray = [String]()
+//                                                for locationArray in gpsArray {
+//                                                    for item in locationArray {
+//                                                        logArray.append("时间:\(item.timestamp.conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss")),latitude:\(item.coordinate.latitude),longitude:\(item.coordinate.longitude)")
+//                                                    }
+//                                                }
+//                                                self.logView.writeString(string: "\(NSLocalizedString("Distance", comment: "距离")):\(logArray)\n")
+//                                            }
+//                                        }
+//                                    }
+//                                    if value is NSNull {
+//                                        self.logView.writeString(string: "第\(key)天(条)数据为空")
+//                                    }
+//                                }else{
+//                                    self.logView.writeString(string: "第\(key)天(条)数据为空")
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+
+            ZyCommandModule.shareInstance.setNewSyncAllHealthData(typeArray: [1,2,3,4], indexArray: [[1,2,3],[1,2,4],[0,1,3]]) { modelArray,validArray,error in
                 
-            }, ok: nil) { (textArray) in
-                let type = textArray[0]
-                let dayCount = textArray[1]
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
                 
-                let dayNumber:String = dayCount.components(separatedBy: .decimalDigits.inverted).joined()
-                var dayArray = [Int]()
-                for i in dayNumber {
-                    dayArray.append(Int(String(i)) ?? 0)
-                }
-                print("dayArray = \(dayArray)")
-                
-                ZyCommandModule.shareInstance.setNewSyncHealthData(type: Int(type) ?? 1, indexArray: dayArray) { success,error in
+                if error == .none {
                     
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+//                    for success in modelArray {
+//                        if let successDic:[String:Any?] = success as? [String : Any?] {
+//                            
+//                            for key in successDic.keys {
+//                                
+//                                if let value = successDic[key] {
+//                                    
+//                                    if value is ZyStepModel {
+//                                        if let model:ZyStepModel = value as? ZyStepModel {
+//                                            let detailArray = model.detailArray
+//                                            let step = model.step
+//                                            let calorie = model.calorie
+//                                            let distance = model.distance
+//                                            
+//                                            print("detailArray ->",detailArray)
+//                                            self.logView.writeString(string: "第\(key)天")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Detailed steps", comment: "详情步数")):\(detailArray)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Total number of steps", comment: "总步数")):\(step)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Total calories", comment: "总卡路里")):\(calorie)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Total distance", comment: "总距离")):\(distance)\n")
+//                                        }
+//                                    }
+//                                    
+//                                    if value is ZySleepModel {
+//                                        if let model:ZySleepModel = value as? ZySleepModel {
+//                                            let deep = model.deep
+//                                            let awake = model.awake
+//                                            let light = model.light
+//                                            let detailArray = model.detailArray
+//                                            print("deep ->",deep,"awake ->",awake,"light ->",light,"detailArray ->",detailArray)
+//                                            self.logView.writeString(string: "第\(key)天")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Deep sleep duration", comment: "深睡时长")):\(deep)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Light sleep duration", comment: "浅睡时长")):\(light)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Duration of wakefulness", comment: "清醒时长")):\(awake)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Details Sleep", comment: "详情睡眠")):\(detailArray)\n")
+//                                        }
+//                                    }
+//                                    
+//                                    if value is ZyHrModel {
+//                                        if let model:ZyHrModel = value as? ZyHrModel {
+//                                            let detailArray = model.detailArray
+//                                            print("detailArray ->",detailArray)
+//                                            self.logView.writeString(string: "第\(key)天")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Details Heart rate", comment: "详情心率")):\(detailArray)\n")
+//                                        }
+//                                    }
+//                                    
+//                                    if value is ZyExerciseModel {
+//                                        if let model:ZyExerciseModel = value as? ZyExerciseModel {
+//                                            let startTime = model.startTime
+//                                            let type = model.type
+//                                            let hr = model.heartrate
+//                                            let validTimeLength = model.validTimeLength
+//                                            let step = model.step
+//                                            let endTime = model.endTime
+//                                            let calorie = model.calorie
+//                                            let distance = model.distance
+//                                            self.logView.writeString(string: "第\(key)条")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Time to start", comment: "开始时间")):\(startTime)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")):\(type.rawValue)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Heart rate", comment: "心率")):\(hr)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Duration of exercise", comment: "运动时长")):\(validTimeLength)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Number of steps", comment: "步数")):\(step)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("End of period", comment: "结束时间")):\(endTime)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Calories", comment: "卡路里")):\(calorie)")
+//                                            self.logView.writeString(string: "\(NSLocalizedString("Distance", comment: "距离")):\(distance)\n")
+//                                            let gpsArray = model.gpsArray
+//                                            if gpsArray.count > 0 {
+//                                                var logArray = [String]()
+//                                                for locationArray in gpsArray {
+//                                                    for item in locationArray {
+//                                                        logArray.append("时间:\(item.timestamp.conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss")),latitude:\(item.coordinate.latitude),longitude:\(item.coordinate.longitude)")
+//                                                    }
+//                                                }
+//                                                self.logView.writeString(string: "\(NSLocalizedString("Distance", comment: "距离")):\(logArray)\n")
+//                                            }
+//                                        }
+//                                    }
+//                                    if value is NSNull {
+//                                        self.logView.writeString(string: "第\(key)天(条)数据为空")
+//                                    }
+//                                }else{
+//                                    self.logView.writeString(string: "第\(key)天(条)数据为空")
+//                                }
+//                            }
+//                        }
+//                    }
                     
-                    if error == .none {
-                        //print("SetSyncHealthData ->",success)
-                        
+                    for success in validArray {
                         if let successDic:[String:Any?] = success as? [String : Any?] {
-                            
+
                             for key in successDic.keys {
-                                
                                 if let value = successDic[key] {
                                     
                                     if value is ZyStepModel {
@@ -3554,33 +3776,18 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                                             }
                                         }
                                     }
-                                    if value is ZyDiveModel {
-                                        if let model:ZyDiveModel = value as? ZyDiveModel {
-                                            let index = model.index
-                                            let locationInterval = model.locationInterval
-                                            let startTime = model.startTime
-                                            let endTime = model.endTime
-                                            var detailsStr = ""
-                                            for item in model.detailsArray {
-                                                detailsStr += "\n\(item)"
-                                            }
-                                            let str = "序号:\(index),\n定位间隔:\(locationInterval),\n开始时间:\(startTime),\n结束时间:\(endTime),\n详情数据:\(detailsStr)"
-                                            self.logView.writeString(string: str)
-                                            print(str)
-                                        }
-                                    }
                                     if value is NSNull {
                                         self.logView.writeString(string: "第\(key)天(条)数据为空")
                                     }
-                                }else{
-                                    self.logView.writeString(string: "第\(key)天(条)数据为空")
                                 }
                             }
                         }
                     }
+                    
+                    
                 }
             }
-
+            
             break
             
         case "0x83(4) \(NSLocalizedString("Set the weather", comment: "设置天气"))":
@@ -3795,7 +4002,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                     if error == .none {
                         print("setSleepGoal ->","success")
                     }
-                }
+                }                
             }
             
             break
@@ -3865,11 +4072,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             let array = [
                 "\(NSLocalizedString("Type", comment: "类型"))：1：\(NSLocalizedString("Heart rate", comment: "心率"))，2：\(NSLocalizedString("Blood oxygen", comment: "血氧"))，3：\(NSLocalizedString("Blood pressure", comment: "血压"))，4：\(NSLocalizedString("Blood sugar", comment: "血糖"))，5：\(NSLocalizedString("Pressure", comment: "压力"))，6.\(NSLocalizedString("Body temperature", comment: "体温"))，7：\(NSLocalizedString("electrocardiogram", comment: "心电"))，",
                 "\(NSLocalizedString("On/off switch", comment: "开关"))：0：\(NSLocalizedString("Shut down", comment: "关闭")) 1：\(NSLocalizedString("Turn on", comment: "开启"))",
-                "\(NSLocalizedString("Length of time", comment: "时长"))时长：>0",
-                "开始小时",
-                "开始分钟",
-                "结束小时",
-                "结束分钟",
+                "\(NSLocalizedString("Length of time", comment: "时长"))时长：>0"
             ]
 
             self.logView.clearString()
@@ -3882,50 +4085,15 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 let type = textArray[0]
                 let isOpen = textArray[1]
                 let timeInterval = textArray[2]
-                let startHour = textArray[3]
-                let startMinute = textArray[4]
-                let endHour = textArray[5]
-                let endMinute = textArray[6]
                 
                 self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")):\(type),\(NSLocalizedString("On/off switch", comment: "开关")):\(isOpen),时长:\(timeInterval)")
                 
-                ZyCommandModule.shareInstance.setCycleMeasurementParameters(type: Int(type) ?? 0, isOpen: Int(isOpen) ?? 0, timeInterval: Int(timeInterval) ?? 0,startHour: Int(startHour) ?? 0,startMinute: Int(startMinute) ?? 0,endHour: Int(endHour) ?? 0,endMinute: Int(endHour) ?? 0) { error in
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    if error == .none {
-                        print("setCycleMeasurementParameters -> success")
-                    }
-                }
-            }
-            
-            break
-        case "0x84(0x1b) 获取周期测量参数":
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "获取周期测量参数")
-            
-            ZyCommandModule.shareInstance.getCycleMeasurementParameters { modelArray, error in
-                if error == .none {
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    
-                    for item in modelArray ?? [] {
-                        
-                        let type = item.type
-                        let isOpen = item.isOpen
-                        let timeInterval = item.timeInterval
-                        let startHour = item.timeModel.startHour
-                        let startMinute = item.timeModel.startMinute
-                        let endHour = item.timeModel.endHour
-                        let endMinute = item.timeModel.endMinute
-                        
-                        print("type = \(type),isOpen = \(isOpen),timeInterval = \(timeInterval),\(String.init(format: "startTime = %02d:%02d", startHour,startMinute)),\(String.init(format: "endTime = %02d:%02d", endHour,endMinute))")
-                        
-                        self.logView.writeString(string: "type = \(type)")
-                        self.logView.writeString(string: "isOpen = \(isOpen)")
-                        self.logView.writeString(string: "timeInterval = \(timeInterval)")
-                        self.logView.writeString(string: String.init(format: "startTime = %02d:%02d", startHour,startMinute))
-                        self.logView.writeString(string: String.init(format: "endTime = %02d:%02d", endHour,endMinute))
-                    }
-                }
+//                ZyCommandModule.shareInstance.setCycleMeasurementParameters(type: Int(type) ?? 0, isOpen: Int(isOpen) ?? 0, timeInterval: Int(timeInterval) ?? 0) { error in
+//                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+//                    if error == .none {
+//                        print("setCycleMeasurementParameters -> success")
+//                    }
+//                }
             }
             
             break
@@ -4173,646 +4341,11 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 }
             }
             break
-            
-        case "0x83(0x22) 设置自定义血糖":
-            
-            let array = [
-                NSLocalizedString("On/off switch", comment: "开关"),
-                NSLocalizedString("Hour of commencement", comment: "开始小时"),
-                NSLocalizedString("Start minutes", comment: "开始分钟"),
-                NSLocalizedString("Closing hours", comment: "结束小时"),
-                NSLocalizedString("End of the minute", comment: "结束分钟"),
-                "最大值(x10)",
-                "最小值(x10)",
-                "数组个数",
-                "下一组时间间隔",
-                
-            ]
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "设置自定义血糖")
-            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: "自定义血糖", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let isOpen = (Int(textArray[0]) ?? 0) == 0 ? false : true
-                let startHour = Int(textArray[1]) ?? 0
-                let startMinute = Int(textArray[2]) ?? 0
-                let endHour = Int(textArray[3]) ?? 0
-                let endMinute = Int(textArray[4]) ?? 0
-                let maxValue = Int(textArray[5]) ?? 38
-                let minValue = Int(textArray[6]) ?? 38
-                let arrayCount = Int(textArray[7]) ?? 1
-                let repeatCount = Int(textArray[8]) ?? 60
-                
-                var modelArray = [ZyCustomBloodSugar]()
-                
-                for i in stride(from: 0, to: Int(arrayCount) ?? 1, by: 1) {
-                    let bsModel = ZyCustomBloodSugar.init()
-                    bsModel.indexId = i
-                    bsModel.isOpen = isOpen
-                    bsModel.startHour = startHour + (repeatCount * i) / 60
-                    bsModel.startMinute = startMinute + (repeatCount * i) % 60
-                    bsModel.endHour = endHour + (repeatCount * i) / 60
-                    bsModel.endMinute = endMinute + (repeatCount * i) % 60
-                    bsModel.maxValue = maxValue
-                    bsModel.minValue = minValue
-                    
-                    self.logView.writeString(string: "indexId = \(bsModel.indexId)")
-                    self.logView.writeString(string: "isOpen = \(bsModel.isOpen)")
-                    self.logView.writeString(string: "startTime = \(bsModel.startHour):\(bsModel.startMinute)")
-                    self.logView.writeString(string: "endTime = \(bsModel.endHour):\(bsModel.endMinute)")
-                    self.logView.writeString(string: "maxValue = \(String.init(format: "%.1f", Float(bsModel.maxValue)/10.0))")
-                    self.logView.writeString(string: "minValue = \(String.init(format: "%.1f", Float(bsModel.minValue)/10.0))")
-                    
-                    self.logView.writeString(string: "\n")
-                    modelArray.append(bsModel)
-                    print("indexId = \(bsModel.indexId)","isOpen = \(bsModel.isOpen)","startTime = \(bsModel.startHour):\(bsModel.startMinute)","endTime = \(bsModel.endHour):\(bsModel.endMinute)","maxValue \(String.init(format: "%.1f", Float(bsModel.maxValue)/10.0))","minValue = \(String.init(format: "%.1f", Float(bsModel.minValue)/10.0))")
-                }
-                
-                ZyCommandModule.shareInstance.setCustomBloodSugarScope(modelArray: modelArray) { error in
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    if error == .none {
-                        print("setCustomBloodSugarScope -> success")
-                    }
-                }
-                
-            }
-            break
-            
-        case "0x83(0x22) 获取自定义血糖":
-            self.logView.clearString()
-            self.logView.writeString(string: "获取自定义血糖")
-            ZyCommandModule.shareInstance.getCustomBloodSugarScope { modelArray, error in
-                self.logView.writeString(string: self.getErrorCodeString(error: error))
-                if error == .none {
-                    for bsModel in modelArray {
-                        self.logView.writeString(string: "indexId = \(bsModel.indexId)")
-                        self.logView.writeString(string: "isOpen = \(bsModel.isOpen)")
-                        self.logView.writeString(string: "startTime = \(bsModel.startHour):\(bsModel.startMinute)")
-                        self.logView.writeString(string: "endTime = \(bsModel.endHour):\(bsModel.endMinute)")
-                        self.logView.writeString(string: "maxValue = \(String.init(format: "%.1f", Float(bsModel.maxValue)/10.0))")
-                        self.logView.writeString(string: "minValue = \(String.init(format: "%.1f", Float(bsModel.minValue)/10.0))")
-                        self.logView.writeString(string: "\n")
-                        print("indexId = \(bsModel.indexId)","isOpen = \(bsModel.isOpen)","startTime = \(bsModel.startHour):\(bsModel.startMinute)","endTime = \(bsModel.endHour):\(bsModel.endMinute)","maxValue \(String.init(format: "%.1f", Float(bsModel.maxValue)/10.0))","minValue = \(String.init(format: "%.1f", Float(bsModel.minValue)/10.0))")
-                    }
-                }
-            }
-            
-            break
-            
-        case "0x83(0x23) 设置消息提醒方式":
-            
-            let array = [
-                "1震动2亮屏3震动+亮屏"
-            ]
-            self.logView.clearString()
-            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("设置消息提醒方式", comment: ""), holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                
-                let index = Int(textArray[0]) ?? 0
-                self.logView.writeString(string: "\(NSLocalizedString("设置消息提醒方式", comment: "")): \(index)")
-                        
-                ZyCommandModule.shareInstance.setMessageRemindType(index: index) { error in
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    if error == .none {
-                        print("setMessageRemindType -> success")
-                    }
-                }
-            }
+        case "0x00 ":
             
             
             break
             
-        case "0x84(0x23) 获取消息提醒方式":
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "获取消息提醒方式")
-            ZyCommandModule.shareInstance.getMessageRemindType { index, error in
-                self.logView.writeString(string: self.getErrorCodeString(error: error))
-                if error == .none {
-                    self.logView.writeString(string: "index = \(index)")
-                    print("getMessageRemindType index = \(index)")
-                }
-            }
-            
-            break
-          
-        case "0x83(0x24) 设置二维码名片(单个设置)":
-            let array = [
-                "序号(默认0)",
-                "标题(默认baidu)",
-                "二维码字符串(默认 https://www.baidu.com)",
-            ]
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "同步二维码名片")
-            
-
-                            
-            self.presentTextFieldAlertVC(title: NSLocalizedString("Hint (Invalid data is null by default)", comment: "提示(无效数据默认为空)"), message: "设置二维码名片", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                
-                let index = Int(textArray[0]) ?? 0
-                let titleString = (textArray[1].count == 0 ? "baidu" : textArray[1])
-                let qrString = (textArray[2].count == 0 ? "https://www.baidu.com" : textArray[2])
-                
-                let model = ZyBusinessCardModel()
-                model.index = index
-                model.titleString = titleString
-                model.qrString = qrString
-                let modelArray = [model]
-                
-                ZyCommandModule.shareInstance.setBusinessCard(modelArray: modelArray) { error in
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    if error == .none {
-                        print("setBusinessCard -> success")
-                    }
-                }
-            }
-            break
-        case "0x83(0x24) 设置二维码名片(多个设置)":
-            
-            let array = [
-                "同步个数(默认8个)",
-                "标题(默认 输入内容,+\"-序号\")",
-                "二维码字符串:(默认 输入内容,+\"-序号\")",
-            ]
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "同步N个二维码名片")
-            
-            self.presentTextFieldAlertVC(title: NSLocalizedString("Hint (Invalid data is null by default)", comment: "提示(无效数据默认为空)"), message: "设置二维码名片", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                var peopleCount = 8
-                if let string = textArray[0] as? String{
-                    peopleCount = Int(string) ?? 8
-                }
-                var modelArray = Array<ZyBusinessCardModel>.init()
-                for i in 0..<peopleCount {
-                    let model = ZyBusinessCardModel.init()
-                    model.index = i
-                    model.titleString = (textArray[1].count == 0 ? " " : textArray[1])+"-\(i)"
-                    model.qrString = (textArray[2].count == 0 ? " " : textArray[2])+"-\(i)"
-                    modelArray.append(model)
-                    self.logView.writeString(string: "二维码名片:\nindex:\(i) 标题:\(model.titleString),二维码字符串:\(model.qrString)")
-                }
-                ZyCommandModule.shareInstance.setBusinessCard(modelArray: modelArray) { error in
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    if error == .none {
-                        print("setBusinessCard -> success")
-                    }
-                }
-            }
-            
-            break
-            
-        case "0x83(0x24) 删除所有二维码名片":
-            self.logView.clearString()
-            self.logView.writeString(string: "删除所有二维码名片")
-            
-            ZyCommandModule.shareInstance.setBusinessCard(modelArray: []) { error in
-                self.logView.writeString(string: self.getErrorCodeString(error: error))
-                if error == .none {
-                    print("setBusinessCard -> success")
-                }
-            }
-            
-            break
-            
-        case "0x84(0x24) 获取二维码名片":
-            self.logView.clearString()
-            self.logView.writeString(string: "获取二维码名片")
-            
-            ZyCommandModule.shareInstance.getBusinessCard { modelArray, error in
-                self.logView.writeString(string: self.getErrorCodeString(error: error))
-                if error == .none {
-                    
-                    var string = ""
-                    for item in modelArray {
-                        string += String.init(format: "\n序号:%d",item.index)
-                        string += String.init(format: "\n标题:%@",item.titleString)
-                        string += String.init(format: "\n二维码:%@",item.qrString)
-                        string += "\n"
-                    }
-                    
-                    self.logView.writeString(string: "\(string)")
-                    print("getBusinessCard = \(string)")
-                }
-            }
-            
-            break
-
-        case "0x83(0x25) 设置疗程信息":
-            self.logView.clearString()
-            self.logView.writeString(string: "设置疗程信息")
-            
-            let array = [
-                "类型:0降脂1降压2降糖",
-                "开关:0关1开",
-                "时间间隔默认5min，多个间隔用“,”分开",
-                "天数间隔默认5天，多个间隔用“,”分开",
-                "时间格式mm:hh,不合要求置空",
-                "时间格式mm:hh,不合要求置空",
-                "时间格式mm:hh,不合要求置空",
-                "时间格式mm:hh,不合要求置空",
-                "时间格式mm:hh,不合要求置空",
-                "时间格式mm:hh,不合要求置空",
-                "日期格式yyyy-MM-dd,不合要求置空",
-                "日期格式yyyy-MM-dd,不合要求置空",
-                "日期格式yyyy-MM-dd,不合要求置空",
-                "日期格式yyyy-MM-dd,不合要求置空",
-                "日期格式yyyy-MM-dd,不合要求置空",
-            ]
-            
-            
-            self.presentTextFieldAlertVC(title: NSLocalizedString("Hint (Invalid data is null by default)", comment: "提示(无效数据默认为空)"), message: "设置疗程信息", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let type = Int(textArray[0]) ?? 0
-                let isOpen = (Int(textArray[1]) ?? 0) == 0 ? false : true
-                let timeLength = textArray[2]
-                let dayCount = textArray[3]
-                let time1 = textArray[4]
-                let time2 = textArray[5]
-                let time3 = textArray[6]
-                let time4 = textArray[7]
-                let time5 = textArray[8]
-                let time6 = textArray[9]
-                let date1 = textArray[10]
-                let date2 = textArray[11]
-                let date3 = textArray[12]
-                let date4 = textArray[13]
-                let date5 = textArray[14]
-                
-                let timeArray = timeLength.components(separatedBy: ",")
-                let dayArray = dayCount.components(separatedBy: ",")
-                
-                let timeFormatter = DateFormatter()
-                timeFormatter.dateFormat = "HH:mm"
-                let dayFormatter = DateFormatter()
-                dayFormatter.dateFormat = "yyyy-MM-dd"
-                
-                var timeDic:[String:String] = .init()
-                var dateDic:[String:String] = .init()
-                
-                let zyModel = ZyTreatmentModel()
-                zyModel.type = type
-                zyModel.isOpen = isOpen
-                if let time = timeFormatter.date(from: time1) {
-                    let key = String.init(format: "%02d:%02d", time.Hour,time.Minute)
-                    var value = 5
-                    if let first = timeArray.first {
-                        value = Int(first) ?? 5
-                    }
-                    timeDic[key] = "\(value)"
-                }
-                if let time = timeFormatter.date(from: time2) {
-                    let key = String.init(format: "%02d:%02d", time.Hour,time.Minute)
-                    var value = 5
-                    if timeArray.count > 1 {
-                        value = Int(timeArray[1]) ?? 5
-                    }
-                    timeDic[key] = "\(value)"
-                }
-                if let time = timeFormatter.date(from: time3) {
-                    let key = String.init(format: "%02d:%02d", time.Hour,time.Minute)
-                    var value = 5
-                    if timeArray.count > 2 {
-                        value = Int(timeArray[2]) ?? 5
-                    }
-                    timeDic[key] = "\(value)"
-                }
-                if let time = timeFormatter.date(from: time4) {
-                    let key = String.init(format: "%02d:%02d", time.Hour,time.Minute)
-                    var value = 5
-                    if timeArray.count > 3 {
-                        value = Int(timeArray[3]) ?? 5
-                    }
-                    timeDic[key] = "\(value)"
-                }
-                if let time = timeFormatter.date(from: time5) {
-                    let key = String.init(format: "%02d:%02d", time.Hour,time.Minute)
-                    var value = 5
-                    if timeArray.count > 4 {
-                        value = Int(timeArray[4]) ?? 5
-                    }
-                    timeDic[key] = "\(value)"
-                }
-                if let time = timeFormatter.date(from: time6) {
-                    let key = String.init(format: "%02d:%02d", time.Hour,time.Minute)
-                    var value = 5
-                    if timeArray.count > 5 {
-                        value = Int(timeArray[5]) ?? 5
-                    }
-                    timeDic[key] = "\(value)"
-                }
-                
-                if let date = dayFormatter.date(from: date1) {
-                    let key = String.init(format: "%04d-%02d-%02d", date.Year,date.Month,date.Day)
-                    var value = 5
-                    if let first = dayArray.first {
-                        value = Int(first) ?? 5
-                    }
-                    dateDic[key] = "\(value)"
-                }
-                if let date = dayFormatter.date(from: date2) {
-                    let key = String.init(format: "%04d-%02d-%02d", date.Year,date.Month,date.Day)
-                    var value = 5
-                    if dayArray.count > 1 {
-                        value = Int(dayArray[1]) ?? 5
-                    }
-                    dateDic[key] = "\(value)"
-                }
-                if let date = dayFormatter.date(from: date3) {
-                    let key = String.init(format: "%04d-%02d-%02d", date.Year,date.Month,date.Day)
-                    var value = 5
-                    if dayArray.count > 2 {
-                        value = Int(dayArray[2]) ?? 5
-                    }
-                    dateDic[key] = "\(value)"
-                }
-                if let date = dayFormatter.date(from: date4) {
-                    let key = String.init(format: "%04d-%02d-%02d", date.Year,date.Month,date.Day)
-                    var value = 5
-                    if dayArray.count > 3 {
-                        value = Int(dayArray[3]) ?? 5
-                    }
-                    dateDic[key] = "\(value)"
-                }
-                if let date = dayFormatter.date(from: date5) {
-                    let key = String.init(format: "%04d-%02d-%02d", date.Year,date.Month,date.Day)
-                    var value = 5
-                    if dayArray.count > 4 {
-                        value = Int(dayArray[4]) ?? 5
-                    }
-                    dateDic[key] = "\(value)"
-                }
-                zyModel.timeDic = timeDic
-                zyModel.dateDic = dateDic
-                var string = ""
-                string += String.init(format: "\n类型:%d",type)
-                string += String.init(format: "\n开关:%d",isOpen)
-                for (key,value) in timeDic {
-                    string += String.init(format: "\n%@ : %@",key,value)
-                }
-                for (key,value) in dateDic {
-                    string += String.init(format: "\n%@ : %@",key,value)
-                }
-                self.logView.writeString(string: "\(string)")
-                
-                ZyCommandModule.shareInstance.setTreatmentInfomation(model: zyModel) { error in
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    if error == .none {
-                        print("setTreatmentInfomation -> success")
-                    }
-                }
-            }
-            
-            
-            break
-            
-        case "0x84(0x25) 获取疗程信息":
-            self.logView.clearString()
-            self.logView.writeString(string: "获取疗程信息")
-            
-            ZyCommandModule.shareInstance.getTreatmentInfomation { zyModel, error in
-                self.logView.writeString(string: self.getErrorCodeString(error: error))
-                
-                if error == .none {
-                    var string = ""
-                    if let model = zyModel {
-                        string += String.init(format: "\n疗程类型:%d",model.type)
-                        string += String.init(format: "\n开关:%d",model.isOpen)
-                        for (key,value) in model.timeDic {
-                            string += String.init(format: "\n%@:%@",key,value)
-                        }
-                        for (key,value) in model.dateDic {
-                            string += String.init(format: "\n%@:%@",key,value)
-                        }
-                    }
-                    self.logView.writeString(string: "\(string)")
-                    print("getBusinessCard = \(string)")
-                }
-            }
-            
-            break
-        case "0x83(0x26) 设置定位透传开关":
-            self.logView.clearString()
-            self.logView.writeString(string: "设置定位透传开关")
-            
-            let array = [
-                "0关1开"
-            ]
-            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("设置定位透传开关", comment: ""), holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                
-                let isOpen = Int(textArray[0]) ?? 0
-                self.logView.writeString(string: "\(NSLocalizedString("设置定位透传开关", comment: "")): \(isOpen)")
-                      
-                ZyCommandModule.shareInstance.setLocationPrimitiveTransmission(isOpen: isOpen) { error in
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    if error == .none {
-                        print("setLocationPrimitiveTransmission -> success")
-                            
-                    }
-                }
-            }
-            
-            break
-            
-        case "0x83(0x2C) 设置气压计透传开关":
-            self.logView.clearString()
-            self.logView.writeString(string: "设置气压计透传开关")
-            
-            let array = [
-                "0关1开"
-            ]
-            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("设置气压计透传开关", comment: ""), holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                
-                let isOpen = Int(textArray[0]) ?? 0
-                self.logView.writeString(string: "\(NSLocalizedString("设置气压计透传开关", comment: "")): \(isOpen)")
-                
-                ZyCommandModule.shareInstance.setBarometerPrimitiveTransmission(isOpen: isOpen) { error in
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    if error == .none {
-                        print("setBarometerPrimitiveTransmission -> success")
-                            
-                    }
-                }
-            }
-            break
-
-        case "0x83(0x2D) 设置三轴传感器传开关":
-            self.logView.clearString()
-            self.logView.writeString(string: "设置三轴传感器传开关")
-            
-            let array = [
-                "0关1开"
-            ]
-            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("设置三轴传感器传开关", comment: ""), holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                
-                let isOpen = Int(textArray[0]) ?? 0
-                self.logView.writeString(string: "\(NSLocalizedString("设置三轴传感器传开关", comment: "")): \(isOpen)")
-                      
-                ZyCommandModule.shareInstance.setTriaxialSensorPrimitiveTransmission(isOpen: isOpen) { error in
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    if error == .none {
-                        print("setTriaxialSensorPrimitiveTransmission -> success")
-                            
-                    }
-                }
-            }
-            break
-    
-        case "0x83(0x2A) 设置世界时钟(单个)":
-            let array = [
-                "时间偏移量(默认0)",
-                "城市名(默认中国)",
-            ]
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "设置世界时钟")
-            
-
-                            
-            self.presentTextFieldAlertVC(title: NSLocalizedString("Hint (Invalid data is null by default)", comment: "提示(无效数据默认为空)"), message: "设置世界时钟", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                
-                let timeOffset = Int(textArray[0]) ?? 0
-                let cityName = (textArray[1].count == 0 ? "中国" : textArray[1])
-                
-                let model = ZyWorldTimeModel()
-                model.timeOffset = timeOffset
-                model.cityName = cityName
-                let modelArray = [model]
-                
-                ZyCommandModule.shareInstance.setWorldTime(modelArray: modelArray) { error in
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    if error == .none {
-                        print("setWorldTime -> success")
-                    }
-                }
-                
-            }
-            break
-            
-        case "0x83(0x2A) 设置世界时钟(多个)":
-            
-            let array = [
-                "设置个数(默认3个)",
-                "时间偏移量(默认0,叠加值为30)",
-                "城市名(默认中国+\"-序号\")",
-            ]
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "设置世界时钟(多个)")
-            
-            self.presentTextFieldAlertVC(title: NSLocalizedString("Hint (Invalid data is null by default)", comment: "提示(无效数据默认为空)"), message: "设置世界时钟", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                let arrayCount = Int(textArray[0]) ?? 3
-                var modelArray = Array<ZyWorldTimeModel>.init()
-                for i in 0..<arrayCount {
-                    let model = ZyWorldTimeModel.init()
-                    model.timeOffset = (Int(textArray[1]) ?? 0) + i*30
-                    model.cityName = (textArray[2].count == 0 ? "中国" : textArray[2])+"-\(i)"
-                    modelArray.append(model)
-                    self.logView.writeString(string: "世界时钟:\n第\(i)个 城市名:\(model.cityName),时间偏移量:\(model.timeOffset)")
-                }
-                ZyCommandModule.shareInstance.setWorldTime(modelArray: modelArray) { error in
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    if error == .none {
-                        print("setWorldTime -> success")
-                    }
-                }
-            }
-            
-            break
-
-        case "删除所有世界时钟":
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "删除所有世界时钟")
-            
-            ZyCommandModule.shareInstance.setWorldTime(modelArray: []) { error in
-                self.logView.writeString(string: self.getErrorCodeString(error: error))
-                if error == .none {
-                    print("setWorldTime -> success")
-                }
-            }
-            
-            break
-            
-        case "0x84(0x2A) 获取世界时钟":
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "获取世界时钟")
-            
-            ZyCommandModule.shareInstance.getWorldTime { modelArray, error in
-                self.logView.writeString(string: self.getErrorCodeString(error: error))
-                
-                if error == .none {
-                    var string = ""
-                    for item in modelArray {
-                        string += String.init(format: "\n城市名:%@",item.cityName)
-                        string += String.init(format: "\n时间偏移量:%d",item.timeOffset)
-                        
-                    }
-                    self.logView.writeString(string: "\(string)")
-                    print("getWorldTime = \(string)")
-                }
-            }
-            break
-            
-        case "0x83(0x2B) 设置本地时区扩展":
-            
-            let array = [
-                "时间偏移量(默认0)",
-            ]
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "设置本地时区扩展")
-                                        
-            self.presentTextFieldAlertVC(title: NSLocalizedString("Hint (Invalid data is null by default)", comment: "提示(无效数据默认为空)"), message: "设置本地时区扩展", holderStringArray: array, cancel: nil, cancelAction: {
-                
-            }, ok: nil) { (textArray) in
-                
-                let timeOffset = Int(textArray[0]) ?? 0
- 
-                ZyCommandModule.shareInstance.setLocalTimeZone(offset: timeOffset) { error in
-                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-                    if error == .none {
-                        print("setLocalTimeZone -> success")
-                    }
-                }
-            }
-            
-            break
-         
-        case "0x84(0x2B) 获取本地时区扩展":
-            
-            self.logView.clearString()
-            self.logView.writeString(string: "获取本地时区扩展")
-            
-            ZyCommandModule.shareInstance.getLocalTimeZone { timeOffset, error in
-                self.logView.writeString(string: self.getErrorCodeString(error: error))
-                if error == .none {
-                    self.logView.writeString(string: "timeOffset = \(timeOffset)")
-                    print("getLocalTimeZone timeOffset = \(timeOffset)")
-                }
-            }
-            
-            break
-
         case "0x01 \(NSLocalizedString("Power off", comment: "关机"))":
             
             self.logView.clearString()
@@ -5317,30 +4850,6 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-            
-        case "上报治疗信息":
-            
-            self.logView.clearString()
-            self.logView.writeString(string: NSLocalizedString("上报治疗信息", comment: ""))
-            ZyCommandModule.shareInstance.reportTreatmentStatus { type, error in
-                self.logView.writeString(string: self.getErrorCodeString(error: error))
-                
-                self.logView.writeString(string: "\(NSLocalizedString("治疗类型", comment: "")):\(type)")
-                print("reportTreatmentStatus -> type = \(type)")
-            }
-            break
-            
-        case "上报请求天气数据":
-            
-            self.logView.clearString()
-            self.logView.writeString(string: NSLocalizedString("上报请求天气数据", comment: ""))
-            ZyCommandModule.shareInstance.reportRequstWeatherData { error in
-                self.logView.writeString(string: "请求天气数据")
-                print("reportRequstWeatherData")
-            }
-            
-            break
-            
         case NSLocalizedString("Multi-package test command", comment: "多包测试命令"):
             
             let array = [
@@ -6227,70 +5736,6 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-            
-            
-        case "9\(NSLocalizedString("Customize the exercise type", comment: "自定义运动类型"))+imageType":
-            
-            if var image = self.customBgImage {
-                print("image = \(image)")
-                
-                let fileString = self.getFilePathWithType(type: "9")
-                
-                self.logView.writeString(string: "\(NSLocalizedString("Current selection type", comment: "当前选择类型")):9\(NSLocalizedString("Customize the exercise type", comment: "自定义运动类型"))")
-                print("fileString =",fileString)
-                
-                let array = [
-                    NSLocalizedString("Customize the exercise type", comment: "自定义运动类型"),
-                ]
-                var showProgress = 0
-                self.presentTextFieldAlertVC(title: "提示(默认自定义运动类型26)", message: NSLocalizedString("Customize the exercise type", comment: "自定义运动类型"),holderStringArray: array) {
-                    
-                } okAction: { textArray in
-                    let sportsType = Int(textArray[0]) ?? 26
-                    
-                    ZyCommandModule.shareInstance.setCustomSportsModeWithImage(sportsType, image: image) { progress in
-                        if showProgress == Int(progress) {
-                            showProgress += 1
-                            self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
-                        }
-                        print("progress ->",progress)
-
-                    } success: { error in
-                        
-                        self.logView.writeString(string: self.getErrorCodeString(error: error))
-                        print("setStartUpgrade -> error =",error.rawValue)
-
-                    }
-                }
-      
-            }else{
-                self.presentSystemAlertVC(title: "警告:当前没有选择背景", message: "请选择自定义背景", cancel: nil, cancelAction: {
-
-                }, ok: nil) {
-
-                    let str = "\(NSLocalizedString("Customize the background selection", comment: "自定义背景选择"))"
-                    var section = -1
-                    var row = -1
-                    if let indexSection = self.dataSourceArray.firstIndex(where: { titleArray in
-                        if let indexRow = titleArray.firstIndex(where: { rowString in
-                            return rowString == str
-                        }){
-                            row = indexRow
-                            return true
-                        }
-                        return false
-                    }) {
-                        section = indexSection
-                    }
-                    
-                    if section >= 0 && row >= 0 {
-                        let indexPath = IndexPath.init(row: row, section: section)
-                        self.tableView(tableView, didSelectRowAt: indexPath)
-                    }
-                }
-            }
-            break
-
         case NSLocalizedString("Customize the background selection", comment: "自定义背景选择"):
             
             self.presentSystemAlertVC(title: NSLocalizedString("Customize the background selection", comment: "自定义背景选择"), message: "", cancel: NSLocalizedString("Photo album", comment: "相册"), cancelAction: {
@@ -6423,18 +5868,18 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             
         case NSLocalizedString("Get the server OTA information", comment: "获取服务器OTA信息"):
             
-            ZyCommandModule.shareInstance.getServerOtaDeviceInfo { success, error in
-                
-                self.logView.writeString(string: self.getErrorCodeString(error: error))
-                
-                if error == .none {
-                    self.logView.writeString(string: "message:\(success["message"]!)")
-                    self.logView.writeString(string: "code:\(success["code"]!)")
-                }
-                
-                print("getServerOtaDeviceInfo ->",success)
-
-            }
+//            ZyCommandModule.shareInstance.getServerOtaDeviceInfo { success, error in
+//                
+//                self.logView.writeString(string: self.getErrorCodeString(error: error))
+//                
+//                if error == .none {
+//                    self.logView.writeString(string: "message:\(success["message"]!)")
+//                    self.logView.writeString(string: "code:\(success["code"]!)")
+//                }
+//                
+//                print("getServerOtaDeviceInfo ->",success)
+//
+//            }
             
             break
             
@@ -6558,17 +6003,17 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: NSLocalizedString("Gets the local watch face picture", comment: "获取本地表盘图片"))
             
-            ZyCommandModule.shareInstance.getLocalDialImageServerInfo { dic, error in
-                self.logView.writeString(string: self.getErrorCodeString(error: error))
-                
-                if error == .none {
-                    if let dic = dic {
-                        print("获取本地表盘图片 \ndic =\(dic)")
-                        self.logView.writeString(string: "\(NSLocalizedString("Gets the local watch face picture", comment: "获取本地表盘图片")):\(dic)")
-                    }
-                }
-                
-            }
+//            ZyCommandModule.shareInstance.getLocalDialImageServerInfo { dic, error in
+//                self.logView.writeString(string: self.getErrorCodeString(error: error))
+//                
+//                if error == .none {
+//                    if let dic = dic {
+//                        print("获取本地表盘图片 \ndic =\(dic)")
+//                        self.logView.writeString(string: "\(NSLocalizedString("Gets the local watch face picture", comment: "获取本地表盘图片")):\(dic)")
+//                    }
+//                }
+//                
+//            }
             
             break
             
@@ -6869,9 +6314,162 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
         }
         return "未知error"
     }
+
+    static var antStepIndex = 0
+    // MARK: - 同步ANT步数
+    private func antSyncHistoryStepModel(complete:(()->())?) {
+        
+        print("ANT同步历史步数")
+        
+        if ZyVC.antStepIndex < 7 {
+            
+            self.antSyncStepDetailModel(dayCount: ZyVC.antStepIndex) {
+                ZyVC.antStepIndex += 1
+                
+                DispatchQueue.main.async {
+                    
+                    self.antSyncHistoryStepModel(complete: complete)
+                }
+                
+            }
+            
+        }else{
+            ZyVC.antStepIndex = 0
+            
+            DispatchQueue.main.async {
+                
+                if let complete = complete {
+                    complete()
+                }
+            }
+            
+        }
+    }
+    
+    private func antSyncStepDetailModel(dayCount:Int,success:(()->())?) {
+        
+        print("step dayCount ->",dayCount)
+        
+        ZyCommandModule.shareInstance.setSyncHealthData(type: "1", dayCount: "\(dayCount)") { stepSuccess, error in
+            
+            if error == .none {
+                if stepSuccess is ZyStepModel {
+                    if let model:ZyStepModel = stepSuccess as? ZyStepModel {
+                        let detailArray = model.detailArray
+                        
+                        print("detailArray -> 1",detailArray,detailArray.count)
+                        
+                        var stepArray = Array<Int>.init()
+                        //SDK返回的是半个小时一个数据   整合到本地数据库每个小时一个数据
+                        for i in stride(from: 0, to: detailArray.count/2, by: 1) {
+                            let result = detailArray[i*2] + detailArray[i*2+1]
+                            stepArray.append(result)
+                        }
+                    }
+                }
+            }
+            
+            if let success = success {
+                print("ant同步第\(dayCount)天的步数数据完成")
+                success()
+            }
+        }
+    }
+    
+    static var antSleepIndex = 0
+    // MARK: - 同步ANT睡眠
+    private func antSyncHistorySleepModel(complete:(()->())?){
+        
+        if ZyVC.antSleepIndex < 7 {
+            
+            self.antSyncSleepDetailModel(dayCount: ZyVC.antSleepIndex) {
+                ZyVC.antSleepIndex += 1
+                
+                self.antSyncHistorySleepModel(complete: complete)
+            }
+            
+        }else{
+            ZyVC.antSleepIndex = 0
+            
+            if let complete = complete {
+                complete()
+            }
+        }
+
+    }
+    
+    private func antSyncSleepDetailModel(dayCount:Int,success:(()->())?) {
+        
+        ZyCommandModule.shareInstance.setSyncHealthData(type: "3", dayCount: "\(dayCount)") { sleepSuccess, error in
+            
+            if error == .none {
+                
+                if sleepSuccess is ZySleepModel {
+                    if let model:ZySleepModel = sleepSuccess as? ZySleepModel {
+                        let deep = model.deep
+                        let awake = model.awake
+                        let light = model.light
+                        let detailArray = model.detailArray
+                        print("deep ->",deep,"awake ->",awake,"light ->",light,"detailArray ->",detailArray)
+                    }
+                }
+            }
+            if let success = success {
+                print("ant同步第\(dayCount)天的睡眠数据完成")
+                success()
+            }
+        }
+    }
+    
+    static var antHeartrateIndex = 0
+    // MARK: - 同步ANT心率历史
+    func antSyncHistoryHeartrateModel(complete:(()->())?){
+        
+        if ZyVC.antHeartrateIndex < 7 {
+            
+            self.antSyncHeartrateDetailModel(dayCount: ZyVC.antHeartrateIndex) {
+                ZyVC.antHeartrateIndex += 1
+                
+                
+                self.antSyncHistoryHeartrateModel(complete: complete)
+                
+            }
+            
+        }else{
+            ZyVC.antHeartrateIndex = 0
+            
+            if let complete = complete {
+                complete()
+            }
+        }
+        
+    }
+    
+    func antSyncHeartrateDetailModel(dayCount:Int,success:(()->())?) {
+            
+        ZyCommandModule.shareInstance.setSyncHealthData(type: "2", dayCount: "\(dayCount)") { hrSuccess, error in
+            
+            print("error =",error.rawValue)
+            
+            if error == .none {
+                
+                if hrSuccess is ZyHrModel {
+                    if let model:ZyHrModel = hrSuccess as? ZyHrModel {
+                        let detailArray = model.detailArray
+                        print("detailArray -> 2",detailArray)
+                    }
+                }
+
+            }
+            if let success = success {
+                print("ant同步第\(dayCount)天的心率数据完成")
+                success()
+            }
+        }
+    }
 }
 
-extension WatchCommandVC : UIImagePickerControllerDelegate,UINavigationControllerDelegate {
+extension ZyVC : UIImagePickerControllerDelegate,UINavigationControllerDelegate {
     
     //MARK: - 相机
     
@@ -6999,4 +6597,449 @@ extension WatchCommandVC : UIImagePickerControllerDelegate,UINavigationControlle
         }
     }
     
+}
+
+extension UIColor {
+     
+    // Hex String -> UIColor
+    convenience init(hexString: String) {
+        let hexString = hexString.trimmingCharacters(in: .whitespacesAndNewlines)
+        let scanner = Scanner(string: hexString)
+         
+        if hexString.hasPrefix("#") {
+            scanner.scanLocation = 1
+        }
+         
+        var color: UInt32 = 0xFFFFFF
+        scanner.scanHexInt32(&color)
+         
+        let mask = 0x000000FF
+        let r = Int(color >> 16) & mask
+        let g = Int(color >> 8) & mask
+        let b = Int(color) & mask
+         
+        let red   = CGFloat(r) / 255.0
+        let green = CGFloat(g) / 255.0
+        let blue  = CGFloat(b) / 255.0
+         
+        self.init(red: red, green: green, blue: blue, alpha: 1)
+    }
+     
+    // UIColor -> Hex String
+    var hexString: String? {
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+         
+        let multiplier = CGFloat(UInt8.max)
+         
+        guard self.getRed(&red, green: &green, blue: &blue, alpha: &alpha) else {
+            return nil
+        }
+         
+        if alpha == 1.0 {
+            return String(
+                format: "#%02lX%02lX%02lX",
+                Int(red * multiplier),
+                Int(green * multiplier),
+                Int(blue * multiplier)
+            )
+        }
+        else {
+            return String(
+                format: "#%02lX%02lX%02lX%02lX",
+                Int(red * multiplier),
+                Int(green * multiplier),
+                Int(blue * multiplier),
+                Int(alpha * multiplier)
+            )
+        }
+    }
+}
+
+extension UIImage{
+    
+    /**
+    获取图片中的像素颜色值
+    
+    - parameter pos: 图片中的位置
+    
+    - returns: 颜色值
+    */
+    func getPixelColor(pos:CGPoint)->(alpha: UInt8, red: UInt8, green: UInt8,blue:UInt8){
+//        pixelsWide
+        if let cgImage = self.cgImage {
+            let pixelData=cgImage.dataProvider?.data//CGImageGetDataProvider(cgImage).data
+            
+            let data:UnsafePointer<UInt8> = CFDataGetBytePtr(pixelData)
+            let pixelInfo: Int = ((Int(cgImage.width) * Int(pos.x)) + Int(pos.y)) * 4
+            
+            //("pixelData =",CFDataGetLength(pixelData))
+            //print("cgImage.bytesPerRow =",cgImage.bytesPerRow)
+            //print("cgImage.width =",cgImage.width)
+            //print("cgImage.height =",cgImage.height)
+            
+            var a:UInt8 = 0
+            var r:UInt8 = 0
+            var g:UInt8 = 0
+            var b:UInt8 = 0
+            
+            if cgImage.alphaInfo == .premultipliedFirst || cgImage.alphaInfo == .noneSkipFirst || cgImage.alphaInfo == .first {
+                //ARGB
+                a = UInt8(data[pixelInfo])
+                r = UInt8(data[pixelInfo+1])
+                g = UInt8(data[pixelInfo+2])
+                b = UInt8(data[pixelInfo+3])
+                
+            }else if cgImage.alphaInfo == .premultipliedLast || cgImage.alphaInfo == .noneSkipLast || cgImage.alphaInfo == .last {
+                //RGBA
+                r = UInt8(data[pixelInfo])
+                g = UInt8(data[pixelInfo+1])
+                b = UInt8(data[pixelInfo+2])
+                a = UInt8(data[pixelInfo+3])
+                
+            }
+            
+            return (a,r,g,b)
+        }
+        
+        return (0,0,0,0)
+    }
+    
+    public func pickColor(at position: CGPoint) -> (alpha: UInt8, red: UInt8, green: UInt8,blue:UInt8) {
+        
+        // 用来存放目标像素值
+//        var pixel = [UInt8](repeatElement(0, count: 4))
+//        // 颜色空间为 RGB，这决定了输出颜色的编码是 RGB 还是其他（比如 YUV）
+//        let colorSpace = CGColorSpace(name: CGColorSpace.sRGB)!//CGColorSpaceCreateDeviceRGB()
+//        // 设置位图颜色分布为 RGBA
+//        let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue
+//        guard let context = CGContext(data: &pixel, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4, space: colorSpace, bitmapInfo: bitmapInfo) else {
+//            return (0,0,0,0)
+//        }
+//        // 设置 context 原点偏移为目标位置所有坐标
+//        context.translateBy(x: -position.x, y: -position.y)
+//        // 将图像渲染到 context 中
+//        if let cgImage = self.cgImage {
+//            context.draw(cgImage, in: .init(origin: .init(x: 0, y: 0), size: self.size))
+//        }
+//        let r:UInt8 = UInt8(pixel[0])
+//        let g:UInt8 = UInt8(pixel[1])
+//        let b:UInt8 = UInt8(pixel[2])
+//        let a:UInt8 = UInt8(pixel[3])
+//
+//        return (a,r,g,b)
+//
+        
+
+            let pointX = trunc(position.x);
+            let pointY = trunc(position.y);
+
+            let width = self.size.width;
+            let height = self.size.height;
+            let colorSpace = CGColorSpaceCreateDeviceRGB();
+            var pixelData: [UInt8] = [0, 0, 0, 0]
+
+            pixelData.withUnsafeMutableBytes { pointer in
+                if let context = CGContext(data: pointer.baseAddress, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4, space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue), let cgImage = self.cgImage {
+                    context.setBlendMode(.copy)
+                    context.translateBy(x: -pointX, y: pointY - height)
+                    context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+                }
+            }
+        
+        let r:UInt8 = UInt8(pixelData[0])
+        let g:UInt8 = UInt8(pixelData[1])
+        let b:UInt8 = UInt8(pixelData[2])
+        let a:UInt8 = UInt8(pixelData[3])
+
+        return (a,r,g,b)
+
+            
+
+    }
+    
+    func img_changeSize(size:CGSize) -> UIImage {
+
+
+        if let cgImage = self.cgImage {
+
+            UIGraphicsBeginImageContextWithOptions(size, true, 1.0)
+            self.draw(in: .init(x: 0, y: 0, width: size.width, height: size.height))
+            let newImage = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+
+            return newImage ?? UIImage.init()
+
+        }
+        return UIImage.init()
+
+    }
+    
+    func img_changeCircle(fillColor:UIColor) -> UIImage{
+
+        if let cgImage = self.cgImage {
+            let rect = CGRect.init(origin: .zero, size: CGSize.init(width: cgImage.width, height: cgImage.height))
+            
+            UIGraphicsBeginImageContextWithOptions(rect.size, true, 1.0)
+            fillColor.setFill()
+            UIRectFill(rect)
+            
+            let path = UIBezierPath.init(ovalIn: rect)
+            path.addClip()
+            
+            self.draw(in: rect)
+            let newImage = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+            
+            return newImage ?? UIImage.init()
+        }
+        return UIImage.init()
+    }
+    
+    /**
+     Converts the image into an array of RGBA bytes.
+     */
+    @nonobjc public func toByteArray() -> [UInt8] {
+        let width = Int(size.width)
+        let height = Int(size.height)
+        var bytes = [UInt8](repeating: 0, count: width * height * 4)
+        
+        bytes.withUnsafeMutableBytes { ptr in
+            if let context = CGContext(
+                data: ptr.baseAddress,
+                width: width,
+                height: height,
+                bitsPerComponent: 8,
+                bytesPerRow: width * 4,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue) {
+                
+                if let image = self.cgImage {
+                    let rect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
+                    context.draw(image, in: rect)
+                }
+            }
+        }
+        return bytes
+    }
+    
+    /**
+     Creates a new UIImage from an array of RGBA bytes.
+     */
+    @nonobjc public class func fromByteArray(_ bytes: UnsafeMutableRawPointer,
+                                             width: Int,
+                                             height: Int) -> UIImage {
+        
+        if let context = CGContext(data: bytes, width: width, height: height,
+                                   bitsPerComponent: 8, bytesPerRow: width * 4,
+                                   space: CGColorSpaceCreateDeviceRGB(),
+                                   bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue),
+           let cgImage = context.makeImage() {
+            return UIImage(cgImage: cgImage, scale: 0, orientation: .up)
+        } else {
+            return UIImage()
+        }
+    }
+    
+}
+
+extension Date {
+    // MARK: - 返回dayCount天日期，+为之后，-为之前
+    func afterDay(dayCount:Int) -> Date {
+        return self.addingTimeInterval(TimeInterval(dayCount * 86400))
+    }
+    
+    func conversionDateToString(DateFormat dateFormatter:String) -> String {
+        let formatter = DateFormatter.init()
+        //formatter.dateStyle = .medium
+        formatter.dateFormat = dateFormatter
+        return formatter.string(from:self)
+    }
+}
+
+extension FileManager {
+    
+    // 文件管理器
+    static var fileManager: FileManager {
+        return FileManager.default
+    }
+    
+    // MARK: 2.1、创建文件夹(蓝色的，文件夹和文件是不一样的)
+    /// 创建文件夹(蓝色的，文件夹和文件是不一样的)
+    /// - Parameter folderName: 文件夹的名字
+    /// - Returns: 返回创建的 创建文件夹路径
+    @discardableResult
+    static func createFolder(folderPath: String) -> (isSuccess: Bool, error: String) {
+        if !judgeFileOrFolderExists(filePath: folderPath) {
+            // 不存在的路径才会创建
+            do {
+                // withIntermediateDirectories为ture表示路径中间如果有不存在的文件夹都会创建
+                try fileManager.createDirectory(atPath: folderPath, withIntermediateDirectories: true, attributes: nil)
+                print("创建文件夹成功")
+                return (true, "")
+            } catch _ {
+                return (false, "创建失败")
+            }
+        }
+        return (true, "")
+    }
+    
+    // MARK: 2.2、删除文件夹
+    /// 删除文件夹
+    /// - Parameter folderPath: 文件的路径
+    @discardableResult
+    static func removefolder(folderPath: String) -> (isSuccess: Bool, error: String) {
+        let filePath = "\(folderPath)"
+        guard judgeFileOrFolderExists(filePath: filePath) else {
+            // 不存在就不做什么操作了
+            print("removefolder 文件路径为空")
+            return (true, "")
+        }
+        // 文件存在进行删除
+        do {
+            try fileManager.removeItem(atPath: filePath)
+            print("删除文件夹成功")
+            return (true, "")
+            
+        } catch _ {
+            return (false, "删除失败")
+        }
+    }
+    
+    // MARK: 2.3、创建文件
+    /// 创建文件
+    /// - Parameter filePath: 文件路径
+    /// - Returns: 返回创建的结果 和 路径
+    @discardableResult
+    static func createFile(filePath: String) -> (isSuccess: Bool, error: String) {
+        guard judgeFileOrFolderExists(filePath: filePath) else {
+            // 不存在的文件路径才会创建
+            // withIntermediateDirectories 为 ture 表示路径中间如果有不存在的文件夹都会创建
+            let createSuccess = fileManager.createFile(atPath: filePath, contents: nil, attributes: nil)
+            
+            return (createSuccess, "")
+        }
+        return (true, "")
+    }
+    
+    // MARK: 2.4、删除文件
+    /// 删除文件
+    /// - Parameter filePath: 文件路径
+    @discardableResult
+    static func removefile(filePath: String) -> (isSuccess: Bool, error: String) {
+        guard judgeFileOrFolderExists(filePath: filePath) else {
+            // 不存在的文件路径就不需要要移除
+            return (true, "")
+        }
+        // 移除文件
+        do {
+            try fileManager.removeItem(atPath: filePath)
+            print("删除文件成功")
+            return (true, "")
+        } catch _ {
+            return (false, "移除文件失败")
+        }
+    }
+    
+    // MARK: 文件写入
+    @discardableResult
+    static func writeDicToFile(content: [String:Any], writePath: String) -> (isSuccess: Bool, error: String) {
+        guard judgeFileOrFolderExists(filePath: writePath) else {
+            // 不存在的文件路径
+            print("writeDicToFile 文件路径为空")
+            return (false, "不存在的文件路径")
+        }
+        
+        let result = (content as NSDictionary).write(toFile: writePath, atomically: true)
+        if result {
+            print("文件写入成功")
+            return (true, "")
+        } else {
+            return (false, "写入失败")
+        }
+    }
+    
+    //文件读取
+    @discardableResult
+    static func readDicFromFile(readPath: String) -> (isSuccess: Bool, content: Any?, error: String) {
+        guard judgeFileOrFolderExists(filePath: readPath),  let readHandler =  FileHandle(forReadingAtPath: readPath) else {
+            // 不存在的文件路径
+            print("readDicFromFile 文件路径为空")
+            return (false, nil, "不存在的文件路径")
+        }
+
+        let dic = NSDictionary.init(contentsOfFile: readPath)
+        
+        return (true, dic, "")
+    }
+    
+    // MARK: 图片写入
+    @discardableResult
+    static func writeImageToFile(content: UIImage, writePath: String) -> (isSuccess: Bool, error: String) {
+        guard judgeFileOrFolderExists(filePath: writePath) else {
+            // 不存在的文件路径
+            print("writeImageToFile 文件路径为空")
+            return (false, "不存在的文件路径")
+        }
+
+        let imageData:Data = content.pngData() ?? Data.init()
+        let result: ()? = try? imageData.write(to: URL.init(fileURLWithPath: writePath))
+        
+        if (result != nil) {
+            print("文件写入成功")
+            return (true, "")
+        }else{
+            return (false, "写入失败")
+        }
+        
+    }
+    
+    //图片读取
+    @discardableResult
+    static func readImageFromFile(readPath: String) -> (isSuccess: Bool, content: Any?, error: String) {
+        guard judgeFileOrFolderExists(filePath: readPath) else {
+            // 不存在的文件路径
+            print("readImageFromFile 文件路径为空")
+            return (false, nil, "不存在的文件路径")
+        }
+
+        let image = UIImage.init(contentsOfFile: readPath)
+        return (true, image, "")
+
+    }
+    
+    //获取文件夹下文件列表
+    @discardableResult
+    static func getFileListInFolderWithPath(path:String) -> (isSuccess: Bool, content: [Any]?, error: String) {
+        guard judgeFileOrFolderExists(filePath: path) else {
+            // 不存在的文件路径
+            print("getFileListInFolderWithPath 文件路径为空")
+            return (false , nil , "不存在的文件路径")
+        }
+        
+        do {
+            // withIntermediateDirectories为ture表示路径中间如果有不存在的文件夹都会创建
+            let fileList = try self.fileManager.contentsOfDirectory(atPath: path)
+//            print("获取文件夹下文件列表成功")
+            return (true , fileList , "获取成功")
+        } catch _ {
+            return (false , nil , "获取失败")
+        }
+
+        
+    }
+
+    
+    // MARK: 2.10、判断 (文件夹/文件) 是否存在
+     /** 判断文件或文件夹是否存在*/
+     static func judgeFileOrFolderExists(filePath: String) -> Bool {
+         let exist = fileManager.fileExists(atPath: filePath)
+         // 查看文件夹是否存在，如果存在就直接读取，不存在就直接反空
+         guard exist else {
+             return false
+         }
+         return true
+     }
 }
