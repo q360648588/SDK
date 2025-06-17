@@ -1,0 +1,399 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		E232AED32DDC2111006ABA4E /* ZyboxBaseModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = E232AECE2DDC2111006ABA4E /* ZyboxBaseModule.swift */; };
+		E232AED42DDC2111006ABA4E /* ZyboxBleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E232AECF2DDC2111006ABA4E /* ZyboxBleManager.swift */; };
+		E232AED52DDC2111006ABA4E /* ZyboxCommandModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = E232AED02DDC2111006ABA4E /* ZyboxCommandModule.swift */; };
+		E232AED62DDC2111006ABA4E /* ZyboxModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E232AED12DDC2111006ABA4E /* ZyboxModel.swift */; };
+		E232AED72DDC2111006ABA4E /* ZyboxSDKLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = E232AED22DDC2111006ABA4E /* ZyboxSDKLog.swift */; };
+		E232AED92DDC22A2006ABA4E /* ZyboxCrashHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = E232AED82DDC22A2006ABA4E /* ZyboxCrashHandler.swift */; };
+		E232AFED2DDF1ED8006ABA4E /* JLAudioUnitKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E232AFEC2DDF1ED8006ABA4E /* JLAudioUnitKit.framework */; platformFilter = ios; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		E232AEB82DDC200C006ABA4E /* ZyRecordingBoxSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ZyRecordingBoxSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E232AECE2DDC2111006ABA4E /* ZyboxBaseModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZyboxBaseModule.swift; sourceTree = "<group>"; };
+		E232AECF2DDC2111006ABA4E /* ZyboxBleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZyboxBleManager.swift; sourceTree = "<group>"; };
+		E232AED02DDC2111006ABA4E /* ZyboxCommandModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZyboxCommandModule.swift; sourceTree = "<group>"; };
+		E232AED12DDC2111006ABA4E /* ZyboxModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZyboxModel.swift; sourceTree = "<group>"; };
+		E232AED22DDC2111006ABA4E /* ZyboxSDKLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZyboxSDKLog.swift; sourceTree = "<group>"; };
+		E232AED82DDC22A2006ABA4E /* ZyboxCrashHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZyboxCrashHandler.swift; sourceTree = "<group>"; };
+		E232AFEC2DDF1ED8006ABA4E /* JLAudioUnitKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JLAudioUnitKit.framework; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E232AEB52DDC200C006ABA4E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E232AFED2DDF1ED8006ABA4E /* JLAudioUnitKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E232AEAE2DDC200C006ABA4E = {
+			isa = PBXGroup;
+			children = (
+				E232AEC62DDC2040006ABA4E /* ZyRecordingBoxSDK */,
+				E232AEB92DDC200C006ABA4E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E232AEB92DDC200C006ABA4E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E232AEB82DDC200C006ABA4E /* ZyRecordingBoxSDK.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E232AEC62DDC2040006ABA4E /* ZyRecordingBoxSDK */ = {
+			isa = PBXGroup;
+			children = (
+				E232AECF2DDC2111006ABA4E /* ZyboxBleManager.swift */,
+				E232AECE2DDC2111006ABA4E /* ZyboxBaseModule.swift */,
+				E232AED02DDC2111006ABA4E /* ZyboxCommandModule.swift */,
+				E232AED12DDC2111006ABA4E /* ZyboxModel.swift */,
+				E232AED22DDC2111006ABA4E /* ZyboxSDKLog.swift */,
+				E232AED82DDC22A2006ABA4E /* ZyboxCrashHandler.swift */,
+				E232AFEC2DDF1ED8006ABA4E /* JLAudioUnitKit.framework */,
+			);
+			path = ZyRecordingBoxSDK;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		E232AEB32DDC200C006ABA4E /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		E232AEB72DDC200C006ABA4E /* ZyRecordingBoxSDK */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E232AEC12DDC200C006ABA4E /* Build configuration list for PBXNativeTarget "ZyRecordingBoxSDK" */;
+			buildPhases = (
+				E232AEB32DDC200C006ABA4E /* Headers */,
+				E232AEB42DDC200C006ABA4E /* Sources */,
+				E232AEB52DDC200C006ABA4E /* Frameworks */,
+				E232AEB62DDC200C006ABA4E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ZyRecordingBoxSDK;
+			packageProductDependencies = (
+			);
+			productName = ZyRecordingBoxSDK;
+			productReference = E232AEB82DDC200C006ABA4E /* ZyRecordingBoxSDK.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E232AEAF2DDC200C006ABA4E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1630;
+				LastUpgradeCheck = 1630;
+				TargetAttributes = {
+					E232AEB72DDC200C006ABA4E = {
+						CreatedOnToolsVersion = 16.3;
+						LastSwiftMigration = 1630;
+					};
+				};
+			};
+			buildConfigurationList = E232AEB22DDC200C006ABA4E /* Build configuration list for PBXProject "ZyRecordingBoxSDK" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = E232AEAE2DDC200C006ABA4E;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = E232AEAE2DDC200C006ABA4E;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E232AEB72DDC200C006ABA4E /* ZyRecordingBoxSDK */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E232AEB62DDC200C006ABA4E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E232AEB42DDC200C006ABA4E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E232AED32DDC2111006ABA4E /* ZyboxBaseModule.swift in Sources */,
+				E232AED42DDC2111006ABA4E /* ZyboxBleManager.swift in Sources */,
+				E232AED52DDC2111006ABA4E /* ZyboxCommandModule.swift in Sources */,
+				E232AED92DDC22A2006ABA4E /* ZyboxCrashHandler.swift in Sources */,
+				E232AED62DDC2111006ABA4E /* ZyboxModel.swift in Sources */,
+				E232AED72DDC2111006ABA4E /* ZyboxSDKLog.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		E232AEBF2DDC200C006ABA4E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		E232AEC02DDC200C006ABA4E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		E232AEC22DDC200C006ABA4E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ZyRecordingBoxSDK",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				MARKETING_VERSION = 1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				PRODUCT_BUNDLE_IDENTIFIER = com.hc.ZyRecordingBoxSDK;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INSTALL_MODULE = YES;
+				SWIFT_INSTALL_OBJC_HEADER = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E232AEC32DDC200C006ABA4E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ZyRecordingBoxSDK",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				MARKETING_VERSION = 1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				PRODUCT_BUNDLE_IDENTIFIER = com.hc.ZyRecordingBoxSDK;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INSTALL_MODULE = YES;
+				SWIFT_INSTALL_OBJC_HEADER = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		E232AEB22DDC200C006ABA4E /* Build configuration list for PBXProject "ZyRecordingBoxSDK" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E232AEBF2DDC200C006ABA4E /* Debug */,
+				E232AEC02DDC200C006ABA4E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E232AEC12DDC200C006ABA4E /* Build configuration list for PBXNativeTarget "ZyRecordingBoxSDK" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E232AEC22DDC200C006ABA4E /* Debug */,
+				E232AEC32DDC200C006ABA4E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E232AEAF2DDC200C006ABA4E /* Project object */;
+}

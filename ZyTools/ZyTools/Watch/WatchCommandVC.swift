@@ -145,6 +145,7 @@ class WatchCommandVC: UIViewController {
                            "0x03 \(NSLocalizedString("Device Sync", comment: "设备同步"))",
                            "0xaa \(NSLocalizedString("New Protocol command", comment: "新协议命令"))",
                            "0x04 \(NSLocalizedString("test command", comment: "测试命令"))",
+                           "语音测试",
                            "0x80 \(NSLocalizedString("Device actively reports", comment: "设备主动上报"))",
                            NSLocalizedString("Test multiple packages", comment: "测试多包"),
                            NSLocalizedString("Path Settings", comment: "路径设置"),
@@ -300,6 +301,9 @@ class WatchCommandVC: UIViewController {
                 "0x83(0x25) 设置疗程信息",
                 "0x84(0x25) 获取疗程信息",
                 "0x83(0x26) 设置定位透传开关",
+                "0x83(0x2e) 发起ble配对信息",
+                "0x83(0x2f) 请求配对状态下发",
+                "0x83(0x31) 日志上传开关",
                 "0x83(0x2C) 设置气压计透传开关",
                 "0x83(0x2D) 设置三轴传感器传开关",
                 "0x83(0x2A) 设置世界时钟(单个)",
@@ -308,6 +312,11 @@ class WatchCommandVC: UIViewController {
                 "0x84(0x2A) 获取世界时钟",
                 "0x83(0x2B) 设置本地时区扩展",
                 "0x84(0x2B) 获取本地时区扩展",
+                "0x84(0x31) 获取最近7天点火次数",
+            ],
+            [
+                "Ai翻译对话",
+                "接收录音文件",
             ],
             [
                 "0x00 ",
@@ -536,15 +545,15 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: NSLocalizedString("Get the device name", comment: "获取设备名称"))
             ZyCommandModule.shareInstance.getDeviceName { success, error in
-
+                
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
-
+                
                 if error == .none {
                     print("GetDeviceName success ->",success)
-
+                    
                     if let deviceName = success {
                         print("deviceName ->",deviceName)
-
+                        
                         self.logView.writeString(string: deviceName)
                     }
                     
@@ -553,7 +562,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             
             break
         case "0x02 \(NSLocalizedString("Get the firmware version", comment: "获取固件版本"))":
-
+            
             self.logView.clearString()
             self.logView.writeString(string: NSLocalizedString("Get the firmware version", comment: "获取固件版本"))
             ZyCommandModule.shareInstance.getFirmwareVersion{ success, error in
@@ -571,40 +580,40 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                     
                 }
             }
-
+            
             break
             
         case "0x04 \(NSLocalizedString("Gets the serial number", comment: "获取序列号"))":
-
+            
             self.logView.clearString()
             self.logView.writeString(string: NSLocalizedString("Gets the serial number", comment: "获取序列号"))
             ZyCommandModule.shareInstance.getSerialNumber {success, error in
-
+                
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
-
+                
                 if error == .none {
                     print("GetSerialNumber ->",success)
-
+                    
                     if let serialNumber = success {
                         print("serialNumber ->",serialNumber)
-
+                        
                         self.logView.writeString(string: serialNumber)
                     }
                     
                 }
-
+                
             }
             
             break
             
         case "0x05 设置序列号":
-
+            
             
             
             break
-        
+            
         case "0x06 \(NSLocalizedString("Get mac address", comment: "获取mac地址"))":
-
+            
             self.logView.clearString()
             self.logView.writeString(string: NSLocalizedString("Get mac address", comment: "获取mac地址"))
             ZyCommandModule.shareInstance.getMac { success, error in
@@ -621,7 +630,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                     }
                     
                 }
-
+                
             }
             
             break
@@ -644,9 +653,9 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                     }
                     
                 }
-
+                
             }
-
+            
             break
             
         case "0x09 \(NSLocalizedString("Set up time", comment: "设置时间"))":
@@ -666,7 +675,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 }
                 
             }
-
+            
             break
             
         case "0x0a \(NSLocalizedString("Get a list of features supported by your device", comment: "获取设备支持的功能列表"))":
@@ -679,12 +688,12 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                     
                     if let model = success {
                         print("GetDeviceSupportList ->",model.showAllSupportFunctionLog())
-                                            
+                        
                         self.logView.writeString(string: "\(model.showAllSupportFunctionLog())")
                     }
                 }
             }
-
+            
             break
             
         case "10 \(NSLocalizedString("Obtain version information for products, firmware, and resources", comment: "获取产品、固件、资源等版本信息"))":
@@ -750,7 +759,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 }
                 //self.navigationController?.pushViewController(vc, animated: true)
             }
-
+            
             break
             
         case "0x01 \(NSLocalizedString("Set up personal information", comment: "设置个人信息"))":
@@ -818,7 +827,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 
                 //self.navigationController?.pushViewController(vc, animated: true)
             }
-
+            
             break
             
         case "0x03 \(NSLocalizedString("Set the time standard", comment: "设置时间制式"))":
@@ -959,7 +968,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             break
             
         case NSLocalizedString("Set weather (expand parameters)", comment: "设置天气(拓展参数)"):
-        
+            
             let array = [
                 NSLocalizedString("Year", comment: "年"),
                 NSLocalizedString("Month", comment: "月"),
@@ -1030,9 +1039,9 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 model.tomorrowMaxTemp = Int(tomorrowMaxTemp) ?? 0
                 
                 ZyCommandModule.shareInstance.setWeather(model: model,updateTime: time) { error in
-
+                    
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
-
+                    
                     if error == .none {
                         print("SetWeather ->","success")
                     }
@@ -1071,7 +1080,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 }
                 //self.navigationController?.pushViewController(vc, animated: true)
             }
-
+            
             break
             
         case "0x0c \(NSLocalizedString("Get a bright screen for wrist lifting", comment: "获取抬腕亮屏"))":
@@ -1120,7 +1129,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                     //self.navigationController?.pushViewController(vc, animated: true)
                 }
             }
-
+            
             break
             
         case "0x0e \(NSLocalizedString("Get screen brightness", comment: "获取屏幕亮度"))":
@@ -1142,7 +1151,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 }
                 //self.navigationController?.pushViewController(vc, animated: true)
             }
-
+            
             break
             
         case "0x0f \(NSLocalizedString("Set screen brightness", comment: "设置屏幕亮度"))":
@@ -1274,56 +1283,56 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             let array = [
                 NSLocalizedString("Alarm clock serial number", comment: "闹钟序号")
             ]
-
+            
             self.logView.clearString()
             self.logView.writeString(string: NSLocalizedString("Get the alarm clock", comment: "获取闹钟"))
-//            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Get the alarm clock", comment: "获取闹钟"), holderStringArray: array, cancel: nil, cancelAction: {
-//
-//            }, ok: nil) { (textArray) in
-//                let index = textArray[0]
-//
-//                ZyCommandModule.shareInstance.getAlarm(index: index) { success, error in
-//
-//                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-//
-//                    if error == .none {
-//                        print("GetAlarm ->",success)
-//
-//                        let index = success["index"] as! String
-//                        let repeatCount = success["repeatCount"] as! String
-//                        let hour = success["hour"] as! String
-//                        let minute = success["minute"] as! String
-//                        print("index ->",index,"repeatCount ->",repeatCount,"hour ->",hour,"minute ->",minute)
-//
-//                        let alarmModel = ZyAlarmModel.init(dic: success)
-//                        print("alarmModel",alarmModel.alarmIndex,"alarmOpen ->",alarmModel.alarmOpen,"alarmTime ->",alarmModel.alarmTime,"alarmType ->",alarmModel.alarmType.rawValue,"alarmRepeat ->",alarmModel.alarmRepeatArray)
-//
-//                        self.logView.writeString(string: "\(NSLocalizedString("Alarm clock serial number", comment: "闹钟序号")):\(index.count>0 ? index:"0")")
-//                        self.logView.writeString(string: "\(NSLocalizedString("Alarm clock time", comment: "闹钟时间")):\(alarmModel.alarmTime ?? "00:00")")
-//                        self.logView.writeString(string: "repeatCount:\(repeatCount)")
-//                        self.logView.writeString(string: "\(NSLocalizedString("Alarm clock switch", comment: "闹钟开关")):\(alarmModel.alarmOpen)")
-//                        if alarmModel.alarmOpen {
-//                            self.logView.writeString(string: "\(NSLocalizedString("Alarm clock repetition type", comment: "闹钟重复类型")):\(alarmModel.alarmType == .single ? NSLocalizedString("Single time alarm clock", comment: "单次闹钟"):NSLocalizedString("Repeat the alarm clock", comment: "重复闹钟"))")
-//                            if alarmModel.alarmType == .cycle {
-//                                if alarmModel.alarmRepeatArray != nil {
-//                                    let str = ((alarmModel.alarmRepeatArray![0] != 0 ? NSLocalizedString("Sunday", comment: "星期天"):"")+(alarmModel.alarmRepeatArray![1] != 0 ? NSLocalizedString("Monday", comment: "星期一"):"")+(alarmModel.alarmRepeatArray![2] != 0 ? NSLocalizedString("Tuesday", comment: "星期二"):"")+(alarmModel.alarmRepeatArray![3] != 0 ? NSLocalizedString("Wednesday", comment: "星期三"):"")+(alarmModel.alarmRepeatArray![4] != 0 ? NSLocalizedString("Thursday", comment: "星期四"):"")+(alarmModel.alarmRepeatArray![5] != 0 ? NSLocalizedString("Friday", comment: "星期五"):"")+(alarmModel.alarmRepeatArray![6] != 0 ? NSLocalizedString("Saturday", comment: "星期六"):""))
-//                                    self.logView.writeString(string: "\(NSLocalizedString("The alarm clock repeats the week", comment: "闹钟重复星期")):\(str)")
-//                                }else{
-//                                    self.logView.writeString(string: NSLocalizedString("Alarm repeat week: Repeat week is not turned on, default single alarm", comment: "闹钟重复星期:重复星期未开启,默认单次闹钟"))
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
+            //            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Get the alarm clock", comment: "获取闹钟"), holderStringArray: array, cancel: nil, cancelAction: {
+            //
+            //            }, ok: nil) { (textArray) in
+            //                let index = textArray[0]
+            //
+            //                ZyCommandModule.shareInstance.getAlarm(index: index) { success, error in
+            //
+            //                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+            //
+            //                    if error == .none {
+            //                        print("GetAlarm ->",success)
+            //
+            //                        let index = success["index"] as! String
+            //                        let repeatCount = success["repeatCount"] as! String
+            //                        let hour = success["hour"] as! String
+            //                        let minute = success["minute"] as! String
+            //                        print("index ->",index,"repeatCount ->",repeatCount,"hour ->",hour,"minute ->",minute)
+            //
+            //                        let alarmModel = ZyAlarmModel.init(dic: success)
+            //                        print("alarmModel",alarmModel.alarmIndex,"alarmOpen ->",alarmModel.alarmOpen,"alarmTime ->",alarmModel.alarmTime,"alarmType ->",alarmModel.alarmType.rawValue,"alarmRepeat ->",alarmModel.alarmRepeatArray)
+            //
+            //                        self.logView.writeString(string: "\(NSLocalizedString("Alarm clock serial number", comment: "闹钟序号")):\(index.count>0 ? index:"0")")
+            //                        self.logView.writeString(string: "\(NSLocalizedString("Alarm clock time", comment: "闹钟时间")):\(alarmModel.alarmTime ?? "00:00")")
+            //                        self.logView.writeString(string: "repeatCount:\(repeatCount)")
+            //                        self.logView.writeString(string: "\(NSLocalizedString("Alarm clock switch", comment: "闹钟开关")):\(alarmModel.alarmOpen)")
+            //                        if alarmModel.alarmOpen {
+            //                            self.logView.writeString(string: "\(NSLocalizedString("Alarm clock repetition type", comment: "闹钟重复类型")):\(alarmModel.alarmType == .single ? NSLocalizedString("Single time alarm clock", comment: "单次闹钟"):NSLocalizedString("Repeat the alarm clock", comment: "重复闹钟"))")
+            //                            if alarmModel.alarmType == .cycle {
+            //                                if alarmModel.alarmRepeatArray != nil {
+            //                                    let str = ((alarmModel.alarmRepeatArray![0] != 0 ? NSLocalizedString("Sunday", comment: "星期天"):"")+(alarmModel.alarmRepeatArray![1] != 0 ? NSLocalizedString("Monday", comment: "星期一"):"")+(alarmModel.alarmRepeatArray![2] != 0 ? NSLocalizedString("Tuesday", comment: "星期二"):"")+(alarmModel.alarmRepeatArray![3] != 0 ? NSLocalizedString("Wednesday", comment: "星期三"):"")+(alarmModel.alarmRepeatArray![4] != 0 ? NSLocalizedString("Thursday", comment: "星期四"):"")+(alarmModel.alarmRepeatArray![5] != 0 ? NSLocalizedString("Friday", comment: "星期五"):"")+(alarmModel.alarmRepeatArray![6] != 0 ? NSLocalizedString("Saturday", comment: "星期六"):""))
+            //                                    self.logView.writeString(string: "\(NSLocalizedString("The alarm clock repeats the week", comment: "闹钟重复星期")):\(str)")
+            //                                }else{
+            //                                    self.logView.writeString(string: NSLocalizedString("Alarm repeat week: Repeat week is not turned on, default single alarm", comment: "闹钟重复星期:重复星期未开启,默认单次闹钟"))
+            //                                }
+            //                            }
+            //                        }
+            //                    }
+            //                }
+            //            }
             
             self.presentTextFieldAlertVC(title: NSLocalizedString("Get the alarm clock", comment: "获取闹钟"), message: "", holderStringArray: nil, cancel: "有效闹钟", cancelAction: {
                 for i in stride(from: 0, to: 10, by: 1) {
                     ZyCommandModule.shareInstance.getAlarm(index: i) { success, error in
-
+                        
                         if error == .none {
                             print("GetAlarm ->",success)
-
+                            
                             if let alarmModel = success {
                                 print("alarmModel",alarmModel.alarmIndex,"alarmOpen ->",alarmModel.alarmOpen,"alarmTime ->",String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute),"alarmType ->",alarmModel.alarmType.rawValue,"alarmRepeat ->",alarmModel.alarmRepeatArray)
                                 if alarmModel.isValid {
@@ -1353,13 +1362,13 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             }, ok: NSLocalizedString("All the alarm clocks", comment: "全部闹钟")) { _ in
                 for i in stride(from: 0, to: 10, by: 1) {
                     ZyCommandModule.shareInstance.getAlarm(index: i) { success, error in
-
+                        
                         if error == .none {
                             print("GetAlarm ->",success)
-
+                            
                             if let alarmModel = success {
                                 print("alarmModel",alarmModel.alarmIndex,"alarmOpen ->",alarmModel.alarmOpen,"alarmTime ->",String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute),"alarmType ->",alarmModel.alarmType.rawValue,"alarmRepeat ->",alarmModel.alarmRepeatArray)
-
+                                
                                 self.logView.writeString(string: "\(NSLocalizedString("Alarm clock serial number", comment: "闹钟序号")):\(alarmModel.alarmIndex)")
                                 self.logView.writeString(string: "\(NSLocalizedString("Alarm clock time", comment: "闹钟时间")):\(String.init(format: "%02d:%02d", alarmModel.alarmHour,alarmModel.alarmMinute))")
                                 self.logView.writeString(string: "repeatCount:\(alarmModel.alarmRepeatCount)")
@@ -1404,12 +1413,12 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 let repeatCount = textArray[1]
                 let hour = textArray[2]
                 let minute = textArray[3]
-                                
-//                ZyCommandModule.shareInstance.setAlarm(index: index, repeatCount: repeatCount, hour: hour, minute: minute) { error in
-//                    if error == .none {
-//                        print("SetAlarm ->","success")
-//                    }
-//                }
+                
+                //                ZyCommandModule.shareInstance.setAlarm(index: index, repeatCount: repeatCount, hour: hour, minute: minute) { error in
+                //                    if error == .none {
+                //                        print("SetAlarm ->","success")
+                //                    }
+                //                }
                 
                 let dic = ["repeatCount": repeatCount, "hour": hour, "index": index, "minute": minute]
                 let alarmModel = ZyAlarmModel.init(dic: dic)
@@ -1512,7 +1521,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 }
                 //self.navigationController?.pushViewController(vc, animated: true)
             }
-                        
+            
             break
             
         case "0x17 \(NSLocalizedString("Set the target number of steps", comment: "设置目标步数"))":
@@ -1547,7 +1556,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             ZyCommandModule.shareInstance.getDispalyMode { success, error in
                 print("GetDispalyMode ->",success)
             }
-
+            
             break
             
         case "0x19 \(NSLocalizedString("Set the display mode", comment: "设置显示方式"))":
@@ -1575,7 +1584,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             ZyCommandModule.shareInstance.getWearingWay { success, error in
                 print("GetWearingWay ->",success)
             }
-                        
+            
             break
             
         case "0x1b \(NSLocalizedString("Set the mode of wearing", comment: "设置佩戴方式"))":
@@ -1594,7 +1603,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                     self.navigationController?.pushViewController(vc, animated: true)
                 }
             }
-
+            
             break
             
         case "0x1c":
@@ -1604,7 +1613,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             break
             
         case "0x1d \(NSLocalizedString("Set up a single measurement", comment: "设置单次测量"))":
-                        
+            
             let array = [
                 "\(NSLocalizedString("Type", comment: "类型"))：0-\(NSLocalizedString("Heart rate", comment: "心率"))，1-\(NSLocalizedString("Blood pressure", comment: "血压"))，2-\(NSLocalizedString("Blood oxygen", comment: "血氧"))",
                 "0:\(NSLocalizedString("Shut down", comment: "关闭"))，1:\(NSLocalizedString("Turn on", comment: "开启"))"
@@ -1633,7 +1642,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 }else{
                     self.logView.writeString(string: "\(NSLocalizedString("Type of measurement", comment: "测量类型")):\(NSLocalizedString("Heart rate", comment: "心率"))")
                 }
-
+                
                 self.logView.writeString(string: (Int(isOpen) ?? 0) > 0 ? NSLocalizedString("Turn on", comment: "开启"):NSLocalizedString("Shut down", comment: "关闭"))
                 
                 ZyCommandModule.shareInstance.setSingleMeasurement(type: Int(type) ?? 0, isOpen: Int(isOpen) ?? 0) { error in
@@ -1650,7 +1659,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             break
             
         case "0x1e \(NSLocalizedString("Get Exercise patterns", comment: "获取锻炼模式"))":
-
+            
             self.logView.clearString()
             self.logView.writeString(string: NSLocalizedString("Get Exercise patterns", comment: "获取锻炼模式"))
             ZyCommandModule.shareInstance.getExerciseMode { success, state, error in
@@ -1756,7 +1765,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                     }
                 }
             }
-
+            
             break
             
         case "0x25 \(NSLocalizedString("Set the phone type", comment: "设置手机类型"))":
@@ -1912,7 +1921,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                     
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
-
+                    
                     if error == .none {
                         print("setCustomDialEdit ->","success")
                     }
@@ -1943,7 +1952,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                         print("SetPhoneState ->","success")
                     }
                 }
-
+                
             }
             
             break
@@ -1955,10 +1964,10 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             
             ZyCommandModule.shareInstance.getCustonDialFrameSize { success, error in
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
-
+                
                 if error == .none {
                     print("GetCustonDialFrameSize ->",success)
-
+                    
                     if let model = success {
                         let bigWidth = model.bigWidth
                         let bigheight = model.bigHeight
@@ -2049,7 +2058,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 NSLocalizedString("Calories", comment: "卡路里"),
                 NSLocalizedString("Distance", comment: "距离"),
             ]
-
+            
             self.logView.clearString()
             self.logView.writeString(string: NSLocalizedString("app synchronizes motion data to the device", comment: "app同步运动数据至设备"))
             self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("app synchronizes motion data to the device", comment: "app同步运动数据至设备"), holderStringArray: array, cancel: nil, cancelAction: {
@@ -2084,13 +2093,13 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.writeString(string: NSLocalizedString("app synchronizes motion data to the device", comment: "app同步运动数据至设备"))
             
             var timer:Timer?
-                
+            
             if #available(iOS 10.0, *) {
                 
                 self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("app synchronizes motion data to the device", comment: "app同步运动数据至设备"), holderStringArray: array, cancel: NSLocalizedString("Cancel", comment: "取消"), cancelAction: {
                     
                 }, ok: NSLocalizedString("Start", comment: "开始")) { (textArray) in
-
+                    
                     var timeLong = 0
                     var calories = 0
                     var distance = 0
@@ -2110,7 +2119,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                         self.logView.writeString(string: "\(NSLocalizedString("Calories", comment: "卡路里")):\(calories)")
                         self.logView.writeString(string: "\(NSLocalizedString("Distance", comment: "距离")):\(distance)\n")
                         ZyCommandModule.shareInstance.setExerciseDataToDevice(type: ZyExerciseType.init(rawValue: Int(type) ?? 0) ?? .runOutside, timeLong: timeLong, calories: calories, distance: distance) { error in
-
+                            
                             if error == .none {
                                 print("setExerciseDataToDevice ->","success")
                             }
@@ -2122,9 +2131,9 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                         timer = nil
                     }
                 }
-
+                
             } else {
-
+                
             }
             
             break
@@ -2173,7 +2182,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 }
             }
             break
-
+            
         case "0x44 设置潜水深度":
             let array = [
                 "深度",
@@ -2224,7 +2233,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 
             }, ok: nil) { (textArray) in
                 let pressure = (Int(textArray[0]) ?? 0)
-
+                
                 ZyCommandModule.shareInstance.setDivePressure(count: pressure) { value,error in
                     self.logView.writeString(string: String.init(format: "原始气压:%d,转换后气压:%d",pressure,value))
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -2277,15 +2286,15 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 let isOpen = textArray[0]
                 let extensionOpen = textArray[1]
                 
-//                ZyCommandModule.shareInstance.setNotificationRemind(isOpen: isOpen) { error in
-//
-//                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-//
-//                    if error == .none {
-//                        print("SetMessageRemind ->","success")
-//                    }
-//                    //self.navigationController?.pushViewController(vc, animated: true)
-//                }
+                //                ZyCommandModule.shareInstance.setNotificationRemind(isOpen: isOpen) { error in
+                //
+                //                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                //
+                //                    if error == .none {
+                //                        print("SetMessageRemind ->","success")
+                //                    }
+                //                    //self.navigationController?.pushViewController(vc, animated: true)
+                //                }
                 if #available(iOS 13.0, *) {
                     if let state = ZyCommandModule.shareInstance.peripheral?.ancsAuthorized {
                         self.logView.writeString(string: "蓝牙共享系统通知:\(state ? NSLocalizedString("Turn on", comment: "开启"):NSLocalizedString("Shut down", comment: "关闭"))")
@@ -2299,16 +2308,16 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 self.logView.writeString(string: "\(NSLocalizedString("Message type switch", comment: "消息类型开关")):\(array)")
                 self.logView.writeString(string: "\(NSLocalizedString("Extended message switch", comment: "拓展消息开关")):\(extensionArray)")
                 ZyCommandModule.shareInstance.setNotificationRemindArray(array: array, extensionArray: extensionArray) { error in
-
+                    
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
-
+                    
                     if error == .none {
                         print("SetMessageRemind ->","success")
                     }
                 }
                 
             }
-
+            
             break
             
         case "0x02 \(NSLocalizedString("Get sedentary reminders", comment: "获取久坐提醒"))":
@@ -2377,7 +2386,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                     //self.navigationController?.pushViewController(vc, animated: true)
                 }
             }
-
+            
             break
             
         case "0x03 \(NSLocalizedString("Set a sedentary reminder (multiple groups)", comment: "设置久坐提醒(多组)"))":
@@ -2438,22 +2447,22 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 ZyCommandModule.shareInstance.setSedentary(model: sedentaryModel) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
-
+                    
                     if error == .none {
                         print("SetSedentary ->","success")
                     }
-
+                    
                 }
                 
-//                ZyCommandModule.shareInstance.setSedentary(isOpen: isOpen, timeLong: timeLong, timeArray: [model,model_2]) { error in
-//
-//                    self.logView.writeString(string: self.getErrorCodeString(error: error))
-//
-//                    if error == .none {
-//                        print("SetSedentary ->","success")
-//                    }
-//
-//                }
+                //                ZyCommandModule.shareInstance.setSedentary(isOpen: isOpen, timeLong: timeLong, timeArray: [model,model_2]) { error in
+                //
+                //                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                //
+                //                    if error == .none {
+                //                        print("SetSedentary ->","success")
+                //                    }
+                //
+                //                }
                 
             }
             break
@@ -2464,7 +2473,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 print("GetLost ->",success)
                 self.navigationController?.pushViewController(vc, animated: true)
             }
-
+            
             break
             
         case "0x05 \(NSLocalizedString("Set up anti-loss reminders", comment: "设置防丢提醒"))":
@@ -2483,7 +2492,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                     self.navigationController?.pushViewController(vc, animated: true)
                 }
             }
-
+            
             
             
             break
@@ -2637,7 +2646,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 let model_0 = ZyAddressBookModel.init()
                 model_0.name = textArray[0].count == 0 ? "张三" : textArray[0]
                 model_0.phoneNumber = textArray[1].count == 0 ? "13755660033" : textArray[1]
-
+                
                 let model_1 = ZyAddressBookModel.init()
                 model_1.name = textArray[2].count == 0 ? "李四" : textArray[2]
                 model_1.phoneNumber = textArray[3].count == 0 ? "0755-6128998" : textArray[3]
@@ -2832,7 +2841,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             
             self.logView.clearString()
             self.logView.writeString(string: NSLocalizedString("Get water reminders", comment: "获取喝水提醒"))
-
+            
             ZyCommandModule.shareInstance.getDrinkWater { success, error in
                 
                 self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -2877,15 +2886,15 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 let endMinute = textArray[4]
                 let remindInterval = textArray[5]
                 
-//                let model = ZyDrinkWaterModel.init()
-//                model.isOpen = isOpen
-//                model.remindInterval = remindInterval
-//                model.timeModel.startHour = startHour
-//                model.timeModel.startMinute = startMinute
-//                model.timeModel.endHour = endHour
-//                model.timeModel.endMinute = endMinute
-//
-//                ZyCommandModule.shareInstance.setDrinkWater(model: model) { error in
+                //                let model = ZyDrinkWaterModel.init()
+                //                model.isOpen = isOpen
+                //                model.remindInterval = remindInterval
+                //                model.timeModel.startHour = startHour
+                //                model.timeModel.startMinute = startMinute
+                //                model.timeModel.endHour = endHour
+                //                model.timeModel.endMinute = endMinute
+                //
+                //                ZyCommandModule.shareInstance.setDrinkWater(model: model) { error in
                 ZyCommandModule.shareInstance.setDrinkWater(isOpen: isOpen, startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute, remindInterval: remindInterval) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -2943,13 +2952,13 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 let remindCount = textArray[2]
                 let remindInterval = textArray[3]
                 
-//                let model = ZyLowBatteryModel.init()
-//                model.isOpen = isOpen
-//                model.remindBattery = remindBattery
-//                model.remindCount = remindCount
-//                model.remindInterval = remindInterval
-//
-//                ZyCommandModule.shareInstance.setLowBatteryRemind(model: model) { error in
+                //                let model = ZyLowBatteryModel.init()
+                //                model.isOpen = isOpen
+                //                model.remindBattery = remindBattery
+                //                model.remindCount = remindCount
+                //                model.remindInterval = remindInterval
+                //
+                //                ZyCommandModule.shareInstance.setLowBatteryRemind(model: model) { error in
                 ZyCommandModule.shareInstance.setLowBatteryRemind(isOpen: isOpen, remindBattery: remindBattery, remindCount: remindCount, remindInterval: remindInterval) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -2975,7 +2984,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 
             }, ok: nil) { (textArray) in
                 let type = Int(textArray[0]) ?? 0
-                                
+                
                 ZyCommandModule.shareInstance.getLedSetup(type: ZyLedFunctionType.init(rawValue: type) ?? .powerIndicator) { model, error in
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     if error == .none {
@@ -2992,7 +3001,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                     }
                 }
             }
-
+            
             break
         case "0x17 \(NSLocalizedString("Set up a single LED light function", comment: "设置单个LED灯功能"))":
             
@@ -3034,7 +3043,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-
+            
         case "0x19 \(NSLocalizedString("Set individual LED light power display", comment: "设置单个LED灯电量显示"))":
             
             let array = [
@@ -3063,7 +3072,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 model.firstColor = firstColor
                 model.secondColor = secondColor
                 model.thirdColor = thirdColor
-
+                
                 self.logView.writeString(string: "\(NSLocalizedString("Type", comment: "类型")): \(model.ledType.rawValue)")
                 self.logView.writeString(string: "75-100\(NSLocalizedString("Color", comment: "颜色")): \(model.firstColor)")
                 self.logView.writeString(string: "21-74\(NSLocalizedString("Color", comment: "颜色")): \(model.secondColor)")
@@ -3095,7 +3104,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 
             }, ok: nil) { (textArray) in
                 let type = Int(textArray[0]) ?? 0
-                                
+                
                 ZyCommandModule.shareInstance.getMotorShakeFunction(type: ZyLedFunctionType.init(rawValue: type) ?? .powerIndicator) { model, error in
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     if error == .none {
@@ -3124,7 +3133,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set motor vibration function", comment: "设置马达震动功能"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
-
+                
                 let ledType = Int(textArray[0]) ?? 0
                 let timeLength = Int(textArray[1]) ?? 0
                 let frequency = Int(textArray[2]) ?? 0
@@ -3240,7 +3249,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("Set up custom vibration", comment: "设置自定义震动"), holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
-
+                
                 let timeLength = Int(textArray[0]) ?? 0
                 let frequency = Int(textArray[1]) ?? 0
                 let level = Int(textArray[2]) ?? 0
@@ -3330,7 +3339,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                         }
                         
                     }else{
-
+                        
                         var typeString = ""
                         if type == "1" {
                             typeString = NSLocalizedString("Number of steps", comment: "步数")
@@ -3368,7 +3377,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             }, ok: nil) { (textArray) in
                 //let type = textArray[0]
                 let indexCount = textArray[0]
-                                
+                
                 ZyCommandModule.shareInstance.setSyncExerciseData(indexCount: Int(indexCount) ?? 0) { success, error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
@@ -3393,7 +3402,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                         self.logView.writeString(string: "\(NSLocalizedString("Calories", comment: "卡路里")):\(calorie)")
                         self.logView.writeString(string: "\(NSLocalizedString("Distance", comment: "距离")):\(distance)")
                     }
-
+                    
                 }
                 
             }
@@ -3580,7 +3589,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                     }
                 }
             }
-
+            
             break
             
         case "0x83(4) \(NSLocalizedString("Set the weather", comment: "设置天气"))":
@@ -3669,7 +3678,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 ZyCommandModule.shareInstance.setNewWeather(modelArray: modelArray, updateTime: time) { error in
                     
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
-
+                    
                     if error == .none {
                         print("SetWeather ->","success")
                     }
@@ -3748,11 +3757,11 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 
                 if error == .none {
                     print("GetAlarm ->",alarmArray)
-
+                    
                     for alarm in alarmArray {
                         let alarmModel = alarm
                         //print("alarmModel",alarmModel.alarmIndex,"alarmOpen ->",alarmModel.alarmOpen,"alarmTime ->",alarmModel.alarmTime,"alarmType ->",alarmModel.alarmType.rawValue,"alarmRepeat ->",alarmModel.alarmRepeatArray)
-
+                        
                         self.logView.writeString(string: "\(NSLocalizedString("Alarm clock serial number", comment: "闹钟序号")):\(alarmModel.alarmIndex)")
                         self.logView.writeString(string: "\(NSLocalizedString("Alarm clock time", comment: "闹钟时间")):\(alarmModel.alarmHour):\(alarmModel.alarmMinute)")
                         self.logView.writeString(string: "repeatCount:\(alarmModel.alarmRepeatCount)")
@@ -3817,12 +3826,12 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             break
             
         case "0x83(0x1a) \(NSLocalizedString("Set up SOS contacts", comment: "设置SOS联系人"))":
-
+            
             let array = [
                 NSLocalizedString("Name", comment: "姓名"),
                 NSLocalizedString("Number", comment: "号码"),
             ]
-
+            
             self.logView.clearString()
             self.logView.writeString(string: NSLocalizedString("Set up SOS contacts", comment: "设置SOS联系人"))
             
@@ -3871,7 +3880,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 "结束小时",
                 "结束分钟",
             ]
-
+            
             self.logView.clearString()
             self.logView.writeString(string: "设置周期测量参数")
             
@@ -3955,7 +3964,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 
                 let timeZone = textArray[0]
                 self.logView.writeString(string: "\(NSLocalizedString("Set the time zone", comment: "设置时区")): \(timeZone)")
-                            
+                
                 ZyCommandModule.shareInstance.setTimeZone(timeZone:  Int(timeZone) ?? 0) { error in
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     if error == .none {
@@ -3990,7 +3999,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 self.logView.writeString(string: "\(NSLocalizedString("Speed of movement", comment: "速度")): \(speed)")
                 
                 let location = CLLocation.init(coordinate: CLLocationCoordinate2D.init(latitude: latitude, longitude: longitude), altitude: 0, horizontalAccuracy: CLLocationAccuracy(), verticalAccuracy: CLLocationAccuracy(), course: course, speed: speed, timestamp: Date())
-
+                
                 ZyCommandModule.shareInstance.setLocationInfo(localtion: location)
                 
             }
@@ -4015,7 +4024,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 let colorType = Int(textArray[1]) ?? 0
                 let timeLength = Int(textArray[2]) ?? 0
                 let frequency = Int(textArray[3]) ?? 0
-                                
+                
                 let dayNumber:String = modelCount.components(separatedBy: .decimalDigits.inverted).joined()
                 var dayArray = [Int]()
                 for i in dayNumber {
@@ -4062,7 +4071,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (the number of parameters defaults to 1 and other defaults to 0)", comment: "提示(参数个数默认1其他默认0)"), message: "马达震动功能设置(后续参数递增)", holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
-
+                
                 let modelCount = textArray[0]
                 let timeLength = Int(textArray[1]) ?? 0
                 let frequency = Int(textArray[2]) ?? 0
@@ -4139,7 +4148,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             
             break
         case "0x84(0x20) \(NSLocalizedString("Gets a custom movement type", comment: "获取自定义运动类型"))":
-
+            
             self.logView.clearString()
             self.logView.writeString(string: NSLocalizedString("Gets a custom movement type", comment: "获取自定义运动类型"))
             ZyCommandModule.shareInstance.getCustomSportsMode { type, error in
@@ -4164,7 +4173,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 
                 let bleName = textArray[0]
                 self.logView.writeString(string: "\(NSLocalizedString("设置蓝牙名", comment: "")): \(bleName)")
-                        
+                
                 ZyCommandModule.shareInstance.setBleName(name: bleName) { error in
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     if error == .none {
@@ -4272,7 +4281,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 
                 let index = Int(textArray[0]) ?? 0
                 self.logView.writeString(string: "\(NSLocalizedString("设置消息提醒方式", comment: "")): \(index)")
-                        
+                
                 ZyCommandModule.shareInstance.setMessageRemindType(index: index) { error in
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     if error == .none {
@@ -4297,7 +4306,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-          
+            
         case "0x83(0x24) 设置二维码名片(单个设置)":
             let array = [
                 "序号(默认0)",
@@ -4308,8 +4317,8 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "同步二维码名片")
             
-
-                            
+            
+            
             self.presentTextFieldAlertVC(title: NSLocalizedString("Hint (Invalid data is null by default)", comment: "提示(无效数据默认为空)"), message: "设置二维码名片", holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
@@ -4404,7 +4413,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-
+            
         case "0x83(0x25) 设置疗程信息":
             self.logView.clearString()
             self.logView.writeString(string: "设置疗程信息")
@@ -4612,12 +4621,71 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 
                 let isOpen = Int(textArray[0]) ?? 0
                 self.logView.writeString(string: "\(NSLocalizedString("设置定位透传开关", comment: "")): \(isOpen)")
-                      
+                
                 ZyCommandModule.shareInstance.setLocationPrimitiveTransmission(isOpen: isOpen) { error in
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     if error == .none {
                         print("setLocationPrimitiveTransmission -> success")
-                            
+                        
+                    }
+                }
+            }
+            
+            break
+        case "0x83(0x2e) 发起ble配对信息":
+            if let model = ZyCommandModule.shareInstance.functionListModel?.functionDetail_bindConfirmation {
+                ZyCommandModule.shareInstance.setBlePairingInfomation { error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    if error == .none {
+                        print("setBlePairingInfomation -> success")
+                    }
+                }
+            }
+            
+            break
+
+        case "0x83(0x2f) 请求配对状态下发":
+            self.logView.clearString()
+            self.logView.writeString(string: "请求配对状态下发")
+            
+            let array = [
+                "1发起配对 2配对成功 3配对失败 4回连成功"
+            ]
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("请求配对状态下发", comment: ""), holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                
+                let type = Int(textArray[0]) ?? 1
+                self.logView.writeString(string: "\(NSLocalizedString("请求配对状态下发", comment: "")): \(type)")
+                ZyCommandModule.shareInstance.setBlePairingState(type: type) { error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    if error == .none {
+                        print("setBlePairingState -> success")
+                        
+                    }
+                }
+            }
+            break
+            
+        case "0x83(0x31) 日志上传开关":
+            self.logView.clearString()
+            self.logView.writeString(string: "日志上传开关")
+            
+            let array = [
+                "0关1开"
+            ]
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Prompt (default 0 for invalid data)", comment: "提示(无效数据默认0)"), message: NSLocalizedString("设置定位透传开关", comment: ""), holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                
+                let isOpen = Int(textArray[0]) ?? 0
+                self.logView.writeString(string: "\(NSLocalizedString("日志上传开关", comment: "")): \(isOpen)")
+                
+                ZyCommandModule.shareInstance.setDebugLogUpload(isOpen: isOpen) { error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    if error == .none {
+                        print("setDebugLogUpload -> success")
+                        
                     }
                 }
             }
@@ -4642,12 +4710,12 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     if error == .none {
                         print("setBarometerPrimitiveTransmission -> success")
-                            
+                        
                     }
                 }
             }
             break
-
+            
         case "0x83(0x2D) 设置三轴传感器传开关":
             self.logView.clearString()
             self.logView.writeString(string: "设置三轴传感器传开关")
@@ -4661,17 +4729,17 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 
                 let isOpen = Int(textArray[0]) ?? 0
                 self.logView.writeString(string: "\(NSLocalizedString("设置三轴传感器传开关", comment: "")): \(isOpen)")
-                      
+                
                 ZyCommandModule.shareInstance.setTriaxialSensorPrimitiveTransmission(isOpen: isOpen) { error in
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     if error == .none {
                         print("setTriaxialSensorPrimitiveTransmission -> success")
-                            
+                        
                     }
                 }
             }
             break
-    
+            
         case "0x83(0x2A) 设置世界时钟(单个)":
             let array = [
                 "时间偏移量(默认0)",
@@ -4681,8 +4749,8 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             self.logView.clearString()
             self.logView.writeString(string: "设置世界时钟")
             
-
-                            
+            
+            
             self.presentTextFieldAlertVC(title: NSLocalizedString("Hint (Invalid data is null by default)", comment: "提示(无效数据默认为空)"), message: "设置世界时钟", holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
@@ -4737,7 +4805,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-
+            
         case "删除所有世界时钟":
             
             self.logView.clearString()
@@ -4781,13 +4849,13 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             
             self.logView.clearString()
             self.logView.writeString(string: "设置本地时区扩展")
-                                        
+            
             self.presentTextFieldAlertVC(title: NSLocalizedString("Hint (Invalid data is null by default)", comment: "提示(无效数据默认为空)"), message: "设置本地时区扩展", holderStringArray: array, cancel: nil, cancelAction: {
                 
             }, ok: nil) { (textArray) in
                 
                 let timeOffset = Int(textArray[0]) ?? 0
- 
+                
                 ZyCommandModule.shareInstance.setLocalTimeZone(offset: timeOffset) { error in
                     self.logView.writeString(string: self.getErrorCodeString(error: error))
                     if error == .none {
@@ -4797,7 +4865,7 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
             }
             
             break
-         
+            
         case "0x84(0x2B) 获取本地时区扩展":
             
             self.logView.clearString()
@@ -4811,6 +4879,83 @@ extension WatchCommandVC:UITableViewDataSource,UITableViewDelegate {
                 }
             }
             
+            break
+            
+        case "0x84(0x31) 获取最近7天点火次数":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "获取最近7天点火次数")
+            
+            ZyCommandModule.shareInstance.getRecentIgnition { listArray, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                if error == .none {
+                    self.logView.writeString(string: "listArray = \(listArray)")
+                    print("getRecentIgnition listArray = \(listArray)")
+                }
+            }
+            
+            break
+            
+        case "Ai翻译对话":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "Ai翻译对话")
+            
+            let array = [
+                "翻译类型(0:ai翻译 1转写 2ai对话)",
+                "翻译类型(0:我的提问/右边 1ai回答/左边)",
+                "序号(当前第几条)",
+                "内容",
+            ]
+            
+            self.presentTextFieldAlertVC(title: NSLocalizedString("Hint (Invalid data is null by default)", comment: "提示(无效数据默认为空)"), message: "Ai翻译对话", holderStringArray: array, cancel: nil, cancelAction: {
+                
+            }, ok: nil) { (textArray) in
+                
+                let type = Int(textArray[0]) ?? 0
+                let showType = Int(textArray[1]) ?? 0
+                let contentIndex = Int(textArray[2]) ?? 0
+                let contentString = textArray[3]
+                
+                ZyCommandModule.shareInstance.setAiTalkTranslators(type: type, showType: showType, contentIndex: contentIndex, contentString: contentString) { error in
+                    self.logView.writeString(string: self.getErrorCodeString(error: error))
+                    if error == .none {
+                        print("setLocalTimeZone -> success")
+                    }
+                }
+            }
+            
+            
+            
+            break
+            
+        case "接收录音文件":
+            
+            self.logView.clearString()
+            self.logView.writeString(string: "接收录音文件")
+            
+            let folderPath = NSHomeDirectory() + "/Documents/"
+            print("folderPath = \(folderPath)")
+            
+            var showProgress = 0
+            ZyCommandModule.shareInstance.reportVoiceFile(folderPath: folderPath) { progress in
+                
+                if showProgress == Int(progress) {
+                    showProgress += 1
+                    self.logView.writeString(string: "\(NSLocalizedString("progress", comment: "进度")):\(progress)")
+                }
+                print("progress ->",progress)
+
+            } success: { fileData, filePath, error in
+                self.logView.writeString(string: self.getErrorCodeString(error: error))
+                if error == .none {
+                    let string = "文件大小:\(fileData.count),文件路径:\(filePath)"
+                    self.logView.writeString(string: string)
+                    print(string)
+                }
+            }
+
+                
             break
 
         case "0x01 \(NSLocalizedString("Power off", comment: "关机"))":

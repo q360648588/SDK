@@ -187,6 +187,7 @@ import CoreLocation
     var receiveReportPowerConsumptionData:(([String:String],ZyError) -> Void)?
     var receiveReportTreatmentStatus:((Int,ZyError) -> Void)?
     var receiveReportLocationPrimitiveTransmission:((Data,ZyError) -> Void)?
+    var receiveReportDebugLog:((Data,ZyError) -> Void)?
     var receiveReportAssistedPositioning:((Int,ZyError) -> Void)?
     var receiveGetCustomSportsModeBlock:((ZyExerciseType,ZyError) -> Void)?
     var receiveReportLanguageType:((Int,ZyError) -> Void)?
@@ -203,7 +204,12 @@ import CoreLocation
     var receiveGetBusinessCardBlock:(([ZyBusinessCardModel],ZyError) -> Void)?
     var receiveSetTreatmentInfomationBlock:((ZyError) -> Void)?
     var receiveGetTreatmentInfomationBlock:((ZyTreatmentModel?,ZyError) -> Void)?
+    var receiveSetBlePairingInfomation:((ZyError) -> Void)?
+    var receiveSetBlePairingState:((ZyError) -> Void)?
+    var receiveReportBlePairingState:((Bool) -> Void)?
     var receiveSetLocationPrimitiveTransmissionBlock:((ZyError) -> Void)?
+    var receiveSetDebugLogUploadBlock:((ZyError) -> Void)?
+    var receiveGetRecentIgnitionBlock:(([Int],ZyError) -> Void)?
     var receiveSetBarometerPrimitiveTransmissionBlock:((ZyError) -> Void)?
     var receiveSetTriaxialSensorPrimitiveTransmissionBlock:((ZyError) -> Void)?
     var receiveSetWorldTimeBlock:((ZyError) -> Void)?
@@ -213,6 +219,11 @@ import CoreLocation
     var receiveSetDiveDeepBlock:((ZyError) -> Void)?
     var receiveGetDiveDeepBlock:((Int,Int,ZyError) -> Void)?
     var receiveSetDivePressureBlock:((Int,ZyError) -> Void)?
+    var receiveReportVoiceFileBlock:((Data,String,ZyError) -> Void)?
+    
+    var receiveSetCheckFileListBlock:(([[String]],ZyError) -> Void)?
+    var receiveSetStartFileUploadBlock:((RecordFileModel?,ZyError)->Void)?
+    
     var stepMaxData:Data?
     var isStepDetailData = false
     var stepMaxIndex = 0
@@ -259,6 +270,15 @@ import CoreLocation
     var currentReceiveCommandEndOver = false //当前接收命令状态是否结束   5s没有接收到回复数据默认结束，赋值true
     var sendFailState = false  //命令发送失败状态，true时在信号量需要发命令的地方return待发送的命令
     var serverVersionInfoDic = [String:Any]()
+    
+    var voiceFileCount = 0//文件大小
+    var voiceFileMaxSingleCount = 0//单包最大字节
+    var voiceFileTotalPackageCount = 0//数据包总数
+    var voiceFileType = 0//文件类型 0：MP3 1：opus 2：wav
+    var voiceDataDic = [String:Data]()
+    var voiceFilePath:String?//文件路径
+    var voiceFailCount = 0
+    var receiveVoiceFileProgressBlock:((Float) -> Void)?
     
     private override init() {
         super.init()
@@ -3127,6 +3147,12 @@ import CoreLocation
                                                 self.parseGetLocalTimeZone(val: newVal, success: block)
                                             }
                                             break
+                                        case 0x32:
+                                            let newVal = Array(newVal[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            if let block = self.receiveGetRecentIgnitionBlock {
+                                                self.parseGetRecentIgnition(val: newVal, success: block)
+                                            }
+                                            break
                                             
                                         default:
                                             break
@@ -3242,6 +3268,22 @@ import CoreLocation
                                                 self.parseNewProtocolUniversalResponse(result: result, success: block)
                                             }
                                             break
+                                        case 0x2E:
+                                            if let block = self.receiveSetBlePairingInfomation {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x2F:
+                                            if let block = self.receiveSetBlePairingState {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x31:
+                                            if let block = self.receiveSetDebugLogUploadBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                            
                                         default:
                                             break
                                         }
@@ -3351,6 +3393,20 @@ import CoreLocation
                                                     self.parseReportLanguageType(val: languageVal, success: block)
                                                 }
                                                 break
+                                            case 0x30:
+                                                let startIndex = Int(valIndex+countLength)
+                                                let endIndex = Int(valIndex+countLength+cmd_length)
+                                                let bindVal = Array(newVal[startIndex..<endIndex])
+                                                
+                                                if let type = bindVal.first {
+                                                    if let block = self.receiveReportBlePairingState {
+                                                        ZyCommandModule.shareInstance.setBlePairingState(type: type == 1 ? 2 : 3) { _ in
+                                                            block(type == 1 ? true:false)
+                                                        }
+                                                    }
+                                                }
+                                                
+                                                break
                                             default:
                                                 break
                                             }
@@ -3386,8 +3442,15 @@ import CoreLocation
                                         }
                                         break
                                     case 0x0a:
+                                        let dataVal = Array(newVal[1..<newVal.count-1])
                                         if let block = self.receiveReportLocationPrimitiveTransmission {
-                                            self.parseReportLocationPrimitiveTransmission(val: newVal, success: block)
+                                            self.parseReportLocationPrimitiveTransmission(val: dataVal, success: block)
+                                        }
+                                        break
+                                    case 0x0e:
+                                        let dataVal = Array(newVal[1..<newVal.count-1])
+                                        if let block = self.receiveReportDebugLog {
+                                            self.parseReportDebugLog(val: dataVal, success: block)
                                         }
                                         break
                                     default:
@@ -3436,6 +3499,105 @@ import CoreLocation
                                             break
                                         }
                                         currentIndex += 2
+                                    }
+                                }
+                                
+                                if val[1] == 0x0f {
+                                    let resultArray = Array(newVal[0..<newVal.count])
+                                    let cmd_id = Int(resultArray[0])
+                                    let result = Array(resultArray[1..<resultArray.count])
+                                    switch cmd_id {
+                                    case 0x01:
+                                        self.voiceDataDic.removeAll()
+                                        self.voiceFailCount = 0
+                                        self.voiceFileCount = (Int(result[0]) | Int(result[1]) << 8 | Int(result[2]) << 16 | Int(result[3]) << 24)
+                                        self.voiceFileMaxSingleCount = (Int(result[4]) | Int(result[5]) << 8 )
+                                        self.voiceFileTotalPackageCount = (Int(result[6]) | Int(result[7]) << 8 | Int(result[8]) << 16 | Int(result[9]) << 24)
+                                        self.voiceFileType = (Int(result[10]) | Int(result[11]) << 8)
+                                        
+                                        let string = "文件大小:\(self.voiceFileCount),单包最大字节:\(self.voiceFileMaxSingleCount),数据包总数:\(self.voiceFileTotalPackageCount),文件格式:\(self.voiceFileType)"
+                                        ZySDKLog.writeStringToSDKLog(string: string)
+                                        print(string)
+                                        self.setVoiceFileType(cmdId: 1, packageArray: [])
+                                        
+                                        break
+                                        
+                                    case 0x02:
+                                        
+                                        let packageIndex = (Int(result[0]) | Int(result[1]) << 8 | Int(result[2]) << 16 | Int(result[3]) << 24)
+                                        print("首次序号:\(packageIndex)")
+                                        var dicData = Array(result[4..<result.count])
+                                        self.voiceDataDic["\(packageIndex)"] = Data.init(bytes: dicData, count: dicData.count)
+                                        
+                                        if self.voiceFileTotalPackageCount > 0 {
+                                            if let block = self.receiveVoiceFileProgressBlock {
+                                                block(Float(self.voiceDataDic.keys.count)/Float(self.voiceFileTotalPackageCount))
+                                            }
+                                        }
+                                        
+                                        break
+                                        
+                                    case 0x03:
+                                        
+                                        let packageIndex = (Int(result[0]) | Int(result[1]) << 8 | Int(result[2]) << 16 | Int(result[3]) << 24)
+                                        print("补传序号:\(packageIndex)")
+                                        var dicData = Array(result[4..<result.count])
+                                        self.voiceDataDic["\(packageIndex)"] = Data.init(bytes: dicData, count: dicData.count)
+                                        
+                                        if self.voiceFileTotalPackageCount > 0 {
+                                            if let block = self.receiveVoiceFileProgressBlock {
+                                                block(Float(self.voiceDataDic.keys.count)/Float(self.voiceFileTotalPackageCount))
+                                            }
+                                        }
+                                        
+                                        break
+                                        
+                                    case 0x04:
+                                                            
+                                        if let block = self.receiveReportVoiceFileBlock {
+                                            let data = self.mergeDictionaryData(dic: self.voiceDataDic)
+                                            let timestamp = Date().timeIntervalSince1970
+                                            var fileType = ".mp3"
+                                            if self.voiceFileType == 0 {
+                                                fileType = ".mp3"
+                                            }else if self.voiceFileType == 1 {
+                                                fileType = ".opus"
+                                            }else if self.voiceFileType == 2 {
+                                                fileType = ".wav"
+                                            }
+                                            var filePath = "\(timestamp)"+fileType
+                                            if let path = self.voiceFilePath {
+                                                filePath = path+filePath
+                                            }else{
+                                                filePath = FileManager.default.temporaryDirectory.appendingPathComponent(filePath).path
+                                            }
+                                            
+                                            if self.voiceDataDic.keys.count == self.voiceFileTotalPackageCount {
+                                                
+                                                print("filePath = \(filePath)")
+                                                self.voiceFileTotalPackageCount = 0//结束之后把总包改为默认值
+                                                if FileManager.createFile(filePath: filePath).isSuccess {
+                                                    FileManager.default.createFile(atPath: filePath, contents: data, attributes: nil)
+                                                }
+                                                block(data,filePath,.none)
+                                            }else{
+                                                if self.voiceFailCount >= 5 {
+                                                    ZySDKLog.writeStringToSDKLog(string: "接收声音文件失败超过5次")
+                                                    self.voiceFileTotalPackageCount = 0//结束之后把总包改为默认值
+                                                    block(data,filePath,.fail)
+                                                }else{
+                                                    let sendArray = self.findMissingKeys(in: self.voiceDataDic, upTo: self.voiceFileTotalPackageCount)
+                                                    print("重发数组 sendArray = \(sendArray)")
+                                                    ZySDKLog.writeStringToSDKLog(string: "补发序号:\(sendArray)")
+                                                    self.setVoiceFileType(cmdId: 3, packageArray: sendArray)
+                                                    self.voiceFailCount += 1
+                                                }
+                                            }
+                                        }
+                                        break
+                                        
+                                    default:
+                                        break
                                     }
                                 }
 
@@ -3492,6 +3654,9 @@ import CoreLocation
                                     }
                                     if let block = self.receiveGetTreatmentInfomationBlock {
                                         block(nil,.invalidLength)
+                                    }
+                                    if let block = self.receiveGetRecentIgnitionBlock {
+                                        block([],.invalidLength)
                                     }
                                     if let block = self.receiveGetWorldTimeBlock {
                                         block([],.invalidLength)
@@ -3604,6 +3769,21 @@ import CoreLocation
                                             break
                                         case 0x2D:
                                             if let block = self.receiveSetTriaxialSensorPrimitiveTransmissionBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x2E:
+                                            if let block = self.receiveSetBlePairingInfomation {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x2F:
+                                            if let block = self.receiveSetBlePairingState {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x31:
+                                            if let block = self.receiveSetDebugLogUploadBlock {
                                                 self.parseNewProtocolUniversalResponse(result: result, success: block)
                                             }
                                             break
@@ -3852,6 +4032,12 @@ import CoreLocation
                                             self.parseGetLocalTimeZone(val: newVal, success: block)
                                         }
                                         break
+                                    case 0x32:
+                                        let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                        if let block = self.receiveGetRecentIgnitionBlock {
+                                            self.parseGetRecentIgnition(val: newVal, success: block)
+                                        }
+                                        break
                                     default:
                                         break
                                     }
@@ -3966,6 +4152,21 @@ import CoreLocation
                                             self.parseNewProtocolUniversalResponse(result: result, success: block)
                                         }
                                         break
+                                    case 0x2E:
+                                        if let block = self.receiveSetBlePairingInfomation {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x2F:
+                                        if let block = self.receiveSetBlePairingState {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x31:
+                                        if let block = self.receiveSetDebugLogUploadBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
                                     default:
                                         break
                                     }
@@ -4074,6 +4275,21 @@ import CoreLocation
                                                 self.parseReportLanguageType(val: languageVal, success: block)
                                             }
                                             break
+                                        case 0x30:
+                                            let startIndex = Int(valIndex+countLength)
+                                            let endIndex = Int(valIndex+countLength+cmd_length)
+                                            let bindVal = Array(newVal[startIndex..<endIndex])
+                                            
+                                            if let type = bindVal.first {
+                                                if let block = self.receiveReportBlePairingState {
+                                                    ZyCommandModule.shareInstance.setBlePairingState(type: type == 1 ? 2 : 3) { _ in
+                                                        block(type == 1 ? true:false)
+                                                    }
+                                                }
+                                            }
+                                            
+                                            
+                                            break
                                         default:
                                             break
                                         }
@@ -4107,9 +4323,15 @@ import CoreLocation
                                     }
                                     break
                                 case 0x0a:
-                                    let stateVal = Array(newVal[1..<2])
+                                    let dataVal = Array(newVal[1..<newVal.count])
                                     if let block = self.receiveReportLocationPrimitiveTransmission {
-                                        self.parseReportLocationPrimitiveTransmission(val: stateVal, success: block)
+                                        self.parseReportLocationPrimitiveTransmission(val: dataVal, success: block)
+                                    }
+                                    break
+                                case 0x0e:
+                                    let dataVal = Array(newVal[1..<newVal.count])
+                                    if let block = self.receiveReportDebugLog {
+                                        self.parseReportDebugLog(val: dataVal, success: block)
                                     }
                                     break
                                     
@@ -4165,6 +4387,107 @@ import CoreLocation
                                 }
                             }
                             
+                            if val[1] == 0x0f {
+
+                                let resultArray = Array(val[4..<val.count-2])
+                                let cmd_id = Int(resultArray[0])
+                                let result = Array(resultArray[1..<resultArray.count])
+
+                                switch cmd_id {
+                                case 0x01:
+                                    self.voiceDataDic.removeAll()
+                                    self.voiceFailCount = 0
+                                    self.voiceFileCount = (Int(result[0]) | Int(result[1]) << 8 | Int(result[2]) << 16 | Int(result[3]) << 24)
+                                    self.voiceFileMaxSingleCount = (Int(result[4]) | Int(result[5]) << 8 )
+                                    self.voiceFileTotalPackageCount = (Int(result[6]) | Int(result[7]) << 8 | Int(result[8]) << 16 | Int(result[9]) << 24)
+                                    self.voiceFileType = (Int(result[10]) | Int(result[11]) << 8)
+                                    
+                                    let string = "文件大小:\(self.voiceFileCount),单包最大字节:\(self.voiceFileMaxSingleCount),数据包总数:\(self.voiceFileTotalPackageCount),文件格式:\(self.voiceFileType)"
+                                    ZySDKLog.writeStringToSDKLog(string: string)
+                                    print(string)
+                                    self.setVoiceFileType(cmdId: 1, packageArray: [])
+                                    
+                                    break
+                                    
+                                case 0x02:
+                                    
+                                    let packageIndex = (Int(result[0]) | Int(result[1]) << 8 | Int(result[2]) << 16 | Int(result[3]) << 24)
+                                    print("首次序号:\(packageIndex)")
+                                    var dicData = Array(result[4..<result.count])
+                                    self.voiceDataDic["\(packageIndex)"] = Data.init(bytes: dicData, count: dicData.count)
+                                    
+                                    if self.voiceFileTotalPackageCount > 0 {
+                                        if let block = self.receiveVoiceFileProgressBlock {
+                                            block(Float(self.voiceDataDic.keys.count)/Float(self.voiceFileTotalPackageCount))
+                                        }
+                                    }
+                                    
+                                    break
+                                    
+                                case 0x03:
+                                    
+                                    let packageIndex = (Int(result[0]) | Int(result[1]) << 8 | Int(result[2]) << 16 | Int(result[3]) << 24)
+                                    print("补传序号:\(packageIndex)")
+                                    var dicData = Array(result[4..<result.count])
+                                    self.voiceDataDic["\(packageIndex)"] = Data.init(bytes: dicData, count: dicData.count)
+                                    
+                                    if self.voiceFileTotalPackageCount > 0 {
+                                        if let block = self.receiveVoiceFileProgressBlock {
+                                            block(Float(self.voiceDataDic.keys.count)/Float(self.voiceFileTotalPackageCount))
+                                        }
+                                    }
+                                    
+                                    break
+                                    
+                                case 0x04:
+                                                        
+                                    if let block = self.receiveReportVoiceFileBlock {
+                                        let data = self.mergeDictionaryData(dic: self.voiceDataDic)
+                                        let timestamp = Date().timeIntervalSince1970
+                                        var fileType = ".mp3"
+                                        if self.voiceFileType == 0 {
+                                            fileType = ".mp3"
+                                        }else if self.voiceFileType == 1 {
+                                            fileType = ".opus"
+                                        }else if self.voiceFileType == 2 {
+                                            fileType = ".wav"
+                                        }
+                                        var filePath = "\(timestamp)"+fileType
+                                        if let path = self.voiceFilePath {
+                                            filePath = path+filePath
+                                        }else{
+                                            filePath = FileManager.default.temporaryDirectory.appendingPathComponent( filePath).path
+                                        }
+                                        
+                                        if self.voiceDataDic.keys.count == self.voiceFileTotalPackageCount {
+                                            
+                                            print("filePath = \(filePath)")
+                                            self.voiceFileTotalPackageCount = 0//结束之后把总包改为默认值
+                                            if FileManager.createFile(filePath: filePath).isSuccess {
+                                                FileManager.default.createFile(atPath: filePath, contents: data, attributes: nil)
+                                            }
+                                            block(data,filePath,.none)
+                                        }else{
+                                            if self.voiceFailCount >= 5 {
+                                                self.voiceFileTotalPackageCount = 0//结束之后把总包改为默认值
+                                                block(data,filePath,.fail)
+                                                ZySDKLog.writeStringToSDKLog(string: "接收声音文件失败超过5次")
+                                            }else{
+                                                let sendArray = self.findMissingKeys(in: self.voiceDataDic, upTo: self.voiceFileTotalPackageCount)
+                                                print("重发数组 sendArray = \(sendArray)")
+                                                ZySDKLog.writeStringToSDKLog(string: "补发序号:\(sendArray)")
+                                                self.setVoiceFileType(cmdId: 3, packageArray: sendArray)
+                                                self.voiceFailCount += 1
+                                            }
+                                        }
+                                    }
+                                    break
+                                    
+                                default:
+                                    break
+                                }
+                            }
+                            
                         }else{
                             if val[1] == 0x05 { //同步数据id 0x05
                                 if let block = self.receiveNewSetSyncHealthDataBlock {
@@ -4217,6 +4540,9 @@ import CoreLocation
                                 }
                                 if let block = self.receiveGetTreatmentInfomationBlock {
                                     block(nil,.invalidLength)
+                                }
+                                if let block = self.receiveGetRecentIgnitionBlock {
+                                    block([],.invalidLength)
                                 }
                                 if let block = self.receiveGetWorldTimeBlock {
                                     block([],.invalidLength)
@@ -4290,47 +4616,62 @@ import CoreLocation
                                         break
                                     case 0x22:
                                         if let block = self.receiveSetCustomBloodSugarScopeBlock {
-                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            block(.invalidLength)
                                         }
                                         break
                                     case 0x23:
                                         if let block = self.receiveSetMessageRemindTypeBlock {
-                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            block(.invalidLength)
                                         }
                                         break
                                     case 0x24:
                                         if let block = self.receiveSetBusinessCardBlock {
-                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            block(.invalidLength)
                                         }
                                         break
                                     case 0x25:
                                         if let block = self.receiveSetTreatmentInfomationBlock {
-                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            block(.invalidLength)
                                         }
                                         break
                                     case 0x26:
                                         if let block = self.receiveSetLocationPrimitiveTransmissionBlock {
-                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            block(.invalidLength)
                                         }
                                         break
                                     case 0x2A:
                                         if let block = self.receiveSetWorldTimeBlock {
-                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            block(.invalidLength)
                                         }
                                         break
                                     case 0x2B:
                                         if let block = self.receiveSetLocalTimeZoneBlock {
-                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            block(.invalidLength)
                                         }
                                         break
                                     case 0x2C:
                                         if let block = self.receiveSetBarometerPrimitiveTransmissionBlock {
-                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            block(.invalidLength)
                                         }
                                         break
                                     case 0x2D:
                                         if let block = self.receiveSetTriaxialSensorPrimitiveTransmissionBlock {
-                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            block(.invalidLength)
+                                        }
+                                        break
+                                    case 0x2E:
+                                        if let block = self.receiveSetBlePairingInfomation {
+                                            block(.invalidLength)
+                                        }
+                                        break
+                                    case 0x2F:
+                                        if let block = self.receiveSetBlePairingState {
+                                            block(.invalidLength)
+                                        }
+                                        break
+                                    case 0x31:
+                                        if let block = self.receiveSetDebugLogUploadBlock {
+                                            block(.invalidLength)
                                         }
                                         break
                                     default:
@@ -4457,6 +4798,93 @@ import CoreLocation
                             }
                             
                             ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "新协议0xaa长度校验出错"))
+                        }
+                    }
+                }
+                
+                if val[0] == 0xbb {
+                    
+                    let firstBit = Int(val[2])
+                    var maxMtuCount = self.testMaxMtuCount
+
+                    if val[1] == 0x81 {
+                        self.testMaxMtuCount = (Int(val[4] << 8) | Int(val[5]))
+                        maxMtuCount = self.testMaxMtuCount
+                        print("MaxMtuCount = \(self.testMaxMtuCount)")
+                        ZySDKLog.writeStringToSDKLog(string: "MaxMtuCount = \(self.testMaxMtuCount)")
+                    }
+                    
+                    let crc16 = (Int(val[val.count-2]) << 8 | Int(val[val.count-1]))
+                    
+                    if firstBit > 0 {
+
+                        let totalCount = (Int(val[4]) << 8 | Int(val[5]) )
+                        let currentCount = (Int(val[6]) << 8 | Int(val[7]) )
+
+                        let newData = val.withUnsafeBufferPointer({ (bytes) -> Data in
+                            let byte = bytes.baseAddress! + 8
+                            return Data.init(bytes: byte, count: val.count-10)
+                        })
+                        
+                        let testArray = Array(val[0..<val.count-2])
+                        if self.CRC16(val: testArray) == crc16 {
+                            if self.newProtocalData == nil {
+                                self.newProtocalData = Data()
+                            }
+                            self.newProtocalData?.append(newData)
+                        }else{
+                            print("testArray = \(testArray),count = \(testArray.count),crc16 = \(self.CRC16(val: testArray)),\(String.init(format: "%04x", self.CRC16(val: testArray)))")
+                            let errorString = String.init(format: "第%d包crc16校验出错,app计算的:%02x,设备返回的:%02x", currentCount,self.CRC16(val: testArray),crc16)
+                            print("errorString = \(errorString)")
+                            ZySDKLog.writeStringToSDKLog(string: String.init(format: errorString))
+                        }
+
+                        if totalCount == currentCount + 1 {
+
+                            guard self.newProtocalData != nil else {
+                                print("self.newProtocalData 数据错误")
+                                return
+                            }
+
+                                let newVal = self.newProtocalData!.withUnsafeBytes({ (bytes) -> [UInt8] in
+                                    let b = (bytes.baseAddress?.bindMemory(to: UInt8.self, capacity: 4))!
+                                    return [UInt8](UnsafeBufferPointer.init(start: b, count: (self.newProtocalData?.count ?? 0)))
+                                })
+                                
+                                if val[1] == 0x82 {
+                                    if let block = self.receiveSetCheckFileListBlock {
+                                        let data123 = Data.init(bytes: newVal, count: newVal.count)
+                                        let dataString = String.init(format: "%@", self.convertDataToSpaceHexStr(data: data123,isSend: true))
+                                        print("dataString = \(dataString)")
+                                        self.parseSetCheckFileList(val: newVal, success: block)
+                                    }
+                                }
+                            if val[1] == 0x83 {
+                                if let block = self.receiveSetStartFileUploadBlock {
+                                    self.parseSetStartFileUpload(val: newVal, success: block)
+                                }
+                            }
+
+                            self.newProtocalData = nil
+                        }
+
+                    }else{
+
+                        let totalLength = (Int(val[2]) << 8 | Int(val[3]))
+                        if totalLength == val.count - 6 {
+                            if val[1] == 0x82 {
+                                if let block = self.receiveSetCheckFileListBlock {
+                                    self.parseSetCheckFileList(val: Array(val[4..<(val.count-2)]), success: block)
+                                }
+                            }
+                            if val[1] == 0x83 {
+                                if let block = self.receiveSetStartFileUploadBlock {
+                                    self.parseSetStartFileUpload(val: Array(val[4..<(val.count-2)]), success: block)
+                                }
+                            }
+                            
+                        }else{
+                            ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "协议长度校验出错"))
                         }
                     }
                 }
@@ -7045,9 +7473,9 @@ import CoreLocation
         var alpha:CGFloat = 0
         model.color.getRed(&r, green: &g, blue: &b, alpha: &alpha)
         
-        let intR:UInt8 = UInt8(r * uint8Max)
-        let intG:UInt8 = UInt8(g * uint8Max)
-        let intB:UInt8 = UInt8(b * uint8Max)
+        let intR:UInt8 = UInt8((r > 1 ? 1 : r) * uint8Max)
+        let intG:UInt8 = UInt8((g > 1 ? 1 : g) * uint8Max)
+        let intB:UInt8 = UInt8((b > 1 ? 1 : b) * uint8Max)
         
         var val:[UInt8] = [
             0x01,
@@ -7312,13 +7740,13 @@ import CoreLocation
         if FileManager.createFile(filePath: bigBinPath).isSuccess {
             var input: [CChar] = bigBmpPath.cString(using: .utf8)!
             var output : [CChar] = bigBinPath.cString(using: .utf8)!
-            let result = br28_btm_to_res_path_with_alpha(&input, Int32(bigSize.width), Int32(bigSize.height), &output)
+            let result = br28_btm_to_res_path(&input, Int32(bigSize.width), Int32(bigSize.height), &output)
             print("data_240_240 = \(data_240_240.count),result big = \(result)")
         }
         if FileManager.createFile(filePath: smallBinPath).isSuccess {
             var input: [CChar] = smallBmpPath.cString(using: .utf8)!
             var output : [CChar] = smallBinPath.cString(using: .utf8)!
-            let result = br28_btm_to_res_path_with_alpha(&input, Int32(smallSize.width), Int32(smallSize.height), &output)
+            let result = br28_btm_to_res_path(&input, Int32(smallSize.width), Int32(smallSize.height), &output)
             print("data_80Val = \(data_80Val.count),result small = \(result)")
         }
 
@@ -10671,11 +11099,15 @@ import CoreLocation
             return
         }
         
-        if type < 1 || type > 6 {
+        if type < 1 || type > 7 {
             print("输入参数超过范围,返回失败")
             success(nil,.fail)
             return
         }
+//        var type = type
+//        if self.functionListModel?.functionDetail_sleepDataVersion?.versionType == 2 {
+//            type = 7
+//        }
         var indexArray = indexArray
         if indexArray.count == 0 {
             indexArray = [0]
@@ -10704,16 +11136,20 @@ import CoreLocation
     private func parseSetNewSyncHealthData(val:[UInt8],success:@escaping((Any?,ZyError) -> Void)) {
 
 //        var str = "03020068 01ffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff  ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aa016801 ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff  ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff fd555555 55555555 555aa955 55555556 95555556 55555555 5555556a a5555555 95555555 55555555 55ffffff ffffffff  ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff"
-//        str = str.replacingOccurrences(of: " ", with: "")
-//
-//        var val = [UInt8]()
-//        for i in 0..<str.count/2 {
-//        let startIndex = str.index(str.startIndex,offsetBy: i*2)
-//        let endIndex = str.index(str.startIndex,offsetBy: (i+1)*2)
-//        let value = String.init(format: "%@", str.substring(with: (startIndex..<endIndex)))
-//        let intValue = self.hexStringToInt(from: value)
-//        val.append(UInt8(intValue))
-//        }
+        
+//        var str = "0701003b 0002e907 060b0b0a e907060b 11140500 05000001 3c000289 0001ac00 067201e9 07060b06 0ae90706 0b0a1405 00050000 013c0002 4d000170 0006fa00"
+//        var str = "07010041 0002e907 060b0b0a e907060b 11140600 05000001 3c000464 00028900 01ac0006 7201e907 060b060a e907060b 0a140600 05000001 3c000496 00024d00 01700006 fa00"
+        var str = "07010041 0002e907 060b0b0a e907060b 11140600 05000001 3c000289 0001ac00 04640006 7201e907 060b060a e907060b 0a140600 05000001 3c00024d 00017000 04160006 fa00"
+        str = str.replacingOccurrences(of: " ", with: "")
+
+        var val = [UInt8]()
+        for i in 0..<str.count/2 {
+        let startIndex = str.index(str.startIndex,offsetBy: i*2)
+        let endIndex = str.index(str.startIndex,offsetBy: (i+1)*2)
+        let value = String.init(format: "%@", str.substring(with: (startIndex..<endIndex)))
+        let intValue = self.hexStringToInt(from: value)
+        val.append(UInt8(intValue))
+        }
         
         let valData = val.withUnsafeBufferPointer { (v) -> Data in
             return Data.init(buffer: v)
@@ -10753,6 +11189,19 @@ import CoreLocation
                 }else{
                     valIndex += 2
                 }
+            }else if type == 7 {
+                valIndex += 1
+                syncDic["\(number)"] = NSNull()
+                if valIndex+2 < val.count {
+                    length = (Int(val[valIndex]) | Int(val[valIndex+1]) << 8)
+                    if length > 0 {
+                        var modelVal:[UInt8] = Array(val[(valIndex+2)..<(valIndex+countLength+Int(length))])
+                        //print("modelVal = \(self.convertDataToHexStr(data: Data.init(bytes: modelVal, count: modelVal.count)))")
+                        syncDic["\(number)"] = self.getNewProtocalHealthModel(type: Int(type), day: Int(number), val: modelVal)
+                    }
+                }else{
+                    valIndex += 2
+                }
             }else{
                 length = Int(val[valIndex+1])
                 if type == 2 || type == 3 {
@@ -10771,6 +11220,7 @@ import CoreLocation
                     syncDic["\(number)"] = self.getNewProtocalHealthModel(type: Int(type), day: Int(number), val: modelVal, isGpsLengthCheck: true)
                 }
             }
+            print("valIndex = \(valIndex),countLength = \(countLength),length = \(length)")
             valIndex = (valIndex+countLength+Int(length))
         }
         if syncDic.keys.count != count {
@@ -10868,10 +11318,22 @@ import CoreLocation
             let timeformat = DateFormatter.init()
             timeformat.dateFormat = "yyyy-MM-dd HH:mm:ss"
             var gpsArray = [[CLLocation]]()
+            var avgHr = 0
+            var maxHr = 0
+            var minHr = 0
+            var avgStepFrequency = 0
+            var currentStepFrequency = 0
+            var maxStepFrequency = 0
+            var minStepFrequency = 0
+            var avgStepExtent = 0
+            var maxStepExtent = 0
+            var minStepExtent = 0
+            var currentStepExtent = 0
+            var avgSpeed = 0
             if val.count >= 33 {
                 let gpsStartIndex = 32
                 let gpsLength = (Int(val[gpsStartIndex]) | Int(val[gpsStartIndex+1]) << 8)
-                if 34+gpsLength == val.count {
+                if 34+gpsLength == val.count || 34+39+gpsLength == val.count{
                     let gpsInterval = Int(val[gpsStartIndex+2])
                     let gpsCount = (Int(val[gpsStartIndex+3]) | Int(val[gpsStartIndex+4]) << 8)
                     
@@ -10941,8 +11403,26 @@ import CoreLocation
                         gpsArray.append(singleGpsArray)
                         locationStartIndex = locationStartIndex+12+locationCount*4
                     }
-                    
+                    if 34+39+gpsLength == val.count {
+                        let newLength = 34+gpsLength
+                        avgHr = Int(val[newLength+1])
+                        maxHr = Int(val[newLength+2])
+                        minHr = Int(val[newLength+3])
+                        avgStepFrequency = (Int(val[newLength+4]) | Int(val[newLength+5]) << 8 | Int(val[newLength+6]) << 16 | Int(val[newLength+7]) << 24)
+                        currentStepFrequency = (Int(val[newLength+8]) | Int(val[newLength+9]) << 8 | Int(val[newLength+10]) << 16 | Int(val[newLength+11]) << 24)
+                        maxStepFrequency = (Int(val[newLength+12]) | Int(val[newLength+13]) << 8 | Int(val[newLength+14]) << 16 | Int(val[newLength+15]) << 24)
+                        minStepFrequency = (Int(val[newLength+16]) | Int(val[newLength+17]) << 8 | Int(val[newLength+18]) << 16 | Int(val[newLength+19]) << 24)
+                        avgStepExtent = (Int(val[newLength+20]) | Int(val[newLength+21]) << 8 | Int(val[newLength+22]) << 16 | Int(val[newLength+23]) << 24)
+                        currentStepExtent = (Int(val[newLength+24]) | Int(val[newLength+25]) << 8 | Int(val[newLength+26]) << 16 | Int(val[newLength+27]) << 24)
+                        maxStepExtent = (Int(val[newLength+28]) | Int(val[newLength+29]) << 8 | Int(val[newLength+30]) << 16 | Int(val[newLength+31]) << 24)
+                        minStepExtent = (Int(val[newLength+32]) | Int(val[newLength+33]) << 8 | Int(val[newLength+34]) << 16 | Int(val[newLength+35]) << 24)
+                        avgSpeed = (Int(val[newLength+36]) | Int(val[newLength+37]) << 8 | Int(val[newLength+38]) << 16 | Int(val[newLength+39]) << 24)
+                        
+                        print("avgHr = \(avgHr),maxHr = \(maxHr),minHr = \(minHr),avgStepFrequency = \(avgStepFrequency),currentStepFrequency = \(currentStepFrequency),maxStepFrequency = \(maxStepFrequency),minStepFrequency = \(minStepFrequency),avgStepExtent = \(avgStepExtent),currentStepExtent = \(currentStepExtent),maxStepExtent = \(maxStepExtent),minStepExtent = \(minStepExtent),avgSpeed = \(avgSpeed)")
+                    }
                 }else{
+                    let data = Data.init(bytes: val, count: val.count)
+                    print("convertDataToSpaceHexStr - > \(self.convertDataToSpaceHexStr(data: data, isSend: true))")
                     print("gps数据跟总长度异常，不做解析")
                     ZySDKLog.writeStringToSDKLog(string: String.init(format: "gps数据跟总长度异常，不做解析"))
                     return nil
@@ -10950,6 +11430,18 @@ import CoreLocation
             }
             
             let model = ZyExerciseModel.init(dic: ["startTime":startTime,"type":"\(type)","hr":"\(hr)","validTimeLength":"\(validTimeLength)","step":"\(step)","endTime":"\(endTime)","calorie":"\(calorie)","distance":"\(distance)","gpsArray":gpsArray])
+            model.avgHr = avgHr
+            model.maxHr = maxHr
+            model.minHr = minHr
+            model.avgStepFrequency = avgStepFrequency
+            model.currentStepFrequency = currentStepFrequency
+            model.maxStepFrequency = maxStepFrequency
+            model.minStepFrequency = minStepFrequency
+            model.avgStepExtent = avgStepExtent
+            model.maxStepExtent = maxStepExtent
+            model.minStepExtent = minStepExtent
+            model.currentStepExtent = currentStepExtent
+            model.avgSpeed = avgSpeed
             return model
         }else if type == 5 {
             let index = Int(val[0])
@@ -10982,9 +11474,137 @@ import CoreLocation
             diveModel.endTime = endTime
             diveModel.detailsArray = details
             return diveModel
+        }else if type == 7 {
+            
+            typeString = "睡眠拓展"
+            
+            var modelDic:[String:[[Int]]] = .init()
+            
+            let sleepCount = val[0]
+            var valIndex = 1
+            while valIndex < val.count {
+                let startString = String.init(format: "%04d-%02d-%02d %02d:%02d", (Int(val[valIndex]) | (Int(val[valIndex+1]) << 8)),val[valIndex+2],val[valIndex+3],val[valIndex+4],val[valIndex+5])
+                let endString = String.init(format: "%04d-%02d-%02d %02d:%02d", (Int(val[valIndex+6]) | (Int(val[valIndex+7]) << 8)),val[valIndex+8],val[valIndex+9],val[valIndex+10],val[valIndex+11])
+                print("sleepCount = \(sleepCount),startString = \(startString),endString = \(endString)")
+                let detailCount = (Int(val[valIndex+12]) | Int(val[valIndex+13]) << 8)
+                let startIndex = valIndex + 14
+                let endIndex = valIndex + 14 + Int(detailCount) * 3
+                let detailArray = Array(val[startIndex..<endIndex])
+                var detailList = [[Int]]()
+                for i in 0..<detailCount {
+                    let state = detailArray[i*3]
+                    let timeCount = (Int(detailArray[i*3+1]) | Int(detailArray[i*3+2]) << 8)
+                    detailList.append([Int(state),timeCount])
+                    print("valIndex = \(valIndex+14+i*3+2)")
+                }
+                print("detailList = \(detailList)")
+                //print("valIndex = \(valIndex),endIndex = \(endIndex)")
+                modelDic[startString] = detailList
+                valIndex = endIndex
+            }
+            
+            print("modelDic = \(modelDic)")
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "第%d天,类型:%@", day,typeString))
+            let sleepDic = self.dealNewSleepData(dic: modelDic)
+            print("sleepDic = \(sleepDic)")
+            let totalDeep = sleepDic["deep"] as! Int
+            let totalLight = sleepDic["light"] as! Int
+            let totalAwake = sleepDic["awake"] as! Int
+            let totalSporadic = sleepDic["sporadic"] as! Int
+            let modelArray = sleepDic["detailArray"] as! [[String:String]]
+            
+            let model = ZySleepModel.init(dic: ["type":"\(type)","deep":"\(totalDeep)","light":"\(totalLight)","awake":"\(totalAwake)","sporadic":"\(totalSporadic)","detailArray":modelArray])
+            
+            return model
         }
         return nil
         //printLog("第\(#line)行" , "\(#function)")
+    }
+    
+    func dealNewSleepData(dic:[String:[[Int]]]) -> [String:Any] {
+        var totalDeep = 0
+        var totalLight = 0
+        var totalAwake = 0
+        var totalInvalid = 0
+        var totalSporadic = 0
+        let sortedKeys = dic.keys.sorted()
+        
+        var result: [String: String] = .init()
+        var resultArray: [[String: String]] = []
+        var lastTimeIndex = 0
+        for key in sortedKeys {
+            guard let events = dic[key] else { continue }
+            
+            // 提取时间部分 (HH:mm)
+            let timePart = key.split(separator: " ")[1]
+            let components = timePart.split(separator: ":")
+            
+            guard components.count == 2,
+                  let hour = Int(components[0]),
+                  let minute = Int(components[1])
+            else { continue }
+            // 计算起始索引 (时*60 + 分)
+            var startIndex = hour * 60 + minute
+            
+            if lastTimeIndex > 0 {
+                //手动合并为同一段数据，类型为无效数据3
+                result["start"] = String.init(format: "%02d:%02d", lastTimeIndex/60,lastTimeIndex%60)
+                result["end"] = String.init(format: "%02d:%02d", startIndex/60,startIndex%60)
+                result["type"] = "\(3)"
+                result["total"] = "\(startIndex < lastTimeIndex ? ((startIndex + 24*60) - lastTimeIndex) : (startIndex - lastTimeIndex))"
+                // 添加到结果数组
+                resultArray.append(result)
+            }
+            
+            var type = 0
+            var totalDuration = 0
+            for item in events {
+                if let first = item.first {
+                    type = first
+                }
+                if let last = item.last {
+                    totalDuration = last
+                }
+                
+                if type == 0 {
+                    totalAwake += totalDuration
+                }
+                if type == 1 {
+                    totalLight += totalDuration
+                }
+                if type == 2 {
+                    totalDeep += totalDuration
+                }
+                if type == 3 {
+                    totalInvalid += totalDuration
+                }
+                if type == 4 {
+                    totalSporadic += totalDuration
+                }
+                let endIndex = startIndex + totalDuration
+                if type > 0 && type < 5 {
+                    result["start"] = String.init(format: "%02d:%02d", startIndex/60,startIndex%60)
+                    result["end"] = String.init(format: "%02d:%02d", endIndex/60,endIndex%60)
+                    result["total"] = "\(totalDuration)"
+                    result["type"] = "\(type)"
+                    // 添加到结果数组
+                    resultArray.append(result)
+                }
+                startIndex = endIndex
+                if let index = events.firstIndex(of: item) {
+                    print("index = \(index),events.count = \(events.count)")
+                    if index == events.count - 2 {//最后一个是出睡类型，去除掉
+                        lastTimeIndex = endIndex
+                    }
+                }
+            }
+
+            
+        }
+
+        // 输出结果
+        //print("resultArray = \(resultArray)")
+        return ["deep":totalDeep,"light":totalLight,"awake":totalAwake,"sporadic":totalSporadic,"detailArray":resultArray]
     }
     
     func dealSleepData(val:[UInt8]) -> [String:Any] {
@@ -11197,7 +11817,7 @@ import CoreLocation
         var newArray:[[String:String]] = []
         var changeDic:[String:String] = [:]
         var filterFirstInvalidDic = false
-        for i in 0..<modelArray.count-1 {
+        for i in 0..<(modelArray.count-1 > 0 ? (modelArray.count-1):0) {
             
             let currentDic:[String:String] = modelArray[i]
             let nextDic:[String:String] = modelArray[i+1]
@@ -12380,7 +13000,7 @@ import CoreLocation
      
         if val.count >= 1 {
             let state = Int(val[0])
-            ZySDKLog.writeStringToSDKLog(string: String.init(format: "辅助定位状态上报:\(state) 0无效1有效"))
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "辅助定位状态上报:\(state)"))
             success(state,.none)
         }else{
             success(0,.invalidState)
@@ -12437,6 +13057,17 @@ import CoreLocation
     }
     
     private func parseReportLocationPrimitiveTransmission(val:[UInt8],success:@escaping((_ data:Data,_ error:ZyError) -> Void)) {
+        let data = Data.init(bytes: val, count: val.count)
+        success(data,.none)
+        
+    }
+    
+    // MARK: - 上报调试日志
+    @objc public func reportDebugLog(success:@escaping((_ data:Data,_ error:ZyError) -> Void)) {
+        self.receiveReportDebugLog = success
+    }
+    
+    private func parseReportDebugLog(val:[UInt8],success:@escaping((_ data:Data,_ error:ZyError) -> Void)) {
         let data = Data.init(bytes: val, count: val.count)
         success(data,.none)
         
@@ -12539,8 +13170,6 @@ import CoreLocation
             UInt8((timeOffset ) & 0xff),
             UInt8((timeOffset >> 8) & 0xff)
         ]
-        contentVal[2] = UInt8((contentVal.count ) & 0xff)
-        contentVal[3] = UInt8((contentVal.count >> 8) & 0xff)
         
             var dataArray:[Data] = []
             var firstBit:UInt8 = 0
@@ -13640,6 +14269,23 @@ import CoreLocation
         self.signalCommandSemaphore()
     }
     
+    // 在类顶部添加私有属性
+    private var locationDataBuffer = Data()
+    private let locationDataQueue = DispatchQueue(label: "com.location.buffer.queue")
+    private var locationDataTimer: DispatchSourceTimer?
+    // 新增私有存储方法（需要根据实际存储需求实现）
+    private func saveLocationData(filePath:String, data: Data) {
+        do {
+            //let url = URL(fileURLWithPath: filePath)
+            let fileHandle = try FileHandle(forWritingAtPath: filePath)                                // 移动到文件末尾
+            fileHandle?.seekToEndOfFile()
+            // 写入新内容
+            fileHandle?.write(data)
+        }catch {
+            print("写入失败: \(error)")
+        }
+        
+    }
     // MARK: - 定位原始数据透传开关
     @objc public func setLocationPrimitiveTransmission(isOpen:Int,success:@escaping((ZyError) -> Void)) {
         
@@ -13664,48 +14310,213 @@ import CoreLocation
         self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
             if error == .none {
                 self?.receiveSetLocationPrimitiveTransmissionBlock = success
+                let date:Date = Date()
+                let timeFormatter = DateFormatter()
+                timeFormatter.dateFormat = "YYYY/MM/dd HH:mm:ss SS"
+                let strNowTime = timeFormatter.string(from: date)
+                //let onceUrl:String = String.init(format: "\n保存时间:%@\n\n\n\n\n",strNowTime)
+                let savePath = NSHomeDirectory() + "/Documents/saveLog"
+                let fileManager = FileManager.default
+                let exit:Bool = fileManager.fileExists(atPath: savePath)
+                if exit == false {
+                    do{
+                        //                创建指定位置上的文件夹
+                        try fileManager.createDirectory(atPath: savePath, withIntermediateDirectories: true, attributes: nil)
+                        print("Succes to create folder")
+                    }
+                    catch{
+                        print("Error to create folder")
+                    }
+                }
+                let filePath = String.init(format: "%@/%@_locationLog",savePath,Date.init().conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss"))
+                if !fileManager.fileExists(atPath: filePath) {
+                    fileManager.createFile(atPath: filePath, contents: nil, attributes: nil)
+                }
                 if isOpen != 0 {
-                    let date:Date = Date()
-                    let timeFormatter = DateFormatter()
-                    timeFormatter.dateFormat = "YYYY/MM/dd HH:mm:ss SS"
-                    let strNowTime = timeFormatter.string(from: date)
-                    //let onceUrl:String = String.init(format: "\n保存时间:%@\n\n\n\n\n",strNowTime)
-                    let savePath = NSHomeDirectory() + "/Documents/saveLog"
-                    let fileManager = FileManager.default
-                    let exit:Bool = fileManager.fileExists(atPath: savePath)
-                    if exit == false {
-                        do{
-                            //                创建指定位置上的文件夹
-                            try fileManager.createDirectory(atPath: savePath, withIntermediateDirectories: true, attributes: nil)
-                            print("Succes to create folder")
-                        }
-                        catch{
-                            print("Error to create folder")
+                    // 启动定时器
+                    self?.locationDataTimer = DispatchSource.makeTimerSource(queue: self?.locationDataQueue)
+                    self?.locationDataTimer?.schedule(deadline: .now(), repeating: .seconds(2))
+                    self?.locationDataTimer?.setEventHandler { [weak self] in
+                        guard let strongSelf = self else { return }
+                        
+                        // 写入缓冲数据（需要实现实际存储逻辑）
+                        if !strongSelf.locationDataBuffer.isEmpty {
+                            // 这里调用实际存储方法
+                            print("strongSelf.locationDataBuffer = \(strongSelf.locationDataBuffer)")
+                            strongSelf.saveLocationData(filePath: filePath,data: strongSelf.locationDataBuffer)
+                            
+                            // 清空缓冲
+                            strongSelf.locationDataBuffer.removeAll()
                         }
                     }
-                    let filePath = String.init(format: "%@/%@_locationLog",savePath,Date.init().conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss"))
-                    if !fileManager.fileExists(atPath: filePath) {
-                        fileManager.createFile(atPath: filePath, contents: nil, attributes: nil)
-                    }
+                    self?.locationDataTimer?.resume()
+                    
                     self?.reportLocationPrimitiveTransmission(success: { data, error in
                         
-                        do {
-                            //let url = URL(fileURLWithPath: filePath)
-                            let fileHandle = try FileHandle(forWritingAtPath: filePath)                                // 移动到文件末尾
-                            fileHandle?.seekToEndOfFile()
-                            // 写入新内容
-                            fileHandle?.write(data)
-                        }catch {
-                            print("写入失败: \(error)")
+                        // 新增缓冲逻辑
+                        self?.locationDataQueue.async {
+                            print("reportLocationPrimitiveTransmission data = \(data)")
+                            self?.locationDataBuffer.append(data)
+                            print("reportLocationPrimitiveTransmission self?.locationDataBuffer = \(self?.locationDataBuffer)")
                         }
                     })
                 }else{
                     self?.receiveReportLocationPrimitiveTransmission = nil
+                    // 关闭时立即写入剩余数据并清理
+                    self?.locationDataQueue.sync {
+                        if self?.locationDataBuffer.isEmpty == false {
+                            self?.saveLocationData(filePath: filePath, data: self?.locationDataBuffer ?? .init())
+                            self?.locationDataBuffer.removeAll()
+                        }
+                        self?.locationDataTimer?.cancel()
+                        self?.locationDataTimer = nil
+                    }
                 }
             }else{
                 success(error)
             }
         }
+    }
+    
+    private var debugLogBuffer = Data()
+    private let debugLogQueue = DispatchQueue(label: "com.debug.buffer.queue")
+    private var debugLogTimer: DispatchSourceTimer?
+    // MARK: - 调试日志上传开关
+    @objc public func setDebugLogUpload(isOpen:Int,success:@escaping((ZyError) -> Void)) {
+        
+        let headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 0x31
+        //参数长度
+        let modelCount = 1
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
+            UInt8(isOpen),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetDebugLogUploadBlock = success
+                let date:Date = Date()
+                let timeFormatter = DateFormatter()
+                timeFormatter.dateFormat = "YYYY/MM/dd HH:mm:ss SS"
+                let strNowTime = timeFormatter.string(from: date)
+                //let onceUrl:String = String.init(format: "\n保存时间:%@\n\n\n\n\n",strNowTime)
+                let savePath = NSHomeDirectory() + "/Documents/saveLog"
+                let fileManager = FileManager.default
+                let exit:Bool = fileManager.fileExists(atPath: savePath)
+                if exit == false {
+                    do{
+                        //                创建指定位置上的文件夹
+                        try fileManager.createDirectory(atPath: savePath, withIntermediateDirectories: true, attributes: nil)
+                        print("Succes to create folder")
+                    }
+                    catch{
+                        print("Error to create folder")
+                    }
+                }
+                let filePath = String.init(format: "%@/%@_debugLog",savePath,Date.init().conversionDateToString(DateFormat: "yyyy-MM-dd HH:mm:ss"))
+                if !fileManager.fileExists(atPath: filePath) {
+                    fileManager.createFile(atPath: filePath, contents: nil, attributes: nil)
+                }
+                if isOpen != 0 {
+                    
+                    // 启动定时器
+                    self?.debugLogTimer = DispatchSource.makeTimerSource(queue: self?.debugLogQueue)
+                    self?.debugLogTimer?.schedule(deadline: .now(), repeating: .seconds(2))
+                    self?.debugLogTimer?.setEventHandler { [weak self] in
+                        guard let strongSelf = self else { return }
+                        
+                        // 写入缓冲数据（需要实现实际存储逻辑）
+                        if !strongSelf.debugLogBuffer.isEmpty {
+                            // 这里调用实际存储方法
+                            strongSelf.saveLocationData(filePath: filePath, data: strongSelf.debugLogBuffer)
+                            
+                            // 清空缓冲
+                            strongSelf.debugLogBuffer.removeAll()
+                        }
+                    }
+                    self?.debugLogTimer?.resume()
+                    
+                    self?.reportDebugLog(success: { data, error in
+                        
+                        // 新增缓冲逻辑
+                        self?.debugLogQueue.async {
+                            self?.debugLogBuffer.append(data)
+                        }
+                    })
+                }else{
+                    self?.receiveReportDebugLog = nil
+                    // 关闭时立即写入剩余数据并清理
+                    self?.debugLogQueue.sync {
+                        if self?.debugLogBuffer.isEmpty == false {
+                            self?.saveLocationData(filePath: filePath, data: self?.locationDataBuffer ?? .init())
+                            self?.debugLogBuffer.removeAll()
+                        }
+                        self?.debugLogTimer?.cancel()
+                        self?.debugLogTimer = nil
+                    }
+                }
+            }else{
+                success(error)
+            }
+        }
+    }
+    
+    // MARK: - 获取最近点火次数
+    @objc public func getRecentIgnition(success:@escaping(([Int],ZyError) -> Void)) {
+        
+        let headVal:[UInt8] = [
+            0xaa,
+            0x84
+        ]
+        
+        //参数id
+        let cmd_id = 0x32
+        //参数长度
+        let modelCount = 1
+        let contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveGetRecentIgnitionBlock = success
+            }else{
+                success([],error)
+            }
+        }
+    }
+    
+    func parseGetRecentIgnition(val:[UInt8],success:@escaping(([Int],ZyError) -> Void)) {
+        
+        if val.count > 1 {
+            let count = val[0]
+            var listArray = [Int]()
+            for i in 0..<count {
+                let startIndex = i*2
+                let value = (Int(val[Int(startIndex)+1]) | Int(val[Int(startIndex)+2]) << 8)
+                listArray.append(value)
+            }
+            success(listArray,.none)
+        }else{
+            success([],.invalidState)
+        }
+
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
     }
     
     // MARK: - 气压计原始数据透传开关
@@ -13963,6 +14774,7 @@ import CoreLocation
             var cityData = timeModel.cityName.data(using: .utf8) ?? .init()
             let maxLength = self.functionListModel?.functionDetail_worldClock?.cityMaxLength ?? 32
             print("setWorldTime maxLength = \(maxLength)")
+            print("timeModel.cityName = \(timeModel.cityName),cityData = \(cityData.count)")
             if cityData.count >= maxLength {
                 cityData = cityData.subdata(in: 0..<maxLength)
             }
@@ -14138,6 +14950,78 @@ import CoreLocation
         self.signalCommandSemaphore()
     }
     
+    // MARK: - 设置ble配对信息
+    @objc public func setBlePairingInfomation(identify:String? = nil,success:@escaping((ZyError) -> Void)){
+        
+        let headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 0x2e
+        //参数长度
+        let modelCount = 13
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
+            0x0c,
+        ]
+        var uuidStr = ""
+        if let identify = identify {
+            uuidStr = identify
+        }else{
+            let uuidString = self.peripheral?.identifier.uuidString.replacingOccurrences(of: "-", with: "") ?? ""
+            uuidStr = String(uuidString.prefix(24))
+            print("uuidString = \(uuidString),uuidStr = \(uuidStr)")
+        }
+       
+        if let identifyVal = self.convertHexStringToUint8Array(string: uuidStr) {
+            contentVal.append(contentsOf: identifyVal)
+        }        
+
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetBlePairingInfomation = success
+            }else{
+                success(error)
+            }
+        }
+    }
+
+    // MARK: - 设置ble请求配对状态下发
+    @objc public func setBlePairingState(type:Int,success:@escaping((ZyError) -> Void)){
+        
+        let headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 0x2f
+        //参数长度
+        let modelCount = 1
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
+            UInt8(type)
+        ]
+
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetBlePairingState = success
+            }else{
+                success(error)
+            }
+        }
+    }
+    
     // MARK: - 潜水深度设置
     @objc public func setDiveDeep(count:Int,timeLong:Int,success:@escaping((ZyError) -> Void)) {
         var val:[UInt8] = [
@@ -14248,6 +15132,133 @@ import CoreLocation
         }
         //printLog("第\(#line)行" , "\(#function)")
         self.signalCommandSemaphore()
+    }
+    
+    // MARK: - ai翻译推送
+    @objc public func setAiTalkTranslators(type:Int,showType:Int,contentIndex:Int,contentString:String,success:@escaping((_ error:ZyError)->Void)) {
+        let headVal:[UInt8] = [
+            0xaa,
+            0x8e
+        ]
+        
+        let stringData = contentString.data(using: .utf8) ?? .init()
+        if stringData.count >= 1024 {
+            let aData = stringData.subdata(in: 0..<1024)
+            let str = NSString.init(data: aData, encoding:4)
+            print("str = \(str)")
+            let strUtf8 = String.init(data: aData, encoding: .utf8)
+            print("strUtf8 = \(strUtf8)")
+            let test = String.init(data: stringData, encoding: .utf8)
+            print("stringData = \(test)")
+            print("\(stringData) 长度超过65534，截取为:\(String.init(format: "%@", aData as CVarArg))")
+        }
+        let stringValArray = stringData.withUnsafeBytes { (byte) -> [UInt8] in
+            let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+            return [UInt8](UnsafeBufferPointer.init(start: b, count: stringData.count >= 1024 ? 1024 : stringData.count))
+        }
+        
+        var contentVal:[UInt8] = [
+            UInt8(type),
+            UInt8(showType),
+            UInt8((contentIndex >> 8) & 0xff),
+            UInt8((contentIndex ) & 0xff),
+            UInt8((stringData.count >> 8) & 0xff),
+            UInt8((stringData.count ) & 0xff),
+        ]
+        contentVal.append(contentsOf: stringValArray)
+
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                print("发送成功")
+                self?.signalCommandSemaphore()
+            }else{
+                success(error)
+            }
+        }
+    }
+    
+    // MARK: - 语音文件上传
+    @objc public func reportVoiceFile(folderPath:String?,progress:@escaping((Float) -> Void),success:@escaping((Data,String,ZyError) -> Void)) {
+        self.voiceFilePath = folderPath
+        self.receiveVoiceFileProgressBlock = progress
+        self.receiveReportVoiceFileBlock = success
+    }
+    
+    // MARK: - 下发语音文件上传类型
+    func setVoiceFileType(cmdId:Int,packageArray:[Int]) {
+        let headVal:[UInt8] = [
+            0xaa,
+            0x8f
+        ]
+        
+        //参数id
+        let cmd_id = UInt8(cmdId)
+        if cmdId == 1 {
+            //参数长度
+            let modelCount = 1
+            var contentVal:[UInt8] = [
+                UInt8(cmd_id ),
+                0x01,//写死默认允许开始已上传数据
+            ]
+            
+            self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { _ in
+                
+            }
+        }
+        if cmdId == 3 {
+            //参数长度
+            let modelCount = packageArray.count
+            var contentVal:[UInt8] = [
+                UInt8(cmd_id),
+                UInt8((packageArray.count ) & 0xff),
+                UInt8((packageArray.count >> 8) & 0xff),
+            ]
+            for item in packageArray {
+                contentVal.append(UInt8((item >> 0) & 0xff))
+                contentVal.append(UInt8((item >> 8) & 0xff))
+                contentVal.append(UInt8((item >> 16) & 0xff))
+                contentVal.append(UInt8((item >> 24) & 0xff))
+            }
+            self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { _ in
+                
+            }
+        }
+    }
+
+    func mergeDictionaryData(dic: [String: Data]) -> Data {
+        let sortedData = dic.keys
+            .compactMap { key -> (Int, Data)? in
+                guard let intKey = Int(key), let data = dic[key] else { return nil }
+                return (intKey, data)
+            }
+            .sorted(by: { $0.0 < $1.0 })
+
+        let totalSize = sortedData.reduce(0) { $0 + $1.1.count }
+        return sortedData.reduce(into: Data(capacity: totalSize)) {
+            $0.append($1.1)
+        }
+    }
+    
+    func findMissingKeys(in dictionary: [String: Any], upTo maxKey: Int) -> [Int] {
+        // 提取并过滤有效数字键
+        let validNumbers = dictionary.keys.compactMap { key -> Int? in
+            guard let num = Int(key), num >= 0 else {
+                print("发现无效键：\(key)")
+                return nil
+            }
+            return num
+        }
+        
+        // 处理空字典的特殊情况
+        guard !validNumbers.isEmpty else {
+            return Array(0..<maxKey)
+        }
+        
+        // 计算缺失键
+        let existingNumbers = Set(validNumbers)
+        return (0..<maxKey)
+            .filter { !existingNumbers.contains($0) }
+            //.map { String($0) }
     }
     
     // MARK: - 设置自定义运动图片
@@ -14444,7 +15455,11 @@ import CoreLocation
             
             self.setStopUpgrade { error in
                 if error == .none {
-                    self.setSubpackageInformationInteraction(maxSend: 1024, maxReceive: 1024) { subpackageInfo, error in
+                    var mtu = 1024
+                    if let writeCharacteristic = self.writeCharacteristic {
+                        mtu = self.peripheral?.maximumWriteValueLength(for: (((writeCharacteristic.properties.rawValue) & CBCharacteristicProperties.writeWithoutResponse.rawValue) != 0) ? .withoutResponse : .withResponse) ?? 1024
+                    }
+                    self.setSubpackageInformationInteraction(maxSend: mtu, maxReceive: mtu) { subpackageInfo, error in
                         if error == .none {
                             if let maxSend = subpackageInfo["maxSend"] as? String {
                                 if let maxCount = Int(maxSend) {
@@ -14641,6 +15656,8 @@ import CoreLocation
                 printLog("setStartUpgrade ->otaContinueDataLength =",otaContinueDataLength,"self.otaData!.count =",self.otaData!.count,"数据不一致")
                 success(.fail)
             }else{
+                otaStartTime = .init()
+                otaTotalBytes = otaVal.count
                 self.dealUpgradeData(maxSingleCount: self.otaMaxSingleCount, packageCount: self.otaPackageCount, packageIndex: self.otaStartIndex, val: otaVal, progress: progress, success: success)
             }
             
@@ -14665,9 +15682,11 @@ import CoreLocation
             val.append(UInt8((check >> 8) & 0xff))
             
             let data = Data.init(bytes: &val, count: val.count)
+            otaStartTime = .init()
             self.writeData(data: data)
             self.receiveSetStartUpgradeBlock = success
             self.receiveSetStartUpgradeProgressBlock = progress
+            otaTotalBytes = fileData!.count
             self.otaData = fileData!
             printLog("正常进入升级")
         }
@@ -14777,6 +15796,31 @@ import CoreLocation
         ZySDKLog.writeStringToSDKLog(string: String.init(format: "当前数据组结束序号 ->:%d", totalLength))
     }
     
+    private var otaStartTime: Date?
+    private var otaEndTime: Date?
+    private var otaTotalBytes: Int = 0
+    // 添加新的计算方法
+    private func calculateUpgradeSpeed() {
+        guard let start = otaStartTime, let end = otaEndTime, otaTotalBytes > 0 else {
+            print("otaStartTime = \(otaStartTime),otaEndTime = \(otaEndTime),otaTotalBytes = \(otaTotalBytes)")
+            print("calculateUpgradeSpeed return")
+            return
+        }
+        
+        let timeInterval = end.timeIntervalSince(start)
+        let speed = Double(otaTotalBytes) / timeInterval // bytes per second
+        
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useMB, .useKB]
+        formatter.countStyle = .file
+        let speedString = formatter.string(fromByteCount: Int64(speed)) + "/s"
+        
+        print("开始时间:\(otaStartTime)\n结束时间:\(otaEndTime),文件大小:\(otaTotalBytes)")
+        print("OTA Upgrade Speed: \(speedString)")
+        ZySDKLog.writeStringToSDKLog(string: "开始时间:\(otaStartTime)\n结束时间:\(otaEndTime),文件大小:\(otaTotalBytes)")
+        ZySDKLog.writeStringToSDKLog(string: "OTA升级速率: \(speedString)")
+    }
+    
     // MARK: - 重发包号数据
     private func resendUpgradeData(maxSingleCount:Int,packageCount:Int,resendVal:[UInt8],val:[UInt8],progress:@escaping((Float) -> Void),success:@escaping((ZyError) -> Void)) {
         
@@ -14882,6 +15926,8 @@ import CoreLocation
             printLog("fileLength =",fileLength)
             
             if result == 0 {
+                otaEndTime = Date()
+                calculateUpgradeSpeed()
                 success(.none)
             }else{
                 success(.fail)
@@ -14941,7 +15987,7 @@ import CoreLocation
                             }else{
                                 self.isRequesting = true
                                 //此处如果在等待的时候把设备断开连接或者是解绑，命令不会再进入回调，而isRequesting是true下次请求永远都不会往下调用。断开连接之后把isRequesting置位false
-                                let url = ZyNetworkManager.shareInstance.basicUrl+"/api/ota/getNewVersionByAddress?"+String.init(format: "productId=%@&projectId=%@&firmwareId=%@&imageId=%@&fontId=%@&address=%@",product,project,firmware,library,font,string)
+                                let url = ZyNetworkManager.shareInstance.basicUrl+"/ota/getNewVersionByAddress?"+String.init(format: "productId=%@&projectId=%@&firmwareId=%@&imageId=%@&fontId=%@&address=%@",product,project,firmware,library,font,string)
                                 ZyNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
                                     self.isRequesting = false
                                     printLog("getNewVersionByAddress info =",info)
@@ -15013,10 +16059,10 @@ import CoreLocation
         
         group.notify(queue: .main) {
             
-            //let url = ZyNetworkManager.shareInstance.basicUrl+"/api/ota/get?"+String.init(format: "productId=%@&projectId=%@&firmwareId=%@&firmwareIdSecond=%@&imageId=%@&imageIdSecond=%@&fontId=%@&fontIdSecond=%@",product,project,firmwareFirst,firmwareLast,libraryFirst,libraryLast,fontFirst,fontLast)
+            //let url = ZyNetworkManager.shareInstance.basicUrl+"/ota/get?"+String.init(format: "productId=%@&projectId=%@&firmwareId=%@&firmwareIdSecond=%@&imageId=%@&imageIdSecond=%@&fontId=%@&fontIdSecond=%@",product,project,firmwareFirst,firmwareLast,libraryFirst,libraryLast,fontFirst,fontLast)
             
             //http://www.antjuyi.com/api/ota/getNewVersionByAddress?productId=0&projectId=0&firmwareId=0.0&imageId=0.0&fontId=0.0&address=xx:xx:xx:xx:xx:xx
-            let url = ZyNetworkManager.shareInstance.basicUrl+"/api/ota/getNewVersionByAddress?"+String.init(format: "productId=%@&projectId=%@&firmwareId=%@&imageId=%@&fontId=%@&address=%@",product,project,firmware,library,font,mac)
+            let url = ZyNetworkManager.shareInstance.basicUrl+"/ota/getNewVersionByAddress?"+String.init(format: "productId=%@&projectId=%@&firmwareId=%@&imageId=%@&fontId=%@&address=%@",product,project,firmware,library,font,mac)
             ZyNetworkManager.shareInstance.get(url: url, isNeedToken: false) { info in
                 self.isRequesting = false
                 printLog("info =",info)
@@ -15364,7 +16410,7 @@ import CoreLocation
                 let product = versionSuccess["product"] as! String
                 let project = versionSuccess["project"] as! String
 
-                let url = ZyNetworkManager.shareInstance.basicUrl+String.init(format: "/api/online/getCover?productId=%@&projectId=%@", product,project)
+                let url = ZyNetworkManager.shareInstance.basicUrl+String.init(format: "/online/getCover?productId=%@&projectId=%@", product,project)
                 /*
                  {
                      "code": 200,
@@ -15435,7 +16481,7 @@ import CoreLocation
                 let product = versionSuccess["product"] as! String
                 let project = versionSuccess["project"] as! String
 
-                let url = ZyNetworkManager.shareInstance.basicUrl+String.init(format: "/api/online/getCustom?productId=%@&projectId=%@", product,project)
+                let url = ZyNetworkManager.shareInstance.basicUrl+String.init(format: "/online/getCustom?productId=%@&projectId=%@", product,project)
                 /*
                  {
                      "code": 200,
@@ -15498,7 +16544,7 @@ import CoreLocation
                 let product = versionSuccess["product"] as! String
                 let project = versionSuccess["project"] as! String
 
-                let url = ZyNetworkManager.shareInstance.basicUrl+"/api/online/get?"+String.init(format: "productId=%@&projectId=%@",product,project)
+                let url = ZyNetworkManager.shareInstance.basicUrl+"/online/get?"+String.init(format: "productId=%@&projectId=%@",product,project)
                 /*
                  {
                      "code": 200,
@@ -15587,7 +16633,7 @@ import CoreLocation
                 let project = versionSuccess["project"] as! String
                 
                 //http://www.antjuyi.com/api/online/getNew?productId=0&projectId=0&pageIndex=1&pageSize=5
-                let url = ZyNetworkManager.shareInstance.basicUrl+"/api/online/getNew?"+String.init(format: "productId=%@&projectId=%@&pageIndex=%d&pageSize=%d",product,project,pageIndex,pageSize)
+                let url = ZyNetworkManager.shareInstance.basicUrl+"/online/getNew?"+String.init(format: "productId=%@&projectId=%@&pageIndex=%d&pageSize=%d",product,project,pageIndex,pageSize)
 
                 /*
                  {
@@ -15750,104 +16796,125 @@ import CoreLocation
     // MARK: - 获取辅助定位数据
     public func getServerAssistedPositioningData(success:@escaping((String?,Data?,ZyError) -> Void)) {
 
-        let urlStringArray = [
-            "https://zywlian.oss-cn-hongkong.aliyuncs.com/custom/praylocation/ELPO_BDS_3.DAT",
-            "https://zywlian.oss-cn-hongkong.aliyuncs.com/custom/praylocation/ELPO_GAL_3.DAT",
-            "https://zywlian.oss-cn-hongkong.aliyuncs.com/custom/praylocation/ELPO_GLO_3.DAT",
-            "https://zywlian.oss-cn-hongkong.aliyuncs.com/custom/praylocation/ELPO_GPS_3.DAT",
-        ]
-        
-        let group = DispatchGroup()
-        let filePath = NSHomeDirectory() + "/Documents/AssistedPositioning/"
-        for item in urlStringArray {
-            group.enter()
-            self.downloadBinFile(url: item, filePath: filePath, zipType: "DAT") { path, errror in
-                group.leave()
-                if errror == .none {
-                    print("path = \(path)")
+        if let gpsModel = self.functionListModel?.functionDetail_locationGps {
+            if gpsModel.isSupportAG3352Q {
+                let urlStringArray = [
+                    "https://zywlian.oss-cn-hongkong.aliyuncs.com/custom/praylocation/ELPO_BDS_3.DAT",
+                    "https://zywlian.oss-cn-hongkong.aliyuncs.com/custom/praylocation/ELPO_GAL_3.DAT",
+                    "https://zywlian.oss-cn-hongkong.aliyuncs.com/custom/praylocation/ELPO_GLO_3.DAT",
+                    "https://zywlian.oss-cn-hongkong.aliyuncs.com/custom/praylocation/ELPO_GPS_3.DAT",
+                ]
+                
+                let group = DispatchGroup()
+                let filePath = NSHomeDirectory() + "/Documents/AG3352Q/"
+                for item in urlStringArray {
+                    group.enter()
+                    self.downloadBinFile(url: item, filePath: filePath, zipType: "DAT") { path, errror in
+                        group.leave()
+                        if errror == .none {
+                            print("path = \(path)")
+                        }
+                    }
+                }
+                group.notify(queue: .main) {
+                    print("所有文件下载完毕")
+                    let fileDic = FileManager.getFileListInFolderWithPath(path: filePath)
+                    print("fileDic.content = \(fileDic.content)")
+                    var headData:Data = .init()
+                    var fileData:Data = .init()
+                    if let fileNameList = fileDic.content as? [String] {
+                        let gpsName = "ELPO_GPS_3.DAT"
+                        let gloName = "ELPO_GLO_3.DAT"
+                        let galName = "ELPO_GAL_3.DAT"
+                        let bdsName = "ELPO_BDS_3.DAT"
+                        if fileNameList.contains(gpsName) && fileNameList.contains(gloName) && fileNameList.contains(galName) && fileNameList.contains(bdsName) {
+                            let gpsFile = filePath + gpsName
+                            let gloFile = filePath + gloName
+                            let galFile = filePath + galName
+                            let bdsFile = filePath + bdsName
+                            
+                            if let gpsData = try? Data.init(contentsOf: URL.init(fileURLWithPath: gpsFile)) {
+                                let val = [
+                                    UInt8((gpsData.count ) & 0xff),
+                                    UInt8((gpsData.count >> 8) & 0xff),
+                                    UInt8((gpsData.count >> 16) & 0xff),
+                                    UInt8((gpsData.count >> 24) & 0xff),
+                                ]
+                                headData.append(val, count: val.count)
+                                fileData.append(gpsData)
+                            }
+                            
+                            if let gloData = try? Data.init(contentsOf: URL.init(fileURLWithPath: gloFile)) {
+                                let val = [
+                                    UInt8((gloData.count ) & 0xff),
+                                    UInt8((gloData.count >> 8) & 0xff),
+                                    UInt8((gloData.count >> 16) & 0xff),
+                                    UInt8((gloData.count >> 24) & 0xff),
+                                ]
+                                headData.append(val, count: val.count)
+                                fileData.append(gloData)
+                            }
+                            
+                            if let galData = try? Data.init(contentsOf: URL.init(fileURLWithPath: galFile)) {
+                                let val = [
+                                    UInt8((galData.count ) & 0xff),
+                                    UInt8((galData.count >> 8) & 0xff),
+                                    UInt8((galData.count >> 16) & 0xff),
+                                    UInt8((galData.count >> 24) & 0xff),
+                                ]
+                                headData.append(val, count: val.count)
+                                fileData.append(galData)
+                            }
+                            
+                            if let bdsData = try? Data.init(contentsOf: URL.init(fileURLWithPath: bdsFile)) {
+                                let val = [
+                                    UInt8((bdsData.count ) & 0xff),
+                                    UInt8((bdsData.count >> 8) & 0xff),
+                                    UInt8((bdsData.count >> 16) & 0xff),
+                                    UInt8((bdsData.count >> 24) & 0xff),
+                                ]
+                                headData.append(val, count: val.count)
+                                fileData.append(bdsData)
+                            }
+                            
+                            let finalFilePath = filePath + "finalFile.DAT"
+                            let finalData = headData+fileData
+                            if FileManager.createFile(filePath: filePath).isSuccess {
+                                FileManager.default.createFile(atPath: finalFilePath, contents: finalData, attributes: nil)
+                            }
+                            success(finalFilePath,finalData,.none)
+                        }else{
+                            success(nil,nil,.fail)
+                        }
+                    }else{
+                        success(nil,nil,.fail)
+                    }
+                    
                 }
             }
-        }
-        group.notify(queue: .main) {
-            print("所有文件下载完毕")
-            let fileDic = FileManager.getFileListInFolderWithPath(path: filePath)
-            print("fileDic.content = \(fileDic.content)")
-            var headData:Data = .init()
-            var fileData:Data = .init()
-            if let fileNameList = fileDic.content as? [String] {
-                let gpsName = "ELPO_GPS_3.DAT"
-                let gloName = "ELPO_GLO_3.DAT"
-                let galName = "ELPO_GAL_3.DAT"
-                let bdsName = "ELPO_BDS_3.DAT"
-                if fileNameList.contains(gpsName) && fileNameList.contains(gloName) && fileNameList.contains(galName) && fileNameList.contains(bdsName) {
-                    let gpsFile = filePath + gpsName
-                    let gloFile = filePath + gloName
-                    let galFile = filePath + galName
-                    let bdsFile = filePath + bdsName
-                    
-                    if let gpsData = try? Data.init(contentsOf: URL.init(fileURLWithPath: gpsFile)) {
-                        let val = [
-                            UInt8((gpsData.count ) & 0xff),
-                            UInt8((gpsData.count >> 8) & 0xff),
-                            UInt8((gpsData.count >> 16) & 0xff),
-                            UInt8((gpsData.count >> 24) & 0xff),
-                        ]
-                        headData.append(val, count: val.count)
-                        fileData.append(gpsData)
+            if gpsModel.isSupportCC1167Q {
+                let urlString = "https://zywlian.oss-cn-hongkong.aliyuncs.com/custom/praylocation/f1e1G7C7J7.pgl"
+                
+                let filePath = NSHomeDirectory() + "/Documents/CC1167Q/"
+                self.downloadBinFile(url: urlString, filePath: filePath, zipType: "pgl") { path, errror in
+                    if errror == .none {
+                        print("path = \(path)")
+                        if let pglData = try? Data.init(contentsOf: URL.init(fileURLWithPath: path)) {
+                            success(path,pglData,.none)
+                        }else{
+                            success(nil,nil,.fail)
+                        }
+                    }else{
+                        success(nil,nil,.fail)
                     }
-                    
-                    if let gloData = try? Data.init(contentsOf: URL.init(fileURLWithPath: gloFile)) {
-                        let val = [
-                            UInt8((gloData.count ) & 0xff),
-                            UInt8((gloData.count >> 8) & 0xff),
-                            UInt8((gloData.count >> 16) & 0xff),
-                            UInt8((gloData.count >> 24) & 0xff),
-                        ]
-                        headData.append(val, count: val.count)
-                        fileData.append(gloData)
-                    }
-                    
-                    if let galData = try? Data.init(contentsOf: URL.init(fileURLWithPath: galFile)) {
-                        let val = [
-                            UInt8((galData.count ) & 0xff),
-                            UInt8((galData.count >> 8) & 0xff),
-                            UInt8((galData.count >> 16) & 0xff),
-                            UInt8((galData.count >> 24) & 0xff),
-                        ]
-                        headData.append(val, count: val.count)
-                        fileData.append(galData)
-                    }
-                    
-                    if let bdsData = try? Data.init(contentsOf: URL.init(fileURLWithPath: bdsFile)) {
-                        let val = [
-                            UInt8((bdsData.count ) & 0xff),
-                            UInt8((bdsData.count >> 8) & 0xff),
-                            UInt8((bdsData.count >> 16) & 0xff),
-                            UInt8((bdsData.count >> 24) & 0xff),
-                        ]
-                        headData.append(val, count: val.count)
-                        fileData.append(bdsData)
-                    }
-                    
-                    let finalFilePath = filePath + "finalFile.DAT"
-                    let finalData = headData+fileData
-                    if FileManager.createFile(filePath: filePath).isSuccess {
-                        FileManager.default.createFile(atPath: finalFilePath, contents: finalData, attributes: nil)
-                    }
-                    success(finalFilePath,finalData,.none)
-                }else{
-                    success(nil,nil,.fail)
                 }
-            }else{
-                success(nil,nil,.fail)
             }
-            
         }
     }
     
     func downloadBinFile(url:String,filePath:String,zipType:String? = nil,success:@escaping((String,ZyError) -> Void)) {
         var fileString = ""
-        let destination:Alamofire.DownloadRequest.DownloadFileDestination/*Destination*/ = { (_, _) in
+        let destination:Alamofire.DownloadRequest.Destination = { (_, _) in
             let binFileArray = url.components(separatedBy: "/")
             
             var zipDefaultString = "default."
@@ -15864,7 +16931,7 @@ import CoreLocation
         }
         
         printLog("开始下载 url ->",url,"destination ->",destination)
-        Alamofire.download(url, to: destination).downloadProgress { (progress) in
+        ZyNetworkManager.shareInstance.manager.download(url, to: destination).downloadProgress { (progress) in
             printLog("progress =",progress)
             DispatchQueue.main.async {
                 
@@ -15881,7 +16948,7 @@ import CoreLocation
             }
         }.response { (defaultDownloadResponse) in
             //printLog("defaultDownloadResponse = ",defaultDownloadResponse)
-            if let destinationUrl = defaultDownloadResponse.destinationURL/*fileURL*/ {
+            if let destinationUrl = defaultDownloadResponse.fileURL {
                 DispatchQueue.main.async {
                     
                     printLog("destination url -****",destinationUrl.absoluteString)
@@ -16153,4 +17220,383 @@ import CoreLocation
         }
     }
     
+    
+    
+    // MARK: - 录音文件列表查询
+    public func setCheckFileList(index:Int,fileCount:Int,success:@escaping(([[String]],ZyError) -> Void)) {
+        
+        let headVal:[UInt8] = [
+            0xbb,
+            0x02
+        ]
+        
+        let contentVal:[UInt8] = [
+            UInt8((index >> 8) & 0xff),
+            UInt8((index ) & 0xff),
+            UInt8((fileCount >> 8) & 0xff),
+            UInt8((fileCount) & 0xff),
+        ]
+        
+        self.dealRecordBoxData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetCheckFileListBlock = success
+            }else{
+                
+            }
+            self?.signalCommandSemaphore()
+        }
+    }
+    
+    private func parseSetCheckFileList(val:[UInt8],success:@escaping(([[String]],ZyError) -> Void)) {
+        
+        if val.count > 4 {
+            let originIndex = (Int(val[0]) << 8 | Int(val[1]))
+            let fileCount = (Int(val[2]) << 8 | Int(val[3]))
+            var stringArray:[[String]] = .init()
+            var startIndex = 4
+            while startIndex < val.count {
+                var array = [String]()
+                let index = (Int(val[startIndex+0]) << 8 | Int(val[startIndex+1]))
+                let fileLength = Int(val[startIndex+2])
+                let fileNameVal = Array.init(val[(startIndex+3)..<(startIndex+3+fileLength)])
+                let fileTimeLength = (Int(val[startIndex+3+fileLength]) << 24 | Int(val[startIndex+4+fileLength]) << 16 | Int(val[startIndex+5+fileLength]) << 8 | Int(val[startIndex+6+fileLength]))
+                let fileNameData = fileNameVal.withUnsafeBufferPointer { (bytes) -> Data in
+                    return Data.init(buffer: bytes)
+                }
+                print("convertDataToSpaceHexStr =\(self.convertDataToSpaceHexStr(data: fileNameData, isSend: true))")
+                print("startIndex = \(startIndex),index = \(index),fileLength = \(fileLength),fileTimeLength = \(fileTimeLength)")
+                if let str = String.init(data: fileNameData, encoding: .utf8) {
+                    print("str = \(str)")
+                    array.append("\(index)")
+                    array.append("\(str)")
+                    array.append("\(fileTimeLength)")
+                    stringArray.append(array)
+                }
+                startIndex += 7+fileLength
+            }
+            
+            var string = ""
+            for item in stringArray {
+                string += String.init(format: "\n%@",item)
+            }
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "解析:%@",string))
+            success(stringArray,.none)
+        }else{
+            success([[]],.fail)
+        }
+
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 启动录音文件上传
+    public func setStartFileUpload(name:String,success:@escaping((RecordFileModel?,ZyError) -> Void)) {
+        
+        let headVal:[UInt8] = [
+            0xbb,
+            0x03
+        ]
+        
+        var nameVal:[UInt8] = .init()
+        if let data:Data = name.data(using: .utf8) {
+            nameVal = data.withUnsafeBytes { (byte) -> [UInt8] in
+                let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+                return [UInt8](UnsafeBufferPointer.init(start: b, count: data.count))
+            }
+        }
+        
+        self.dealRecordBoxData(headVal: headVal, contentVal: nameVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetStartFileUploadBlock = success
+            }else{
+                success(nil,.fail)
+            }
+        }
+    }
+    
+    private func parseSetStartFileUpload(val:[UInt8],success:@escaping((RecordFileModel?,ZyError) -> Void)) {
+        
+        if val.count > 10 {
+            let fileSize = (Int(val[0]) << 24 | Int(val[1]) << 16 | Int(val[2]) << 8 | Int(val[3]))
+            let maxCount = (Int(val[4]) << 8 | Int(val[5]))
+            let numberIndex = (Int(val[6]) << 8 | Int(val[7]))
+            let fileNameLength = (Int(val[8]) << 8 | Int(val[9]))
+            let fileNameVal = Array.init(val[(10)..<(10+fileNameLength)])
+            let fileNameData = fileNameVal.withUnsafeBufferPointer { (bytes) -> Data in
+                return Data.init(buffer: bytes)
+            }
+            
+            let model = RecordFileModel()
+            model.fileSize = fileSize
+            model.maxLength = maxCount
+            model.numberIndex = numberIndex
+            
+            if let str = String.init(data: fileNameData, encoding: .utf8) {
+                model.fileName = str
+            }
+            
+            print("model.fileSize=\(model.fileSize),model.maxLength=\(model.maxLength),model.numberIndex=\(model.numberIndex),model.fileName=\(model.fileName)")
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "model.fileSize=\(model.fileSize),model.maxLength=\(model.maxLength),model.numberIndex=\(model.numberIndex),model.fileName=\(model.fileName)"))
+            success(model,.none)
+        }else{
+            success(nil,.fail)
+        }
+
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+
+    // MARK: - 请求录音文件数据上传
+    public func setStartFileDataUpload(index:Int,packageCount:Int,numberIndex:Int) {
+        
+        let headVal:[UInt8] = [
+            0xbb,
+            0x04
+        ]
+        
+        let contentVal:[UInt8] = [
+            UInt8((index >> 32) & 0xff),
+            UInt8((index >> 16) & 0xff),
+            UInt8((index >> 8) & 0xff),
+            UInt8((index) & 0xff),
+            UInt8((packageCount >> 8) & 0xff),
+            UInt8((packageCount) & 0xff),
+            UInt8((numberIndex >> 8) & 0xff),
+            UInt8((numberIndex ) & 0xff),
+        ]
+        
+        self.dealRecordBoxData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            self?.signalCommandSemaphore()
+        }
+    }
+    
+    // MARK: - 录音文件数据补传
+    public func setFileDataReplenishmentSend(numberIndex:Int,packageList:[Int]) {
+        let headVal:[UInt8] = [
+            0xbb,
+            0x06
+        ]
+        
+        var contentVal:[UInt8] = [
+            UInt8((numberIndex >> 8) & 0xff),
+            UInt8((numberIndex ) & 0xff),
+            UInt8((packageList.count >> 8) & 0xff),
+            UInt8((packageList.count ) & 0xff),
+        ]
+        
+        for index in packageList {
+            let itemVal:[UInt8] = [
+                UInt8((index >> 32) & 0xff),
+                UInt8((index >> 16) & 0xff),
+                UInt8((index >> 8) & 0xff),
+                UInt8((index ) & 0xff),
+            ]
+            contentVal.append(contentsOf: itemVal)
+        }
+        
+        self.dealRecordBoxData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            self?.signalCommandSemaphore()
+        }
+    }
+
+
+    // MARK: - 录音文件列表刷新
+    public func setFileListRefresh() {
+        let headVal:[UInt8] = [
+            0xbb,
+            0x07
+        ]
+                
+        self.dealRecordBoxData(headVal: headVal, contentVal: []) { [weak self] error in
+            self?.signalCommandSemaphore()
+        }
+    }
+
+    // MARK: - 录音文件删除
+    public func setSingleDeleteFile(name:String) {
+        
+        let headVal:[UInt8] = [
+            0xbb,
+            0x08
+        ]
+        
+        var nameVal:[UInt8] = .init()
+        if let data:Data = name.data(using: .utf8) {
+            nameVal = data.withUnsafeBytes { (byte) -> [UInt8] in
+                let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+                return [UInt8](UnsafeBufferPointer.init(start: b, count: data.count))
+            }
+        }
+        
+        self.dealRecordBoxData(headVal: headVal, contentVal: nameVal) { [weak self] error in
+            self?.signalCommandSemaphore()
+        }
+    }
+
+    // MARK: -录音文件批量删除
+    public func setBatchDeleteFile(nameList:[String]) {
+        
+        let headVal:[UInt8] = [
+            0xbb,
+            0x09
+        ]
+        
+        var contentVal:[UInt8] = [
+            UInt8((nameList.count >> 8) & 0xff),
+            UInt8((nameList.count ) & 0xff),
+        ]
+        
+        for item in nameList {
+            var nameVal:[UInt8] = .init()
+            if let data:Data = item.data(using: .utf8) {
+                nameVal = data.withUnsafeBytes { (byte) -> [UInt8] in
+                    let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+                    return [UInt8](UnsafeBufferPointer.init(start: b, count: data.count))
+                }
+            }
+            contentVal.append(UInt8((nameVal.count >> 8) & 0xff))
+            contentVal.append(UInt8((nameVal.count ) & 0xff))
+            contentVal.append(contentsOf: nameVal)
+        }
+        
+        self.dealRecordBoxData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            self?.signalCommandSemaphore()
+        }
+    }
+    
+    // MARK: - 录音文件上传暂停
+    public func setPuaseFileUpload(name:String) {
+        
+        let headVal:[UInt8] = [
+            0xbb,
+            0x08
+        ]
+        
+        var nameVal:[UInt8] = .init()
+        if let data:Data = name.data(using: .utf8) {
+            nameVal = data.withUnsafeBytes { (byte) -> [UInt8] in
+                let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+                return [UInt8](UnsafeBufferPointer.init(start: b, count: data.count))
+            }
+        }
+        
+        self.dealRecordBoxData(headVal: headVal, contentVal: nameVal) { [weak self] error in
+            self?.signalCommandSemaphore()
+        }
+    }
+    
+    func dealRecordBoxData(headVal:[UInt8],contentVal:[UInt8],backBlock:@escaping((ZyError)->())) {
+        var headVal = headVal
+        var dataArray:[Data] = []
+        var firstBit:UInt8 = 0
+        var maxMtuCount = 0
+        if contentVal.count > self.testMaxMtuCount {
+            firstBit = 128
+        }
+        maxMtuCount = self.testMaxMtuCount
+        headVal.append(UInt8((contentVal.count >> 8) & 0xff))
+        headVal.append(UInt8((contentVal.count) & 0xff)+firstBit)
+        //判断是否要分包，分包的要再加总包数跟报序号
+        if firstBit > 0 {
+            var contentIndex = 0
+            var packetCount = 0
+            while contentIndex < contentVal.count {
+                //分包添加总包数跟包序号
+                let maxCount =  contentVal.count / (maxMtuCount - 10) + (contentVal.count % (maxMtuCount - 10) > 0 ? 1 : 0)
+                let packetVal:[UInt8] = [
+                    UInt8((maxCount >> 8) & 0xff),
+                    UInt8((maxCount ) & 0xff),
+                    UInt8(((packetCount+1) >> 8) & 0xff),
+                    UInt8(((packetCount+1) ) & 0xff)
+                ]
+                
+                //嵌入式何工把长度这部分修改为 多包也只发当前包的长度
+                if packetCount < maxCount - 1 {
+                    headVal[headVal.count-1] = UInt8(((maxMtuCount - 10) >> 8) & 0xff) + firstBit
+                    headVal[headVal.count-2] = UInt8(((maxMtuCount - 10)) & 0xff)
+                }else{
+                    let countValue = contentVal.count - packetCount * (maxMtuCount - 10)
+                    headVal[headVal.count-1] = UInt8((countValue >> 8) & 0xff) + firstBit
+                    headVal[headVal.count-2] = UInt8((countValue) & 0xff)
+                }
+                let startIndex = packetCount*(maxMtuCount - 10)
+                //print("(packetCount+1)*(maxMtuCount - 10) = \((packetCount+1)*(maxMtuCount - 10)),(startIndex + contentVal.count - packetCount*(maxMtuCount - 10)) = \((startIndex + contentVal.count - packetCount*(maxMtuCount - 10)))")
+                let endIndex = (packetCount+1)*(maxMtuCount - 10) <= contentVal.count ? (packetCount+1)*(maxMtuCount - 10) : (startIndex + contentVal.count - packetCount*(maxMtuCount - 10))
+                let subContentVal =  Array(contentVal[startIndex..<endIndex])
+                                
+                var val = headVal + packetVal + subContentVal
+                
+                let check = CRC16(val: val)
+                let checkVal = [UInt8((check ) & 0xff),UInt8((check >> 8) & 0xff)]
+                
+                val += checkVal
+                
+                let data = Data.init(bytes: &val, count: val.count)
+                dataArray.append(data)
+                
+                packetCount += 1
+                contentIndex = endIndex
+            }
+        }else{
+            var val = headVal + contentVal
+            let check = CRC16(val: val)
+            let checkVal = [UInt8((check ) & 0xff),UInt8((check >> 8) & 0xff)]
+            
+            val += checkVal
+            
+            let data = Data.init(bytes: &val, count: val.count)
+            dataArray.append(data)
+        }
+        
+        if dataArray.count > 1 {
+            
+            if self.peripheral?.state != .connected {
+                
+                backBlock(.disconnected)
+                return
+            }
+            
+            if self.writeCharacteristic == nil || self.peripheral == nil {
+                
+                backBlock(.invalidCharacteristic)
+                return
+            }
+
+            
+            DispatchQueue.global().async {
+
+                self.semaphoreCount -= 1
+                let result = self.commandSemaphore.wait(wallTimeout: DispatchWallTime.now()+5)
+                if result == .timedOut {
+                    self.semaphoreCount += 1
+                }
+                
+                DispatchQueue.main.async {
+
+                    printLog("发送命令 -> self.semaphoreCount =",self.semaphoreCount)
+                    backBlock(.none)
+                    
+                    var delayCount = 0
+                    for item in dataArray {
+                        let dataString = String.init(format: "%@", self.convertDataToSpaceHexStr(data: item,isSend: true))
+                        printLog("setNewSyncHealthData send =",dataString)
+                        self.writeData(data: item)
+                        if delayCount > 5 {
+                            printLog("通讯录延时0.1s")
+                            delayCount = 0
+                            Thread.sleep(forTimeInterval: 0.1)
+                        }else{
+                            delayCount += 1
+                        }
+                    }
+                }
+            }
+
+        }else{
+            if let data = dataArray.first {
+                let state = self.writeDataAndBackError(data: data)
+                backBlock(state)
+            }
+        }
+    }
 }

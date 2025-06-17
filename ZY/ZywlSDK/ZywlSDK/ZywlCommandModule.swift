@@ -2676,7 +2676,7 @@ import JL_BLEKit
                     if firstBit > 0 {
 
                         let totalCount = (Int(val[4]) << 8 | Int(val[5]))
-                        let currentCount = (Int(val[6]) << 8 | Int(val[7]) )
+                        let currentCount = (Int(val[6]) << 8 | Int(val[7]))
 
                         let newData = val.withUnsafeBufferPointer({ (bytes) -> Data in
                             let byte = bytes.baseAddress! + 8
@@ -9416,6 +9416,52 @@ import JL_BLEKit
             }
         }
     }
+    
+    /*
+     4.15AI翻译推送
+     */
+    @objc public func setAiTalkTranslators(type:Int,showType:Int,contentIndex:Int,contentString:String,success:@escaping((_ error:ZywlError)->Void)) {
+        let headVal:[UInt8] = [
+            0xac,
+            0x0e
+        ]
+        
+        let stringData = contentString.data(using: .utf8) ?? .init()
+        if stringData.count >= 1024 {
+            let aData = stringData.subdata(in: 0..<1024)
+            let str = NSString.init(data: aData, encoding:4)
+            print("str = \(str)")
+            let strUtf8 = String.init(data: aData, encoding: .utf8)
+            print("strUtf8 = \(strUtf8)")
+            let test = String.init(data: stringData, encoding: .utf8)
+            print("stringData = \(test)")
+            print("\(stringData) 长度超过65534，截取为:\(String.init(format: "%@", aData as CVarArg))")
+        }
+        let stringValArray = stringData.withUnsafeBytes { (byte) -> [UInt8] in
+            let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+            return [UInt8](UnsafeBufferPointer.init(start: b, count: stringData.count >= 1024 ? 1024 : stringData.count))
+        }
+        
+        var contentVal:[UInt8] = [
+            UInt8(type),
+            UInt8(showType),
+            UInt8((contentIndex >> 8) & 0xff),
+            UInt8((contentIndex ) & 0xff),
+            UInt8((stringData.count >> 8) & 0xff),
+            UInt8((stringData.count ) & 0xff),
+        ]
+        contentVal.append(contentsOf: stringValArray)
+
+        self.dealChargingBoxData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                print("发送成功")
+                self?.signalChargingBoxSemaphore()
+            }else{
+                success(error)
+            }
+        }
+    }
+    
     
     /*
      4.15.升级

@@ -213,7 +213,7 @@ extension ZyBleManager:CBPeripheralDelegate{
     }
     // MARK: - 写入数据
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
-        printLog("写入数据  didWriteValueFor CBCharacteristic ",characteristic.value)
+        printLog("写入数据  didWriteValueFor CBCharacteristic = \(characteristic.value),error = \(error?.localizedDescription)")
     }
     
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor descriptor: CBDescriptor, error: Error?) {

@@ -35,6 +35,9 @@
 		67DECB2A2BD748D40043161A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67DECB292BD748D40043161A /* AppDelegate.swift */; };
 		67DECB2E2BD748D40043161A /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67DECB2D2BD748D40043161A /* ViewController.swift */; };
 		67DECB332BD748DF0043161A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67DECB322BD748DF0043161A /* Assets.xcassets */; };
+		E2B80E192D81BFAA0014A238 /* RecordScanVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B80E182D81BFAA0014A238 /* RecordScanVC.swift */; };
+		E2B80E1B2D81BFEC0014A238 /* RecordBoxConfigurationVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B80E1A2D81BFEC0014A238 /* RecordBoxConfigurationVC.swift */; };
+		E2B80E1D2D81BFFF0014A238 /* RecordBoxCommandVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B80E1C2D81BFFF0014A238 /* RecordBoxCommandVC.swift */; };
 		E9F8F5FDBABC7F655879BD85 /* Pods_ZyTools.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 160AA93E269198321447CBFB /* Pods_ZyTools.framework */; };
 /* End PBXBuildFile section */
 
@@ -74,6 +77,9 @@
 		67DECB322BD748DF0043161A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		67DECB352BD748DF0043161A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		67DECB372BD748DF0043161A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E2B80E182D81BFAA0014A238 /* RecordScanVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordScanVC.swift; sourceTree = "<group>"; };
+		E2B80E1A2D81BFEC0014A238 /* RecordBoxConfigurationVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordBoxConfigurationVC.swift; sourceTree = "<group>"; };
+		E2B80E1C2D81BFFF0014A238 /* RecordBoxCommandVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordBoxCommandVC.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -170,6 +176,7 @@
 				6782B0FE2BEB534A0025CF92 /* ShowLogView.swift */,
 				677506E22BDB47E600769C8C /* Localizable.strings */,
 				677506E02BDB470000769C8C /* ExtensionFile.swift */,
+				E2B80E172D81BF4E0014A238 /* RecordBox */,
 				67758EB12BFB49A1005A3E0A /* WatchFactory */,
 				67758EA92BFB33A8005A3E0A /* Watch */,
 				677506DB2BDB434000769C8C /* ChargingBox */,
@@ -204,6 +211,16 @@
 				5C3DEB9EE13FE4596E109194 /* Pods-ZyTools.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		E2B80E172D81BF4E0014A238 /* RecordBox */ = {
+			isa = PBXGroup;
+			children = (
+				E2B80E1A2D81BFEC0014A238 /* RecordBoxConfigurationVC.swift */,
+				E2B80E182D81BFAA0014A238 /* RecordScanVC.swift */,
+				E2B80E1C2D81BFFF0014A238 /* RecordBoxCommandVC.swift */,
+			);
+			path = RecordBox;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -284,9 +301,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-ZyTools/Pods-ZyTools-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-ZyTools/Pods-ZyTools-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -331,6 +352,7 @@
 				6782B1002BEB534A0025CF92 /* LogViewController.swift in Sources */,
 				677506962BDA52D100769C8C /* HeadphoneScanVC.swift in Sources */,
 				677506DF2BDB437A00769C8C /* ChargingBoxScanVC.swift in Sources */,
+				E2B80E1D2D81BFFF0014A238 /* RecordBoxCommandVC.swift in Sources */,
 				677506D92BDB42FB00769C8C /* HeadphoneConfigurationVC.swift in Sources */,
 				67DECB2E2BD748D40043161A /* ViewController.swift in Sources */,
 				67DECB2A2BD748D40043161A /* AppDelegate.swift in Sources */,
@@ -339,7 +361,9 @@
 				677506E92BDB4FB900769C8C /* ChargingBoxCommandVC.swift in Sources */,
 				677506902BDA514900769C8C /* WatchCommandVC.swift in Sources */,
 				67758EBC2BFB5283005A3E0A /* BoxFactoryConfigurationVC.swift in Sources */,
+				E2B80E1B2D81BFEC0014A238 /* RecordBoxConfigurationVC.swift in Sources */,
 				677506922BDA515700769C8C /* HeadphoneCommandVC.swift in Sources */,
+				E2B80E192D81BFAA0014A238 /* RecordScanVC.swift in Sources */,
 				6782B1012BEB534A0025CF92 /* ShowLogView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -525,12 +549,12 @@
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.0.5;
+				MARKETING_VERSION = 0.0.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.zycx.zyfactorydemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -568,12 +592,12 @@
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.0.5;
+				MARKETING_VERSION = 0.0.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.zycx.zyfactorydemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

@@ -34,7 +34,7 @@ class ViewController: UIViewController {
         self.tableView.dataSource = self
         self.view.addSubview(self.tableView)
         
-        self.dataSourceArray = ["手环命令测试","手环工厂模式","充电仓命令测试","充电仓工厂模式","耳机命令测试","版本更新"]
+        self.dataSourceArray = ["手环命令测试","手环工厂模式","充电仓命令测试","充电仓工厂模式","耳机命令测试","录音盒","版本更新"]
         
         self.pushNextVC()
     }
@@ -67,6 +67,11 @@ class ViewController: UIViewController {
                 let vc = BoxFactoryCommandVC()
                 self.navigationController?.pushViewController(vc, animated: true)
             }
+            if localType == "999" {
+                
+                let vc = RecordBoxConfigurationVC()
+                self.navigationController?.pushViewController(vc, animated: true)
+            }
         }
     }
     
@@ -89,6 +94,8 @@ class ViewController: UIViewController {
             userDefault.setValue("201", forKey: "HC_LocalSelectType")
         }else if titleString == "充电仓工厂模式" {
             userDefault.setValue("202", forKey: "HC_LocalSelectType")
+        }else if titleString == "录音盒" {
+            userDefault.setValue("999", forKey: "HC_LocalSelectType")
         }
     }
 }
@@ -140,6 +147,12 @@ extension ViewController:UITableViewDataSource,UITableViewDelegate {
             ZywlCommandModule.shareInstance.setIsNeedReconnect(state: true)
             
             let vc = HeadphoneConfigurationVC()
+            self.navigationController?.pushViewController(vc, animated: true)
+        }else if titleString == "录音盒" {
+            _ = ZyCommandModule.shareInstance
+            ZyCommandModule.shareInstance.setIsNeedReconnect(state: true)
+            
+            let vc = RecordBoxConfigurationVC()
             self.navigationController?.pushViewController(vc, animated: true)
         }else if titleString == "手环工厂模式" {
             _ = ZyCommandModule.shareInstance

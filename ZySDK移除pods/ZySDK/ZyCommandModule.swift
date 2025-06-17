@@ -200,6 +200,20 @@ import CoreLocation
     var receiveGetBusinessCardBlock:(([ZyBusinessCardModel],ZyError) -> Void)?
     var receiveSetTreatmentInfomationBlock:((ZyError) -> Void)?
     var receiveGetTreatmentInfomationBlock:((ZyTreatmentModel?,ZyError) -> Void)?
+    var receiveSetLocationPrimitiveTransmissionBlock:((ZyError) -> Void)?
+    var receiveSetDebugLogUploadBlock:((ZyError) -> Void)?
+    var receiveSetBarometerPrimitiveTransmissionBlock:((ZyError) -> Void)?
+    var receiveSetTriaxialSensorPrimitiveTransmissionBlock:((ZyError) -> Void)?
+    var receiveSetWorldTimeBlock:((ZyError) -> Void)?
+    var receiveGetWorldTimeBlock:(([ZyWorldTimeModel],ZyError) -> Void)?
+    var receiveSetLocalTimeZoneBlock:((ZyError) -> Void)?
+    var receiveGetLocalTimeZoneBlock:((Int,ZyError) -> Void)?
+    var receiveSetDiveDeepBlock:((ZyError) -> Void)?
+    var receiveGetDiveDeepBlock:((Int,Int,ZyError) -> Void)?
+    var receiveSetDivePressureBlock:((Int,ZyError) -> Void)?
+    
+    var receiveSetCheckFileListBlock:(([[String]],ZyError) -> Void)?
+    var receiveSetStartFileUploadBlock:((RecordFileModel?,ZyError)->Void)?
     
     var stepMaxData:Data?
     var isStepDetailData = false
@@ -1393,6 +1407,57 @@ import CoreLocation
                         ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetUnbind长度校验出错"))
                     }
                 }
+                
+//                if val[0] == 0x01 && val[1] == 0xc4 {
+//                    if self.checkLength(val: [UInt8](val)) {
+//                        
+//                        if let block = self.receiveSetDiveDeepBlock {
+//                            self.parseSetDiveDeep(val: val, success: block)
+//                        }
+//                        
+//                    }else{
+//                        if let block = self.receiveSetDiveDeepBlock {
+//                            block(.invalidLength)
+//                        }
+//                        //printLog("第\(#line)行" , "\(#function)")
+//                        self.signalCommandSemaphore()
+//                        ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetDiveDeep长度校验出错"))
+//                    }
+//                }
+//                
+//                if val[0] == 0x01 && val[1] == 0xc5 {
+//                    if self.checkLength(val: [UInt8](val)) {
+//                        
+//                        if let block = self.receiveGetDiveDeepBlock {
+//                            self.parseGetDiveDeep(val: val, success: block)
+//                        }
+//                        
+//                    }else{
+//                        if let block = self.receiveGetDiveDeepBlock {
+//                            block(-1,-1,.invalidLength)
+//                        }
+//                        //printLog("第\(#line)行" , "\(#function)")
+//                        self.signalCommandSemaphore()
+//                        ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "GetDiveDeep长度校验出错"))
+//                    }
+//                }
+//                
+//                if val[0] == 0x01 && val[1] == 0xc6 {
+//                    if self.checkLength(val: [UInt8](val)) {
+//                        
+//                        if let block = self.receiveSetDivePressureBlock {
+//                            self.parseSetDivePressure(val: val, success: block)
+//                        }
+//                        
+//                    }else{
+//                        if let block = self.receiveSetDivePressureBlock {
+//                            block(-1,.invalidLength)
+//                        }
+//                        //printLog("第\(#line)行" , "\(#function)")
+//                        self.signalCommandSemaphore()
+//                        ZySDKLog.writeStringToSDKLog(string: String.init(format: "%@", "SetDivePressure长度校验出错"))
+//                    }
+//                }
                 
                 //获取消息提醒
                 if val[0] == 0x02 && val[1] == 0x80 {
@@ -2932,6 +2997,8 @@ import CoreLocation
                                 self.newProtocalData = Data()
                             }
                             self.newProtocalData?.append(newData)
+                            //print("currentCount = \(currentCount),newData.count = \(newData.count)")
+                            //print("self.newProtocalData.count = \(self.newProtocalData?.count)")
                         }else{
                             print("testArray = \(testArray),count = \(testArray.count),crc16 = \(self.CRC16(val: testArray)),\(String.init(format: "%04x", self.CRC16(val: testArray)))")
                             let errorString = String.init(format: "第%d包crc16校验出错,app计算的:%02x,设备返回的:%02x", currentCount,self.CRC16(val: val),crc16)
@@ -3049,6 +3116,18 @@ import CoreLocation
                                                 self.parseGetTreatmentInfomation(val: newVal, success: block)
                                             }
                                             break
+                                        case 0x2A:
+                                            let newVal = Array(newVal[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            if let block = self.receiveGetWorldTimeBlock {
+                                                self.parseGetWorldTime(val: newVal, success: block)
+                                            }
+                                            break
+                                        case 0x2B:
+                                            let newVal = Array(newVal[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                            if let block = self.receiveGetLocalTimeZoneBlock {
+                                                self.parseGetLocalTimeZone(val: newVal, success: block)
+                                            }
+                                            break
                                             
                                         default:
                                             break
@@ -3136,6 +3215,36 @@ import CoreLocation
                                             break
                                         case 0x25:
                                             if let block = self.receiveSetTreatmentInfomationBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x26:
+                                            if let block = self.receiveSetLocationPrimitiveTransmissionBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x2A:
+                                            if let block = self.receiveSetWorldTimeBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x2B:
+                                            if let block = self.receiveSetLocalTimeZoneBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x2C:
+                                            if let block = self.receiveSetBarometerPrimitiveTransmissionBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x2D:
+                                            if let block = self.receiveSetTriaxialSensorPrimitiveTransmissionBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x31:
+                                            if let block = self.receiveSetDebugLogUploadBlock {
                                                 self.parseNewProtocolUniversalResponse(result: result, success: block)
                                             }
                                             break
@@ -3258,11 +3367,12 @@ import CoreLocation
                                 }
                                 
                                 if val[1] == 0x0a {
-                                    let newVal = Array(val[4..<val.count-2])
+                                    //MARK:- 多包上报
+                                    let resultArray = Array(val[4..<val.count-2])
                                     let cmd_id:Int = Int(newVal[0])
                                     switch cmd_id {
                                     case 0x07:
-                                        let stateVal = Array(newVal[1..<2])
+                                        let stateVal = Array(resultArray[1..<2])
                                         if let block = self.receiveReportAssistedPositioning {
                                             self.parseReportAssistedPositioning(val: stateVal, success: block)
                                         }
@@ -3270,18 +3380,30 @@ import CoreLocation
                                     case 0x08:
                                         let startIndex = 1
                                         let endIndex = 24
-                                        let powerVal = Array(newVal[startIndex..<endIndex])
+                                        let powerVal = Array(resultArray[startIndex..<endIndex])
                                         
                                         //if let block = self.receiveReportPowerConsumptionData {
                                             self.parseReportPowerConsumptionData(val: powerVal/*, success: ((_ dataDic:[String:String],_ error:ZyError) -> Void)*/)
                                         //}
                                         break
                                     case 0x09:
-                                        let stateVal = Array(newVal[1..<2])
+                                        let stateVal = Array(resultArray[1..<2])
                                         if let block = self.receiveReportTreatmentStatus {
                                             self.parseReportTreatmentStatus(val: stateVal, success: block)
                                         }
                                         break
+//                                    case 0x0a:
+//                                        let dataVal = Array(newVal[1..<newVal.count-1])
+//                                        if let block = self.receiveReportLocationPrimitiveTransmission {
+//                                            self.parseReportLocationPrimitiveTransmission(val: dataVal, success: block)
+//                                        }
+//                                        break
+//                                    case 0x0e:
+//                                        let dataVal = Array(newVal[1..<newVal.count-1])
+//                                        if let block = self.receiveReportDebugLog {
+//                                            self.parseReportDebugLog(val: dataVal, success: block)
+//                                        }
+//                                        break
                                     default:
                                         break
                                     }
@@ -3298,7 +3420,11 @@ import CoreLocation
                                             self.parseReportLocationInfo(val: [], success: block)
                                         }
                                         break
-                                    
+//                                    case 0x02:
+//                                        if let block = self.receiveReportRequstWeatherData {
+//                                            self.parseReportRequstWeatherData(val: [], success: block)
+//                                        }
+//                                        break
                                     default:
                                         break
                                     }
@@ -3329,6 +3455,7 @@ import CoreLocation
 
                             }else{
                                 if val[1] == 0x05 { //同步数据id 0x05
+                                    //print("---> self.newProtocalData!.count = \(self.newProtocalData!.count),totalLength = \(totalLength)")
                                     if let block = self.receiveNewSetSyncHealthDataBlock {
                                         block(nil,.invalidLength)
                                     }
@@ -3380,6 +3507,13 @@ import CoreLocation
                                     if let block = self.receiveGetTreatmentInfomationBlock {
                                         block(nil,.invalidLength)
                                     }
+                                    if let block = self.receiveGetWorldTimeBlock {
+                                        block([],.invalidLength)
+                                    }
+                                    if let block = self.receiveGetLocalTimeZoneBlock {
+                                        block(-1,.invalidLength)
+                                    }
+                                    
                                 }
                                 if val[1] == 0x03 {
                                     
@@ -3462,6 +3596,37 @@ import CoreLocation
                                                 self.parseNewProtocolUniversalResponse(result: result, success: block)
                                             }
                                             break
+                                        case 0x26:
+                                            if let block = self.receiveSetLocationPrimitiveTransmissionBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x2A:
+                                            if let block = self.receiveSetWorldTimeBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x2B:
+                                            if let block = self.receiveSetLocalTimeZoneBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x2C:
+                                            if let block = self.receiveSetBarometerPrimitiveTransmissionBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x2D:
+                                            if let block = self.receiveSetTriaxialSensorPrimitiveTransmissionBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                        case 0x31:
+                                            if let block = self.receiveSetDebugLogUploadBlock {
+                                                self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                            }
+                                            break
+                                            
                                         default:
                                             break
                                         }
@@ -3694,6 +3859,18 @@ import CoreLocation
                                             self.parseGetTreatmentInfomation(val: newVal, success: block)
                                         }
                                         break
+                                    case 0x2A:
+                                        let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                        if let block = self.receiveGetWorldTimeBlock {
+                                            self.parseGetWorldTime(val: newVal, success: block)
+                                        }
+                                        break
+                                    case 0x2B:
+                                        let newVal = Array(val[(currentIndex+4)..<(currentIndex+4+cmd_length)])
+                                        if let block = self.receiveGetLocalTimeZoneBlock {
+                                            self.parseGetLocalTimeZone(val: newVal, success: block)
+                                        }
+                                        break
                                     default:
                                         break
                                     }
@@ -3780,6 +3957,36 @@ import CoreLocation
                                         break
                                     case 0x25:
                                         if let block = self.receiveSetTreatmentInfomationBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x26:
+                                        if let block = self.receiveSetLocationPrimitiveTransmissionBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x2A:
+                                        if let block = self.receiveSetWorldTimeBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x2B:
+                                        if let block = self.receiveSetLocalTimeZoneBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x2C:
+                                        if let block = self.receiveSetBarometerPrimitiveTransmissionBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x2D:
+                                        if let block = self.receiveSetTriaxialSensorPrimitiveTransmissionBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x31:
+                                        if let block = self.receiveSetDebugLogUploadBlock {
                                             self.parseNewProtocolUniversalResponse(result: result, success: block)
                                         }
                                         break
@@ -3923,7 +4130,19 @@ import CoreLocation
                                         self.parseReportTreatmentStatus(val: stateVal, success: block)
                                     }
                                     break
-                                
+//                                case 0x0a:
+//                                    let dataVal = Array(newVal[1..<newVal.count])
+//                                    if let block = self.receiveReportLocationPrimitiveTransmission {
+//                                        self.parseReportLocationPrimitiveTransmission(val: dataVal, success: block)
+//                                    }
+//                                    break
+//                                case 0x0e:
+//                                    let dataVal = Array(newVal[1..<newVal.count])
+//                                    if let block = self.receiveReportDebugLog {
+//                                        self.parseReportDebugLog(val: dataVal, success: block)
+//                                    }
+//                                    break
+                                    
                                 default:
                                     break
                                 }
@@ -3941,7 +4160,12 @@ import CoreLocation
                                             self.parseReportLocationInfo(val: [], success: block)
                                         }
                                         break
-                                    
+//                                    case 0x02:
+//                                        if let block = self.receiveReportRequstWeatherData {
+//                                            self.parseReportRequstWeatherData(val: [], success: block)
+//                                        }
+//                                        break
+                                        
                                     default:
                                         break
                                     }
@@ -4024,6 +4248,13 @@ import CoreLocation
                                 if let block = self.receiveGetTreatmentInfomationBlock {
                                     block(nil,.invalidLength)
                                 }
+                                if let block = self.receiveGetWorldTimeBlock {
+                                    block([],.invalidLength)
+                                }
+                                if let block = self.receiveGetLocalTimeZoneBlock {
+                                    block(-1,.invalidLength)
+                                }
+                                
                             }
                             
                             if val[1] == 0x01 {
@@ -4104,6 +4335,36 @@ import CoreLocation
                                         break
                                     case 0x25:
                                         if let block = self.receiveSetTreatmentInfomationBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x26:
+                                        if let block = self.receiveSetLocationPrimitiveTransmissionBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x2A:
+                                        if let block = self.receiveSetWorldTimeBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x2B:
+                                        if let block = self.receiveSetLocalTimeZoneBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x2C:
+                                        if let block = self.receiveSetBarometerPrimitiveTransmissionBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x2D:
+                                        if let block = self.receiveSetTriaxialSensorPrimitiveTransmissionBlock {
+                                            self.parseNewProtocolUniversalResponse(result: result, success: block)
+                                        }
+                                        break
+                                    case 0x31:
+                                        if let block = self.receiveSetDebugLogUploadBlock {
                                             self.parseNewProtocolUniversalResponse(result: result, success: block)
                                         }
                                         break
@@ -13541,6 +13802,315 @@ import CoreLocation
             success([],.invalidState)
         }
 
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 设置世界时钟信息
+    @objc public func setWorldTime(modelArray:[ZyWorldTimeModel],success:@escaping((ZyError) -> Void)) {
+        
+        let headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 0x2a
+        var contentVal:[UInt8] = [0x01,
+                                  UInt8((cmd_id ) & 0xff),
+                                  UInt8((cmd_id >> 8) & 0xff),
+                                  0x00,
+                                  0x00]
+        contentVal.append(UInt8(modelArray.count))
+        
+        for i in 0..<modelArray.count {
+            let timeModel = modelArray[i]
+            var cityData = timeModel.cityName.data(using: .utf8) ?? .init()
+            let maxLength = self.functionListModel?.functionDetail_worldClock?.cityMaxLength ?? 32
+            //print("setWorldTime maxLength = \(maxLength)")
+            if cityData.count >= maxLength {
+                cityData = cityData.subdata(in: 0..<maxLength)
+            }
+            let cityValArray = cityData.withUnsafeBytes { (byte) -> [UInt8] in
+                let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+                return [UInt8](UnsafeBufferPointer.init(start: b, count: cityData.count))
+            }
+            
+            contentVal.append(UInt8(cityData.count + 3))
+            var timeOffset = timeModel.timeOffset
+            if timeOffset < 0 {
+                timeOffset = abs(timeOffset) + (1 << 15)
+            }
+            contentVal.append(UInt8((timeOffset) & 0xFF))
+            contentVal.append(UInt8((timeOffset >> 8) & 0xFF))
+            contentVal.append(UInt8(cityData.count))
+            contentVal.append(contentsOf: cityValArray)
+            
+        }
+        //参数长度
+        let modelCount = (contentVal.count - 5)//modelArray.count > 0 ? (contentVal.count - 5) : 0
+        contentVal[3] = UInt8((modelCount) & 0xFF)
+        contentVal[4] = UInt8((modelCount >> 8) & 0xFF)
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetWorldTimeBlock = success
+                
+            }else{
+                success(error)
+            }
+        }
+    }
+    
+    // MARK: - 获取世界时钟
+    @objc public func getWorldTime(success:@escaping(([ZyWorldTimeModel],ZyError) -> Void)) {
+        
+        let headVal:[UInt8] = [
+            0xaa,
+            0x84
+        ]
+        
+        //参数id
+        let cmd_id = 0x2a
+        let contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveGetWorldTimeBlock = success
+            }else{
+                success([],error)
+            }
+        }
+    }
+    
+    func parseGetWorldTime(val:[UInt8],success:@escaping(([ZyWorldTimeModel],ZyError) -> Void)) {
+        
+        if val.count > 1 {
+            let arrayCount = Int(val[0])
+            
+            var modelArray:[ZyWorldTimeModel] = .init()
+            var startIndex = 1
+            while startIndex < val.count {
+                let detailLength = (val[startIndex])
+                let timeOffset = (Int(val[startIndex+1]) | Int(val[startIndex+2]) << 8)
+                let cityLength = val[startIndex+3]
+                let cityVal = Array.init(val[(startIndex+4)..<(startIndex+4+Int(cityLength))])
+                let timeModel = ZyWorldTimeModel.init()
+                timeModel.timeOffset = (timeOffset >= (1 << 15)) ? -(timeOffset - (1 << 15)) : timeOffset
+                let nameData = cityVal.withUnsafeBufferPointer { (bytes) -> Data in
+                    return Data.init(buffer: bytes)
+                }
+                if let str = String.init(data: nameData, encoding: .utf8) {
+                    timeModel.cityName = str
+                }
+                modelArray.append(timeModel)
+                startIndex += Int(detailLength) + 1
+            }
+            
+            var string = ""
+            for item in modelArray {
+                string += String.init(format: "\n时区偏移量:%d",item.timeOffset)
+                string += String.init(format: "\n城市:%@",item.cityName)
+                string += "\n"
+            }
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "解析:%@",string))
+            success(modelArray,.none)
+        }else{
+            success([],.invalidState)
+        }
+
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 设置本地时区
+    @objc public func setLocalTimeZone(offset:Int,success:@escaping((ZyError) -> Void)) {
+        
+        let headVal:[UInt8] = [
+            0xaa,
+            0x83
+        ]
+        
+        //参数id
+        let cmd_id = 0x2b
+        //参数长度
+        let modelCount = 1
+        var timeOffset = offset
+        if timeOffset < 0 {
+            timeOffset = abs(timeOffset) + (1 << 15)
+        }
+        var contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+            UInt8((modelCount ) & 0xff),
+            UInt8((modelCount >> 8) & 0xff),
+            UInt8((timeOffset ) & 0xff),
+            UInt8((timeOffset >> 8) & 0xff),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveSetLocalTimeZoneBlock = success
+            }else{
+                success(error)
+            }
+        }
+    }
+    
+    // MARK: - 获取本地时区
+    @objc public func getLocalTimeZone(success:@escaping((Int,ZyError) -> Void)) {
+        
+        let headVal:[UInt8] = [
+            0xaa,
+            0x84
+        ]
+        
+        //参数id
+        let cmd_id = 0x2b
+        let contentVal:[UInt8] = [
+            0x01,
+            UInt8((cmd_id ) & 0xff),
+            UInt8((cmd_id >> 8) & 0xff),
+        ]
+        
+        self.dealNewProtocolData(headVal: headVal, contentVal: contentVal) { [weak self] error in
+            if error == .none {
+                self?.receiveGetLocalTimeZoneBlock = success
+            }else{
+                success(-1,error)
+            }
+        }
+    }
+
+    func parseGetLocalTimeZone(val:[UInt8],success:@escaping((Int,ZyError) -> Void)) {
+        
+        if val.count > 1 {
+            var timeOffset = (Int(val[0]) | Int(val[1]) << 8)
+            let value = (timeOffset >= (1 << 15)) ? -(timeOffset - (1 << 15)) : timeOffset
+            
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "时区偏移量:%d",value))
+            success(value,.none)
+        }else{
+            success(-1,.invalidState)
+        }
+
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 潜水深度设置
+    @objc public func setDiveDeep(count:Int,timeLong:Int,success:@escaping((ZyError) -> Void)) {
+        var val:[UInt8] = [
+            0x01,
+            0x44,
+            0x0a,
+            0x00,
+            UInt8((count ) & 0xff),
+            UInt8((count >> 8) & 0xff),
+            UInt8((timeLong ) & 0xff),
+            UInt8((timeLong >> 8) & 0xff),
+            UInt8((timeLong >> 16) & 0xff),
+            UInt8((timeLong >> 24) & 0xff),
+        ]
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetDiveDeepBlock = success
+        }else{
+            success(state)
+        }
+        
+    }
+    
+    private func parseSetDiveDeep(val:[UInt8],success:@escaping((ZyError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val[4] == 1 {
+            
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@", state))
+            success(.none)
+            
+        }else{
+            success(.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 潜水深度获取
+    @objc public func getDiveDeep(success:@escaping((Int,Int,ZyError) -> Void)) {
+        
+        var val:[UInt8] = [0x01,0x45,0x04,0x00]
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveGetDiveDeepBlock = success
+        }else{
+            success(-1,-1,state)
+        }
+        
+    }
+    
+    func parseGetDiveDeep(val:[UInt8],success:@escaping((Int,Int,ZyError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val[4] == 1 {
+            
+            let deep = (Int(val[5]) | Int(val[6]) << 8)
+            let timeLong = (Int(val[7]) | Int(val[8]) << 8 | Int(val[9]) << 16 | Int(val[10]) << 24)
+            
+            let string = String.init(format: "深度:%d,时长:%d",deep,timeLong)
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,解析:%@", state,string))
+            success(Int(deep),Int(timeLong),.none)
+            
+        }else{
+            success(-1,-1,.invalidState)
+        }
+        //printLog("第\(#line)行" , "\(#function)")
+        self.signalCommandSemaphore()
+    }
+    
+    // MARK: - 潜水气压转换
+    @objc public func setDivePressure(count:Int,success:@escaping((Int,ZyError) -> Void)) {
+        var val:[UInt8] = [
+            0x01,
+            0x46,
+            0x08,
+            0x00,
+            UInt8((count ) & 0xff),
+            UInt8((count >> 8) & 0xff),
+            UInt8((count >> 16) & 0xff),
+            UInt8((count >> 24) & 0xff),
+        ]
+        let data = Data.init(bytes: &val, count: val.count)
+        
+        let state = self.writeDataAndBackError(data: data)
+        if state == .none {
+            self.receiveSetDivePressureBlock = success
+        }else{
+            success(-1,state)
+        }
+        
+    }
+    
+    private func parseSetDivePressure(val:[UInt8],success:@escaping((Int,ZyError) -> Void)) {
+        let state = String.init(format: "%02x", val[4])
+        
+        if val.count > 8 {
+            let count = (Int(val[5]) | Int(val[6]) << 8 | Int(val[7]) << 16 | Int(val[8]) << 24)
+            ZySDKLog.writeStringToSDKLog(string: String.init(format: "状态:%@,转换后深度:%d", state,count))
+            success(-1,.none)
+            
+        }else{
+            success(-1,.invalidState)
+        }
         //printLog("第\(#line)行" , "\(#function)")
         self.signalCommandSemaphore()
     }

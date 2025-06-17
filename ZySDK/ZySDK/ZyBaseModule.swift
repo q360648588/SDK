@@ -52,6 +52,7 @@ import zlib
     var peripheralStateChange:((CBPeripheralState)->())?
     var isReadSendDataBlock:(()->())?
     @objc public var isHaveWechatSportsServer:Bool = false
+    var testMaxMtuCount = 20//专门给录音盒测试用的
     
     override init() {
         self.scanInterval = 30
@@ -271,6 +272,15 @@ import zlib
                 model.rssi = 0
                 model.peripheral = item
                 model.uuidString = item.identifier.uuidString
+                print("name = \(item.name)")
+                print("identifier.uuidString = \(item.identifier.uuidString)")
+                print("identifier.uuid = \(item.identifier.uuid)")
+                print("identifier.description = \(item.identifier.description)")
+                print("identifier.debugDescription = \(item.identifier.debugDescription)")
+                print("services = \(item.services)")
+                for server in item.services ?? [] {
+                    print("server = \(server)")
+                }
                 //print("listConnect-> model.uuidString = \(model.uuidString),model.name = \(model.name),item = \(item)")
                 peripheralArray.append(model)
             }
@@ -468,6 +478,7 @@ import zlib
         let userDefault = UserDefaults.standard
         userDefault.removeObject(forKey: "Zy_ReconnectIdentifierKey")
         userDefault.removeObject(forKey: "Ant_ReconnectIdentifierKey")
+        userDefault.removeObject(forKey: "Zy_HaveBindCode")
         userDefault.synchronize()
         
         ZyBleManager.shareInstance.CentralDisonnectPeripheral { (central, peripheral, error) in
@@ -543,12 +554,13 @@ import zlib
             for characteristic in service.characteristics ?? [] {
                 ZySDKLog.writeStringToSDKLog(string: String.init(format: "characteristic:%@",characteristic.uuid))
                 printLog("characteristic:",characteristic)
-                if String.init(format: "%@", characteristic.uuid) == "6E400002-B5A3-F393-E0A9-E50E24DCCA9E" || String.init(format: "%@", characteristic.uuid) == "FF02" {
+                print("characteristic.properties = \(characteristic.properties)")
+                if String.init(format: "%@", characteristic.uuid) == "6E400002-B5A3-F393-E0A9-E50E24DCCA9E" || String.init(format: "%@", characteristic.uuid) == "FF02" || String.init(format: "%@", characteristic.uuid) == "00000901-3C17-D293-8E48-14FE2E4DA212"{
                     peripheral.setNotifyValue(true, for: characteristic)
                     
                     self.writeCharacteristic = characteristic
                 }
-                if String.init(format: "%@", characteristic.uuid) == "6E400003-B5A3-F393-E0A9-E50E24DCCA9E" || String.init(format: "%@", characteristic.uuid) == "FF03" {
+                if String.init(format: "%@", characteristic.uuid) == "6E400003-B5A3-F393-E0A9-E50E24DCCA9E" || String.init(format: "%@", characteristic.uuid) == "FF03" || String.init(format: "%@", characteristic.uuid) == "00000902-3C17-D293-8E48-14FE2E4DA212" {
                     peripheral.setNotifyValue(true, for: characteristic)
                     
                     self.receiveCharacteristic = characteristic
@@ -566,6 +578,31 @@ import zlib
                 userDefault.synchronize()
                 
                 if let block = self.connectCompleteBlock {
+                    if peripheral.name?.hasPrefix("301") == true {
+                        
+                        if let peripheral = self.peripheral ,let characteristic = self.writeCharacteristic {
+                            let mtu = peripheral.maximumWriteValueLength(for: ((characteristic.properties.rawValue & CBCharacteristicProperties.writeWithoutResponse.rawValue) != 0) ? .withoutResponse : .withResponse)
+                            
+                            var val:[UInt8] = [
+                                0xbb,
+                                0x01,
+                                0x00,
+                                0x02,
+                                UInt8((mtu >> 8) & 0xff),
+                                UInt8((mtu) & 0xff),
+                            ]
+                            let check = self.CRC16(val: val)
+                            let checkVal = [UInt8((check) & 0xff),UInt8((check >> 8) & 0xff)]
+                            val += checkVal
+                            let data = Data.init(bytes: &val, count: val.count)
+                            let dataString = String.init(format: "%@", self.convertDataToSpaceHexStr(data: data,isSend: true))
+                            ZySDKLog.writeStringToSDKLog(string: "发送:"+dataString)
+                            printLog("send",dataString)
+                            peripheral.writeValue(data, for: characteristic, type: ((characteristic.properties.rawValue & CBCharacteristicProperties.writeWithoutResponse.rawValue) != 0) ? .withoutResponse : .withResponse)
+                        }
+                        block(true)
+                        return
+                    }
                     //这里是升级过程中异常断开还保存未发完的ota数据，那么检测升级，拿到回调之后会继续升级
                     //有升级也要优先发设备的uuid命令。不发会导致设备端bt连不上
                     if ZyCommandModule.shareInstance.otaData != nil {
@@ -615,7 +652,7 @@ import zlib
                         
                     }else{
                         //内部需要获取到功能列表之后做一些处理，此处连接状态的回调改为获取功能列表状态
-                        self.perform(#selector(self.functionListCommandNoSupport), with: nil, afterDelay: 30)
+                        self.perform(#selector(self.functionListCommandNoSupport), with: nil, afterDelay: 90)
                         printLog("获取功能列表getDeviceSupportList")
                         ZyCommandModule.shareInstance.setPhoneMode(type: 0) { _ in
                         }
@@ -644,7 +681,43 @@ import zlib
                                     ZyCommandModule.shareInstance.setBind { _ in
                                     }
                                 }
-                                block(true)
+                                //如果是支持确认绑定的，需要在设备端点击确认才能算绑定成功
+                                if model?.functionList_bindConfirmation == true {
+                                    if let bindIdentifyString = model?.functionDetail_bindConfirmation?.bindIdentifyString {
+                                        let userDefault = UserDefaults.standard
+                                        let isHaveBindCode = userDefault.bool(forKey: "Zy_HaveBindCode")
+                                        let uuidString = self.peripheral?.identifier.uuidString.replacingOccurrences(of: "-", with: "") ?? ""
+                                        let bindString = String(uuidString.prefix(24))
+                                        if bindString.lowercased() == bindIdentifyString.lowercased() && isHaveBindCode {
+                                            ZyCommandModule.shareInstance.setBlePairingState(type: 4) { _ in
+                                                
+                                            }
+                                            block(true)
+                                        }else{
+                                            print("发起ble配对")
+                                            ZyCommandModule.shareInstance.setBlePairingInfomation { error in
+                                                if error == .none {
+                                                    ZyCommandModule.shareInstance.setBlePairingState(type: 1) { pairError in
+                                                        if pairError == .none {
+                                                            ZyCommandModule.shareInstance.receiveReportBlePairingState = { result in
+                                                                userDefault.setValue(result, forKey: "Zy_HaveBindCode")
+                                                                userDefault.synchronize()
+                                                                if result {
+                                                                    block(true)
+                                                                }else{
+                                                                    self.disconnect()
+                                                                    block(false)
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }else{
+                                    block(true)
+                                }
                                 if let block = self.isReadSendDataBlock {
                                     block()
                                 }
@@ -707,6 +780,18 @@ import zlib
         guard data.count > 0 else { return nil }
 
         return data
+    }
+    
+    func convertHexStringToUint8Array(string:String) -> [UInt8]? {
+        
+        if let data = self.convertHexStringToData(string: string) {
+            let val = data.withUnsafeBytes { (byte) -> [UInt8] in
+                let b = byte.baseAddress?.bindMemory(to: UInt8.self, capacity: 4)
+                return [UInt8](UnsafeBufferPointer.init(start: b, count: data.count))
+            }
+            return val
+        }
+        return nil
     }
     
     func convertDataToSpaceHexStr(data:Data,isSend:Bool) ->String {

@@ -32,6 +32,9 @@ class LogViewController: UIViewController {
             if localType == "101" {
                 self.textView.text = ZySDKLog.showLog()
             }
+            if localType == "999" {
+                self.textView.text = ZySDKLog.showLog()
+            }
         }
         self.textView.isEditable = false
         self.view.addSubview(self.textView)
@@ -47,6 +50,9 @@ class LogViewController: UIViewController {
                 ZywlSDKLog.clear()
             }
             if localType == "101" {
+                ZySDKLog.clear()
+            }
+            if localType == "999" {
                 ZySDKLog.clear()
             }
         }

@@ -2,9 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:../ZySDK/ZySDK.xcodeproj">
-   </FileRef>
-   <FileRef
       location = "group:ZySdkDemo.xcodeproj">
    </FileRef>
    <FileRef

@@ -10,17 +10,23 @@ import UIKit
 import Alamofire
 
 class ZyNetworkManager: NSObject {
-    
+    var manager = Session.default
     var basicUrl:String {
         if UserDefaults.standard.bool(forKey: "Zy_TestEnvironment") == true {
-            return "https://zmoofit-api.zhenyiwulian.com"
+            manager = Session(
+                configuration: .default,
+                serverTrustManager: ServerTrustManager(evaluators: ["zmoofit-platform.zhenyiwulian.com": DisabledTrustEvaluator(),
+                                                                    "zmoofit.oss-accelerate.aliyuncs.com":DisabledTrustEvaluator(),
+                                                                   ])
+                )
+            return "https://zmoofit-platform.zhenyiwulian.com"//"https://zmoofit-api.zhenyiwulian.com"
         }
         if let AppBundleId = Bundle.main.infoDictionary!["CFBundleIdentifier"] as? String {
             if AppBundleId == "com.buzz.wapik" {
-                return "https://www.zhenyiwulian.fun"
+                return "https://www.zhenyiwulian.fun/api"
             }
         }
-        return "https://www.zhenyiwulian.com"
+        return "https://www.zhenyiwulian.com/api"
     }//"https://zmoofit-api.zhenyiwulian.com"//
 //    let basicUrl = "http://192.168.1.21:8080"
     
@@ -38,23 +44,23 @@ class ZyNetworkManager: NSObject {
 //            }
 //        }
         
-        let net = NetworkReachabilityManager()
-        net?.listener = { status in
-            if net?.isReachable ?? false {
-                switch status{
-                case .notReachable:
-                    printLog("the noework is not reachable")
-                case .unknown:
-                    printLog("It is unknown whether the network is reachable")
-                case .reachable(.ethernetOrWiFi):
-                    printLog("通过WiFi链接")
-                case .reachable(.wwan):
-                    printLog("通过移动网络链接")
-                }
-            }else {
-                printLog("网络不可用")
-            }
-        }
+//        let net = NetworkReachabilityManager()
+//        net?.listener = { status in
+//            if net?.isReachable ?? false {
+//                switch status{
+//                case .notReachable:
+//                    printLog("the noework is not reachable")
+//                case .unknown:
+//                    printLog("It is unknown whether the network is reachable")
+//                case .reachable(.ethernetOrWiFi):
+//                    printLog("通过WiFi链接")
+//                case .reachable(.wwan):
+//                    printLog("通过移动网络链接")
+//                }
+//            }else {
+//                printLog("网络不可用")
+//            }
+//        }
     }
 
     func post(url:String,parameter:Dictionary<String,Any>?,isNeedToken:Bool?,complete:@escaping(Dictionary<String,Any>) -> Void,fail:@escaping(Error?)-> Void) {
@@ -81,7 +87,7 @@ class ZyNetworkManager: NSObject {
         //printLog("url:",url)
         //printLog("parameter:",parameter as Any)
         
-        /*Session.default*/Alamofire.request(url, method: .post, parameters: parameter, encoding: JSONEncoding.default, headers: nil).validate().responseJSON { (response) in
+        manager.request(url, method: .post, parameters: parameter, encoding: JSONEncoding.default, headers: nil).validate().responseJSON { (response) in
             
             switch response.result {
             case .success(_):
@@ -149,7 +155,7 @@ class ZyNetworkManager: NSObject {
         
         printLog("url:",url)
         
-        /*Session.default*/Alamofire.request(url, method: .get, encoding: JSONEncoding.default, headers: nil).validate().responseJSON { (response) in
+        manager.request(url, method: .get, encoding: JSONEncoding.default, headers: nil).validate().responseJSON { (response) in
             
             switch response.result {
             case .success(_):

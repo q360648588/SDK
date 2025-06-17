@@ -135,6 +135,9 @@ import CoreLocation
     @objc public private(set) var functionList_dive = false
     @objc public private(set) var functionList_worldClock = false
     @objc public private(set) var functionList_localTimeZoneExtension = false
+    @objc public private(set) var functionList_bindConfirmation = false
+    @objc public private(set) var functionList_laserTreatment = false
+    @objc public private(set) var functionList_recentIgnitionCount = false
     
     @objc public private(set) var functionDetail_exercise:ZyFunctionModel_exercise?
     @objc public private(set) var functionDetail_notification:ZyFunctionModel_notification?
@@ -167,7 +170,9 @@ import CoreLocation
     @objc public private(set) var functionDetail_heartrateNew:ZyFunctionModel_supportMeasurementDataTypeModel?
     @objc public private(set) var functionDetail_notificationAlertMode:ZyFunctionModel_notificationAlertMode?
     @objc public private(set) var functionDetail_businessCard:ZyFunctionModel_businessCard?
-    @objc public private(set) var functionDetail_worldClock:ZyFunctionModel_worldClockd?
+    @objc public private(set) var functionDetail_bindConfirmation:ZyFunctionModel_bindConfirmation?
+    @objc public private(set) var functionDetail_worldClock:ZyFunctionModel_worldClock?
+    @objc public private(set) var functionDetail_recentIgnitionModel:ZyFunctionModel_recentIgnitionModel?
     
     init(val:[UInt8]) {
         
@@ -176,6 +181,10 @@ import CoreLocation
         var currentIndex = 0
         
         let mainLength = val[0]
+        if mainLength <= 0 {
+            print("功能列表异常，无法获取主功能 : \(val)")
+            return
+        }
         var funcList_1 = 0
         var funcList_2 = 0
         let mainVal = Array.init(val[1...Int(mainLength)])
@@ -401,7 +410,13 @@ import CoreLocation
             case 65:
                 break
             case 66:
-                self.functionDetail_worldClock = ZyFunctionModel_worldClockd(val: functionVal)
+                self.functionDetail_worldClock = ZyFunctionModel_worldClock(val: functionVal)
+                break
+            case 68:
+                self.functionDetail_bindConfirmation = ZyFunctionModel_bindConfirmation(val: functionVal)
+                break
+            case 70:
+                self.functionDetail_recentIgnitionModel = ZyFunctionModel_recentIgnitionModel(val: functionVal)
                 break
             default:
                 break
@@ -560,6 +575,11 @@ import CoreLocation
             break
         case 67:self.functionList_localTimeZoneExtension = state == 0 ? false:true
             break
+        case 68:self.functionList_bindConfirmation = state == 0 ? false:true
+            break
+        case 69:self.functionList_laserTreatment = state == 0 ? false:true
+            break
+        case 70:self.functionList_recentIgnitionCount = state == 0 ? false:true
         default:
             break
         }
@@ -1244,6 +1264,9 @@ import CoreLocation
                 if model.isSupportKhmer {
                     log += "\n      高棉语 / isSupportKhmer"
                 }
+                if model.isSupportNorthKorea {
+                    log += "\n      朝鲜语 / isSupportNorthKorea"
+                }
             }
         }
         if self.functionList_screenConreol {
@@ -1430,6 +1453,9 @@ import CoreLocation
             if let model = self.functionDetail_locationGps {
                 if model.isSupportAG3352Q {
                     log += "\n      AG3352Q"
+                }
+                if model.isSupportCC1167Q {
+                    log += "\n      CC1167Q"
                 }
                 log += "\n      GPS信息长度\(model.supportGpsLenght)"
             }
@@ -1800,6 +1826,21 @@ import CoreLocation
         }
         if self.functionList_localTimeZoneExtension {
             log += "\n 本地时区扩展"
+        }
+        if self.functionList_bindConfirmation {
+            log += "\n BLE绑定确认弹框"
+            if let model = self.functionDetail_bindConfirmation {
+                log += "\n      绑定唯一标识码:\(model.bindIdentifyString)"
+            }
+        }
+        if self.functionList_laserTreatment {
+            log += "\n 激光治疗"
+        }
+        if self.functionList_recentIgnitionCount {
+            log += "\n 最近点火次数"
+            if let model = self.functionDetail_recentIgnitionModel {
+                log += "\n      支持最大个数:\(model.maxCount)"
+            }
         }
         
         return log
@@ -2761,6 +2802,7 @@ import CoreLocation
     @objc public private(set) var isSupportLatvian = false                      //拉脱维亚语
     @objc public private(set) var isSupportEstonian = false                     //爱沙尼亚语
     @objc public private(set) var isSupportKhmer = false                        //高棉语
+    @objc public private(set) var isSupportNorthKorea = false                   //朝鲜（北韩）
     //@objc public private(set) var isSupport = false
     
     init(result:Int) {
@@ -2851,6 +2893,8 @@ import CoreLocation
             case 38:self.isSupportEstonian = state == 0 ? false:true
                 break
             case 39:self.isSupportKhmer = state == 0 ? false:true
+                break
+            case 40:self.isSupportNorthKorea = state == 0 ? false:true
                 break
             default:
                 break
@@ -3763,6 +3807,7 @@ class ZyFunctionModel_newPortocol:NSObject {
     @objc public var deep = 0
     @objc public var light = 0
     @objc public var awake = 0
+    @objc public var sporadic = 0
     @objc public var detailArray:[[String:String]] = []             //详情数据，无效状态转换成清醒状态
     @objc public var detailArray_filter:[[String:String]] = []      //过滤了无效数据的详情数据
     
@@ -3776,6 +3821,7 @@ class ZyFunctionModel_newPortocol:NSObject {
         self.deep = Int(dic["deep"] as! String) ?? 0
         self.light = Int(dic["light"] as! String) ?? 0
         self.awake = Int(dic["awake"] as! String) ?? 0
+        self.sporadic = Int(dic["sporadic"] as! String) ?? 0
         
         if dic.keys.contains("detailArray") {
             self.detailArray = dic["detailArray"] as? [[String:String]] ?? []
@@ -3949,6 +3995,20 @@ class ZyFunctionModel_newPortocol:NSObject {
     @objc public var calorie:Int = 0
     @objc public var distance:Int = 0
     @objc public var gpsArray:[[CLLocation]] = .init()
+    
+    //新增项，部分设备有数据
+    @objc public var avgHr = 0
+    @objc public var maxHr = 0
+    @objc public var minHr = 0
+    @objc public var avgStepFrequency = 0
+    @objc public var currentStepFrequency = 0
+    @objc public var maxStepFrequency = 0
+    @objc public var minStepFrequency = 0
+    @objc public var avgStepExtent = 0
+    @objc public var maxStepExtent = 0
+    @objc public var minStepExtent = 0
+    @objc public var currentStepExtent = 0
+    @objc public var avgSpeed = 0
     
     public override init() {
         super.init()
@@ -4165,19 +4225,29 @@ class ZyFunctionModel_newPortocol:NSObject {
 
 @objc public class ZyFunctionModel_locationGps:NSObject {
     @objc public private(set) var isSupportAG3352Q = false
+    @objc public private(set) var isSupportCC1167Q = false
     @objc public private(set) var supportGpsLenght = 0
     init(val:[UInt8]) {
         
-        for i in 0..<8 {
-            let state = (val[0] >> i) & 0x01
-
-            switch i {
-            case 0:self.isSupportAG3352Q = state == 0 ? false:true
-                break
-            default:
-                break
-            }
+        let state = val[0]
+        if state == 0 {
+            self.isSupportAG3352Q = true
+        }else if state == 1 {
+            self.isSupportCC1167Q = true
         }
+        
+//        for i in 0..<8 {
+//            let state = (val[0] >> i) & 0x01
+//
+//            switch i {
+//            case 0:self.isSupportAG3352Q = state == 0 ? false:true
+//                break
+//            case 1:self.isSupportCC1167Q = state == 0 ? false:true
+//                break
+//            default:
+//                break
+//            }
+//        }
         if val.count > 1 {
             let maxCount = val[1]
             switch maxCount {
@@ -4434,7 +4504,7 @@ class ZyFunctionModel_newPortocol:NSObject {
     }
 }
 
-@objc public class ZyFunctionModel_worldClockd:NSObject {
+@objc public class ZyFunctionModel_worldClock:NSObject {
     @objc public private(set) var maxCount = 0
     @objc public private(set) var cityMaxLength = 32
     
@@ -4442,6 +4512,27 @@ class ZyFunctionModel_newPortocol:NSObject {
         self.maxCount = Int(val[0])
         self.cityMaxLength = Int(val[1])
         super.init()
+    }
+}
+
+@objc public class ZyFunctionModel_bindConfirmation:NSObject {
+    @objc public private(set) var bindIdentifyString = ""
+    
+    init(val:[UInt8]) {
+        if val.count >= 12 {
+            for item in val {
+                self.bindIdentifyString += String.init(format: "%02x", item)
+            }
+        }
+        super.init()
+    }
+}
+
+@objc public class ZyFunctionModel_recentIgnitionModel:NSObject {
+    @objc public private(set) var maxCount = 0
+    
+    init(val:[UInt8]) {
+        self.maxCount = Int(val[0])
     }
 }
 
@@ -4460,4 +4551,12 @@ class ZyFunctionModel_newPortocol:NSObject {
     @objc public var isOpen = false                 //0关1开
     @objc public var timeDic = [String:String]()    //key:时间 value:时长
     @objc public var dateDic = [String:String]()    //key:日期 value:天数
+}
+
+
+@objc public class RecordFileModel:NSObject {
+    @objc public var fileSize = 0
+    @objc public var maxLength = 0
+    @objc public var numberIndex = 0
+    @objc public var fileName = ""
 }
