@@ -11139,17 +11139,17 @@ import CoreLocation
         
 //        var str = "0701003b 0002e907 060b0b0a e907060b 11140500 05000001 3c000289 0001ac00 067201e9 07060b06 0ae90706 0b0a1405 00050000 013c0002 4d000170 0006fa00"
 //        var str = "07010041 0002e907 060b0b0a e907060b 11140600 05000001 3c000464 00028900 01ac0006 7201e907 060b060a e907060b 0a140600 05000001 3c000496 00024d00 01700006 fa00"
-        var str = "07010041 0002e907 060b0b0a e907060b 11140600 05000001 3c000289 0001ac00 04640006 7201e907 060b060a e907060b 0a140600 05000001 3c00024d 00017000 04160006 fa00"
-        str = str.replacingOccurrences(of: " ", with: "")
-
-        var val = [UInt8]()
-        for i in 0..<str.count/2 {
-        let startIndex = str.index(str.startIndex,offsetBy: i*2)
-        let endIndex = str.index(str.startIndex,offsetBy: (i+1)*2)
-        let value = String.init(format: "%@", str.substring(with: (startIndex..<endIndex)))
-        let intValue = self.hexStringToInt(from: value)
-        val.append(UInt8(intValue))
-        }
+//        var str = "07010041 0002e907 060b0d0a e907060b 11140600 05000002 3c000189 0002ac00 04640006 7201e907 060b060a e907060b 0a140600 05000001 3c00004d 00017000 04160006 fa00"
+//        str = str.replacingOccurrences(of: " ", with: "")
+//
+//        var val = [UInt8]()
+//        for i in 0..<str.count/2 {
+//        let startIndex = str.index(str.startIndex,offsetBy: i*2)
+//        let endIndex = str.index(str.startIndex,offsetBy: (i+1)*2)
+//        let value = String.init(format: "%@", str.substring(with: (startIndex..<endIndex)))
+//        let intValue = self.hexStringToInt(from: value)
+//        val.append(UInt8(intValue))
+//        }
         
         let valData = val.withUnsafeBufferPointer { (v) -> Data in
             return Data.init(buffer: v)
@@ -11582,7 +11582,7 @@ import CoreLocation
                     totalSporadic += totalDuration
                 }
                 let endIndex = startIndex + totalDuration
-                if type > 0 && type < 5 {
+                if type >= 0 && type < 5 {
                     result["start"] = String.init(format: "%02d:%02d", startIndex/60,startIndex%60)
                     result["end"] = String.init(format: "%02d:%02d", endIndex/60,endIndex%60)
                     result["total"] = "\(totalDuration)"
