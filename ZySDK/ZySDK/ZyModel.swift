@@ -3821,7 +3821,9 @@ class ZyFunctionModel_newPortocol:NSObject {
         self.deep = Int(dic["deep"] as! String) ?? 0
         self.light = Int(dic["light"] as! String) ?? 0
         self.awake = Int(dic["awake"] as! String) ?? 0
-        self.sporadic = Int(dic["sporadic"] as! String) ?? 0
+        if dic.keys.contains("sporadic") {
+            self.sporadic = Int(dic["sporadic"] as! String) ?? 0
+        }
         
         if dic.keys.contains("detailArray") {
             self.detailArray = dic["detailArray"] as? [[String:String]] ?? []
