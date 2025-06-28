@@ -11104,10 +11104,10 @@ import CoreLocation
             success(nil,.fail)
             return
         }
-//        var type = type
-//        if self.functionListModel?.functionDetail_sleepDataVersion?.versionType == 2 {
-//            type = 7
-//        }
+        var type = type
+        if self.functionListModel?.functionDetail_sleepDataVersion?.versionType == 2 {
+            type = 7
+        }
         var indexArray = indexArray
         if indexArray.count == 0 {
             indexArray = [0]
