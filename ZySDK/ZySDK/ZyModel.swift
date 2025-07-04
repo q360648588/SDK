@@ -138,6 +138,7 @@ import CoreLocation
     @objc public private(set) var functionList_bindConfirmation = false
     @objc public private(set) var functionList_laserTreatment = false
     @objc public private(set) var functionList_recentIgnitionCount = false
+    @objc public private(set) var functionList_n97Customized = false
     
     @objc public private(set) var functionDetail_exercise:ZyFunctionModel_exercise?
     @objc public private(set) var functionDetail_notification:ZyFunctionModel_notification?
@@ -580,6 +581,7 @@ import CoreLocation
         case 69:self.functionList_laserTreatment = state == 0 ? false:true
             break
         case 70:self.functionList_recentIgnitionCount = state == 0 ? false:true
+        case 71:self.functionList_n97Customized = state == 0 ? false:true
         default:
             break
         }
@@ -1842,6 +1844,10 @@ import CoreLocation
                 log += "\n      支持最大个数:\(model.maxCount)"
             }
         }
+        if self.functionList_n97Customized {
+            log += "\n N97定制"
+        }
+        
         
         return log
     }

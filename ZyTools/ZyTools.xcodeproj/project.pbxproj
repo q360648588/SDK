@@ -35,11 +35,27 @@
 		67DECB2A2BD748D40043161A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67DECB292BD748D40043161A /* AppDelegate.swift */; };
 		67DECB2E2BD748D40043161A /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67DECB2D2BD748D40043161A /* ViewController.swift */; };
 		67DECB332BD748DF0043161A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67DECB322BD748DF0043161A /* Assets.xcassets */; };
+		E27A8DF12E1516FB00C157B1 /* JLAudioUnitKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E27A8DEF2E1514D200C157B1 /* JLAudioUnitKit.framework */; };
+		E27A8DF22E1516FB00C157B1 /* JLAudioUnitKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E27A8DEF2E1514D200C157B1 /* JLAudioUnitKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		E2B80E192D81BFAA0014A238 /* RecordScanVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B80E182D81BFAA0014A238 /* RecordScanVC.swift */; };
 		E2B80E1B2D81BFEC0014A238 /* RecordBoxConfigurationVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B80E1A2D81BFEC0014A238 /* RecordBoxConfigurationVC.swift */; };
 		E2B80E1D2D81BFFF0014A238 /* RecordBoxCommandVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B80E1C2D81BFFF0014A238 /* RecordBoxCommandVC.swift */; };
 		E9F8F5FDBABC7F655879BD85 /* Pods_ZyTools.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 160AA93E269198321447CBFB /* Pods_ZyTools.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		E27A8DF32E1516FB00C157B1 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				E27A8DF22E1516FB00C157B1 /* JLAudioUnitKit.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		160AA93E269198321447CBFB /* Pods_ZyTools.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ZyTools.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -77,6 +93,7 @@
 		67DECB322BD748DF0043161A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		67DECB352BD748DF0043161A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		67DECB372BD748DF0043161A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E27A8DEF2E1514D200C157B1 /* JLAudioUnitKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JLAudioUnitKit.framework; sourceTree = "<group>"; };
 		E2B80E182D81BFAA0014A238 /* RecordScanVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordScanVC.swift; sourceTree = "<group>"; };
 		E2B80E1A2D81BFEC0014A238 /* RecordBoxConfigurationVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordBoxConfigurationVC.swift; sourceTree = "<group>"; };
 		E2B80E1C2D81BFFF0014A238 /* RecordBoxCommandVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordBoxCommandVC.swift; sourceTree = "<group>"; };
@@ -91,6 +108,7 @@
 				6775069C2BDA59CE00769C8C /* ZywlSDK.framework in Frameworks */,
 				67309E062D23A544005AF722 /* JL_AdvParse.framework in Frameworks */,
 				67309E072D23A544005AF722 /* JL_HashPair.framework in Frameworks */,
+				E27A8DF12E1516FB00C157B1 /* JLAudioUnitKit.framework in Frameworks */,
 				67309E082D23A544005AF722 /* JL_OTALib.framework in Frameworks */,
 				E9F8F5FDBABC7F655879BD85 /* Pods_ZyTools.framework in Frameworks */,
 				67A553B62C37A78A001317D0 /* JL_BLEKit.framework in Frameworks */,
@@ -186,6 +204,7 @@
 				67309E032D23A544005AF722 /* JL_AdvParse.framework */,
 				67309E042D23A544005AF722 /* JL_HashPair.framework */,
 				67309E052D23A544005AF722 /* JL_OTALib.framework */,
+				E27A8DEF2E1514D200C157B1 /* JLAudioUnitKit.framework */,
 				67DECB2F2BD748D40043161A /* Main.storyboard */,
 				67DECB322BD748DF0043161A /* Assets.xcassets */,
 				67DECB342BD748DF0043161A /* LaunchScreen.storyboard */,
@@ -235,6 +254,7 @@
 				67DECB232BD748D40043161A /* Frameworks */,
 				67DECB242BD748D40043161A /* Resources */,
 				664E951FCF4D6412628E6956 /* [CP] Embed Pods Frameworks */,
+				E27A8DF32E1516FB00C157B1 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);

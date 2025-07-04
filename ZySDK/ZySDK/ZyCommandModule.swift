@@ -10,6 +10,7 @@ import CoreBluetooth
 import Alamofire
 import JL_BLEKit
 import CoreLocation
+import JLAudioUnitKit
 
 @objc public enum ZyError : Int {
     case none
@@ -23,7 +24,14 @@ import CoreLocation
     case fail
 }
 
-@objc public class ZyCommandModule: ZyBaseModule {
+@objc public class ZyCommandModule: ZyBaseModule,JLOpusDecoderDelegate {
+    
+    public func opusDecoder(_ decoder: JLOpusDecoder, data: Data?, error: (any Error)?) {
+        //print("opusDecoder error = \(error?.localizedDescription)")
+        if let data = data {
+            //print("data = \(data.count)")
+        }
+    }
     
     @objc public static let shareInstance = ZyCommandModule()
     
@@ -3578,8 +3586,28 @@ import CoreLocation
                                                 self.voiceFileTotalPackageCount = 0//结束之后把总包改为默认值
                                                 if FileManager.createFile(filePath: filePath).isSuccess {
                                                     FileManager.default.createFile(atPath: filePath, contents: data, attributes: nil)
+                                                    
+                                                    let format = JLOpusFormat.defaultFormats()
+                                                    format.hasDataHeader = false
+                                                    let decoder = JLOpusDecoder(decoder: format, delegate: self)
+                                                    let outPath = filePath.replacingOccurrences(of: ".opus", with: ".pcm")
+                                                    decoder.opusDecodeFile(filePath, outPut: outPath) { pathString, error in
+                                                        if let path = pathString {
+                                                            print("转换wav")
+                                                            let pathUrl = URL.init(fileURLWithPath: path)
+                                                            if let abcfileData = try? Data.init(contentsOf: pathUrl) {
+                                                                let wavFile = filePath.replacingOccurrences(of: ".opus", with: ".wav")
+                                                                if FileManager.createFile(filePath: wavFile).isSuccess {
+                                                                    block(abcfileData,wavFile,.none)
+                                                                    if let _ = try? JLPcmToWav.convertPCMData(abcfileData, toWAVFile: wavFile, sampleRate: 16000, numChannels: 1, bitsPerSample: 16) {
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
                                                 }
-                                                block(data,filePath,.none)
+                                                                                                
+                                                //block(data,filePath,.none)
                                             }else{
                                                 if self.voiceFailCount >= 5 {
                                                     ZySDKLog.writeStringToSDKLog(string: "接收声音文件失败超过5次")
@@ -4465,8 +4493,27 @@ import CoreLocation
                                             self.voiceFileTotalPackageCount = 0//结束之后把总包改为默认值
                                             if FileManager.createFile(filePath: filePath).isSuccess {
                                                 FileManager.default.createFile(atPath: filePath, contents: data, attributes: nil)
+                                                
+                                                let format = JLOpusFormat.defaultFormats()
+                                                format.hasDataHeader = false
+                                                let decoder = JLOpusDecoder(decoder: format, delegate: self)
+                                                let outPath = filePath.replacingOccurrences(of: ".opus", with: ".pcm")
+                                                decoder.opusDecodeFile(filePath, outPut: outPath) { pathString, error in
+                                                    if let path = pathString {
+                                                        print("转换wav")
+                                                        let pathUrl = URL.init(fileURLWithPath: path)
+                                                        if let aaafileData = try? Data.init(contentsOf: pathUrl) {
+                                                            let wavFile = filePath.replacingOccurrences(of: ".opus", with: ".wav")
+                                                            if FileManager.createFile(filePath: wavFile).isSuccess {
+                                                                block(aaafileData,wavFile,.none)
+                                                                if let _ = try? JLPcmToWav.convertPCMData(aaafileData, toWAVFile: wavFile, sampleRate: 16000, numChannels: 1, bitsPerSample: 16) {
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
                                             }
-                                            block(data,filePath,.none)
+                                            
                                         }else{
                                             if self.voiceFailCount >= 5 {
                                                 self.voiceFileTotalPackageCount = 0//结束之后把总包改为默认值

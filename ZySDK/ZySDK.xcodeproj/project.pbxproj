@@ -22,6 +22,7 @@
 		67883F152826127800ADDE99 /* ZyModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67883F142826127800ADDE99 /* ZyModel.swift */; };
 		679FD5532A41525F00A32A54 /* ZyCommandModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 679FD5522A41525F00A32A54 /* ZyCommandModule.swift */; };
 		9FEBFADEACE3A38EB6215288 /* Pods_ZySDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 889D805C12EF1D6D47D0ECDE /* Pods_ZySDK.framework */; };
+		E27A8DEE2E150F1100C157B1 /* JLAudioUnitKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E27A8DED2E150F1100C157B1 /* JLAudioUnitKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +62,7 @@
 		91894DCBFE4A25D3526B4BEC /* Pods_ZySDK_ZySDKTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ZySDK_ZySDKTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A738E751F42A7C5CFAD9DA61 /* Pods-ZySDK.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZySDK.release.xcconfig"; path = "Target Support Files/Pods-ZySDK/Pods-ZySDK.release.xcconfig"; sourceTree = "<group>"; };
 		AEDBEC440A4F75319200BFA6 /* Pods-ZySDK-ZySDKTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZySDK-ZySDKTests.release.xcconfig"; path = "Target Support Files/Pods-ZySDK-ZySDKTests/Pods-ZySDK-ZySDKTests.release.xcconfig"; sourceTree = "<group>"; };
+		E27A8DED2E150F1100C157B1 /* JLAudioUnitKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JLAudioUnitKit.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,6 +71,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				67309DEC2D2389EF005AF722 /* JL_OTALib.framework in Frameworks */,
+				E27A8DEE2E150F1100C157B1 /* JLAudioUnitKit.framework in Frameworks */,
 				67309DED2D2389EF005AF722 /* JL_BLEKit.framework in Frameworks */,
 				67309DEE2D2389EF005AF722 /* JL_AdvParse.framework in Frameworks */,
 				9FEBFADEACE3A38EB6215288 /* Pods_ZySDK.framework in Frameworks */,
@@ -136,6 +139,7 @@
 				67309DE92D2389EF005AF722 /* JL_AdvParse.framework */,
 				67309DEA2D2389EF005AF722 /* JL_BLEKit.framework */,
 				67309DEB2D2389EF005AF722 /* JL_OTALib.framework */,
+				E27A8DED2E150F1100C157B1 /* JLAudioUnitKit.framework */,
 				67661CCF26291D110004B197 /* Info.plist */,
 			);
 			path = ZySDK;
@@ -297,9 +301,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-ZySDK-ZySDKTests/Pods-ZySDK-ZySDKTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-ZySDK-ZySDKTests/Pods-ZySDK-ZySDKTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
